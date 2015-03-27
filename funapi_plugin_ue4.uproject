@@ -1,0 +1,19 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "4.7",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "funapi_plugin_ue4",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"TargetPlatforms": [
+		"Android",
+		"IOS",
+		"MacNoEditor",
+		"WindowsNoEditor"
+	]
+}

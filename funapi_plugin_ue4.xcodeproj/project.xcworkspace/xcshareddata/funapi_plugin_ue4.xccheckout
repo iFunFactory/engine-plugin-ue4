@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>43866710-2FE2-4D16-9066-63C3F2F14A7B</string>
+	<key>IDESourceControlProjectName</key>
+	<string>funapi_plugin_ue4</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>7166D35314C2B83A0AC3E01F440DE07DFBB5F877</key>
+		<string>ssh://review:29418/funapi-plugin-ue4</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>funapi_plugin_ue4.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>7166D35314C2B83A0AC3E01F440DE07DFBB5F877</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>ssh://review:29418/funapi-plugin-ue4</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>7166D35314C2B83A0AC3E01F440DE07DFBB5F877</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>7166D35314C2B83A0AC3E01F440DE07DFBB5F877</string>
+			<key>IDESourceControlWCCName</key>
+			<string>funapi-plugin-ue4</string>
+		</dict>
+	</array>
+</dict>
+</plist>

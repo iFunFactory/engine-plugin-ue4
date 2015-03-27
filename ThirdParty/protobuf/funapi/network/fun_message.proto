@@ -1,0 +1,17 @@
+// Copyright (C) 2013 iFunFactory Inc. All Rights Reserved.
+//
+// This work is confidential and proprietary to iFunFactory Inc. and
+// must not be used, disclosed, copied, or distributed without the prior
+// consent of iFunFactory Inc.
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Funapi Unity plugin
+
+
+message FunMessage
+{
+	optional string sid = 1;
+	optional string msgtype = 2;
+	extensions 16 to max;
+}

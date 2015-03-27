@@ -1,0 +1,28 @@
+// Copyright (C) 2013 iFunFactory Inc. All Rights Reserved.
+//
+// This work is confidential and proprietary to iFunFactory Inc. and
+// must not be used, disclosed, copied, or distributed without the prior
+// consent of iFunFactory Inc.
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Funapi Unity plugin
+
+import "funapi/network/fun_message.proto";
+
+
+message PbufEchoMessage
+{
+	optional string message = 1;
+}
+
+message PbufAnotherMessage
+{
+	optional string message = 1;
+}
+
+extend FunMessage
+{
+	optional PbufEchoMessage pbuf_echo = 16;
+	optional PbufAnotherMessage pbuf_another = 17;
+}

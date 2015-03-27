@@ -660,7 +660,7 @@ void FunapiHttpDownloaderImpl::CheckFileList(FileList &list) {
   struct tm *tm;
   struct stat st;
   stat(path.c_str(), &st);
-#if !defined(PLATFORM_ANDROID)
+#if PLATFORM_ANDROID
   tm = gmtime((time_t*)&(st.st_mtime_nsec));
 #else
   tm = gmtime(&st.st_mtimespec.tv_sec);
@@ -681,7 +681,7 @@ void FunapiHttpDownloaderImpl::CheckFileList(FileList &list) {
         struct tm *tm2;
         struct stat st2;
         stat(path2.c_str(), &st2);
-#if !defined(PLATFORM_ANDROID)
+#if PLATFORM_ANDROID
         tm2 = gmtime((time_t*)&(st2.st_mtime_nsec));
 #else
         tm2 = gmtime(&(st2.st_mtimespec.tv_sec));

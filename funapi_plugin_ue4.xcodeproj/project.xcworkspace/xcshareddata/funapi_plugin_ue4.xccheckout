@@ -10,14 +10,14 @@
 	<string>funapi_plugin_ue4</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>7166D35314C2B83A0AC3E01F440DE07DFBB5F877</key>
+		<key>CDA96F8B90925F7B9317379F28D400AA4DFE8D4B</key>
 		<string>ssh://review:29418/funapi-plugin-ue4</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
 	<string>funapi_plugin_ue4.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>7166D35314C2B83A0AC3E01F440DE07DFBB5F877</key>
+		<key>CDA96F8B90925F7B9317379F28D400AA4DFE8D4B</key>
 		<string>../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
@@ -25,14 +25,14 @@
 	<key>IDESourceControlProjectVersion</key>
 	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>7166D35314C2B83A0AC3E01F440DE07DFBB5F877</string>
+	<string>CDA96F8B90925F7B9317379F28D400AA4DFE8D4B</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>7166D35314C2B83A0AC3E01F440DE07DFBB5F877</string>
+			<string>CDA96F8B90925F7B9317379F28D400AA4DFE8D4B</string>
 			<key>IDESourceControlWCCName</key>
 			<string>funapi-plugin-ue4</string>
 		</dict>

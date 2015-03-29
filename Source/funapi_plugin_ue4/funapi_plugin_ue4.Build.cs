@@ -27,26 +27,13 @@ public class funapi_plugin_ue4 : ModuleRules
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libprotobuf.a"));
         }
         else if (Target.Platform == UnrealTargetPlatform.Android)
-        {
-            // toolchain will filter properly
+        {            
             PublicIncludePaths.Add(LibPath + "include/Android/ARMv7");
-            PublicLibraryPaths.Add(LibPath + "lib/Android/ARMv7");
-            PublicIncludePaths.Add(LibPath + "include/Android/ARM64");
-            PublicLibraryPaths.Add(LibPath + "lib/Android/ARM64");
-            PublicIncludePaths.Add(LibPath + "include/Android/x86");
-            PublicLibraryPaths.Add(LibPath + "lib/Android/x86");
-            PublicIncludePaths.Add(LibPath + "include/Android/x64");
-            PublicLibraryPaths.Add(LibPath + "lib/Android/x64");
 
-            //PublicAdditionalLibraries.Add("curl");
-            //PublicAdditionalLibraries.Add("crypto");
-            //PublicAdditionalLibraries.Add("protobuf");
-
-            LibPath += "lib/Android/ARMv7/";
+            LibPath += "lib/Android/ARMv7";
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl.a"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcrypto.a"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libprotobuf.a"));
-
         }
         else if (Target.Platform == UnrealTargetPlatform.IOS)
         {
@@ -57,8 +44,6 @@ public class funapi_plugin_ue4 : ModuleRules
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcrypto.1.0.0.dylib"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libprotobuf.9.dylib"));
         }
-        //Target.Platform == UnrealTargetPlatform.Win32
-        //Target.Platform == UnrealTargetPlatform.Win64
     }
 
     private string ModulePath

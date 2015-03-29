@@ -1,29 +1,22 @@
-TARGET_OS=i386
-TARGET_CXX=x86
-TOOLCHAIN_PATH=/opt/ndk/x86
-TARGET_HOST=i686-linux-android
+export PATH=/usr/ndk/x86/bin:$PATH
+export SYSROOT=$NDK_ROOT/platform/android-9/arch-x86
+export CC=i686-linux-android-gcc
+export CXX=i686-linux-android-g++
+export OUTPUT_DIR=$(pwd)/build/x86
 
-export NDK=/Users/arin/android-ndk-r10d
+rm -rf $OUTPUT_DIR
+mkdir -p $OUTPUT_DIR
 
-# Use the tools from the Standalone Toolchain
-export PATH=$PATH:$TOOLCHAIN_PATH/bin
-export SYSROOT=$TOOLCHAIN_PATH/sysroot
-export CC="${TARGET_HOST}-gcc --sysroot $SYSROOT"
-export CXX="${TARGET_HOST}-g++ --sysroot $SYSROOT"
-export CXXSTL=$NDK/sources/cxx-stl/gnu-libstdc++/4.9
+make distclean
 
-mkdir -p build/${TARGET_OS}
-
-# Run the configure to target a static library for the x86
-./configure --prefix=$(pwd)/build/${TARGET_OS} \
---host=$TARGET_HOST \
---with-protoc=protoc \
---with-sysroot=$SYSROOT \
---disable-shared \
+./autogen.sh
+./configure --enable-static --disable-shared \
+--host=i686-linux-android \
+--with-sysroot=$SYSROOT CC=$CC CXX=$CXX \
 --enable-cross-compile \
-CFLAGS="-march=${TARGET_OS}" \
-CXXFLAGS="-march=${TARGET_OS} -I$CXXSTL/include -I$CXXSTL/libs/${TARGET_CXX}/include"
+--prefix=$OUTPUT_DIR \
+--with-protoc=protoc \
+LIBS="-lc"
 
-# Build
 make -j4
 make install

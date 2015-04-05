@@ -7,31 +7,28 @@
 #include "Engine.h"
 #include "UnrealString.h"
 
-#include <assert.h>
-#include <errno.h>
-#include <fcntl.h>
+#if PLATFORM_WINDOWS
+#include "AllowWindowsPlatformTypes.h"
+#include <process.h>
+#include <WinSock2.h>
+#include <ws2tcpip.h>
+#else
 #include <netdb.h>
 #include <netinet/in.h>
-#include <pthread.h>
-#include <stdlib.h>
-#include <sys/select.h>
-#include <sys/types.h>
-#include <sys/uio.h>
-#include <time.h>
-#include <unistd.h>
-
 #include <algorithm>
-#include <iostream>
+#endif
+
 #include <list>
-#include <map>
-#include <vector>
 #include <sstream>
 
 #include "curl/curl.h"
-#include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
 #include "./funapi_network.h"
+#include "./funapi_utils.h"
+#if PLATFORM_WINDOWS
+#include "HideWindowsPlatformTypes.h"
+#endif
 
 
 namespace fun {
@@ -160,46 +157,15 @@ time_t funapi_session_timeout = 3600;
 typedef std::list<AsyncRequest> AsyncQueue;
 AsyncQueue async_queue;
 
-pthread_t async_queue_thread;
 bool async_thread_run = false;
+#if PLATFORM_WINDOWS
+HANDLE async_queue_thread;
+HANDLE async_queue_mutex;
+#else
+pthread_t async_queue_thread;
 pthread_mutex_t async_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t async_queue_cond = PTHREAD_COND_INITIALIZER;
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Helper functions.
-
-struct timespec operator+(
-    const struct timespec &t1, const struct timespec &t2) {
-  struct timespec r = {t1.tv_sec + t2.tv_sec, t1.tv_nsec + t2.tv_nsec};
-  if (r.tv_nsec > 1000 * 1000 * 1000) {
-    r.tv_sec += 1;
-    r.tv_nsec -= 1000 * 1000 * 1000;
-  }
-  return r;
-}
-
-
-inline bool operator<(const struct timespec &t1, const struct timespec &t2) {
-  if (t1.tv_sec < t2.tv_sec) {
-    return true;
-  } else if (t1.tv_sec == t2.tv_sec) {
-    return t1.tv_nsec < t2.tv_nsec;
-  } else {
-    return false;
-  }
-}
-
-
-inline bool operator==(const struct timespec &t1, const struct timespec &t2) {
-  return (t1.tv_sec == t2.tv_sec && t1.tv_nsec == t2.tv_nsec);
-}
-
-
-inline bool operator!=(const struct timespec &t1, const struct timespec &t2) {
-  return not operator==(t1, t2);
-}
-
+#endif
 
 size_t HttpResponseCb(void *data, size_t size, size_t count, void *cb) {
   AsyncWebResponseCallback *callback = (AsyncWebResponseCallback*)(cb);
@@ -213,14 +179,24 @@ size_t HttpResponseCb(void *data, size_t size, size_t count, void *cb) {
 ////////////////////////////////////////////////////////////////////////////////
 // Asynchronous operation related..
 
+#if PLATFORM_WINDOWS
+uint32_t WINAPI AsyncQueueThreadProc(LPVOID /*arg*/) {
+#else
 void *AsyncQueueThreadProc(void * /*arg*/) {
+#endif
   LOG("Thread for async operation has been created.");
 
   while (async_thread_run) {
     // Waits until we have something to process.
     pthread_mutex_lock(&async_queue_mutex);
     while (async_thread_run && async_queue.empty()) {
+#if PLATFORM_WINDOWS
+      ReleaseMutex(async_queue_mutex);
+      Sleep(1000);
+      WaitForSingleObject(async_queue_mutex, INFINITE);
+#else
       pthread_cond_wait(&async_queue_cond, &async_queue_mutex);
+#endif
     }
 
     // Moves element to a worker queue and releaes the mutex
@@ -237,6 +213,7 @@ void *AsyncQueueThreadProc(void * /*arg*/) {
     int max_fd = -1;
     for (AsyncQueue::const_iterator i = work_queue.begin();
          i != work_queue.end(); ++i) {
+
       switch (i->type_) {
       case AsyncRequest::kConnect:
       case AsyncRequest::kSend:
@@ -275,12 +252,12 @@ void *AsyncQueueThreadProc(void * /*arg*/) {
       // Ready. Handles accordingly.
       switch (i->type_) {
       case AsyncRequest::kConnect:
-        if (not FD_ISSET(i->sock_, &wset)) {
+        if (!FD_ISSET(i->sock_, &wset)) {
           remove_request = false;
         } else {
           int e;
           socklen_t e_size = sizeof(e);
-          int r = getsockopt(i->sock_, SOL_SOCKET, SO_ERROR, &e, &e_size);
+          int r = getsockopt(i->sock_, SOL_SOCKET, SO_ERROR, (char *)&e, &e_size);
           if (r == 0) {
             i->connect_.callback_(e);
           } else {
@@ -289,11 +266,11 @@ void *AsyncQueueThreadProc(void * /*arg*/) {
         }
         break;
       case AsyncRequest::kSend:
-        if (not FD_ISSET(i->sock_, &wset)) {
+        if (!FD_ISSET(i->sock_, &wset)) {
           remove_request = false;
         } else {
           ssize_t nSent =
-              send(i->sock_, i->send_.buf_ + i->send_.buf_offset_,
+              send(i->sock_, (char *)i->send_.buf_ + i->send_.buf_offset_,
                   i->send_.buf_len_ - i->send_.buf_offset_, 0);
           if (nSent < 0) {
             i->send_.callback_(nSent);
@@ -306,21 +283,21 @@ void *AsyncQueueThreadProc(void * /*arg*/) {
         }
         break;
       case AsyncRequest::kReceive:
-        if (not FD_ISSET(i->sock_, &rset)) {
+        if (!FD_ISSET(i->sock_, &rset)) {
           remove_request = false;
         } else {
           ssize_t nRead =
-              recv(i->sock_, i->recv_.buf_, i->recv_.capacity_, 0);
+              recv(i->sock_, (char *)i->recv_.buf_, i->recv_.capacity_, 0);
           i->recv_.callback_(nRead);
         }
         break;
       case AsyncRequest::kSendTo:
-        if (not FD_ISSET(i->sock_, &wset)) {
+        if (!FD_ISSET(i->sock_, &wset)) {
           remove_request = false;
         } else {
           socklen_t len = sizeof(i->sendto_.endpoint_);
           ssize_t nSent =
-              sendto(i->sock_, i->sendto_.buf_ + i->sendto_.buf_offset_,
+              sendto(i->sock_, (char *)i->sendto_.buf_ + i->sendto_.buf_offset_,
                      i->sendto_.buf_len_ - i->sendto_.buf_offset_, 0,
                      (struct sockaddr *)&i->sendto_.endpoint_, len);
           if (nSent < 0) {
@@ -334,12 +311,12 @@ void *AsyncQueueThreadProc(void * /*arg*/) {
         }
         break;
       case AsyncRequest::kReceiveFrom:
-        if (not FD_ISSET(i->sock_, &rset)) {
+        if (!FD_ISSET(i->sock_, &rset)) {
           remove_request = false;
         } else {
           socklen_t len = sizeof(i->recvfrom_.endpoint_);
           ssize_t nRead =
-              recvfrom(i->sock_, i->recvfrom_.buf_, i->recvfrom_.capacity_, 0,
+              recvfrom(i->sock_, (char *)i->recvfrom_.buf_, i->recvfrom_.capacity_, 0,
               (struct sockaddr *)&i->recvfrom_.endpoint_, &len);
           i->recvfrom_.callback_(nRead);
         }
@@ -396,17 +373,24 @@ void *AsyncQueueThreadProc(void * /*arg*/) {
   }
 
   LOG("Thread for async operation is terminating.");
-  return NULL;
+  return 0;
 }
 
 
 void AsyncConnect(int sock,
     const Endpoint &endpoint, const AsyncConnectCallback &callback) {
   // Makes the fd non-blocking.
+#if PLATFORM_WINDOWS
+  u_long argp = 0;
+  int flag = ioctlsocket(sock, FIONBIO, &argp);
+  assert(flag >= 0);
+  int rc;
+#else
   int flag = fcntl(sock, F_GETFL);
   assert(flag >= 0);
   int rc = fcntl(sock, F_SETFL, O_NONBLOCK | flag);
   assert(rc >= 0);
+#endif
 
   // Tries to connect.
   rc = connect(sock, reinterpret_cast<const struct sockaddr *>(&endpoint),
@@ -430,7 +414,7 @@ void AsyncConnect(int sock,
 
 void AsyncSend(int sock,
     const IoVecList &sending, AsyncSendCallback callback) {
-  assert(not sending.empty());
+  assert(!sending.empty());
   LOG1("Queueing %d async sends.", sending.size());
 
   pthread_mutex_lock(&async_queue_mutex);
@@ -473,7 +457,7 @@ void AsyncReceive(int sock,
 
 void AsyncSendTo(int sock, const Endpoint &ep,
     const IoVecList &sending, AsyncSendCallback callback) {
-  assert(not sending.empty());
+  assert(!sending.empty());
   LOG1("Queueing %d async sends.", sending.size());
 
   pthread_mutex_lock(&async_queue_mutex);
@@ -521,7 +505,7 @@ void AsyncWebRequest(const char* host_url, const IoVecList &sending,
     AsyncWebRequestCallback callback,
     AsyncWebResponseCallback receive_header,
     AsyncWebResponseCallback receive_body) {
-  assert(not sending.empty());
+  assert(!sending.empty());
   LOG1("Queueing %d async sends.", sending.size());
 
   pthread_mutex_lock(&async_queue_mutex);
@@ -587,7 +571,11 @@ class FunapiTransportBase {
   OnStopped on_stopped_;
 
   // State-related.
+#if PLATFORM_WINDOWS
+  HANDLE mutex_;
+#else
   mutable pthread_mutex_t mutex_;
+#endif
   FunapiTransportType type_;
   FunapiTransportState state_;
   IoVecList sending_;
@@ -663,7 +651,7 @@ void FunapiTransportBase::Init() {
 
 
 bool FunapiTransportBase::EncodeMessage() {
-  assert(not sending_.empty());
+  assert(!sending_.empty());
 
   for (IoVecList::iterator itr = sending_.begin(), itr_end = sending_.end();
       itr != itr_end;
@@ -803,7 +791,7 @@ void FunapiTransportBase::SendMessage(const char *body) {
   pthread_mutex_unlock(&mutex_);
 
   if (sendable)
-	  EncodeThenSendMessage();
+      EncodeThenSendMessage();
 }
 
 
@@ -971,6 +959,10 @@ FunapiTransportImpl::FunapiTransportImpl(FunapiTransportType type,
 
 
 FunapiTransportImpl::~FunapiTransportImpl() {
+#if PLATFORM_WINDOWS
+  WaitForSingleObject(mutex_, INFINITE);
+  CloseHandle(mutex_);
+#endif
 }
 
 
@@ -1006,7 +998,11 @@ void FunapiTransportImpl::Stop() {
   pthread_mutex_lock(&mutex_);
   state_ = kDisconnected;
   if (sock_ >= 0) {
+#if PLATFORM_WINDOWS
+    closesocket(sock_);
+#else
     close(sock_);
+#endif
     sock_ = -1;
   }
   pthread_mutex_unlock(&mutex_);
@@ -1084,7 +1080,7 @@ void FunapiTransportImpl::SendBytesCb(ssize_t nSent) {
 
   // Now releases memory that we have been holding for transmission.
   pthread_mutex_lock(&mutex_);
-  assert(not sending_.empty());
+  assert(!sending_.empty());
 
   IoVecList::iterator itr = sending_.begin();
   delete [] reinterpret_cast<uint8_t *>(itr->iov_base);
@@ -1103,7 +1099,7 @@ void FunapiTransportImpl::SendBytesCb(ssize_t nSent) {
   pthread_mutex_unlock(&mutex_);
 
   if (sendable)
-	  EncodeThenSendMessage();
+      EncodeThenSendMessage();
 }
 
 
@@ -1119,6 +1115,7 @@ void FunapiTransportImpl::ReceiveBytesCb(ssize_t nRead) {
 
   // Starts another async receive.
   pthread_mutex_lock(&mutex_);
+
   struct iovec residual;
   residual.iov_len = receiving_.iov_len - received_size_;
   residual.iov_base =
@@ -1146,7 +1143,7 @@ void FunapiTransportImpl::EncodeThenSendMessage() {
     return;
   }
 
-  assert(not sending_.empty());
+  assert(!sending_.empty());
   if (type_ == kTcp) {
     AsyncSend(sock_, sending_,
               AsyncSendCallback(&FunapiTransportImpl::SendBytesCbWrapper,
@@ -1209,6 +1206,11 @@ FunapiHttpTransportImpl::~FunapiHttpTransportImpl() {
     curl_global_cleanup();
     curl_initialized = false;
   }
+
+#if PLATFORM_WINDOWS
+  WaitForSingleObject(mutex_, INFINITE);
+  CloseHandle(mutex_);
+#endif
 }
 
 
@@ -1270,7 +1272,7 @@ void FunapiHttpTransportImpl::EncodeThenSendMessage() {
     return;
   }
 
-  assert(not sending_.empty());
+  assert(!sending_.empty());
 
   AsyncWebRequest(host_url_.c_str(), sending_,
       AsyncWebRequestCallback(&FunapiHttpTransportImpl::WebRequestCbWrapper, (void *) this),
@@ -1471,8 +1473,7 @@ void FunapiNetworkImpl::SendMessage(const string &msg_type, Json &body) {
   time_t delta = funapi_session_timeout;
 
   if (last_received_ != epoch && last_received_ + delta < now) {
-    LOG("Session is too stale. "
-        "The server might have invalidated my session. Resetting.");
+    LOG("Session is too stale. The server might have invalidated my session. Resetting.");
     session_id_ = "";
   }
 
@@ -1482,7 +1483,7 @@ void FunapiNetworkImpl::SendMessage(const string &msg_type, Json &body) {
   body.AddMember(kMsgTypeBodyField, msg_type_node, body.GetAllocator());
 
   // Encodes a session id, if any.
-  if (not session_id_.empty()) {
+  if (!session_id_.empty()) {
     rapidjson::Value session_id_node;
     session_id_node = session_id_.c_str();
     body.AddMember(kSessionIdBodyField, session_id_node, body.GetAllocator());
@@ -1499,13 +1500,12 @@ void FunapiNetworkImpl::SendMessage(FunMessage& message) {
   time_t delta = funapi_session_timeout;
 
   if (last_received_ != epoch && last_received_ + delta < now) {
-    LOG("Session is too stale. "
-        "The server might have invalidated my session. Resetting.");
+    LOG("Session is too stale. The server might have invalidated my session. Resetting.");
     session_id_ = "";
   }
 
   // Encodes a session id, if any.
-  if (not session_id_.empty()) {
+  if (!session_id_.empty()) {
     message.set_sid(session_id_.c_str());
   }
 
@@ -1634,7 +1634,7 @@ void FunapiNetworkImpl::OnSessionTimedout(
 FunapiTcpTransport::FunapiTcpTransport(
     const string &hostname_or_ip, uint16_t port)
     : impl_(new FunapiTransportImpl(kTcp, hostname_or_ip, port)) {
-  if (not initialized) {
+  if (!initialized) {
     LOG("You should call FunapiNetwork::Initialize() first.");
     assert(initialized);
   }
@@ -1686,7 +1686,7 @@ bool FunapiTcpTransport::Started() const {
 FunapiUdpTransport::FunapiUdpTransport(
     const string &hostname_or_ip, uint16_t port)
     : impl_(new FunapiTransportImpl(kUdp, hostname_or_ip, port)) {
-  if (not initialized) {
+  if (!initialized) {
     LOG("You should call FunapiNetwork::Initialize() first.");
     assert(initialized);
   }
@@ -1739,7 +1739,7 @@ bool FunapiUdpTransport::Started() const {
 FunapiHttpTransport::FunapiHttpTransport(
     const string &hostname_or_ip, uint16_t port, bool https /*= false*/)
     : impl_(new FunapiHttpTransportImpl(hostname_or_ip, port, https)) {
-  if (not initialized) {
+  if (!initialized) {
     LOG("You should call FunapiNetwork::Initialize() first.");
     assert(initialized);
   }
@@ -1790,15 +1790,21 @@ bool FunapiHttpTransport::Started() const {
 // FunapiNetwork implementation.
 
 void FunapiNetwork::Initialize(time_t session_timeout) {
-  assert(not initialized);
+  assert(!initialized);
 
   // Remembers the session timeout setting.
   funapi_session_timeout = session_timeout;
 
   // Creates a thread to handle async operations.
   async_thread_run = true;
+#if PLATFORM_WINDOWS
+  pthread_mutex_init(&async_queue_mutex, NULL);
+  async_queue_thread = (HANDLE)_beginthreadex(NULL, 0, AsyncQueueThreadProc, NULL, 0, NULL);
+  assert(async_queue_thread != 0);
+#else
   int r = pthread_create(&async_queue_thread, NULL, AsyncQueueThreadProc, NULL);
   assert(r == 0);
+#endif
 
   // Now ready.
   initialized = true;
@@ -1810,10 +1816,18 @@ void FunapiNetwork::Finalize() {
 
   // Terminates the thread for async operations.
   async_thread_run = false;
+#if PLATFORM_WINDOWS
+  WaitForSingleObject(async_queue_thread, INFINITE);
+  CloseHandle(async_queue_thread);
+
+  WaitForSingleObject(async_queue_mutex, INFINITE);
+  CloseHandle(async_queue_mutex);
+#else
   pthread_cond_broadcast(&async_queue_cond);
   void *dummy;
   pthread_join(async_queue_thread, &dummy);
   (void) dummy;
+#endif
 
   // All set.
   initialized = false;
@@ -1827,7 +1841,7 @@ FunapiNetwork::FunapiNetwork(
     : impl_(new FunapiNetworkImpl(transport, type,
         on_session_initiated, on_session_closed)) {
   // Makes sure we initialized the module.
-  if (not initialized) {
+  if (!initialized) {
     LOG("You should call FunapiNetwork::Initialize() first.");
     assert(initialized);
   }

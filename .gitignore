@@ -1,3 +1,8 @@
 Saved
 Intermediate
-Binaries/Mac/funapi_plugin_ue4-Mac-DebugGame.app
+*.app
+*.log
+*.so
+*.apk
+*.obb
+*.command

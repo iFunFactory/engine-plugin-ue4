@@ -9,12 +9,6 @@
 #ifndef SRC_FUNAPI_NETWORK_H_
 #define SRC_FUNAPI_NETWORK_H_
 
-#include <time.h>
-
-#include <iostream>
-#include <map>
-#include <string>
-
 #include "rapidjson/document.h"
 #include "funapi/network/fun_message.pb.h"
 

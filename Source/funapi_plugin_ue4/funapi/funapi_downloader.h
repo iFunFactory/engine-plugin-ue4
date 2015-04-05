@@ -9,13 +9,6 @@
 #ifndef SRC_FUNAPI_DOWNLOADER_H_
 #define SRC_FUNAPI_DOWNLOADER_H_
 
-#include <time.h>
-
-#include <iostream>
-#include <map>
-#include <string>
-
-#include "rapidjson/document.h"
 #include "./funapi_network.h"
 
 

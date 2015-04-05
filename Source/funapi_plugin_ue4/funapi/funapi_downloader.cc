@@ -7,34 +7,32 @@
 #include "Engine.h"
 #include "UnrealString.h"
 
-#include <assert.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <netdb.h>
+#if PLATFORM_WINDOWS
+#include "AllowWindowsPlatformTypes.h"
+#include <process.h>
+#include <WinSock2.h>
+#include <ws2tcpip.h>
+#include <io.h>
+#include <direct.h>
+#include <functional>
+#else
 #include <netinet/in.h>
-#include <pthread.h>
-#include <stdlib.h>
-#include <sys/select.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/uio.h>
-#include <time.h>
-#include <unistd.h>
-
 #include <algorithm>
-#include <iostream>
+#endif
+
 #include <list>
-#include <map>
-#include <sstream>
-#include <vector>
+
+#include <sys/stat.h>
 
 #include <openssl/md5.h>
-
 #include "curl/curl.h"
-#include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
-#include "rapidjson/writer.h"
+
 #include "./funapi_downloader.h"
+#include "./funapi_utils.h"
+#if PLATFORM_WINDOWS
+#include "HideWindowsPlatformTypes.h"
+#endif
 
 
 namespace fun {
@@ -46,8 +44,6 @@ namespace {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Types.
-
-typedef rapidjson::Document Json;
 
 typedef helper::Binder1<int, void *> AsyncRequestCallback;
 typedef helper::Binder1<string, void *> AsyncRequestMd5Callback;
@@ -133,10 +129,19 @@ const char kCacheFileName[] = "cached_files_list";
 typedef std::list<AsyncRequest> AsyncQueue;
 AsyncQueue async_queue;
 
-pthread_t async_queue_thread;
 bool async_thread_run = false;
+#if PLATFORM_WINDOWS
+HANDLE async_queue_thread;
+HANDLE async_queue_mutex;
+
+#define PATH_DELIMITER        '\\'
+#else
+pthread_t async_queue_thread;
 pthread_mutex_t async_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t async_queue_cond = PTHREAD_COND_INITIALIZER;
+
+#define PATH_DELIMITER        '/'
+#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -161,24 +166,34 @@ size_t HttpResponseCb(void *data, size_t size, size_t count, void *cb) {
 ////////////////////////////////////////////////////////////////////////////////
 // Asynchronous operation related..
 
+#if PLATFORM_WINDOWS
+uint32_t WINAPI AsyncQueueThreadProc(LPVOID /*arg*/) {
+#else
 void *AsyncQueueThreadProc(void *arg) {
+#endif
   LOG("Thread for async operation has been created.");
 
-  CURL *ctx;
-  CURLM *mctx;
-  int maxfd, running;
+  CURL *ctx = NULL;
+  CURLM *mctx = NULL;
+  int maxfd, running = 0;
   struct timeval timeout;
   fd_set fdread, fdwrite, fdexcep;
-  FILE *fp;
+  FILE *fp = NULL;
   MD5_CTX lctx;
   uint8_t *buffer = new uint8_t [kMd5DivideFileLength];
-  int length, read_len, offset;
+  int length = 0, read_len = 0, offset = 0;
 
   while (async_thread_run) {
     // Waits until we have something to process.
     pthread_mutex_lock(&async_queue_mutex);
     while (async_thread_run && async_queue.empty()) {
+#if PLATFORM_WINDOWS
+      ReleaseMutex(async_queue_mutex);
+      Sleep(1000);
+      WaitForSingleObject(async_queue_mutex, INFINITE);
+#else
       pthread_cond_wait(&async_queue_cond, &async_queue_mutex);
+#endif
     }
 
     // Moves element to a worker queue and releaes the mutex
@@ -250,7 +265,7 @@ void *AsyncQueueThreadProc(void *arg) {
             curl_easy_cleanup(ctx);
             curl_multi_cleanup(mctx);
           } else {
-            LOG1("Invalid state value. state: %d", itr->state_);
+            LOG1("Invalid state value. state: %d", (int)itr->state_);
             assert(false);
           }
         }
@@ -260,7 +275,7 @@ void *AsyncQueueThreadProc(void *arg) {
           if (itr->state_ == AsyncRequest::kStateStart) {
             MD5_Init(&lctx);
 
-            fp = fopen(itr->md5_request_.path_.c_str(), "r");
+            fp = fopen(itr->md5_request_.path_.c_str(), "rb");
             assert(fp != NULL);
             fseek(fp, 0, SEEK_END);
             length = ftell(fp);
@@ -275,6 +290,7 @@ void *AsyncQueueThreadProc(void *arg) {
               read_len = kMd5DivideFileLength;
 
             fread(buffer, sizeof(uint8_t), read_len, fp);
+
             MD5_Update(&lctx, buffer, read_len);
             offset += read_len;
 
@@ -297,14 +313,14 @@ void *AsyncQueueThreadProc(void *arg) {
             itr->md5_request_.callback_(md5msg);
             itr = work_queue.erase(itr);
           } else {
-            LOG1("Invalid state value. state: %d", itr->state_);
+            LOG1("Invalid state value. state: %d", (int)itr->state_);
             assert(false);
           }
         }
         break;
 
       default:
-        LOG1("Invalid request type. type: %d", itr->type_);
+        LOG1("Invalid request type. type: %d", (int)itr->type_);
         ++itr;
         break;
       }
@@ -425,7 +441,11 @@ class FunapiHttpDownloaderImpl {
   static const int kUnitBufferSize = 65536;
 
   // State-related.
+#if PLATFORM_WINDOWS
+  HANDLE mutex_;
+#else
   mutable pthread_mutex_t mutex_;
+#endif
   DownloadState state_;
 
   // Url-related.
@@ -452,8 +472,8 @@ FunapiHttpDownloaderImpl::FunapiHttpDownloaderImpl(
     const char *target_path, const OnUpdate &cb1, const OnFinished &cb2)
     : state_(kDownloadReady), on_update_(cb1), on_finished_(cb2) {
   target_path_ = target_path;
-  if (target_path_.at(target_path_.length() - 1) != '/')
-    target_path_.append("/");
+  if (target_path_.at(target_path_.length() - 1) != PATH_DELIMITER)
+    target_path_.append(1, PATH_DELIMITER);
 
   header_fields_.clear();
 
@@ -582,7 +602,9 @@ void FunapiHttpDownloaderImpl::LoadCachedFileList() {
 
   rapidjson::Value &list = json["data"];
   assert(list.IsArray());
-  for (int i = 0; i < list.Size(); ++i) {
+
+  int count = (int)list.Size();
+  for (int i = 0; i < count; ++i) {
     DownloadFile *info = new DownloadFile();
     info->path = list[i]["path"].GetString();
     info->md5 = list[i]["md5"].GetString();
@@ -662,6 +684,8 @@ void FunapiHttpDownloaderImpl::CheckFileList(FileList &list) {
   stat(path.c_str(), &st);
 #if PLATFORM_ANDROID
   tm = gmtime((time_t*)&(st.st_mtime_nsec));
+#elif PLATFORM_WINDOWS
+  tm = gmtime(&st.st_mtime);
 #else
   tm = gmtime(&st.st_mtimespec.tv_sec);
 #endif
@@ -683,6 +707,8 @@ void FunapiHttpDownloaderImpl::CheckFileList(FileList &list) {
         stat(path2.c_str(), &st2);
 #if PLATFORM_ANDROID
         tm2 = gmtime((time_t*)&(st2.st_mtime_nsec));
+#elif PLATFORM_WINDOWS
+        tm2 = gmtime(&st.st_mtime);
 #else
         tm2 = gmtime(&(st2.st_mtimespec.tv_sec));
 #endif
@@ -822,7 +848,8 @@ void FunapiHttpDownloaderImpl::DownloadListCb(int state) {
       assert(false);
       failed = true;
     } else {
-      for (int i = 0; i < list.Size(); ++i) {
+      int count = (int)list.Size();
+      for (int i = 0; i < count; ++i) {
         DownloadFile *info = new DownloadFile();
         info->path = list[i]["path"].GetString();
         info->md5 = list[i]["md5"].GetString();
@@ -931,8 +958,14 @@ FunapiHttpDownloader::FunapiHttpDownloader(
 
   // Creates a thread to handle async operations.
   async_thread_run = true;
+#if PLATFORM_WINDOWS
+  pthread_mutex_init(&async_queue_mutex, NULL);
+  async_queue_thread = (HANDLE)_beginthreadex(NULL, 0, AsyncQueueThreadProc, NULL, 0, NULL);
+  assert(async_queue_thread != 0);
+#else
   int r = pthread_create(&async_queue_thread, NULL, AsyncQueueThreadProc, NULL);
   assert(r == 0);
+#endif
 }
 
 FunapiHttpDownloader::~FunapiHttpDownloader() {
@@ -940,14 +973,22 @@ FunapiHttpDownloader::~FunapiHttpDownloader() {
 
   // Terminates the thread for async operations.
   async_thread_run = false;
+#if PLATFORM_WINDOWS
+  WaitForSingleObject(async_queue_thread, INFINITE);
+  CloseHandle(async_queue_thread);
+
+  WaitForSingleObject(async_queue_mutex, INFINITE);
+  CloseHandle(async_queue_mutex);
+#else
   pthread_cond_broadcast(&async_queue_cond);
   void *dummy;
   pthread_join(async_queue_thread, &dummy);
   (void) dummy;
+#endif
 }
 
 bool FunapiHttpDownloader::StartDownload(const char *hostname_or_ip,
-    uint16_t port, const char *list_filename, bool https /*= false*/) {
+    uint16_t port, const char *list_filename, bool https) {
   char url[1024];
   sprintf(url, "%s://%s:%d/v%d/%s",
       https ? "https" : "http", hostname_or_ip, port,

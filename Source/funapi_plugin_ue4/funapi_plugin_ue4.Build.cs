@@ -1,14 +1,20 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (C) 2013-2015 iFunFactory Inc. All Rights Reserved.
+//
+// This work is confidential and proprietary to iFunFactory Inc. and
+// must not be used, disclosed, copied, or distributed without the prior
+// consent of iFunFactory Inc.
 
 using UnrealBuildTool;
 using System.IO;
 
 public class funapi_plugin_ue4 : ModuleRules
 {
-	public funapi_plugin_ue4(TargetInfo Target)
-	{
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
+    public funapi_plugin_ue4(TargetInfo Target)
+    {
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Json" });
 
+        // Third party library
         var ModulePath = Path.GetDirectoryName(RulesCompiler.GetModuleFilename(this.GetType().Name));
         var ThirdPartyPath = Path.GetFullPath(Path.Combine(ModulePath, "..", "..", "ThirdParty/"));
 
@@ -16,8 +22,10 @@ public class funapi_plugin_ue4 : ModuleRules
         PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include"));
         PublicIncludePaths.Add(Path.GetFullPath(Path.Combine(ModulePath, "funapi")));
 
+        // definitions
         Definitions.Add("GOOGLE_PROTOBUF_NO_RTTI=1");
 
+        // library
         var LibPath = ThirdPartyPath;
 
         if (Target.Platform == UnrealTargetPlatform.Mac)

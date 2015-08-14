@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Engine", "Engine", "{B0D7C845-6672-4609-BB7C-53D8F6577052}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Engine", "Engine", "{0D0DB992-19BB-4DD3-A5D6-0C03FE6EE21E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Games", "Games", "{DBE34DDD-562D-43CA-996E-8B4335674140}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Games", "Games", "{9930C413-F2A0-4DD8-890B-5AE1C10230F4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "funapi_plugin_ue4", "Intermediate\ProjectFiles\funapi_plugin_ue4.vcxproj", "{7361555D-6205-46D7-AE74-988283D45299}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "funapi_plugin_ue4", "Intermediate\ProjectFiles\funapi_plugin_ue4.vcxproj", "{45E92F29-5993-4043-B050-809F0CE874E3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UE4", "Intermediate\ProjectFiles\UE4.vcxproj", "{7D4542BD-AC91-481D-9726-BB90C2B7DEDE}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UE4", "Intermediate\ProjectFiles\UE4.vcxproj", "{43B19D65-C705-40D1-BE32-896F9941F027}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,40 +25,40 @@ Global
 		Shipping|Windows = Shipping|Windows
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7361555D-6205-46D7-AE74-988283D45299}.DebugGame Editor|Android.ActiveCfg = Development_Game|x64
-		{7361555D-6205-46D7-AE74-988283D45299}.DebugGame Editor|Windows.ActiveCfg = DebugGame_Editor|x64
-		{7361555D-6205-46D7-AE74-988283D45299}.DebugGame Editor|Windows.Build.0 = DebugGame_Editor|x64
-		{7361555D-6205-46D7-AE74-988283D45299}.DebugGame|Android.ActiveCfg = DebugGame_Game|Tegra-Android
-		{7361555D-6205-46D7-AE74-988283D45299}.DebugGame|Android.Build.0 = DebugGame_Game|Tegra-Android
-		{7361555D-6205-46D7-AE74-988283D45299}.DebugGame|Windows.ActiveCfg = DebugGame_Game|x64
-		{7361555D-6205-46D7-AE74-988283D45299}.DebugGame|Windows.Build.0 = DebugGame_Game|x64
-		{7361555D-6205-46D7-AE74-988283D45299}.Development Editor|Android.ActiveCfg = Development_Game|x64
-		{7361555D-6205-46D7-AE74-988283D45299}.Development Editor|Windows.ActiveCfg = Development_Editor|x64
-		{7361555D-6205-46D7-AE74-988283D45299}.Development Editor|Windows.Build.0 = Development_Editor|x64
-		{7361555D-6205-46D7-AE74-988283D45299}.Development|Android.ActiveCfg = Development_Game|Tegra-Android
-		{7361555D-6205-46D7-AE74-988283D45299}.Development|Android.Build.0 = Development_Game|Tegra-Android
-		{7361555D-6205-46D7-AE74-988283D45299}.Development|Windows.ActiveCfg = Development_Game|x64
-		{7361555D-6205-46D7-AE74-988283D45299}.Development|Windows.Build.0 = Development_Game|x64
-		{7361555D-6205-46D7-AE74-988283D45299}.Shipping|Android.ActiveCfg = Shipping_Game|Tegra-Android
-		{7361555D-6205-46D7-AE74-988283D45299}.Shipping|Android.Build.0 = Shipping_Game|Tegra-Android
-		{7361555D-6205-46D7-AE74-988283D45299}.Shipping|Windows.ActiveCfg = Shipping_Game|Win32
-		{7361555D-6205-46D7-AE74-988283D45299}.Shipping|Windows.Build.0 = Shipping_Game|Win32
-		{7D4542BD-AC91-481D-9726-BB90C2B7DEDE}.DebugGame Editor|Android.ActiveCfg = BuiltWithUnrealBuildTool|Win32
-		{7D4542BD-AC91-481D-9726-BB90C2B7DEDE}.DebugGame Editor|Windows.ActiveCfg = BuiltWithUnrealBuildTool|Win32
-		{7D4542BD-AC91-481D-9726-BB90C2B7DEDE}.DebugGame|Android.ActiveCfg = BuiltWithUnrealBuildTool|Win32
-		{7D4542BD-AC91-481D-9726-BB90C2B7DEDE}.DebugGame|Windows.ActiveCfg = BuiltWithUnrealBuildTool|Win32
-		{7D4542BD-AC91-481D-9726-BB90C2B7DEDE}.Development Editor|Android.ActiveCfg = BuiltWithUnrealBuildTool|Win32
-		{7D4542BD-AC91-481D-9726-BB90C2B7DEDE}.Development Editor|Windows.ActiveCfg = BuiltWithUnrealBuildTool|Win32
-		{7D4542BD-AC91-481D-9726-BB90C2B7DEDE}.Development|Android.ActiveCfg = BuiltWithUnrealBuildTool|Win32
-		{7D4542BD-AC91-481D-9726-BB90C2B7DEDE}.Development|Windows.ActiveCfg = BuiltWithUnrealBuildTool|Win32
-		{7D4542BD-AC91-481D-9726-BB90C2B7DEDE}.Shipping|Android.ActiveCfg = BuiltWithUnrealBuildTool|Win32
-		{7D4542BD-AC91-481D-9726-BB90C2B7DEDE}.Shipping|Windows.ActiveCfg = BuiltWithUnrealBuildTool|Win32
+		{45E92F29-5993-4043-B050-809F0CE874E3}.DebugGame Editor|Android.ActiveCfg = Development_Game|x64
+		{45E92F29-5993-4043-B050-809F0CE874E3}.DebugGame Editor|Windows.ActiveCfg = DebugGame_Editor|x64
+		{45E92F29-5993-4043-B050-809F0CE874E3}.DebugGame Editor|Windows.Build.0 = DebugGame_Editor|x64
+		{45E92F29-5993-4043-B050-809F0CE874E3}.DebugGame|Android.ActiveCfg = DebugGame_Game|Tegra-Android
+		{45E92F29-5993-4043-B050-809F0CE874E3}.DebugGame|Android.Build.0 = DebugGame_Game|Tegra-Android
+		{45E92F29-5993-4043-B050-809F0CE874E3}.DebugGame|Windows.ActiveCfg = DebugGame_Game|x64
+		{45E92F29-5993-4043-B050-809F0CE874E3}.DebugGame|Windows.Build.0 = DebugGame_Game|x64
+		{45E92F29-5993-4043-B050-809F0CE874E3}.Development Editor|Android.ActiveCfg = Development_Game|x64
+		{45E92F29-5993-4043-B050-809F0CE874E3}.Development Editor|Windows.ActiveCfg = Development_Editor|x64
+		{45E92F29-5993-4043-B050-809F0CE874E3}.Development Editor|Windows.Build.0 = Development_Editor|x64
+		{45E92F29-5993-4043-B050-809F0CE874E3}.Development|Android.ActiveCfg = Development_Game|Tegra-Android
+		{45E92F29-5993-4043-B050-809F0CE874E3}.Development|Android.Build.0 = Development_Game|Tegra-Android
+		{45E92F29-5993-4043-B050-809F0CE874E3}.Development|Windows.ActiveCfg = Development_Game|x64
+		{45E92F29-5993-4043-B050-809F0CE874E3}.Development|Windows.Build.0 = Development_Game|x64
+		{45E92F29-5993-4043-B050-809F0CE874E3}.Shipping|Android.ActiveCfg = Shipping_Game|Tegra-Android
+		{45E92F29-5993-4043-B050-809F0CE874E3}.Shipping|Android.Build.0 = Shipping_Game|Tegra-Android
+		{45E92F29-5993-4043-B050-809F0CE874E3}.Shipping|Windows.ActiveCfg = Shipping_Game|Win32
+		{45E92F29-5993-4043-B050-809F0CE874E3}.Shipping|Windows.Build.0 = Shipping_Game|Win32
+		{43B19D65-C705-40D1-BE32-896F9941F027}.DebugGame Editor|Android.ActiveCfg = BuiltWithUnrealBuildTool|Win32
+		{43B19D65-C705-40D1-BE32-896F9941F027}.DebugGame Editor|Windows.ActiveCfg = BuiltWithUnrealBuildTool|Win32
+		{43B19D65-C705-40D1-BE32-896F9941F027}.DebugGame|Android.ActiveCfg = BuiltWithUnrealBuildTool|Win32
+		{43B19D65-C705-40D1-BE32-896F9941F027}.DebugGame|Windows.ActiveCfg = BuiltWithUnrealBuildTool|Win32
+		{43B19D65-C705-40D1-BE32-896F9941F027}.Development Editor|Android.ActiveCfg = BuiltWithUnrealBuildTool|Win32
+		{43B19D65-C705-40D1-BE32-896F9941F027}.Development Editor|Windows.ActiveCfg = BuiltWithUnrealBuildTool|Win32
+		{43B19D65-C705-40D1-BE32-896F9941F027}.Development|Android.ActiveCfg = BuiltWithUnrealBuildTool|Win32
+		{43B19D65-C705-40D1-BE32-896F9941F027}.Development|Windows.ActiveCfg = BuiltWithUnrealBuildTool|Win32
+		{43B19D65-C705-40D1-BE32-896F9941F027}.Shipping|Android.ActiveCfg = BuiltWithUnrealBuildTool|Win32
+		{43B19D65-C705-40D1-BE32-896F9941F027}.Shipping|Windows.ActiveCfg = BuiltWithUnrealBuildTool|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{7361555D-6205-46D7-AE74-988283D45299} = {DBE34DDD-562D-43CA-996E-8B4335674140}
-		{7D4542BD-AC91-481D-9726-BB90C2B7DEDE} = {B0D7C845-6672-4609-BB7C-53D8F6577052}
+		{45E92F29-5993-4043-B050-809F0CE874E3} = {9930C413-F2A0-4DD8-890B-5AE1C10230F4}
+		{43B19D65-C705-40D1-BE32-896F9941F027} = {0D0DB992-19BB-4DD3-A5D6-0C03FE6EE21E}
 	EndGlobalSection
 EndGlobal

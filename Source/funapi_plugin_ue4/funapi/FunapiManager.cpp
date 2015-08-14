@@ -5,5 +5,19 @@
 // consent of iFunFactory Inc.
 
 #include "funapi_plugin_ue4.h"
+#include "FunapiManager.h"
 
-IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, funapi_plugin_ue4, "funapi_plugin_ue4" );
+
+namespace Fun
+{
+    void Funapi_Initialize()
+    {
+        LOG("Initializes funapi network.");
+    }
+
+    void Funapi_Finalize()
+    {
+        LOG("Finalizes funapi network.");
+    }
+
+} // namespace Fun

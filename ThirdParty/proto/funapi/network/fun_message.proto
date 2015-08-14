@@ -1,17 +1,29 @@
-// Copyright (C) 2013 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2015 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
 
-//////////////////////////////////////////////////////////////////////////////
-// Funapi Unity plugin
+// This protobuf message should be the outermost message.
+// Any game message (aka app message) should be in the form of FunMessage's extension.
+// For example, say we have a message like this:
+//   message MyMessage {
+//    ...
+//   }
+// We can carry MyMessage in FunMessage like this:
+//   extend FunMessage {
+//     optional MyMessage mymessage = 16;
+//   }
+message FunMessage {
+  optional string sid = 1;
+  optional string msgtype = 2;
+  optional uint32 seq = 3;
+  optional uint32 ack = 4;
 
-
-message FunMessage
-{
-	optional string sid = 1;
-	optional string msgtype = 2;
-	extensions 16 to max;
+  ////////////////////////////////////////////////////////////////////
+  // CAUTION: EXTENSIONS FROM 8 THROUGH 15 ARE RESERVED BY THE ENGINE.
+  // GAME DEVELOPER SHOULD USE FROM 16.
+  ////////////////////////////////////////////////////////////////////
+  extensions 8 to max;
 }

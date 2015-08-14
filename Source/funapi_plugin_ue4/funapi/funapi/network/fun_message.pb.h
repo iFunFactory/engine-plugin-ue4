@@ -125,6 +125,20 @@ class FunMessage : public ::google::protobuf::Message {
   inline ::std::string* release_msgtype();
   inline void set_allocated_msgtype(::std::string* msgtype);
 
+  // optional uint32 seq = 3;
+  inline bool has_seq() const;
+  inline void clear_seq();
+  static const int kSeqFieldNumber = 3;
+  inline ::google::protobuf::uint32 seq() const;
+  inline void set_seq(::google::protobuf::uint32 value);
+
+  // optional uint32 ack = 4;
+  inline bool has_ack() const;
+  inline void clear_ack();
+  static const int kAckFieldNumber = 4;
+  inline ::google::protobuf::uint32 ack() const;
+  inline void set_ack(::google::protobuf::uint32 value);
+
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(FunMessage)
   // @@protoc_insertion_point(class_scope:FunMessage)
  private:
@@ -132,6 +146,10 @@ class FunMessage : public ::google::protobuf::Message {
   inline void clear_has_sid();
   inline void set_has_msgtype();
   inline void clear_has_msgtype();
+  inline void set_has_seq();
+  inline void clear_has_seq();
+  inline void set_has_ack();
+  inline void clear_has_ack();
 
   ::google::protobuf::internal::ExtensionSet _extensions_;
 
@@ -141,6 +159,8 @@ class FunMessage : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::std::string* sid_;
   ::std::string* msgtype_;
+  ::google::protobuf::uint32 seq_;
+  ::google::protobuf::uint32 ack_;
   friend void  protobuf_AddDesc_funapi_2fnetwork_2ffun_5fmessage_2eproto();
   friend void protobuf_AssignDesc_funapi_2fnetwork_2ffun_5fmessage_2eproto();
   friend void protobuf_ShutdownFile_funapi_2fnetwork_2ffun_5fmessage_2eproto();
@@ -305,6 +325,54 @@ inline void FunMessage::set_allocated_msgtype(::std::string* msgtype) {
     msgtype_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:FunMessage.msgtype)
+}
+
+// optional uint32 seq = 3;
+inline bool FunMessage::has_seq() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void FunMessage::set_has_seq() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void FunMessage::clear_has_seq() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void FunMessage::clear_seq() {
+  seq_ = 0u;
+  clear_has_seq();
+}
+inline ::google::protobuf::uint32 FunMessage::seq() const {
+  // @@protoc_insertion_point(field_get:FunMessage.seq)
+  return seq_;
+}
+inline void FunMessage::set_seq(::google::protobuf::uint32 value) {
+  set_has_seq();
+  seq_ = value;
+  // @@protoc_insertion_point(field_set:FunMessage.seq)
+}
+
+// optional uint32 ack = 4;
+inline bool FunMessage::has_ack() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void FunMessage::set_has_ack() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void FunMessage::clear_has_ack() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void FunMessage::clear_ack() {
+  ack_ = 0u;
+  clear_has_ack();
+}
+inline ::google::protobuf::uint32 FunMessage::ack() const {
+  // @@protoc_insertion_point(field_get:FunMessage.ack)
+  return ack_;
+}
+inline void FunMessage::set_ack(::google::protobuf::uint32 value) {
+  set_has_ack();
+  ack_ = value;
+  // @@protoc_insertion_point(field_set:FunMessage.ack)
 }
 
 

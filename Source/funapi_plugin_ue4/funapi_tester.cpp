@@ -1,4 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (C) 2013-2015 iFunFactory Inc. All Rights Reserved.
+//
+// This work is confidential and proprietary to iFunFactory Inc. and
+// must not be used, disclosed, copied, or distributed without the prior
+// consent of iFunFactory Inc.
 
 #include "funapi_plugin_ue4.h"
 
@@ -9,7 +13,16 @@
 
 #include "funapi/funapi_network.h"
 #include "funapi/funapi_downloader.h"
-#include "funapi/pbuf_echo.pb.h"
+#include "funapi/test_messages.pb.h"
+
+#include "Funapi/FunapiManager.h"
+#include "Funapi/ConnectList.h"
+
+// FOR TEST
+//#include <WinSock2.h>
+//#include <WS2tcpip.h>
+//#include "Funapi/JsonAccessor.h"
+// FOR TEST
 
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
@@ -25,6 +38,7 @@ namespace
     fun::FunapiNetwork* network = NULL;
     int8 msg_type = fun::kJsonEncoding;
     bool is_downloading = false;
+
 
 
     void on_session_initiated (const std::string &session_id, void *ctxt)
@@ -50,7 +64,7 @@ namespace
         FunMessage msg;
         msg.ParseFromString(body);
         PbufEchoMessage echo = msg.GetExtension(pbuf_echo);
-        LOG1("proto: %s", *FString(echo.message().c_str()));
+        LOG1("proto: %s", *FString(echo.msg().c_str()));
     }
 
     void on_download_update (const std::string &path, long receive, long total, int percent, void *ctxt)
@@ -87,6 +101,29 @@ Afunapi_tester::Afunapi_tester()
 {
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = false;
+
+    Fun::Funapi_Initialize();
+
+    // TEST
+    //Fun::ConnectList connect;
+    //connect.Add("www.naver.com", 8080);
+    //while (connect.IsNextAvailable()) {
+    //    LOG1("ip: %s", *FString(connect.GetNextAddress()->host.c_str()));
+    //}
+
+    //Fun::JsonAccessor<FJsonObject> helper;
+    //FString str_json = "{\"sample\":\"hello~\"}";
+    //TSharedPtr<FJsonObject> json = helper.Deserialize(str_json);
+    //json->SetStringField("item", "new one");
+    //json->SetNumberField("num", 321);
+    //FString temp = helper.Serialize(json);
+    //LOG1("temp: %s", *temp);
+    //LOG1("item: %s", *json->GetStringField("item"));
+}
+
+Afunapi_tester::~Afunapi_tester()
+{
+    Fun::Funapi_Finalize();
 }
 
 // Called when the game starts or when spawned
@@ -158,7 +195,7 @@ bool Afunapi_tester::SendEchoMessage()
         FunMessage msg;
         msg.set_msgtype("pbuf_echo");
         PbufEchoMessage *echo = msg.MutableExtension(pbuf_echo);
-        echo->set_message("hello proto");
+        echo->set_msg("hello proto");
         network->SendMessage(msg);
         return true;
     }

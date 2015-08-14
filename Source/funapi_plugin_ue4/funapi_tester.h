@@ -1,4 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (C) 2013-2015 iFunFactory Inc. All Rights Reserved.
+//
+// This work is confidential and proprietary to iFunFactory Inc. and
+// must not be used, disclosed, copied, or distributed without the prior
+// consent of iFunFactory Inc.
 
 #pragma once
 
@@ -13,6 +17,7 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
 public:
     // Sets default values for this actor's properties
     Afunapi_tester();
+    virtual ~Afunapi_tester();
 
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;

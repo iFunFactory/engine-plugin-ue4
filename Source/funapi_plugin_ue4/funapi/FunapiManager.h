@@ -4,6 +4,11 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
-#include "funapi_plugin_ue4.h"
+#pragma once
 
-IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, funapi_plugin_ue4, "funapi_plugin_ue4" );
+namespace Fun
+{
+    void Funapi_Initialize();
+    void Funapi_Finalize();
+
+} // namespace Fun

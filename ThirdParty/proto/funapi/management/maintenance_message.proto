@@ -1,0 +1,22 @@
+// Copyright (C) 2014 iFunFactory Inc. All Rights Reserved.
+//
+// This work is confidential and proprietary to iFunFactory Inc. and
+// must not be used, disclosed, copied, or distributed without the prior
+// consent of iFunFactory Inc.
+
+////////////////////////////////////////////////////////////////////////
+// These protobuf messages are Funapi maintenance messages.
+
+import "funapi/network/fun_message.proto";
+
+// Maintenance message
+message MaintenanceMessage {
+  optional string date_start = 1;
+  optional string date_end = 2;
+  optional string messages = 3;
+}
+
+
+extend FunMessage {
+  optional MaintenanceMessage pbuf_maintenance = 15;
+}

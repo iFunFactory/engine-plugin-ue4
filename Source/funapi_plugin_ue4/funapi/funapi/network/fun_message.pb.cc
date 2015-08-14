@@ -32,9 +32,11 @@ void protobuf_AssignDesc_funapi_2fnetwork_2ffun_5fmessage_2eproto() {
       "funapi/network/fun_message.proto");
   GOOGLE_CHECK(file != NULL);
   FunMessage_descriptor_ = file->message_type(0);
-  static const int FunMessage_offsets_[2] = {
+  static const int FunMessage_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMessage, sid_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMessage, msgtype_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMessage, seq_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMessage, ack_),
   };
   FunMessage_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -77,9 +79,9 @@ void protobuf_AddDesc_funapi_2fnetwork_2ffun_5fmessage_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n funapi/network/fun_message.proto\"4\n\nFu"
-    "nMessage\022\013\n\003sid\030\001 \001(\t\022\017\n\007msgtype\030\002 \001(\t*\010"
-    "\010\020\020\200\200\200\200\002", 88);
+    "\n funapi/network/fun_message.proto\"N\n\nFu"
+    "nMessage\022\013\n\003sid\030\001 \001(\t\022\017\n\007msgtype\030\002 \001(\t\022\013"
+    "\n\003seq\030\003 \001(\r\022\013\n\003ack\030\004 \001(\r*\010\010\010\020\200\200\200\200\002", 114);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "funapi/network/fun_message.proto", &protobuf_RegisterTypes);
   FunMessage::default_instance_ = new FunMessage();
@@ -99,6 +101,8 @@ struct StaticDescriptorInitializer_funapi_2fnetwork_2ffun_5fmessage_2eproto {
 #ifndef _MSC_VER
 const int FunMessage::kSidFieldNumber;
 const int FunMessage::kMsgtypeFieldNumber;
+const int FunMessage::kSeqFieldNumber;
+const int FunMessage::kAckFieldNumber;
 #endif  // !_MSC_VER
 
 FunMessage::FunMessage()
@@ -122,6 +126,8 @@ void FunMessage::SharedCtor() {
   _cached_size_ = 0;
   sid_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   msgtype_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  seq_ = 0u;
+  ack_ = 0u;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -164,7 +170,18 @@ FunMessage* FunMessage::New() const {
 
 void FunMessage::Clear() {
   _extensions_.Clear();
-  if (_has_bits_[0 / 32] & 3) {
+#define OFFSET_OF_FIELD_(f) (reinterpret_cast<char*>(      \
+  &reinterpret_cast<FunMessage*>(16)->f) - \
+   reinterpret_cast<char*>(16))
+
+#define ZR_(first, last) do {                              \
+    size_t f = OFFSET_OF_FIELD_(first);                    \
+    size_t n = OFFSET_OF_FIELD_(last) - f + sizeof(last);  \
+    ::memset(&first, 0, n);                                \
+  } while (0)
+
+  if (_has_bits_[0 / 32] & 15) {
+    ZR_(seq_, ack_);
     if (has_sid()) {
       if (sid_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
         sid_->clear();
@@ -176,6 +193,10 @@ void FunMessage::Clear() {
       }
     }
   }
+
+#undef OFFSET_OF_FIELD_
+#undef ZR_
+
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -219,6 +240,36 @@ bool FunMessage::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(24)) goto parse_seq;
+        break;
+      }
+
+      // optional uint32 seq = 3;
+      case 3: {
+        if (tag == 24) {
+         parse_seq:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &seq_)));
+          set_has_seq();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(32)) goto parse_ack;
+        break;
+      }
+
+      // optional uint32 ack = 4;
+      case 4: {
+        if (tag == 32) {
+         parse_ack:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &ack_)));
+          set_has_ack();
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -230,7 +281,7 @@ bool FunMessage::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           goto success;
         }
-        if ((128u <= tag)) {
+        if ((64u <= tag)) {
           DO_(_extensions_.ParseField(tag, input, default_instance_,
                                       mutable_unknown_fields()));
           continue;
@@ -273,9 +324,19 @@ void FunMessage::SerializeWithCachedSizes(
       2, this->msgtype(), output);
   }
 
-  // Extension range [16, 536870912)
+  // optional uint32 seq = 3;
+  if (has_seq()) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->seq(), output);
+  }
+
+  // optional uint32 ack = 4;
+  if (has_ack()) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(4, this->ack(), output);
+  }
+
+  // Extension range [8, 536870912)
   _extensions_.SerializeWithCachedSizes(
-      16, 536870912, output);
+      8, 536870912, output);
 
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
@@ -309,9 +370,19 @@ void FunMessage::SerializeWithCachedSizes(
         2, this->msgtype(), target);
   }
 
-  // Extension range [16, 536870912)
+  // optional uint32 seq = 3;
+  if (has_seq()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->seq(), target);
+  }
+
+  // optional uint32 ack = 4;
+  if (has_ack()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(4, this->ack(), target);
+  }
+
+  // Extension range [8, 536870912)
   target = _extensions_.SerializeWithCachedSizesToArray(
-      16, 536870912, target);
+      8, 536870912, target);
 
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
@@ -337,6 +408,20 @@ int FunMessage::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->msgtype());
+    }
+
+    // optional uint32 seq = 3;
+    if (has_seq()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->seq());
+    }
+
+    // optional uint32 ack = 4;
+    if (has_ack()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->ack());
     }
 
   }
@@ -374,6 +459,12 @@ void FunMessage::MergeFrom(const FunMessage& from) {
     if (from.has_msgtype()) {
       set_msgtype(from.msgtype());
     }
+    if (from.has_seq()) {
+      set_seq(from.seq());
+    }
+    if (from.has_ack()) {
+      set_ack(from.ack());
+    }
   }
   _extensions_.MergeFrom(from._extensions_);
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -401,6 +492,8 @@ void FunMessage::Swap(FunMessage* other) {
   if (other != this) {
     std::swap(sid_, other->sid_);
     std::swap(msgtype_, other->msgtype_);
+    std::swap(seq_, other->seq_);
+    std::swap(ack_, other->ack_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

@@ -11,7 +11,7 @@
 
 namespace Fun
 {
-    class AsyncRequest
+    struct AsyncRequest
     {
     public:
         AsyncRequest(string id) { this->id = id; }
@@ -27,9 +27,9 @@ namespace Fun
         typedef bool(*FOnProcess)(const AsyncRequest*);
         typedef std::list<AsyncRequest*> RequestQueue;
 
+    public:
         AsyncThread();
 
-    public:
         void Begin(FOnProcess func);
         void Stop();
 

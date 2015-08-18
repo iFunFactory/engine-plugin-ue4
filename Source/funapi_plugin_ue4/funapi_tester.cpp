@@ -22,6 +22,7 @@
 //#include <WinSock2.h>
 //#include <WS2tcpip.h>
 //#include "Funapi/JsonAccessor.h"
+#include "Funapi/FunapiDownloader.h"
 // FOR TEST
 
 #include "rapidjson/writer.h"
@@ -38,7 +39,7 @@ namespace
     fun::FunapiNetwork* network = NULL;
     int8 msg_type = fun::kJsonEncoding;
     bool is_downloading = false;
-
+    Fun::FunapiDownloader* downloader;
 
 
     void on_session_initiated (const std::string &session_id, void *ctxt)
@@ -102,8 +103,6 @@ Afunapi_tester::Afunapi_tester()
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = false;
 
-    Fun::Funapi_Initialize();
-
     // TEST
     //Fun::ConnectList connect;
     //connect.Add("www.naver.com", 8080);
@@ -123,7 +122,6 @@ Afunapi_tester::Afunapi_tester()
 
 Afunapi_tester::~Afunapi_tester()
 {
-    Fun::Funapi_Finalize();
 }
 
 // Called when the game starts or when spawned
@@ -131,12 +129,20 @@ void Afunapi_tester::BeginPlay()
 {
     Super::BeginPlay();
 
+    Fun::Funapi_Initialize();
     fun::FunapiNetwork::Initialize();
+
+    // FOR TEST ////////////////////////////////////////////////////
+    downloader = new Fun::FunapiDownloader();
 }
 
 void Afunapi_tester::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+    Fun::Funapi_Finalize();
     fun::FunapiNetwork::Finalize();
+
+    // FOR TEST ////////////////////////////////////////////////////
+    delete downloader;
 }
 
 bool Afunapi_tester::ConnectTcp()

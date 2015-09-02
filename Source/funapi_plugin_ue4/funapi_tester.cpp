@@ -9,8 +9,10 @@
 #if PLATFORM_WINDOWS
 #include "AllowWindowsPlatformTypes.h"
 #endif
-#include "funapi_tester.h"
 
+#include <functional>
+
+#include "funapi_tester.h"
 #include "funapi/funapi_network.h"
 #include "funapi/funapi_downloader.h"
 #include "funapi/test_messages.pb.h"
@@ -34,39 +36,8 @@
 
 namespace
 {
-    const char kServerIp[] = "10.10.1.29";
-
-    fun::FunapiNetwork* network = NULL;
-    int8 msg_type = fun::kJsonEncoding;
     bool is_downloading = false;
     Fun::FunapiDownloader* downloader;
-
-
-    void on_session_initiated (const std::string &session_id, void *ctxt)
-    {
-        LOG1("session initiated: %s", *FString(session_id.c_str()));
-    }
-
-    void on_session_closed (void *ctxt)
-    {
-        LOG("session closed");
-    }
-
-    void on_echo_json (const std::string &type, const std::string &body, void *ctxt)
-    {
-        LOG1("msg '%s' arrived.", *FString(type.c_str()));
-        LOG1("json: %s", *FString(body.c_str()));
-    }
-
-    void on_echo_proto (const std::string &type, const std::string &body, void *ctxt)
-    {
-        LOG1("msg '%s' arrived.", *FString(type.c_str()));
-
-        FunMessage msg;
-        msg.ParseFromString(body);
-        PbufEchoMessage echo = msg.GetExtension(pbuf_echo);
-        LOG1("proto: %s", *FString(echo.msg().c_str()));
-    }
 
     void on_download_update (const std::string &path, long receive, long total, int percent, void *ctxt)
     {
@@ -76,24 +47,6 @@ namespace
     {
         is_downloading = false;
     }
-
-    bool connect_to_server (fun::FunapiTransport *transport)
-    {
-        if (transport == NULL)
-            return false;
-
-        network = new fun::FunapiNetwork(transport, msg_type,
-                                         fun::FunapiNetwork::OnSessionInitiated(on_session_initiated, NULL),
-                                         fun::FunapiNetwork::OnSessionClosed(on_session_closed, NULL));
-
-        if (msg_type == fun::kJsonEncoding)
-            network->RegisterHandler("echo", fun::FunapiNetwork::MessageHandler(on_echo_json, NULL));
-        else if (msg_type == fun::kProtobufEncoding)
-            network->RegisterHandler("pbuf_echo", fun::FunapiNetwork::MessageHandler(on_echo_proto, NULL));
-
-        network->Start();
-        return true;
-    }
 }
 
 
@@ -101,7 +54,7 @@ namespace
 Afunapi_tester::Afunapi_tester()
 {
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-    PrimaryActorTick.bCanEverTick = false;
+    PrimaryActorTick.bCanEverTick = true;
 
     // TEST
     //Fun::ConnectList connect;
@@ -129,48 +82,65 @@ void Afunapi_tester::BeginPlay()
 {
     Super::BeginPlay();
 
-    Fun::Funapi_Initialize();
     fun::FunapiNetwork::Initialize();
 
     // FOR TEST ////////////////////////////////////////////////////
-    downloader = new Fun::FunapiDownloader();
+    // downloader = new Fun::FunapiDownloader();
 }
 
 void Afunapi_tester::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-    Fun::Funapi_Finalize();
-    fun::FunapiNetwork::Finalize();
+  Super::EndPlay(EndPlayReason);
+
+  fun::FunapiNetwork::Finalize();
+
+  if (network) {
+    delete network;
+    network = nullptr;
+  }
 
     // FOR TEST ////////////////////////////////////////////////////
-    delete downloader;
+    // delete downloader;
+}
+
+void Afunapi_tester::Tick(float DeltaTime)
+{
+  Super::Tick(DeltaTime);
+
+  // LOG1("Tick - %f", DeltaTime);
+
+  if (network)
+  {
+    network->Update();
+  }
 }
 
 bool Afunapi_tester::ConnectTcp()
 {
-    connect_to_server(new fun::FunapiTcpTransport(kServerIp, 8012));
-    return true;
+  Connect(fun::TransportProtocol::kTcp);
+  return true;
 }
 
 bool Afunapi_tester::ConnectUdp()
 {
-    connect_to_server(new fun::FunapiUdpTransport(kServerIp, 8013));
-    return true;
+  Connect(fun::TransportProtocol::kUdp);
+  return true;
 }
 
 bool Afunapi_tester::ConnectHttp()
 {
-    connect_to_server(new fun::FunapiHttpTransport(kServerIp, 8018));
-    return true;
+  Connect(fun::TransportProtocol::kHttp);
+  return true;
 }
 
 bool Afunapi_tester::IsConnected()
 {
-    return network != NULL && network->Connected();
+    return network != nullptr && network->Connected();
 }
 
 void Afunapi_tester::Disconnect()
 {
-    if (network == NULL || network->Started() == false)
+    if (network == nullptr || network->Started() == false)
     {
         LOG("You should connect first.");
         return;
@@ -194,6 +164,9 @@ bool Afunapi_tester::SendEchoMessage()
         rapidjson::Value message_node("hello world", msg.GetAllocator());
         msg.AddMember("message", message_node, msg.GetAllocator());
         network->SendMessage("echo", msg);
+        // network->SendMessage("echo", msg, fun::TransportProtocol::kTcp);
+        // network->SendMessage("echo", msg, fun::TransportProtocol::kUdp);
+        // network->SendMessage("echo", msg, fun::TransportProtocol::kHttp);
         return true;
     }
     else if (msg_type == fun::kProtobufEncoding)
@@ -209,6 +182,73 @@ bool Afunapi_tester::SendEchoMessage()
     return false;
 }
 
+void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
+{
+  if (!network) {
+    fun::FunapiTransport *transport = GetNewTransport(protocol);
+
+    network = new fun::FunapiNetwork(transport, msg_type,
+      std::bind(&Afunapi_tester::OnSessionInitiated, this, std::placeholders::_1),
+      std::bind(&Afunapi_tester::OnSessionClosed, this));
+
+    if (msg_type == fun::kJsonEncoding)
+      network->RegisterHandler("echo", std::bind(&Afunapi_tester::OnEchoJson, this, std::placeholders::_1, std::placeholders::_2));
+    else if (msg_type == fun::kProtobufEncoding)
+      network->RegisterHandler("pbuf_echo", std::bind(&Afunapi_tester::OnEchoProto, this, std::placeholders::_1, std::placeholders::_2));
+
+    network->Start();
+  }
+  else {
+    fun::FunapiTransport *transport = GetNewTransport(protocol);
+    network->AttachTransport(transport);
+    network->Start();
+  }
+}
+
+fun::FunapiTransport* Afunapi_tester::GetNewTransport(fun::TransportProtocol protocol)
+{
+  fun::FunapiTransport *transport = nullptr;
+
+  if (protocol == fun::TransportProtocol::kTcp)
+    transport = new fun::FunapiTcpTransport(kServerIp, (uint16_t)(msg_type == fun::kProtobufEncoding ? 8022 : 8012));
+  else if (protocol == fun::TransportProtocol::kUdp)
+    transport = new fun::FunapiUdpTransport(kServerIp, (uint16_t)(msg_type == fun::kProtobufEncoding ? 8023 : 8013));
+  else if (protocol == fun::TransportProtocol::kHttp)
+    transport = new fun::FunapiHttpTransport(kServerIp, (uint16_t)(msg_type == fun::kProtobufEncoding ? 8028 : 8018), false);
+
+  return transport;
+}
+
+void Afunapi_tester::OnSessionInitiated(const std::string &session_id)
+{
+  LOG1("session initiated: %s", *FString(session_id.c_str()));
+}
+
+void Afunapi_tester::OnSessionClosed()
+{
+  LOG("session closed");
+}
+
+void Afunapi_tester::OnEchoJson(const std::string &type, const std::vector<uint8_t> &v_body)
+{
+  std::string body(v_body.begin(), v_body.end());
+
+  LOG1("msg '%s' arrived.", *FString(type.c_str()));
+  LOG1("json: %s", *FString(body.c_str()));
+}
+
+void Afunapi_tester::OnEchoProto(const std::string &type, const std::vector<uint8_t> &v_body)
+{
+  LOG1("msg '%s' arrived.", *FString(type.c_str()));
+
+  std::string body(v_body.begin(), v_body.end());
+
+  FunMessage msg;
+  msg.ParseFromString(body);
+  PbufEchoMessage echo = msg.GetExtension(pbuf_echo);
+  LOG1("proto: %s", *FString(echo.msg().c_str()));
+}
+
 bool Afunapi_tester::FileDownload()
 {
     fun::FunapiHttpDownloader downloader(
@@ -221,7 +261,7 @@ bool Afunapi_tester::FileDownload()
         fun::FunapiHttpDownloader::OnFinished(on_download_finished, this));
 
     is_downloading = true;
-    downloader.StartDownload(kServerIp, 8020, "list");
+    downloader.StartDownload(kServerIp.c_str(), 8020, "list");
 
     while (is_downloading) {
 #if PLATFORM_WINDOWS

@@ -1,4 +1,4 @@
-// Copyright (C) 2013 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2015 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -9,6 +9,7 @@
 #ifndef SRC_FUNAPI_NETWORK_H_
 #define SRC_FUNAPI_NETWORK_H_
 
+#include <functional>
 #include "rapidjson/document.h"
 #include "funapi/network/fun_message.pb.h"
 
@@ -85,6 +86,29 @@ enum EncodingScheme {
   kProtobufEncoding,
 };
 
+// Funapi version
+enum class FunapiVersion : int
+{
+  kProtocolVersion = 1,
+  kPluginVersion = 1,
+};
+
+// Funapi transport protocol
+enum class TransportProtocol : int
+{
+  kDefault = 0,
+  kTcp,
+  kUdp,
+  kHttp
+};
+
+// Message encoding type
+enum class FunEncoding
+{
+  kNone,
+  kJson,
+  kProtobuf
+};
 
 class FunapiTransport {
  public:
@@ -108,6 +132,7 @@ class FunapiTransport {
   virtual void SendMessage(Json &message) = 0;
   virtual void SendMessage(FunMessage &message) = 0;
   virtual bool Started() const = 0;
+  virtual TransportProtocol Protocol() const = 0;
 
  protected:
   FunapiTransport() {}
@@ -126,6 +151,7 @@ class FunapiTcpTransport : public FunapiTransport {
   virtual void SendMessage(Json &message);
   virtual void SendMessage(FunMessage &message);
   virtual bool Started() const;
+  virtual TransportProtocol Protocol() const;
 
  private:
   FunapiTransportImpl *impl_;
@@ -142,6 +168,7 @@ class FunapiUdpTransport : public FunapiTransport {
   virtual void SendMessage(Json &message);
   virtual void SendMessage(FunMessage &message);
   virtual bool Started() const;
+  virtual TransportProtocol Protocol() const;
 
  private:
   FunapiTransportImpl *impl_;
@@ -160,6 +187,7 @@ class FunapiHttpTransport : public FunapiTransport {
   virtual void SendMessage(Json &message);
   virtual void SendMessage(FunMessage &message);
   virtual bool Started() const;
+  virtual TransportProtocol Protocol() const;
 
  private:
   FunapiHttpTransportImpl *impl_;
@@ -177,9 +205,10 @@ class FunapiNetwork {
   //
   // You can create a function object instance simply like this:
   //   e.g., MessageHandler(my_message_handler, my_context);
-  typedef helper::Binder2<const string &, const std::string &, void *> MessageHandler;
-  typedef helper::Binder1<const string &, void *> OnSessionInitiated;
-  typedef helper::Binder0<void *> OnSessionClosed;
+  // typedef std::function<void(const string &,const string &)> MessageHandler;
+  typedef std::function<void(const string &, const std::vector<uint8_t>&)> MessageHandler;
+  typedef std::function<void(const string &)> OnSessionInitiated;
+  typedef std::function<void()> OnSessionClosed;
 
   static void Initialize(time_t session_timeout = 3600);
   static void Finalize();
@@ -192,10 +221,12 @@ class FunapiNetwork {
   void RegisterHandler(const string msg_type, const MessageHandler &handler);
   void Start();
   void Stop();
-  void SendMessage(const string &msg_type, Json &body);
-  void SendMessage(FunMessage &message);
+  void SendMessage(const string &msg_type, Json &body, TransportProtocol protocol = TransportProtocol::kDefault);
+  void SendMessage(FunMessage &message, TransportProtocol protocol = TransportProtocol::kDefault);
   bool Started() const;
-  bool Connected() const;
+  bool Connected(TransportProtocol protocol = TransportProtocol::kDefault) const;
+  void Update();
+  void AttachTransport(FunapiTransport *funapi_transport);
 
  private:
   FunapiNetworkImpl *impl_;

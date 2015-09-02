@@ -7,6 +7,7 @@
 #pragma once
 
 #include "GameFramework/Actor.h"
+#include "funapi_network.h"
 #include "funapi_tester.generated.h"
 
 UCLASS()
@@ -23,6 +24,9 @@ public:
     virtual void BeginPlay() override;
 
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+    virtual void Tick(float DeltaTime);
+
 
     UFUNCTION(BlueprintCallable, Category="Funapi")
     bool ConnectTcp();
@@ -44,4 +48,18 @@ public:
 
     UFUNCTION(BlueprintCallable, Category="Funapi")
     bool FileDownload();
+
+    // callback
+    void OnSessionInitiated(const std::string &session_id);
+    void OnSessionClosed();
+    void OnEchoJson(const std::string &type, const std::vector<uint8_t> &v_body);
+    void OnEchoProto(const std::string &type, const std::vector<uint8_t> &v_body);
+
+private:
+  void Connect(const fun::TransportProtocol protocol);
+  fun::FunapiTransport* GetNewTransport(fun::TransportProtocol protocol);
+
+  std::string kServerIp = "10.0.1.16";
+  fun::FunapiNetwork* network = nullptr;
+  int8 msg_type = fun::kJsonEncoding;
 };

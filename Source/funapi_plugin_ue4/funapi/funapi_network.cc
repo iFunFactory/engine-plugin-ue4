@@ -1,4 +1,4 @@
-// Copyright (C) 2013 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2015 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -20,6 +20,10 @@
 
 #include <list>
 #include <sstream>
+#include <functional>
+#include <queue>
+#include <mutex>
+#include <memory>
 
 #include "curl/curl.h"
 #include "rapidjson/stringbuffer.h"
@@ -156,6 +160,9 @@ time_t funapi_session_timeout = 3600;
 
 typedef std::list<AsyncRequest> AsyncQueue;
 AsyncQueue async_queue;
+
+std::queue< std::function<void()> > tasks_queue;
+std::mutex tasks_queue_mutex;
 
 bool async_thread_run = false;
 #if PLATFORM_WINDOWS
@@ -537,7 +544,7 @@ void AsyncWebRequest(const char* host_url, const IoVecList &sending,
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiTransportBase implementation.
 
-class FunapiTransportBase {
+class FunapiTransportBase : std::enable_shared_from_this<FunapiTransportBase> {
  public:
   typedef FunapiTransport::OnReceived OnReceived;
   typedef FunapiTransport::OnStopped OnStopped;
@@ -887,7 +894,10 @@ bool FunapiTransportBase::TryToDecodeBody() {
 
     // The network module eats the fields and invokes registered handler
     LOG("Invoking a receive handler.");
-    on_received_(header_fields_, buffer);
+    {
+      std::unique_lock<std::mutex> lock(tasks_queue_mutex);
+      tasks_queue.push(std::bind(on_received_, header_fields_, buffer));
+    }
   }
 
   // Prepares for a next message.
@@ -1361,7 +1371,7 @@ void FunapiHttpTransportImpl::WebResponseBodyCb(void *data, int len) {
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiNetworkImpl implementation.
 
-class FunapiNetworkImpl {
+class FunapiNetworkImpl : std::enable_shared_from_this<FunapiNetworkImpl> {
  public:
   typedef FunapiTransport::HeaderType HeaderType;
   typedef FunapiNetwork::MessageHandler MessageHandler;
@@ -1374,32 +1384,33 @@ class FunapiNetworkImpl {
 
   ~FunapiNetworkImpl();
 
-  void RegisterHandler(const string msg_type, const MessageHandler &handler);
+  void RegisterHandler(const std::string msg_type, const MessageHandler &handler);
   void Start();
   void Stop();
-  void SendMessage(const string &msg_type, Json &body);
-  void SendMessage(FunMessage& message);
+  void SendMessage(const string &msg_type, Json &body, const TransportProtocol protocol);
+  void SendMessage(FunMessage& message, const TransportProtocol protocol);
   bool Started() const;
-  bool Connected() const;
-
+  bool Connected(const TransportProtocol protocol) const;
+  void Update();
+  void AttachTransport(FunapiTransport *transport);
+  FunapiTransport* GetTransport(const TransportProtocol protocol) const;
+  
  private:
   static void OnTransportReceivedWrapper(const HeaderType &header, const string &body, void *arg);
   static void OnTransportStoppedWrapper(void *arg);
-  static void OnNewSessionWrapper(const string &msg_type, const std::string &body, void *arg);
-  static void OnSessionTimedoutWrapper(const string &msg_type, const std::string &body, void *arg);
 
   void OnTransportReceived(const HeaderType &header, const string &body);
   void OnTransportStopped();
-  void OnNewSession(const string &msg_type, const std::string &body);
-  void OnSessionTimedout(const string &msg_type, const std::string &body);
+  void OnNewSession(const std::string &msg_type, const std::vector<uint8_t>&v_body);
+  void OnSessionTimedout(const std::string &msg_type, const std::vector<uint8_t>&v_body);
 
   bool started_;
   int encoding_type_;
-  FunapiTransport *transport_;
+  map<TransportProtocol, FunapiTransport*> transports_;
   OnSessionInitiated on_session_initiated_;
   OnSessionClosed on_session_closed_;
   string session_id_;
-  typedef map<string, MessageHandler> MessageHandlerMap;
+  typedef map<std::string, MessageHandler> MessageHandlerMap;
   MessageHandlerMap message_handlers_;
   time_t last_received_;
 };
@@ -1409,26 +1420,23 @@ class FunapiNetworkImpl {
 FunapiNetworkImpl::FunapiNetworkImpl(FunapiTransport *transport, int type,
                                      OnSessionInitiated on_session_initiated,
                                      OnSessionClosed on_session_closed)
-    : started_(false), encoding_type_(type), transport_(transport),
+    : started_(false), encoding_type_(type),
       on_session_initiated_(on_session_initiated),
       on_session_closed_(on_session_closed),
       session_id_(""), last_received_(0) {
-  transport_->RegisterEventHandlers(
-      FunapiTransport::OnReceived(
-          &FunapiNetworkImpl::OnTransportReceivedWrapper, (void *) this),
-      FunapiTransport::OnStopped(
-          &FunapiNetworkImpl::OnTransportStoppedWrapper, (void *) this));
+  AttachTransport(transport);
 }
 
 
 FunapiNetworkImpl::~FunapiNetworkImpl() {
-  if (transport_) {
-    delete transport_;
-    transport_ = NULL;
-  }
   message_handlers_.clear();
-}
 
+  for (auto iter : transports_)
+  {
+    delete iter.second;
+  }
+  transports_.clear();
+}
 
 void FunapiNetworkImpl::RegisterHandler(
     const string msg_type, const MessageHandler &handler) {
@@ -1440,15 +1448,16 @@ void FunapiNetworkImpl::RegisterHandler(
 void FunapiNetworkImpl::Start() {
   // Installs event handlers.
   message_handlers_[kNewSessionMessageType] =
-      MessageHandler(&FunapiNetworkImpl::OnNewSessionWrapper,
-      (void *) this);
+    [this](const std::string&s, const std::vector<uint8_t>&v) { OnNewSession(s, v); };
   message_handlers_[kSessionClosedMessageType] =
-      MessageHandler(&FunapiNetworkImpl::OnSessionTimedoutWrapper,
-      (void *) this);
+    [this](const std::string&s, const std::vector<uint8_t>&v) { OnSessionTimedout(s, v); };
 
   // Then, asks the transport to work.
   LOG("Starting a network module.");
-  transport_->Start();
+  for (auto iter : transports_) {
+    if (!iter.second->Started())
+      iter.second->Start();
+  }
 
   // Ok. We are ready.
   started_ = true;
@@ -1463,11 +1472,14 @@ void FunapiNetworkImpl::Stop() {
   started_ = false;
 
   // Then, requests the transport to stop.
-  transport_->Stop();
+  for (auto iter : transports_) {
+    if (iter.second->Started())
+      iter.second->Stop();
+  }
 }
 
 
-void FunapiNetworkImpl::SendMessage(const string &msg_type, Json &body) {
+void FunapiNetworkImpl::SendMessage(const string &msg_type, Json &body, const TransportProtocol protocol = TransportProtocol::kDefault) {  
   // Invalidates session id if it is too stale.
   time_t now = time(NULL);
   time_t delta = funapi_session_timeout;
@@ -1490,11 +1502,17 @@ void FunapiNetworkImpl::SendMessage(const string &msg_type, Json &body) {
   }
 
   // Sends the manipulated JSON object through the transport.
-  transport_->SendMessage(body);
+  FunapiTransport* transport = GetTransport(protocol);
+  if (transport) {
+    transport->SendMessage(body);
+  }
+  else {
+    LOG("Invaild Protocol - Transport is not founded");
+  }
 }
 
 
-void FunapiNetworkImpl::SendMessage(FunMessage& message) {
+void FunapiNetworkImpl::SendMessage(FunMessage& message, const TransportProtocol protocol = TransportProtocol::kDefault) {
   // Invalidates session id if it is too stale.
   time_t now = time(NULL);
   time_t delta = funapi_session_timeout;
@@ -1510,7 +1528,13 @@ void FunapiNetworkImpl::SendMessage(FunMessage& message) {
   }
 
   // Sends the manipulated Protobuf object through the transport.
-  transport_->SendMessage(message);
+  FunapiTransport *transport = GetTransport(protocol);
+  if (transport) {
+    transport->SendMessage(message);
+  }
+  else {
+    LOG("Invaild Protocol - Transport is not founded");
+  }
 }
 
 
@@ -1519,8 +1543,13 @@ bool FunapiNetworkImpl::Started() const {
 }
 
 
-bool FunapiNetworkImpl::Connected() const {
-  return transport_->Started();
+bool FunapiNetworkImpl::Connected(TransportProtocol protocol = TransportProtocol::kDefault) const {
+  const FunapiTransport *transport = (const FunapiTransport*)GetTransport(protocol);
+
+  if (transport)
+    return transport->Started();
+
+  return false;
 }
 
 
@@ -1535,21 +1564,6 @@ void FunapiNetworkImpl::OnTransportStoppedWrapper(void *arg) {
   FunapiNetworkImpl *obj = reinterpret_cast<FunapiNetworkImpl *>(arg);
   return obj->OnTransportStopped();
 }
-
-
-void FunapiNetworkImpl::OnNewSessionWrapper(
-    const string &msg_type, const std::string &body, void *arg) {
-  FunapiNetworkImpl *obj = reinterpret_cast<FunapiNetworkImpl *>(arg);
-  return obj->OnNewSession(msg_type, body);
-}
-
-
-void FunapiNetworkImpl::OnSessionTimedoutWrapper(
-    const string &msg_type, const std::string &body, void *arg) {
-  FunapiNetworkImpl *obj = reinterpret_cast<FunapiNetworkImpl *>(arg);
-  return obj->OnSessionTimedout(msg_type, body);
-}
-
 
 void FunapiNetworkImpl::OnTransportReceived(
     const HeaderType &header, const string &body) {
@@ -1601,7 +1615,10 @@ void FunapiNetworkImpl::OnTransportReceived(
   if (it == message_handlers_.end()) {
     LOG1("No handler for message '%s'. Ignoring.", *FString(msg_type.c_str()));
   } else {
-    it->second(msg_type, body);
+    std::vector<uint8_t> v;
+    std::copy(body.begin(), body.end(), std::back_inserter(v));
+    v.push_back('\0');
+    it->second(msg_type, v);
   }
 }
 
@@ -1613,20 +1630,56 @@ void FunapiNetworkImpl::OnTransportStopped() {
 
 
 void FunapiNetworkImpl::OnNewSession(
-    const string &msg_type, const std::string &body) {
+  const std::string &msg_type, const std::vector<uint8_t>&v_body) {
   // ignore
 }
 
 
 void FunapiNetworkImpl::OnSessionTimedout(
-    const string &msg_type, const std::string &body) {
+  const std::string &msg_type, const std::vector<uint8_t>&v_body) {
   LOG("Session timed out. Resetting my session id. The server will send me another one next time.");
 
   session_id_ = "";
   on_session_closed_();
 }
 
+void FunapiNetworkImpl::Update() {
+  // LOG("FunapiNetworkImpl::Update()");
+  {
+    std::unique_lock<std::mutex> lock(tasks_queue_mutex);
+    while (!tasks_queue.empty())
+    {
+      (tasks_queue.front())();
+      tasks_queue.pop();
+    }
+  }
+}
 
+void FunapiNetworkImpl::AttachTransport(FunapiTransport *transport) {
+  transport->RegisterEventHandlers(
+    FunapiTransport::OnReceived(
+    &FunapiNetworkImpl::OnTransportReceivedWrapper, (void *) this),
+    FunapiTransport::OnStopped(
+    &FunapiNetworkImpl::OnTransportStoppedWrapper, (void *) this));
+
+  if (GetTransport(transport->Protocol()) == nullptr)
+  {
+    transports_[transport->Protocol()] = transport;
+  } else 
+    delete transport;
+}
+
+FunapiTransport* FunapiNetworkImpl::GetTransport(const TransportProtocol protocol) const {
+  if (protocol == TransportProtocol::kDefault) {
+    return transports_.begin()->second;
+  }
+
+  auto iter = transports_.find(protocol);
+  if (iter != transports_.end())
+    return iter->second;
+
+  return nullptr;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiTcpTransport implementation.
@@ -1678,6 +1731,9 @@ bool FunapiTcpTransport::Started() const {
   return impl_->Started();
 }
 
+TransportProtocol FunapiTcpTransport::Protocol() const {
+  return TransportProtocol::kTcp;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1731,6 +1787,9 @@ bool FunapiUdpTransport::Started() const {
   return impl_->Started();
 }
 
+TransportProtocol FunapiUdpTransport::Protocol() const {
+  return TransportProtocol::kUdp;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1784,6 +1843,9 @@ bool FunapiHttpTransport::Started() const {
   return impl_->Started();
 }
 
+TransportProtocol FunapiHttpTransport::Protocol() const {
+  return TransportProtocol::kHttp;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1872,13 +1934,13 @@ void FunapiNetwork::Stop() {
 }
 
 
-void FunapiNetwork::SendMessage(const string &msg_type, Json &body) {
-  return impl_->SendMessage(msg_type, body);
+void FunapiNetwork::SendMessage(const string &msg_type, Json &body, const TransportProtocol protocol) {
+  return impl_->SendMessage(msg_type, body, protocol);
 }
 
 
-void FunapiNetwork::SendMessage(FunMessage& message) {
-  return impl_->SendMessage(message);
+void FunapiNetwork::SendMessage(FunMessage& message, const TransportProtocol protocol) {
+  return impl_->SendMessage(message, protocol);
 }
 
 
@@ -1887,8 +1949,16 @@ bool FunapiNetwork::Started() const {
 }
 
 
-bool FunapiNetwork::Connected() const {
-  return impl_->Connected();
+bool FunapiNetwork::Connected(const TransportProtocol protocol) const {
+  return impl_->Connected(protocol);
+}
+
+void FunapiNetwork::Update() {
+  return impl_->Update();
+}
+
+void FunapiNetwork::AttachTransport(FunapiTransport *transport) {
+  return impl_->AttachTransport(transport);
 }
 
 }  // namespace fun

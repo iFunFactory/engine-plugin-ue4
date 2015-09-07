@@ -24,20 +24,6 @@
 #endif
 
 
-namespace
-{
-    // bool is_downloading = false;
-    // Fun::FunapiDownloader* downloader;
-
-    void on_download_update (const std::string &path, long receive, long total, int percent, void *ctxt)
-    {
-    }
-
-    void on_download_finished (int result, void *ctxt)
-    {
-        // is_downloading = false;
-    }
-}
 
 
 // Sets default values
@@ -45,22 +31,6 @@ Afunapi_tester::Afunapi_tester()
 {
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
-
-    // TEST
-    //Fun::ConnectList connect;
-    //connect.Add("www.naver.com", 8080);
-    //while (connect.IsNextAvailable()) {
-    //    LOG1("ip: %s", *FString(connect.GetNextAddress()->host.c_str()));
-    //}
-
-    //Fun::JsonAccessor<FJsonObject> helper;
-    //FString str_json = "{\"sample\":\"hello~\"}";
-    //TSharedPtr<FJsonObject> json = helper.Deserialize(str_json);
-    //json->SetStringField("item", "new one");
-    //json->SetNumberField("num", 321);
-    //FString temp = helper.Serialize(json);
-    //LOG1("temp: %s", *temp);
-    //LOG1("item: %s", *json->GetStringField("item"));
 }
 
 Afunapi_tester::~Afunapi_tester()
@@ -88,9 +58,6 @@ void Afunapi_tester::EndPlay(const EEndPlayReason::Type EndPlayReason)
     delete network_;
     network_ = nullptr;
   }
-
-    // FOR TEST ////////////////////////////////////////////////////
-    // delete downloader;
 }
 
 void Afunapi_tester::Tick(float DeltaTime)
@@ -240,26 +207,5 @@ void Afunapi_tester::OnEchoProto(const std::string &type, const std::vector<uint
 
 bool Afunapi_tester::FileDownload()
 {
-  /*
-    fun::FunapiHttpDownloader downloader(
-#if PLATFORM_WINDOWS
-        "C:\\Users\\Public\\resource_test",
-#else
-        "/Users/Shared/resource_test",
-#endif
-        fun::FunapiHttpDownloader::OnUpdate(on_download_update, this),
-        fun::FunapiHttpDownloader::OnFinished(on_download_finished, this));
-
-    is_downloading = true;
-    downloader.StartDownload(kServerIp.c_str(), 8020, "list");
-
-    while (is_downloading) {
-#if PLATFORM_WINDOWS
-      Sleep(1000);
-#else
-      sleep(1);
-#endif
-    }
-  */
     return true;
 }

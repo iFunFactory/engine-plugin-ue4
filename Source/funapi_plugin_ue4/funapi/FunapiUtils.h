@@ -6,77 +6,34 @@
 
 #pragma once
 
-#include <map>
-#include <list>
+#if PLATFORM_WINDOWS
 
+#pragma warning(disable:4996)
 
-namespace Fun
+namespace fun
 {
-    typedef void(*TimerEventHandler)(void* param);
-
-    // Timer
-    class FunapiTimer
+    struct IOVec
     {
-    public:
-        FunapiTimer();
-
-        inline void AddTimer (string name, float delay, bool loop, TimerEventHandler callback, void* param = NULL)
-        {
-            AddTimer(name, 0, delay, loop, callback, param);
-        }
-
-        inline void AddTimer (string name, float start, TimerEventHandler callback, void* param = NULL)
-        {
-            AddTimer(name, start, 0, false, callback, param);
-        }
-
-        void AddTimer (string name, float start, float delay, bool loop, TimerEventHandler callback, void* param = NULL);
-
-        void KillTimer (string name);
-
-        inline bool ContainTimer (string name)
-        {
-            return timer_list_.find(name) != timer_list_.end();
-        }
-
-        inline void Clear()
-        {
-            is_all_clear_ = true;
-        }
-
-        void Update (float deltaTime);
-
-    private:
-        // Removes timer
-        void CheckRemoveList();
-
-
-        class Event
-        {
-        public:
-            string name;
-            bool loop;
-            float remaining;
-            float interval;
-            TimerEventHandler callback;
-            void* param;
-
-            Event (string name, float start, float delay, bool loop, TimerEventHandler callback, void* param)
-            {
-                this->name = name;
-                this->loop = loop;
-                this->interval = delay;
-                this->remaining = start;
-                this->callback = callback;
-                this->param = param;
-            }
-        };
-
-
-        std::map<string, Event*> timer_list_;
-        std::map<string, Event*> pending_list_;
-        std::list<string> remove_list_;
-        bool is_all_clear_;
+        uint8_t* iov_base;
+        size_t iov_len;
     };
 
-} // namespace Fun
+    #define iovec     IOVec
+    #define ssize_t   size_t
+
+    #define access    _access
+    #define snprintf  _snprintf
+
+    #define F_OK      0
+
+    #define mkdir(path, mode)    _mkdir(path)
+
+    #define pthread_mutex_init(mutex, attr)  *mutex = CreateMutex(NULL, true, NULL); ReleaseMutex(*mutex)
+    #define pthread_mutex_lock(mutex)        WaitForSingleObject(*mutex, INFINITE)
+    #define pthread_mutex_unlock(mutex)      ReleaseMutex(*mutex)
+    #define pthread_cond_wait(cond, mutex)   Sleep(1000)
+    #define pthread_cond_signal(cond)        ;
+
+} // namespace fun
+
+#endif // PLATFORM_WINDOWS

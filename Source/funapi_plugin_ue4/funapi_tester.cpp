@@ -13,19 +13,9 @@
 #include <functional>
 
 #include "funapi_tester.h"
-#include "funapi/funapi_network.h"
-#include "funapi/funapi_downloader.h"
+#include "funapi/FunapiNetwork.h"
 #include "funapi/test_messages.pb.h"
-
-#include "Funapi/FunapiManager.h"
-#include "Funapi/ConnectList.h"
-
-// FOR TEST
-//#include <WinSock2.h>
-//#include <WS2tcpip.h>
-//#include "Funapi/JsonAccessor.h"
-#include "Funapi/FunapiDownloader.h"
-// FOR TEST
+// #include "Funapi/FunapiDownloader.h"
 
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
@@ -36,8 +26,8 @@
 
 namespace
 {
-    bool is_downloading = false;
-    Fun::FunapiDownloader* downloader;
+    // bool is_downloading = false;
+    // Fun::FunapiDownloader* downloader;
 
     void on_download_update (const std::string &path, long receive, long total, int percent, void *ctxt)
     {
@@ -45,7 +35,7 @@ namespace
 
     void on_download_finished (int result, void *ctxt)
     {
-        is_downloading = false;
+        // is_downloading = false;
     }
 }
 
@@ -94,9 +84,9 @@ void Afunapi_tester::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
   fun::FunapiNetwork::Finalize();
 
-  if (network) {
-    delete network;
-    network = nullptr;
+  if (network_) {
+    delete network_;
+    network_ = nullptr;
   }
 
     // FOR TEST ////////////////////////////////////////////////////
@@ -109,9 +99,9 @@ void Afunapi_tester::Tick(float DeltaTime)
 
   // LOG1("Tick - %f", DeltaTime);
 
-  if (network)
+  if (network_)
   {
-    network->Update();
+    network_->Update();
   }
 }
 
@@ -135,47 +125,47 @@ bool Afunapi_tester::ConnectHttp()
 
 bool Afunapi_tester::IsConnected()
 {
-    return network != nullptr && network->Connected();
+    return network_ != nullptr && network_->Connected();
 }
 
 void Afunapi_tester::Disconnect()
 {
-    if (network == nullptr || network->Started() == false)
+    if (network_ == nullptr || network_->Started() == false)
     {
         LOG("You should connect first.");
         return;
     }
 
-    network->Stop();
+    network_->Stop();
 }
 
 bool Afunapi_tester::SendEchoMessage()
 {
-    if (network == NULL || network->Started() == false)
+    if (network_ == NULL || network_->Started() == false)
     {
         LOG("You should connect first.");
         return false;
     }
 
-    if (msg_type == fun::kJsonEncoding)
+    if (msg_type_ == fun::kJsonEncoding)
     {
         fun::Json msg;
         msg.SetObject();
         rapidjson::Value message_node("hello world", msg.GetAllocator());
         msg.AddMember("message", message_node, msg.GetAllocator());
-        network->SendMessage("echo", msg);
+        network_->SendMessage("echo", msg);
         // network->SendMessage("echo", msg, fun::TransportProtocol::kTcp);
         // network->SendMessage("echo", msg, fun::TransportProtocol::kUdp);
         // network->SendMessage("echo", msg, fun::TransportProtocol::kHttp);
         return true;
     }
-    else if (msg_type == fun::kProtobufEncoding)
+    else if (msg_type_ == fun::kProtobufEncoding)
     {
         FunMessage msg;
         msg.set_msgtype("pbuf_echo");
         PbufEchoMessage *echo = msg.MutableExtension(pbuf_echo);
         echo->set_msg("hello proto");
-        network->SendMessage(msg);
+        network_->SendMessage(msg);
         return true;
     }
 
@@ -184,24 +174,24 @@ bool Afunapi_tester::SendEchoMessage()
 
 void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
 {
-  if (!network) {
+  if (!network_) {
     fun::FunapiTransport *transport = GetNewTransport(protocol);
 
-    network = new fun::FunapiNetwork(transport, msg_type,
+    network_ = new fun::FunapiNetwork(transport, msg_type_,
       std::bind(&Afunapi_tester::OnSessionInitiated, this, std::placeholders::_1),
       std::bind(&Afunapi_tester::OnSessionClosed, this));
 
-    if (msg_type == fun::kJsonEncoding)
-      network->RegisterHandler("echo", std::bind(&Afunapi_tester::OnEchoJson, this, std::placeholders::_1, std::placeholders::_2));
-    else if (msg_type == fun::kProtobufEncoding)
-      network->RegisterHandler("pbuf_echo", std::bind(&Afunapi_tester::OnEchoProto, this, std::placeholders::_1, std::placeholders::_2));
+    if (msg_type_ == fun::kJsonEncoding)
+      network_->RegisterHandler("echo", std::bind(&Afunapi_tester::OnEchoJson, this, std::placeholders::_1, std::placeholders::_2));
+    else if (msg_type_ == fun::kProtobufEncoding)
+      network_->RegisterHandler("pbuf_echo", std::bind(&Afunapi_tester::OnEchoProto, this, std::placeholders::_1, std::placeholders::_2));
 
-    network->Start();
+    network_->Start();
   }
   else {
     fun::FunapiTransport *transport = GetNewTransport(protocol);
-    network->AttachTransport(transport);
-    network->Start();
+    network_->AttachTransport(transport);
+    network_->Start();
   }
 }
 
@@ -210,11 +200,11 @@ fun::FunapiTransport* Afunapi_tester::GetNewTransport(fun::TransportProtocol pro
   fun::FunapiTransport *transport = nullptr;
 
   if (protocol == fun::TransportProtocol::kTcp)
-    transport = new fun::FunapiTcpTransport(kServerIp, (uint16_t)(msg_type == fun::kProtobufEncoding ? 8022 : 8012));
+    transport = new fun::FunapiTcpTransport(kServerIp, (uint16_t)(msg_type_ == fun::kProtobufEncoding ? 8022 : 8012));
   else if (protocol == fun::TransportProtocol::kUdp)
-    transport = new fun::FunapiUdpTransport(kServerIp, (uint16_t)(msg_type == fun::kProtobufEncoding ? 8023 : 8013));
+    transport = new fun::FunapiUdpTransport(kServerIp, (uint16_t)(msg_type_ == fun::kProtobufEncoding ? 8023 : 8013));
   else if (protocol == fun::TransportProtocol::kHttp)
-    transport = new fun::FunapiHttpTransport(kServerIp, (uint16_t)(msg_type == fun::kProtobufEncoding ? 8028 : 8018), false);
+    transport = new fun::FunapiHttpTransport(kServerIp, (uint16_t)(msg_type_ == fun::kProtobufEncoding ? 8028 : 8018), false);
 
   return transport;
 }
@@ -251,6 +241,7 @@ void Afunapi_tester::OnEchoProto(const std::string &type, const std::vector<uint
 
 bool Afunapi_tester::FileDownload()
 {
+  /*
     fun::FunapiHttpDownloader downloader(
 #if PLATFORM_WINDOWS
         "C:\\Users\\Public\\resource_test",
@@ -270,6 +261,6 @@ bool Afunapi_tester::FileDownload()
       sleep(1);
 #endif
     }
-
+  */
     return true;
 }

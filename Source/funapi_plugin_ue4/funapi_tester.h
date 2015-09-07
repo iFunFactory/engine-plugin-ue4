@@ -7,7 +7,7 @@
 #pragma once
 
 #include "GameFramework/Actor.h"
-#include "funapi_network.h"
+#include "FunapiNetwork.h"
 #include "funapi_tester.generated.h"
 
 UCLASS()
@@ -59,7 +59,9 @@ private:
   void Connect(const fun::TransportProtocol protocol);
   fun::FunapiTransport* GetNewTransport(fun::TransportProtocol protocol);
 
-  std::string kServerIp = "10.0.1.16";
-  fun::FunapiNetwork* network = nullptr;
-  int8 msg_type = fun::kJsonEncoding;
+  // std::string kServerIp = "10.0.1.16";
+  const std::string kServerIp = "jhp-vmware";
+  fun::FunapiNetwork* network_ = nullptr;
+  int8 msg_type_ = fun::kJsonEncoding;
+  fun::TransportProtocol protocol_ = fun::TransportProtocol::kDefault;
 };

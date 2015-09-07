@@ -4,6 +4,7 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
+#include "funapi_plugin_ue4.h"
 #include "Engine.h"
 #include "UnrealString.h"
 
@@ -28,8 +29,8 @@
 #include "curl/curl.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
-#include "./funapi_network.h"
-#include "./funapi_utils.h"
+#include "./FunapiNetwork.h"
+#include "./FunapiUtils.h"
 #if PLATFORM_WINDOWS
 #include "HideWindowsPlatformTypes.h"
 #endif

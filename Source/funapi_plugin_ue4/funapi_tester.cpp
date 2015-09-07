@@ -153,10 +153,7 @@ bool Afunapi_tester::SendEchoMessage()
         msg.SetObject();
         rapidjson::Value message_node("hello world", msg.GetAllocator());
         msg.AddMember("message", message_node, msg.GetAllocator());
-        network_->SendMessage("echo", msg);
-        // network->SendMessage("echo", msg, fun::TransportProtocol::kTcp);
-        // network->SendMessage("echo", msg, fun::TransportProtocol::kUdp);
-        // network->SendMessage("echo", msg, fun::TransportProtocol::kHttp);
+        network_->SendMessage("echo", msg, protocol_);
         return true;
     }
     else if (msg_type_ == fun::kProtobufEncoding)
@@ -165,7 +162,7 @@ bool Afunapi_tester::SendEchoMessage()
         msg.set_msgtype("pbuf_echo");
         PbufEchoMessage *echo = msg.MutableExtension(pbuf_echo);
         echo->set_msg("hello proto");
-        network_->SendMessage(msg);
+        network_->SendMessage(msg, protocol_);
         return true;
     }
 
@@ -193,6 +190,8 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
     network_->AttachTransport(transport);
     network_->Start();
   }
+
+  protocol_ = protocol;
 }
 
 fun::FunapiTransport* Afunapi_tester::GetNewTransport(fun::TransportProtocol protocol)

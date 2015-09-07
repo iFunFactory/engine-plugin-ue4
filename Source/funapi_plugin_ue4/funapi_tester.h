@@ -59,8 +59,7 @@ private:
   void Connect(const fun::TransportProtocol protocol);
   fun::FunapiTransport* GetNewTransport(fun::TransportProtocol protocol);
 
-  // std::string kServerIp = "10.0.1.16";
-  const std::string kServerIp = "jhp-vmware";
+  const std::string kServerIp = "127.0.0.1";
   fun::FunapiNetwork* network_ = nullptr;
   int8 msg_type_ = fun::kJsonEncoding;
   fun::TransportProtocol protocol_ = fun::TransportProtocol::kDefault;

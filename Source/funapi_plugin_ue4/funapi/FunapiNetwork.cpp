@@ -1391,11 +1391,11 @@ class FunapiNetworkImpl : std::enable_shared_from_this<FunapiNetworkImpl> {
   void SendMessage(const string &msg_type, Json &body, const TransportProtocol protocol);
   void SendMessage(FunMessage& message, const TransportProtocol protocol);
   bool Started() const;
-  bool Connected(const TransportProtocol protocol) const;
+  bool Connected(const TransportProtocol protocol);
   void Update();
   void AttachTransport(FunapiTransport *transport);
   FunapiTransport* GetTransport(const TransportProtocol protocol) const;
-  
+
  private:
   static void OnTransportReceivedWrapper(const HeaderType &header, const string &body, void *arg);
   static void OnTransportStoppedWrapper(void *arg);
@@ -1414,6 +1414,7 @@ class FunapiNetworkImpl : std::enable_shared_from_this<FunapiNetworkImpl> {
   typedef map<std::string, MessageHandler> MessageHandlerMap;
   MessageHandlerMap message_handlers_;
   time_t last_received_;
+  std::mutex mutex_transports_;
 };
 
 
@@ -1432,11 +1433,14 @@ FunapiNetworkImpl::FunapiNetworkImpl(FunapiTransport *transport, int type,
 FunapiNetworkImpl::~FunapiNetworkImpl() {
   message_handlers_.clear();
 
-  for (auto iter : transports_)
   {
-    delete iter.second;
+    std::unique_lock<std::mutex> lock(mutex_transports_);
+    for (auto iter : transports_)
+    {
+      delete iter.second;
+    }
+    transports_.clear();
   }
-  transports_.clear();
 }
 
 void FunapiNetworkImpl::RegisterHandler(
@@ -1455,9 +1459,12 @@ void FunapiNetworkImpl::Start() {
 
   // Then, asks the transport to work.
   LOG("Starting a network module.");
-  for (auto iter : transports_) {
-    if (!iter.second->Started())
-      iter.second->Start();
+  {
+    std::unique_lock<std::mutex> lock(mutex_transports_);
+    for (auto iter : transports_) {
+      if (!iter.second->Started())
+        iter.second->Start();
+    }
   }
 
   // Ok. We are ready.
@@ -1473,9 +1480,12 @@ void FunapiNetworkImpl::Stop() {
   started_ = false;
 
   // Then, requests the transport to stop.
-  for (auto iter : transports_) {
-    if (iter.second->Started())
-      iter.second->Stop();
+  {
+    std::unique_lock<std::mutex> lock(mutex_transports_);
+    for (auto iter : transports_) {
+      if (iter.second->Started())
+        iter.second->Stop();
+    }
   }
 }
 
@@ -1503,12 +1513,15 @@ void FunapiNetworkImpl::SendMessage(const string &msg_type, Json &body, const Tr
   }
 
   // Sends the manipulated JSON object through the transport.
-  FunapiTransport* transport = GetTransport(protocol);
-  if (transport) {
-    transport->SendMessage(body);
-  }
-  else {
-    LOG("Invaild Protocol - Transport is not founded");
+  {
+    std::unique_lock<std::mutex> lock(mutex_transports_);
+    FunapiTransport* transport = GetTransport(protocol);
+    if (transport) {
+      transport->SendMessage(body);
+    }
+    else {
+      LOG("Invaild Protocol - Transport is not founded");
+    }
   }
 }
 
@@ -1529,12 +1542,15 @@ void FunapiNetworkImpl::SendMessage(FunMessage& message, const TransportProtocol
   }
 
   // Sends the manipulated Protobuf object through the transport.
-  FunapiTransport *transport = GetTransport(protocol);
-  if (transport) {
-    transport->SendMessage(message);
-  }
-  else {
-    LOG("Invaild Protocol - Transport is not founded");
+  {
+    std::unique_lock<std::mutex> lock(mutex_transports_);
+    FunapiTransport *transport = GetTransport(protocol);
+    if (transport) {
+      transport->SendMessage(message);
+    }
+    else {
+      LOG("Invaild Protocol - Transport is not founded");
+    }
   }
 }
 
@@ -1544,7 +1560,8 @@ bool FunapiNetworkImpl::Started() const {
 }
 
 
-bool FunapiNetworkImpl::Connected(TransportProtocol protocol = TransportProtocol::kDefault) const {
+bool FunapiNetworkImpl::Connected(TransportProtocol protocol = TransportProtocol::kDefault) {
+  std::unique_lock<std::mutex> lock(mutex_transports_);
   const FunapiTransport *transport = (const FunapiTransport*)GetTransport(protocol);
 
   if (transport)
@@ -1663,13 +1680,18 @@ void FunapiNetworkImpl::AttachTransport(FunapiTransport *transport) {
     FunapiTransport::OnStopped(
     &FunapiNetworkImpl::OnTransportStoppedWrapper, (void *) this));
 
-  if (GetTransport(transport->Protocol()) == nullptr)
   {
-    transports_[transport->Protocol()] = transport;
-  } else 
-    delete transport;
+    std::unique_lock<std::mutex> lock(mutex_transports_);
+    if (GetTransport(transport->Protocol()) == nullptr)
+    {
+      transports_[transport->Protocol()] = transport;
+    }
+    else
+      delete transport;
+  }
 }
 
+// The caller must lock mutex_transports_ before call this function.
 FunapiTransport* FunapiNetworkImpl::GetTransport(const TransportProtocol protocol) const {
   if (protocol == TransportProtocol::kDefault) {
     return transports_.begin()->second;

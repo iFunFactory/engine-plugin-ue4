@@ -25,6 +25,7 @@
 #include <queue>
 #include <mutex>
 #include <memory>
+#include <condition_variable>
 
 #include "curl/curl.h"
 #include "rapidjson/stringbuffer.h"
@@ -168,12 +169,11 @@ std::mutex tasks_queue_mutex;
 bool async_thread_run = false;
 #if PLATFORM_WINDOWS
 HANDLE async_queue_thread;
-HANDLE async_queue_mutex;
 #else
 pthread_t async_queue_thread;
-pthread_mutex_t async_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t async_queue_cond = PTHREAD_COND_INITIALIZER;
 #endif
+std::mutex async_queue_mutex;
+std::condition_variable_any async_queue_cond;
 
 size_t HttpResponseCb(void *data, size_t size, size_t count, void *cb) {
   AsyncWebResponseCallback *callback = (AsyncWebResponseCallback*)(cb);
@@ -196,22 +196,17 @@ void *AsyncQueueThreadProc(void * /*arg*/) {
 
   while (async_thread_run) {
     // Waits until we have something to process.
-    pthread_mutex_lock(&async_queue_mutex);
-    while (async_thread_run && async_queue.empty()) {
-#if PLATFORM_WINDOWS
-      ReleaseMutex(async_queue_mutex);
-      Sleep(1000);
-      WaitForSingleObject(async_queue_mutex, INFINITE);
-#else
-      pthread_cond_wait(&async_queue_cond, &async_queue_mutex);
-#endif
-    }
-
-    // Moves element to a worker queue and releaes the mutex
-    // for contention prevention.
     AsyncQueue work_queue;
-    work_queue.swap(async_queue);
-    pthread_mutex_unlock(&async_queue_mutex);
+    {
+      std::unique_lock<std::mutex> lock(async_queue_mutex);
+      while (async_thread_run && async_queue.empty()) {
+        async_queue_cond.wait(async_queue_mutex);
+      }
+
+      // Moves element to a worker queue and releaes the mutex
+      // for contention prevention.
+      work_queue.swap(async_queue);
+    }
 
     fd_set rset, wset;
     FD_ZERO(&rset);
@@ -375,9 +370,10 @@ void *AsyncQueueThreadProc(void * /*arg*/) {
 
     // Puts back requests that requires more work.
     // We should respect the order.
-    pthread_mutex_lock(&async_queue_mutex);
-    async_queue.splice(async_queue.begin(), work_queue);
-    pthread_mutex_unlock(&async_queue_mutex);
+    {
+      std::unique_lock<std::mutex> lock(async_queue_mutex);
+      async_queue.splice(async_queue.begin(), work_queue);
+    }
   }
 
   LOG("Thread for async operation is terminating.");
@@ -413,10 +409,11 @@ void AsyncConnect(int sock,
   r.connect_.callback_ = callback;
   r.connect_.endpoint_ = endpoint;
 
-  pthread_mutex_lock(&async_queue_mutex);
-  async_queue.push_back(r);
-  pthread_cond_signal(&async_queue_cond);
-  pthread_mutex_unlock(&async_queue_mutex);
+  {
+    std::unique_lock<std::mutex> lock(async_queue_mutex);
+    async_queue.push_back(r);
+    async_queue_cond.notify_one();
+  }
 }
 
 
@@ -425,22 +422,23 @@ void AsyncSend(int sock,
   assert(!sending.empty());
   LOG1("Queueing %d async sends.", sending.size());
 
-  pthread_mutex_lock(&async_queue_mutex);
-  for (IoVecList::const_iterator itr = sending.begin(), itr_end = sending.end();
-      itr != itr_end;
-      ++itr) {
-    const struct iovec &e = *itr;
-    AsyncRequest r;
-    r.type_ = AsyncRequest::kSend;
-    r.sock_ = sock;
-    r.send_.callback_ = callback;
-    r.send_.buf_ = reinterpret_cast<uint8_t *>(e.iov_base);
-    r.send_.buf_len_ = e.iov_len;
-    r.send_.buf_offset_ = 0;
-    async_queue.push_back(r);
+  {
+    std::unique_lock<std::mutex> lock(async_queue_mutex);
+    for (IoVecList::const_iterator itr = sending.begin(), itr_end = sending.end();
+        itr != itr_end;
+        ++itr) {
+      const struct iovec &e = *itr;
+      AsyncRequest r;
+      r.type_ = AsyncRequest::kSend;
+      r.sock_ = sock;
+      r.send_.callback_ = callback;
+      r.send_.buf_ = reinterpret_cast<uint8_t *>(e.iov_base);
+      r.send_.buf_len_ = e.iov_len;
+      r.send_.buf_offset_ = 0;
+      async_queue.push_back(r);
+    }
+    async_queue_cond.notify_one();
   }
-  pthread_cond_signal(&async_queue_cond);
-  pthread_mutex_unlock(&async_queue_mutex);
 }
 
 
@@ -456,10 +454,11 @@ void AsyncReceive(int sock,
   r.recv_.buf_ = reinterpret_cast<uint8_t *>(receiving.iov_base);
   r.recv_.capacity_ = receiving.iov_len;
 
-  pthread_mutex_lock(&async_queue_mutex);
-  async_queue.push_back(r);
-  pthread_cond_signal(&async_queue_cond);
-  pthread_mutex_unlock(&async_queue_mutex);
+  {
+    std::unique_lock<std::mutex> lock(async_queue_mutex);
+    async_queue.push_back(r);
+    async_queue_cond.notify_one();
+  }
 }
 
 
@@ -468,24 +467,25 @@ void AsyncSendTo(int sock, const Endpoint &ep,
   assert(!sending.empty());
   LOG1("Queueing %d async sends.", sending.size());
 
-  pthread_mutex_lock(&async_queue_mutex);
-  for (IoVecList::const_iterator itr = sending.begin(), itr_end = sending.end();
-      itr != itr_end;
-      ++itr) {
-    const struct iovec &e = *itr;
+  {
+    std::unique_lock<std::mutex> lock(async_queue_mutex);
+    for (IoVecList::const_iterator itr = sending.begin(), itr_end = sending.end();
+        itr != itr_end;
+        ++itr) {
+      const struct iovec &e = *itr;
 
-    AsyncRequest r;
-    r.type_ = AsyncRequest::kSendTo;
-    r.sock_ = sock;
-    r.sendto_.endpoint_ = ep;
-    r.sendto_.callback_ = callback;
-    r.sendto_.buf_offset_ = 0;
-    r.sendto_.buf_len_ = e.iov_len;
-    r.sendto_.buf_ = reinterpret_cast<uint8_t *>(e.iov_base);
-    async_queue.push_back(r);
+      AsyncRequest r;
+      r.type_ = AsyncRequest::kSendTo;
+      r.sock_ = sock;
+      r.sendto_.endpoint_ = ep;
+      r.sendto_.callback_ = callback;
+      r.sendto_.buf_offset_ = 0;
+      r.sendto_.buf_len_ = e.iov_len;
+      r.sendto_.buf_ = reinterpret_cast<uint8_t *>(e.iov_base);
+      async_queue.push_back(r);
+    }
+    async_queue_cond.notify_one();
   }
-  pthread_cond_signal(&async_queue_cond);
-  pthread_mutex_unlock(&async_queue_mutex);
 }
 
 
@@ -502,10 +502,11 @@ void AsyncReceiveFrom(int sock, const Endpoint &ep,
   r.recvfrom_.buf_ = reinterpret_cast<uint8_t *>(receiving.iov_base);
   r.recvfrom_.capacity_ = receiving.iov_len;
 
-  pthread_mutex_lock(&async_queue_mutex);
-  async_queue.push_back(r);
-  pthread_cond_signal(&async_queue_cond);
-  pthread_mutex_unlock(&async_queue_mutex);
+  {
+    std::unique_lock<std::mutex> lock(async_queue_mutex);
+    async_queue.push_back(r);
+    async_queue_cond.notify_one();
+  }
 }
 
 
@@ -516,26 +517,27 @@ void AsyncWebRequest(const char* host_url, const IoVecList &sending,
   assert(!sending.empty());
   LOG1("Queueing %d async sends.", sending.size());
 
-  pthread_mutex_lock(&async_queue_mutex);
-  for (IoVecList::const_iterator itr = sending.begin(), itr_end = sending.end();
-      itr != itr_end;
-      ++itr) {
-    const struct iovec &header = *itr;
-    const struct iovec &body = *(++itr);
+  {
+    std::unique_lock<std::mutex> lock(async_queue_mutex);
+    for (IoVecList::const_iterator itr = sending.begin(), itr_end = sending.end();
+        itr != itr_end;
+        ++itr) {
+      const struct iovec &header = *itr;
+      const struct iovec &body = *(++itr);
 
-    AsyncRequest r;
-    r.type_ = AsyncRequest::kWebRequest;
-    r.web_request_.url_ = host_url;
-    r.web_request_.request_callback_ = callback;
-    r.web_request_.receive_header_ = receive_header;
-    r.web_request_.receive_body_ = receive_body;
-    r.web_request_.header_ = reinterpret_cast<char *>(header.iov_base);
-    r.web_request_.body_ = reinterpret_cast<uint8_t *>(body.iov_base);
-    r.web_request_.body_len_ = body.iov_len;
-    async_queue.push_back(r);
+      AsyncRequest r;
+      r.type_ = AsyncRequest::kWebRequest;
+      r.web_request_.url_ = host_url;
+      r.web_request_.request_callback_ = callback;
+      r.web_request_.receive_header_ = receive_header;
+      r.web_request_.receive_body_ = receive_body;
+      r.web_request_.header_ = reinterpret_cast<char *>(header.iov_base);
+      r.web_request_.body_ = reinterpret_cast<uint8_t *>(body.iov_base);
+      r.web_request_.body_len_ = body.iov_len;
+      async_queue.push_back(r);
+    }
+    async_queue_cond.notify_one();
   }
-  pthread_cond_signal(&async_queue_cond);
-  pthread_mutex_unlock(&async_queue_mutex);
 }
 
 }  // unnamed namespace
@@ -579,11 +581,7 @@ class FunapiTransportBase : std::enable_shared_from_this<FunapiTransportBase> {
   OnStopped on_stopped_;
 
   // State-related.
-#if PLATFORM_WINDOWS
-  HANDLE mutex_;
-#else
-  mutable pthread_mutex_t mutex_;
-#endif
+  std::mutex mutex_;
   FunapiTransportType type_;
   FunapiTransportState state_;
   IoVecList sending_;
@@ -636,10 +634,9 @@ FunapiTransportBase::~FunapiTransportBase() {
 
 void FunapiTransportBase::RegisterEventHandlers(
     const OnReceived &on_received, const OnStopped &on_stopped) {
-  pthread_mutex_lock(&mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   on_received_ = on_received;
   on_stopped_ = on_stopped;
-  pthread_mutex_unlock(&mutex_);
 }
 
 
@@ -722,45 +719,46 @@ bool FunapiTransportBase::DecodeMessage(int nRead) {
   }
 
   LOG2("Received %d bytes. Buffer has %d bytes.", nRead, (received_size_ - next_decoding_offset_));
-  pthread_mutex_lock(&mutex_);
-  received_size_ += nRead;
+  {
+    std::unique_lock<std::mutex> lock(mutex_);
+    received_size_ += nRead;
 
-  // Tries to decode as many messags as possible.
-  while (true) {
-    if (header_decoded_ == false) {
-      if (TryToDecodeHeader() == false) {
-        break;
+    // Tries to decode as many messags as possible.
+    while (true) {
+      if (header_decoded_ == false) {
+        if (TryToDecodeHeader() == false) {
+          break;
+        }
+      }
+      if (header_decoded_) {
+        if (TryToDecodeBody() == false) {
+          break;
+        }
       }
     }
-    if (header_decoded_) {
-      if (TryToDecodeBody() == false) {
-        break;
+
+    // Checks buvffer space before starting another async receive.
+    if (receiving_.iov_len - received_size_ == 0) {
+      // If there are space can be collected, compact it first.
+      // Otherwise, increase the receiving buffer size.
+      if (next_decoding_offset_ > 0) {
+        LOG1("Compacting a receive buffer to save %d bytes.", next_decoding_offset_);
+        uint8_t *base = reinterpret_cast<uint8_t *>(receiving_.iov_base);
+        memmove(base, base + next_decoding_offset_,
+                received_size_ - next_decoding_offset_);
+        received_size_ -= next_decoding_offset_;
+        next_decoding_offset_ = 0;
+      } else {
+        size_t new_size = receiving_.iov_len + kUnitBufferSize;
+        LOG1("Resizing a buffer to %d bytes.", new_size);
+        uint8_t *new_buffer = new uint8_t[new_size + kUnitBufferPaddingSize];
+        memmove(new_buffer, receiving_.iov_base, received_size_);
+        delete [] reinterpret_cast<uint8_t *>(receiving_.iov_base);
+        receiving_.iov_base = new_buffer;
+        receiving_.iov_len = new_size;
       }
     }
   }
-
-  // Checks buvffer space before starting another async receive.
-  if (receiving_.iov_len - received_size_ == 0) {
-    // If there are space can be collected, compact it first.
-    // Otherwise, increase the receiving buffer size.
-    if (next_decoding_offset_ > 0) {
-      LOG1("Compacting a receive buffer to save %d bytes.", next_decoding_offset_);
-      uint8_t *base = reinterpret_cast<uint8_t *>(receiving_.iov_base);
-      memmove(base, base + next_decoding_offset_,
-              received_size_ - next_decoding_offset_);
-      received_size_ -= next_decoding_offset_;
-      next_decoding_offset_ = 0;
-    } else {
-      size_t new_size = receiving_.iov_len + kUnitBufferSize;
-      LOG1("Resizing a buffer to %d bytes.", new_size);
-      uint8_t *new_buffer = new uint8_t[new_size + kUnitBufferPaddingSize];
-      memmove(new_buffer, receiving_.iov_base, received_size_);
-      delete [] reinterpret_cast<uint8_t *>(receiving_.iov_base);
-      receiving_.iov_base = new_buffer;
-      receiving_.iov_len = new_size;
-    }
-  }
-  pthread_mutex_unlock(&mutex_);
   return true;
 }
 
@@ -790,13 +788,14 @@ void FunapiTransportBase::SendMessage(const char *body) {
 
   bool sendable = false;
 
-  pthread_mutex_lock(&mutex_);
-  pending_.push_back(body_as_bytes);
-  if (state_ == kConnected && sending_.size() == 0) {
-    sending_.swap(pending_);
-    sendable = true;
+  {
+    std::unique_lock<std::mutex> lock(mutex_);
+    pending_.push_back(body_as_bytes);
+    if (state_ == kConnected && sending_.size() == 0) {
+      sending_.swap(pending_);
+      sendable = true;
+    }
   }
-  pthread_mutex_unlock(&mutex_);
 
   if (sendable)
       EncodeThenSendMessage();
@@ -920,7 +919,7 @@ class FunapiTransportImpl : public FunapiTransportBase {
 
   void Start();
   void Stop();
-  bool Started() const;
+  bool Started();
 
  private:
   static void StartCbWrapper(int rc, void *arg);
@@ -944,7 +943,6 @@ FunapiTransportImpl::FunapiTransportImpl(FunapiTransportType type,
                                          const string &hostname_or_ip,
                                          uint16_t port)
     : FunapiTransportBase(type), sock_(-1) {
-  pthread_mutex_init(&mutex_, NULL);
 
   struct hostent *entry = gethostbyname(hostname_or_ip.c_str());
   assert(entry);
@@ -970,15 +968,11 @@ FunapiTransportImpl::FunapiTransportImpl(FunapiTransportType type,
 
 
 FunapiTransportImpl::~FunapiTransportImpl() {
-#if PLATFORM_WINDOWS
-  WaitForSingleObject(mutex_, INFINITE);
-  CloseHandle(mutex_);
-#endif
 }
 
 
 void FunapiTransportImpl::Start() {
-  pthread_mutex_lock(&mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   Init();
 
   // Initiates a new socket.
@@ -1001,12 +995,11 @@ void FunapiTransportImpl::Start() {
                      AsyncReceiveCallback(&FunapiTransportImpl::ReceiveBytesCbWrapper,
                      (void *)this));
   }
-  pthread_mutex_unlock(&mutex_);
 }
 
 
 void FunapiTransportImpl::Stop() {
-  pthread_mutex_lock(&mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   state_ = kDisconnected;
   if (sock_ >= 0) {
 #if PLATFORM_WINDOWS
@@ -1016,15 +1009,12 @@ void FunapiTransportImpl::Stop() {
 #endif
     sock_ = -1;
   }
-  pthread_mutex_unlock(&mutex_);
 }
 
 
-bool FunapiTransportImpl::Started() const {
-  pthread_mutex_lock(&mutex_);
-  bool r = (state_ == kConnected);
-  pthread_mutex_unlock(&mutex_);
-  return r;
+bool FunapiTransportImpl::Started() {
+  std::unique_lock<std::mutex> lock(mutex_);
+  return (state_ == kConnected);
 }
 
 
@@ -1090,24 +1080,25 @@ void FunapiTransportImpl::SendBytesCb(ssize_t nSent) {
   bool sendable = false;
 
   // Now releases memory that we have been holding for transmission.
-  pthread_mutex_lock(&mutex_);
-  assert(!sending_.empty());
+  {
+    std::unique_lock<std::mutex> lock(mutex_);
+    assert(!sending_.empty());
 
-  IoVecList::iterator itr = sending_.begin();
-  delete [] reinterpret_cast<uint8_t *>(itr->iov_base);
-  sending_.erase(itr);
+    IoVecList::iterator itr = sending_.begin();
+    delete [] reinterpret_cast<uint8_t *>(itr->iov_base);
+    sending_.erase(itr);
 
-  if (sending_.size() > 0) {
-    if (type_ == kUdp) {
-      AsyncSendTo(sock_, endpoint_, sending_,
-          AsyncSendCallback(&FunapiTransportImpl::SendBytesCbWrapper,
-          (void *) this));
+    if (sending_.size() > 0) {
+      if (type_ == kUdp) {
+        AsyncSendTo(sock_, endpoint_, sending_,
+            AsyncSendCallback(&FunapiTransportImpl::SendBytesCbWrapper,
+            (void *) this));
+      }
+    } else if (pending_.size() > 0) {
+      sending_.swap(pending_);
+      sendable = true;
     }
-  } else if (pending_.size() > 0) {
-    sending_.swap(pending_);
-    sendable = true;
   }
-  pthread_mutex_unlock(&mutex_);
 
   if (sendable)
       EncodeThenSendMessage();
@@ -1125,24 +1116,25 @@ void FunapiTransportImpl::ReceiveBytesCb(ssize_t nRead) {
   }
 
   // Starts another async receive.
-  pthread_mutex_lock(&mutex_);
+  {
+    std::unique_lock<std::mutex> lock(mutex_);
 
-  struct iovec residual;
-  residual.iov_len = receiving_.iov_len - received_size_;
-  residual.iov_base =
-      reinterpret_cast<uint8_t *>(receiving_.iov_base) + received_size_;
-  if (type_ == kTcp) {
-    AsyncReceive(sock_, residual,
-                 AsyncReceiveCallback(&FunapiTransportImpl::ReceiveBytesCbWrapper,
-                 (void *) this));
-  } else if (type_ == kUdp) {
-    AsyncReceiveFrom(sock_, recv_endpoint_, residual,
-                     AsyncReceiveCallback(&FunapiTransportImpl::ReceiveBytesCbWrapper,
-                     (void *)this));
+    struct iovec residual;
+    residual.iov_len = receiving_.iov_len - received_size_;
+    residual.iov_base =
+        reinterpret_cast<uint8_t *>(receiving_.iov_base) + received_size_;
+    if (type_ == kTcp) {
+      AsyncReceive(sock_, residual,
+                   AsyncReceiveCallback(&FunapiTransportImpl::ReceiveBytesCbWrapper,
+                   (void *) this));
+    } else if (type_ == kUdp) {
+      AsyncReceiveFrom(sock_, recv_endpoint_, residual,
+                       AsyncReceiveCallback(&FunapiTransportImpl::ReceiveBytesCbWrapper,
+                      (void *)this));
+    }
+    LOG1("Ready to receive more. We can receive upto %ld  more bytes.",
+         (receiving_.iov_len - received_size_));
   }
-  LOG1("Ready to receive more. We can receive upto %ld  more bytes.",
-       (receiving_.iov_len - received_size_));
-  pthread_mutex_unlock(&mutex_);
 }
 
 
@@ -1178,7 +1170,7 @@ class FunapiHttpTransportImpl : public FunapiTransportBase {
 
   void Start();
   void Stop();
-  bool Started() const;
+  bool Started();
 
  private:
   static void WebRequestCbWrapper(int state, void *arg);
@@ -1199,7 +1191,6 @@ class FunapiHttpTransportImpl : public FunapiTransportBase {
 FunapiHttpTransportImpl::FunapiHttpTransportImpl(const string &hostname_or_ip,
                                                  uint16_t port, bool https)
     : FunapiTransportBase(kHttp), recv_length_(0) {
-  pthread_mutex_init(&mutex_, NULL);
   char url[1024];
   sprintf(url, "%s://%s:%d/v%d/",
       https ? "https" : "http", hostname_or_ip.c_str(), port,
@@ -1217,21 +1208,15 @@ FunapiHttpTransportImpl::~FunapiHttpTransportImpl() {
     curl_global_cleanup();
     curl_initialized = false;
   }
-
-#if PLATFORM_WINDOWS
-  WaitForSingleObject(mutex_, INFINITE);
-  CloseHandle(mutex_);
-#endif
 }
 
 
 void FunapiHttpTransportImpl::Start() {
-  pthread_mutex_lock(&mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   Init();
   state_ = kConnected;
   recv_length_ = 0;
   LOG("Started.");
-  pthread_mutex_unlock(&mutex_);
 }
 
 
@@ -1239,22 +1224,21 @@ void FunapiHttpTransportImpl::Stop() {
   if (state_ == kDisconnected)
     return;
 
-  pthread_mutex_lock(&mutex_);
-  state_ = kDisconnected;
-  LOG("Stopped.");
+  {
+    std::unique_lock<std::mutex> lock(mutex_);
+    state_ = kDisconnected;
+    LOG("Stopped.");
 
-  // TODO : clear list
+    // TODO : clear list
 
-  on_stopped_();
-  pthread_mutex_unlock(&mutex_);
+    on_stopped_();
+  }
 }
 
 
-bool FunapiHttpTransportImpl::Started() const {
-  pthread_mutex_lock(&mutex_);
-  bool r = (state_ == kConnected);
-  pthread_mutex_unlock(&mutex_);
-  return r;
+bool FunapiHttpTransportImpl::Started() {
+  std::unique_lock<std::mutex> lock(mutex_);
+  return (state_ == kConnected);
 }
 
 
@@ -1298,25 +1282,26 @@ void FunapiHttpTransportImpl::WebRequestCb(int state) {
     recv_length_ = 0;
     return;
   } else if (state == kWebRequestEnd) {
-    pthread_mutex_lock(&mutex_);
-    assert(sending_.size() >= 2);
+    {
+      std::unique_lock<std::mutex> lock(mutex_);;
+      assert(sending_.size() >= 2);
 
-    IoVecList::iterator itr = sending_.begin();
-    int index = 0;
-    while (itr != sending_.end() && index < 2) {
-      delete [] reinterpret_cast<uint8_t *>(itr->iov_base);
-      itr = sending_.erase(itr);
-      ++index;
+      IoVecList::iterator itr = sending_.begin();
+      int index = 0;
+      while (itr != sending_.end() && index < 2) {
+        delete [] reinterpret_cast<uint8_t *>(itr->iov_base);
+        itr = sending_.erase(itr);
+        ++index;
+      }
+
+      std::stringstream version;
+      version << kCurrentFunapiProtocolVersion;
+      header_fields_[kVersionHeaderField] = version.str();
+      std::stringstream length;
+      length << recv_length_;
+      header_fields_[kLengthHeaderField] = length.str();
+      header_decoded_ = true;
     }
-
-    std::stringstream version;
-    version << kCurrentFunapiProtocolVersion;
-    header_fields_[kVersionHeaderField] = version.str();
-    std::stringstream length;
-    length << recv_length_;
-    header_fields_[kLengthHeaderField] = length.str();
-    header_decoded_ = true;
-    pthread_mutex_unlock(&mutex_);
 
     if (!DecodeMessage(recv_length_)) {
       Stop();
@@ -1475,6 +1460,9 @@ void FunapiNetworkImpl::Start() {
 
 void FunapiNetworkImpl::Stop() {
   LOG("Stopping a network module.");
+
+  if (!started_)
+    return;
 
   // Turns off the flag.
   started_ = false;
@@ -1883,7 +1871,6 @@ void FunapiNetwork::Initialize(time_t session_timeout) {
   // Creates a thread to handle async operations.
   async_thread_run = true;
 #if PLATFORM_WINDOWS
-  pthread_mutex_init(&async_queue_mutex, NULL);
   async_queue_thread = (HANDLE)_beginthreadex(NULL, 0, AsyncQueueThreadProc, NULL, 0, NULL);
   assert(async_queue_thread != 0);
 #else
@@ -1901,14 +1888,12 @@ void FunapiNetwork::Finalize() {
 
   // Terminates the thread for async operations.
   async_thread_run = false;
+
+  async_queue_cond.notify_all();
 #if PLATFORM_WINDOWS
   WaitForSingleObject(async_queue_thread, INFINITE);
   CloseHandle(async_queue_thread);
-
-  WaitForSingleObject(async_queue_mutex, INFINITE);
-  CloseHandle(async_queue_mutex);
 #else
-  pthread_cond_broadcast(&async_queue_cond);
   void *dummy;
   pthread_join(async_queue_thread, &dummy);
   (void) dummy;

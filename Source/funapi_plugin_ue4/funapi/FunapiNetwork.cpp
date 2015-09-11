@@ -26,6 +26,7 @@
 #include <mutex>
 #include <memory>
 #include <condition_variable>
+#include <thread>
 
 #include "curl/curl.h"
 #include "rapidjson/stringbuffer.h"
@@ -167,11 +168,7 @@ std::queue< std::function<void()> > tasks_queue;
 std::mutex tasks_queue_mutex;
 
 bool async_thread_run = false;
-#if PLATFORM_WINDOWS
-HANDLE async_queue_thread;
-#else
-pthread_t async_queue_thread;
-#endif
+std::thread async_queue_thread;
 std::mutex async_queue_mutex;
 std::condition_variable_any async_queue_cond;
 
@@ -186,12 +183,7 @@ size_t HttpResponseCb(void *data, size_t size, size_t count, void *cb) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Asynchronous operation related..
-
-#if PLATFORM_WINDOWS
-uint32_t WINAPI AsyncQueueThreadProc(LPVOID /*arg*/) {
-#else
-void *AsyncQueueThreadProc(void * /*arg*/) {
-#endif
+int AsyncQueueThreadProc() {
   LOG("Thread for async operation has been created.");
 
   while (async_thread_run) {
@@ -1870,13 +1862,8 @@ void FunapiNetwork::Initialize(time_t session_timeout) {
 
   // Creates a thread to handle async operations.
   async_thread_run = true;
-#if PLATFORM_WINDOWS
-  async_queue_thread = (HANDLE)_beginthreadex(NULL, 0, AsyncQueueThreadProc, NULL, 0, NULL);
-  assert(async_queue_thread != 0);
-#else
-  int r = pthread_create(&async_queue_thread, NULL, AsyncQueueThreadProc, NULL);
-  assert(r == 0);
-#endif
+  async_queue_thread = std::thread(AsyncQueueThreadProc);
+  async_queue_thread.detach();
 
   // Now ready.
   initialized = true;
@@ -1890,14 +1877,9 @@ void FunapiNetwork::Finalize() {
   async_thread_run = false;
 
   async_queue_cond.notify_all();
-#if PLATFORM_WINDOWS
-  WaitForSingleObject(async_queue_thread, INFINITE);
-  CloseHandle(async_queue_thread);
-#else
-  void *dummy;
-  pthread_join(async_queue_thread, &dummy);
-  (void) dummy;
-#endif
+
+  if (async_queue_thread.joinable())
+    async_queue_thread.join();
 
   // All set.
   initialized = false;

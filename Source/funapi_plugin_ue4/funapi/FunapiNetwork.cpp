@@ -1076,17 +1076,14 @@ void FunapiTransportImpl::SendBytesCb(ssize_t nSent) {
     std::unique_lock<std::mutex> lock(mutex_);
     assert(!sending_.empty());
 
-    IoVecList::iterator itr = sending_.begin();
-    delete [] reinterpret_cast<uint8_t *>(itr->iov_base);
-    sending_.erase(itr);
+    if (!sending_.empty())
+    {
+      IoVecList::iterator itr = sending_.begin();
+      delete [] reinterpret_cast<uint8_t *>(itr->iov_base);
+      sending_.erase(itr);
+    }
 
-    if (sending_.size() > 0) {
-      if (type_ == kUdp) {
-        AsyncSendTo(sock_, endpoint_, sending_,
-            AsyncSendCallback(&FunapiTransportImpl::SendBytesCbWrapper,
-            (void *) this));
-      }
-    } else if (pending_.size() > 0) {
+    if (pending_.size() > 0) {
       sending_.swap(pending_);
       sendable = true;
     }

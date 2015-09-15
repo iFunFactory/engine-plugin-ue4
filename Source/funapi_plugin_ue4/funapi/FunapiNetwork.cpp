@@ -888,7 +888,7 @@ bool FunapiTransportBase::TryToDecodeBody() {
     LOG("Invoking a receive handler.");
     {
       std::unique_lock<std::mutex> lock(tasks_queue_mutex);
-      tasks_queue.push(std::bind(on_received_, header_fields_, buffer));
+      tasks_queue.push([this, buffer](){ on_received_(header_fields_, buffer); });
     }
   }
 

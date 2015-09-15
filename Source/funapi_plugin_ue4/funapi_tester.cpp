@@ -142,13 +142,13 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
     fun::FunapiTransport *transport = GetNewTransport(protocol);
 
     network_ = new fun::FunapiNetwork(transport, msg_type_,
-      std::bind(&Afunapi_tester::OnSessionInitiated, this, std::placeholders::_1),
-      std::bind(&Afunapi_tester::OnSessionClosed, this));
+      [this](const std::string &session_id){ OnSessionInitiated(session_id); },
+      [this]{ OnSessionClosed(); });
 
     if (msg_type_ == fun::kJsonEncoding)
-      network_->RegisterHandler("echo", std::bind(&Afunapi_tester::OnEchoJson, this, std::placeholders::_1, std::placeholders::_2));
+      network_->RegisterHandler("echo", [this](const std::string &type, const std::vector<uint8_t> &v_body){ OnEchoJson(type, v_body); });
     else if (msg_type_ == fun::kProtobufEncoding)
-      network_->RegisterHandler("pbuf_echo", std::bind(&Afunapi_tester::OnEchoProto, this, std::placeholders::_1, std::placeholders::_2));
+      network_->RegisterHandler("pbuf_echo", [this](const std::string &type, const std::vector<uint8_t> &v_body){ OnEchoProto(type, v_body); });
 
     network_->Start();
   }

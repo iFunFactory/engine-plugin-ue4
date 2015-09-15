@@ -49,11 +49,11 @@ namespace {
 // Types.
 
 typedef sockaddr_in Endpoint;
-typedef helper::Binder1<int, void *> AsyncConnectCallback;
-typedef helper::Binder1<ssize_t, void *> AsyncSendCallback;
-typedef helper::Binder1<ssize_t, void *> AsyncReceiveCallback;
-typedef helper::Binder1<int, void *> AsyncWebRequestCallback;
-typedef helper::Binder2<void *, int, void *> AsyncWebResponseCallback;
+typedef std::function<void(const int)> AsyncConnectCallback;
+typedef std::function<void(const ssize_t)> AsyncSendCallback;
+typedef std::function<void(const ssize_t)> AsyncReceiveCallback;
+typedef std::function<void(const int)> AsyncWebRequestCallback;
+typedef std::function<void(void*, const int)> AsyncWebResponseCallback;
 
 
 enum FunapiTransportType {
@@ -914,10 +914,6 @@ class FunapiTransportImpl : public FunapiTransportBase {
   bool Started();
 
  private:
-  static void StartCbWrapper(int rc, void *arg);
-  static void SendBytesCbWrapper(ssize_t rc, void *arg);
-  static void ReceiveBytesCbWrapper(ssize_t nRead, void *arg);
-
   void StartCb(int rc);
   void SendBytesCb(ssize_t rc);
   void ReceiveBytesCb(ssize_t nRead);
@@ -975,8 +971,7 @@ void FunapiTransportImpl::Start() {
 
     // connecting
     AsyncConnect(sock_, endpoint_,
-                 AsyncConnectCallback(&FunapiTransportImpl::StartCbWrapper,
-                 (void *) this));
+      [this](const int rc) { StartCb(rc); });
   } else if (type_ == kUdp) {
     sock_ = socket(AF_INET, SOCK_DGRAM, 0);
     assert(sock_ >= 0);
@@ -984,8 +979,7 @@ void FunapiTransportImpl::Start() {
 
     // Wait for message
     AsyncReceiveFrom(sock_, recv_endpoint_, receiving_,
-                     AsyncReceiveCallback(&FunapiTransportImpl::ReceiveBytesCbWrapper,
-                     (void *)this));
+      [this](const ssize_t nRead){ReceiveBytesCb(nRead);});
   }
 }
 
@@ -1010,24 +1004,6 @@ bool FunapiTransportImpl::Started() {
 }
 
 
-void FunapiTransportImpl::StartCbWrapper(int rc, void *arg) {
-  FunapiTransportImpl *obj = reinterpret_cast<FunapiTransportImpl *>(arg);
-  obj->StartCb(rc);
-}
-
-
-void FunapiTransportImpl::SendBytesCbWrapper(ssize_t nSent, void *arg) {
-  FunapiTransportImpl *obj = reinterpret_cast<FunapiTransportImpl *>(arg);
-  obj->SendBytesCb(nSent);
-}
-
-
-void FunapiTransportImpl::ReceiveBytesCbWrapper(ssize_t nRead, void *arg) {
-  FunapiTransportImpl *obj = reinterpret_cast<FunapiTransportImpl *>(arg);
-  obj->ReceiveBytesCb(nRead);
-}
-
-
 void FunapiTransportImpl::StartCb(int rc) {
   LOG("StartCb called");
 
@@ -1046,8 +1022,7 @@ void FunapiTransportImpl::StartCb(int rc) {
   // Start to handle incoming messages.
   AsyncReceive(
       sock_, receiving_,
-      AsyncReceiveCallback(
-          &FunapiTransportImpl::ReceiveBytesCbWrapper, (void *)this));
+      [this](const ssize_t nRead){ ReceiveBytesCb(nRead); });
   LOG("Ready to receive");
 
   // Starts to process if there any data already queue.
@@ -1114,12 +1089,10 @@ void FunapiTransportImpl::ReceiveBytesCb(ssize_t nRead) {
         reinterpret_cast<uint8_t *>(receiving_.iov_base) + received_size_;
     if (type_ == kTcp) {
       AsyncReceive(sock_, residual,
-                   AsyncReceiveCallback(&FunapiTransportImpl::ReceiveBytesCbWrapper,
-                   (void *) this));
+        [this](const ssize_t nRead){ ReceiveBytesCb(nRead); });
     } else if (type_ == kUdp) {
       AsyncReceiveFrom(sock_, recv_endpoint_, residual,
-                       AsyncReceiveCallback(&FunapiTransportImpl::ReceiveBytesCbWrapper,
-                      (void *)this));
+        [this](const ssize_t nRead){ ReceiveBytesCb(nRead); });
     }
     LOG1("Ready to receive more. We can receive upto %ld  more bytes.",
          (receiving_.iov_len - received_size_));
@@ -1138,12 +1111,10 @@ void FunapiTransportImpl::EncodeThenSendMessage() {
   assert(!sending_.empty());
   if (type_ == kTcp) {
     AsyncSend(sock_, sending_,
-              AsyncSendCallback(&FunapiTransportImpl::SendBytesCbWrapper,
-              (void *) this));
+      [this](const ssize_t nSent) { SendBytesCb(nSent); });
   } else if (type_ == kUdp) {
     AsyncSendTo(sock_, endpoint_, sending_,
-                AsyncSendCallback(&FunapiTransportImpl::SendBytesCbWrapper,
-                (void *) this));
+      [this](const ssize_t nSent) { SendBytesCb(nSent); });
   }
 }
 
@@ -1162,10 +1133,6 @@ class FunapiHttpTransportImpl : public FunapiTransportBase {
   bool Started();
 
  private:
-  static void WebRequestCbWrapper(int state, void *arg);
-  static void WebResponseHeaderCbWrapper(void *data, int len, void *arg);
-  static void WebResponseBodyCbWrapper(void *data, int len, void *arg);
-
   virtual void EncodeThenSendMessage();
 
   void WebRequestCb(int state);
@@ -1231,24 +1198,6 @@ bool FunapiHttpTransportImpl::Started() {
 }
 
 
-void FunapiHttpTransportImpl::WebRequestCbWrapper(int state, void *arg) {
-  FunapiHttpTransportImpl *obj = reinterpret_cast<FunapiHttpTransportImpl *>(arg);
-  obj->WebRequestCb(state);
-}
-
-
-void FunapiHttpTransportImpl::WebResponseHeaderCbWrapper(void *data, int len, void *arg) {
-  FunapiHttpTransportImpl *obj = reinterpret_cast<FunapiHttpTransportImpl *>(arg);
-  obj->WebResponseHeaderCb(data, len);
-}
-
-
-void FunapiHttpTransportImpl::WebResponseBodyCbWrapper(void *data, int len, void *arg) {
-  FunapiHttpTransportImpl *obj = reinterpret_cast<FunapiHttpTransportImpl *>(arg);
-  obj->WebResponseBodyCb(data, len);
-}
-
-
 void FunapiHttpTransportImpl::EncodeThenSendMessage() {
   assert(state_ == kConnected);
   if (!EncodeMessage()) {
@@ -1259,9 +1208,9 @@ void FunapiHttpTransportImpl::EncodeThenSendMessage() {
   assert(!sending_.empty());
 
   AsyncWebRequest(host_url_.c_str(), sending_,
-      AsyncWebRequestCallback(&FunapiHttpTransportImpl::WebRequestCbWrapper, (void *) this),
-      AsyncWebResponseCallback(&FunapiHttpTransportImpl::WebResponseHeaderCbWrapper, (void *) this),
-      AsyncWebResponseCallback(&FunapiHttpTransportImpl::WebResponseBodyCbWrapper, (void *) this));
+    [this](int state){ WebRequestCb(state);  },
+    [this](void* data, int len){ WebResponseHeaderCb(data, len); },
+    [this](void* data, int len){ WebResponseBodyCb(data, len); });
 }
 
 
@@ -1371,9 +1320,6 @@ class FunapiNetworkImpl : std::enable_shared_from_this<FunapiNetworkImpl> {
   FunapiTransport* GetTransport(const TransportProtocol protocol) const;
 
  private:
-  static void OnTransportReceivedWrapper(const HeaderType &header, const string &body, void *arg);
-  static void OnTransportStoppedWrapper(void *arg);
-
   void OnTransportReceived(const HeaderType &header, const string &body);
   void OnTransportStopped();
   void OnNewSession(const std::string &msg_type, const std::vector<uint8_t>&v_body);
@@ -1548,18 +1494,6 @@ bool FunapiNetworkImpl::Connected(TransportProtocol protocol = TransportProtocol
 }
 
 
-void FunapiNetworkImpl::OnTransportReceivedWrapper(
-    const HeaderType &header, const string &body, void *arg) {
-  FunapiNetworkImpl *obj = reinterpret_cast<FunapiNetworkImpl *>(arg);
-  return obj->OnTransportReceived(header, body);
-}
-
-
-void FunapiNetworkImpl::OnTransportStoppedWrapper(void *arg) {
-  FunapiNetworkImpl *obj = reinterpret_cast<FunapiNetworkImpl *>(arg);
-  return obj->OnTransportStopped();
-}
-
 void FunapiNetworkImpl::OnTransportReceived(
     const HeaderType &header, const string &body) {
   LOG("OnReceived invoked");
@@ -1652,10 +1586,8 @@ void FunapiNetworkImpl::Update() {
 
 void FunapiNetworkImpl::AttachTransport(FunapiTransport *transport) {
   transport->RegisterEventHandlers(
-    FunapiTransport::OnReceived(
-    &FunapiNetworkImpl::OnTransportReceivedWrapper, (void *) this),
-    FunapiTransport::OnStopped(
-    &FunapiNetworkImpl::OnTransportStoppedWrapper, (void *) this));
+    [this](const HeaderType &header, const std::string &body){ OnTransportReceived(header, body); },
+    [this](){ OnTransportStopped(); });
 
   {
     std::unique_lock<std::mutex> lock(mutex_transports_);

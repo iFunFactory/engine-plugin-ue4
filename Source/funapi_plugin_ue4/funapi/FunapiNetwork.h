@@ -24,62 +24,6 @@ typedef std::string string;
 typedef rapidjson::Document Json;
 
 
-namespace helper {
-
-template <typename Ctxt>
-class Binder0 {
- public:
-  typedef void (*F)(Ctxt);
-  Binder0() : f_(NULL), ctxt_(NULL) { }
-  Binder0(const F &f, Ctxt ctxt) : f_(f), ctxt_(ctxt) { }
-  void operator()() { if (f_) f_(ctxt_); }
- private:
-  F f_;
-  Ctxt ctxt_;
-};
-
-
-template <typename A1, typename Ctxt>
-class Binder1 {
- public:
-  typedef void (*F)(A1, Ctxt);
-  Binder1() : f_(NULL), ctxt_(NULL) { }
-  Binder1(const F &f, void *ctxt) : f_(f), ctxt_(ctxt) { }
-  void operator()(A1 a1) { if (f_) f_(a1, ctxt_); }
- private:
-  F f_;
-  Ctxt ctxt_;
-};
-
-
-template <typename A1, typename A2, typename Ctxt>
-class Binder2 {
- public:
-  typedef void (*F)(A1, A2, Ctxt);
-  Binder2() : f_(NULL), ctxt_(NULL) { }
-  Binder2(const F &f, void *ctxt) : f_(f), ctxt_(ctxt) { }
-  void operator()(A1 a1, A2 a2) { if (f_) f_(a1, a2, ctxt_); }
- private:
-  F f_;
-  Ctxt ctxt_;
-};
-
-
-template <typename A1, typename A2, typename A3, typename A4, typename Ctxt>
-class Binder4 {
- public:
-  typedef void (*F)(A1, A2, A3, A4, Ctxt);
-  Binder4() : f_(NULL), ctxt_(NULL) { }
-  Binder4(const F &f, void *ctxt) : f_(f), ctxt_(ctxt) { }
-  void operator()(A1 a1, A2 a2, A3 a3, A4 a4) { if (f_) f_(a1, a2, a3, a4, ctxt_); }
- private:
-  F f_;
-  Ctxt ctxt_;
-};
-
-}   // namespace helper
-
-
 enum EncodingScheme {
   kUnknownEncoding = 0,
   kJsonEncoding,
@@ -114,16 +58,8 @@ class FunapiTransport {
  public:
   typedef std::map<string, string> HeaderType;
 
-  // NOTE: Type definitions below imply that
-  //  1) OnReceived should be of
-  //      'void f(const HeaderType &, const string &, void *)'
-  //  2) OnStopped should be of 'void f(void *)'
-  //
-  // You can create a function object instance simply like this:
-  //   e.g., OnReceived(my_on_received_handler, my_context);
-  typedef helper::Binder2<
-      const HeaderType &, const string &, void *> OnReceived;
-  typedef helper::Binder0<void *> OnStopped;
+  typedef std::function<void(const HeaderType&,const string&)> OnReceived;
+  typedef std::function<void(void)> OnStopped;
 
   virtual ~FunapiTransport() {}
   virtual void RegisterEventHandlers(const OnReceived &cb1, const OnStopped &cb2) = 0;
@@ -197,15 +133,6 @@ class FunapiHttpTransport : public FunapiTransport {
 class FunapiNetworkImpl;
 class FunapiNetwork {
  public:
-  // NOTE: Type definitions below imply that
-  //  1) MessageHandler should be of
-  //      'void f(const string &, const string &, void *)'
-  //  2) OnSessionInitiated should be of 'void f(const string &, void *)'
-  //  3) OnSessionClosed should be of 'void f(void *)'
-  //
-  // You can create a function object instance simply like this:
-  //   e.g., MessageHandler(my_message_handler, my_context);
-  // typedef std::function<void(const string &,const string &)> MessageHandler;
   typedef std::function<void(const string &, const std::vector<uint8_t>&)> MessageHandler;
   typedef std::function<void(const string &)> OnSessionInitiated;
   typedef std::function<void()> OnSessionClosed;

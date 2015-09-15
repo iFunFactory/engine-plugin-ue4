@@ -15,13 +15,13 @@
 #include <ws2tcpip.h>
 #include <io.h>
 #include <direct.h>
-#include <functional>
 #else
 #include <netinet/in.h>
 #include <algorithm>
 #endif
 
 #include <list>
+#include <functional>
 
 #include <sys/stat.h>
 
@@ -46,9 +46,9 @@ namespace {
 ////////////////////////////////////////////////////////////////////////////////
 // Types.
 
-typedef helper::Binder1<int, void *> AsyncRequestCallback;
-typedef helper::Binder1<string, void *> AsyncRequestMd5Callback;
-typedef helper::Binder2<void *, int, void *> AsyncResponseCallback;
+typedef std::function<void(const int)> AsyncRequestCallback;
+typedef std::function<void(const std::string)> AsyncRequestMd5Callback;
+typedef std::function<void(void*,const int)> AsyncResponseCallback;
 
 
 enum DownloadState {
@@ -745,9 +745,9 @@ void FunapiHttpDownloaderImpl::DownloadListFile(const string &url) {
   // Request a list of download files.
   LOG1("List file url : %s", *FString(url.c_str()));
   AsyncRequestList(url,
-      AsyncRequestCallback(&FunapiHttpDownloaderImpl::DownloadListCbWrapper, (void*)this),
-      AsyncResponseCallback(&FunapiHttpDownloaderImpl::WebResponseHeaderCbWrapper, (void*)this),
-      AsyncResponseCallback(&FunapiHttpDownloaderImpl::WebResponseBodyCbWrapper, (void*)this));
+      [this](const int state){ DownloadListCb(state); },
+      [this](void *data, const int len){ WebResponseHeaderCb(data, len); },
+      [this](void *data, const int len){ WebResponseBodyCb(data, len); });
 }
 
 
@@ -786,9 +786,9 @@ void FunapiHttpDownloaderImpl::DownloadResourceFile() {
 
     string url = host_url_ + cur_download_->path;
     AsyncRequestFile(url,
-        AsyncRequestCallback(&FunapiHttpDownloaderImpl::DownloadFileCbWrapper, (void*)this),
-        AsyncResponseCallback(&FunapiHttpDownloaderImpl::WebResponseHeaderCbWrapper, (void*)this),
-        AsyncResponseCallback(&FunapiHttpDownloaderImpl::WebResponseBodyCbWrapper, (void*)this));
+      [this](const int state){ DownloadFileCb(state); },
+      [this](void *data, const int len){ WebResponseHeaderCb(data, len); },
+      [this](void *data, const int len){ WebResponseBodyCb(data, len); });
   }
 }
 
@@ -891,7 +891,7 @@ void FunapiHttpDownloaderImpl::DownloadFileCb(int state) {
       fclose(fp);
 
       AsyncRequestMd5(target,
-          AsyncRequestMd5Callback(&FunapiHttpDownloaderImpl::ComputeMd5CbWrapper, (void*)this));
+        [this](const std::string md5hash){ ComputeMd5Cb(md5hash); });
     }
   }
 }

@@ -23,8 +23,8 @@ enum DownloadResult {
 class FunapiHttpDownloaderImpl;
 class FunapiHttpDownloader {
  public:
-  typedef helper::Binder4<const string &, long, long, int, void *> OnUpdate;
-  typedef helper::Binder1<int, void *> OnFinished;
+   typedef std::function<void(const std::string&,const long,const long,const int)> OnUpdate;
+   typedef std::function<void(const int)> OnFinished;
 
   FunapiHttpDownloader(const char *target_path,
       const OnUpdate &cb1, const OnFinished &cb2);

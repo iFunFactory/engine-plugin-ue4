@@ -22,6 +22,9 @@
 
 #include <list>
 #include <functional>
+#include <mutex>
+#include <condition_variable>
+#include <thread>
 
 #include <sys/stat.h>
 
@@ -132,17 +135,13 @@ AsyncQueue async_queue;
 
 bool async_thread_run = false;
 #if PLATFORM_WINDOWS
-HANDLE async_queue_thread;
-HANDLE async_queue_mutex;
-
 #define PATH_DELIMITER        '\\'
 #else
-pthread_t async_queue_thread;
-pthread_mutex_t async_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t async_queue_cond = PTHREAD_COND_INITIALIZER;
-
 #define PATH_DELIMITER        '/'
 #endif
+std::thread async_queue_thread;
+std::mutex async_queue_mutex;
+std::condition_variable_any async_queue_cond;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -166,12 +165,7 @@ size_t HttpResponseCb(void *data, size_t size, size_t count, void *cb) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Asynchronous operation related..
-
-#if PLATFORM_WINDOWS
-uint32_t WINAPI AsyncQueueThreadProc(LPVOID /*arg*/) {
-#else
-void *AsyncQueueThreadProc(void *arg) {
-#endif
+int AsyncQueueThreadProc() {
   LOG("Thread for async operation has been created.");
 
   CURL *ctx = NULL;
@@ -186,22 +180,17 @@ void *AsyncQueueThreadProc(void *arg) {
 
   while (async_thread_run) {
     // Waits until we have something to process.
-    pthread_mutex_lock(&async_queue_mutex);
-    while (async_thread_run && async_queue.empty()) {
-#if PLATFORM_WINDOWS
-      ReleaseMutex(async_queue_mutex);
-      Sleep(1000);
-      WaitForSingleObject(async_queue_mutex, INFINITE);
-#else
-      pthread_cond_wait(&async_queue_cond, &async_queue_mutex);
-#endif
-    }
-
-    // Moves element to a worker queue and releaes the mutex
-    // for contention prevention.
     AsyncQueue work_queue;
-    work_queue.swap(async_queue);
-    pthread_mutex_unlock(&async_queue_mutex);
+    {
+      std::unique_lock<std::mutex> lock(async_queue_mutex);
+      while (async_thread_run && async_queue.empty()) {
+        async_queue_cond.wait(async_queue_mutex);
+      }
+
+      // Moves element to a worker queue and releaes the mutex
+      // for contention prevention.
+      work_queue.swap(async_queue);
+    }
 
     for (AsyncQueue::iterator itr = work_queue.begin(); itr != work_queue.end(); ) {
       switch (itr->type_) {
@@ -329,9 +318,10 @@ void *AsyncQueueThreadProc(void *arg) {
 
     // Puts back requests that requires more work.
     // We should respect the order.
-    pthread_mutex_lock(&async_queue_mutex);
-    async_queue.splice(async_queue.begin(), work_queue);
-    pthread_mutex_unlock(&async_queue_mutex);
+    {
+      std::unique_lock<std::mutex> lock(async_queue_mutex);
+      async_queue.splice(async_queue.begin(), work_queue);
+    }
   }
 
   LOG("Thread for async operation is terminating.");
@@ -351,10 +341,11 @@ void AsyncRequestList(const string &url, AsyncRequestCallback cb_request,
   r.web_request_.response_body_ = cb_body;
   r.web_request_.url_ = url;
 
-  pthread_mutex_lock(&async_queue_mutex);
-  async_queue.push_back(r);
-  pthread_cond_signal(&async_queue_cond);
-  pthread_mutex_unlock(&async_queue_mutex);
+  {
+    std::unique_lock<std::mutex> lock(async_queue_mutex);
+    async_queue.push_back(r);
+    async_queue_cond.notify_one();
+  }
 }
 
 
@@ -370,10 +361,11 @@ void AsyncRequestFile (const string &url, AsyncRequestCallback cb_request,
   r.web_request_.response_body_ = cb_body;
   r.web_request_.url_ = url;
 
-  pthread_mutex_lock(&async_queue_mutex);
-  async_queue.push_back(r);
-  pthread_cond_signal(&async_queue_cond);
-  pthread_mutex_unlock(&async_queue_mutex);
+  {
+    std::unique_lock<std::mutex> lock(async_queue_mutex);
+    async_queue.push_back(r);
+    async_queue_cond.notify_one();
+  }
 }
 
 
@@ -386,10 +378,11 @@ void AsyncRequestMd5 (const string &path, AsyncRequestMd5Callback cb_request) {
   r.md5_request_.path_ = path;
   r.md5_request_.callback_ = cb_request;
 
-  pthread_mutex_lock(&async_queue_mutex);
-  async_queue.push_back(r);
-  pthread_cond_signal(&async_queue_cond);
-  pthread_mutex_unlock(&async_queue_mutex);
+  {
+    std::unique_lock<std::mutex> lock(async_queue_mutex);
+    async_queue.push_back(r);
+    async_queue_cond.notify_one();
+  }
 }
 
 }  // unnamed namespace
@@ -427,12 +420,6 @@ class FunapiHttpDownloaderImpl {
   void DownloadListFile(const string &url);
   void DownloadResourceFile();
 
-  static void DownloadListCbWrapper(int state, void *arg);
-  static void DownloadFileCbWrapper(int state, void *arg);
-  static void WebResponseHeaderCbWrapper(void *data, int len, void *arg);
-  static void WebResponseBodyCbWrapper(void *data, int len, void *arg);
-  static void ComputeMd5CbWrapper(string md5hashs, void *arg);
-
   void DownloadListCb(int state);
   void DownloadFileCb(int state);
   void WebResponseHeaderCb(void *data, int len);
@@ -442,11 +429,7 @@ class FunapiHttpDownloaderImpl {
   static const int kUnitBufferSize = 65536;
 
   // State-related.
-#if PLATFORM_WINDOWS
-  HANDLE mutex_;
-#else
-  mutable pthread_mutex_t mutex_;
-#endif
+  std::mutex mutex_;
   DownloadState state_;
 
   // Url-related.
@@ -493,7 +476,7 @@ FunapiHttpDownloaderImpl::~FunapiHttpDownloaderImpl() {
 
 
 void FunapiHttpDownloaderImpl::ClearDownloadList() {
-  pthread_mutex_lock(&mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   if (!url_list_.empty()) {
     UrlList::iterator itr = url_list_.begin();
     for (; itr != url_list_.end(); ++itr) {
@@ -509,7 +492,6 @@ void FunapiHttpDownloaderImpl::ClearDownloadList() {
     }
     download_list_.clear();
   }
-  pthread_mutex_unlock(&mutex_);
 }
 
 
@@ -517,14 +499,15 @@ void FunapiHttpDownloaderImpl::ClearCachedFileList() {
   if (cached_files_list_.empty())
     return;
 
-  pthread_mutex_lock(&mutex_);
-  FileList::iterator itr = cached_files_list_.begin();
-  for (; itr != cached_files_list_.end(); ++itr) {
-    delete (*itr);
-  }
+  {
+    std::unique_lock<std::mutex> lock(mutex_);
+    FileList::iterator itr = cached_files_list_.begin();
+    for (; itr != cached_files_list_.end(); ++itr) {
+      delete (*itr);
+    }
 
-  cached_files_list_.clear();
-  pthread_mutex_unlock(&mutex_);
+    cached_files_list_.clear();
+  }
 }
 
 
@@ -538,22 +521,23 @@ bool FunapiHttpDownloaderImpl::StartDownload(const string url) {
     return false;
   }
 
-  pthread_mutex_lock(&mutex_);
-  string host_url = url.substr(0, index + strlen(ver));
-  DownloadUrl *info = new DownloadUrl();
-  info->host = host_url;
-  info->url = url;
+  {
+    std::unique_lock<std::mutex> lock(mutex_);
+    string host_url = url.substr(0, index + strlen(ver));
+    DownloadUrl *info = new DownloadUrl();
+    info->host = host_url;
+    info->url = url;
 
-  if (state_ == kDownloading) {
-    url_list_.push_back(info);
-  } else {
-    state_ = kDownloadStart;
-    host_url_ = host_url;
-    LOG("Start Download.");
+    if (state_ == kDownloading) {
+      url_list_.push_back(info);
+    } else {
+      state_ = kDownloadStart;
+      host_url_ = host_url;
+      LOG("Start Download.");
 
-    DownloadListFile(url);
+      DownloadListFile(url);
+    }
   }
-  pthread_mutex_unlock(&mutex_);
   return true;
 }
 
@@ -652,7 +636,7 @@ void FunapiHttpDownloaderImpl::CheckFileList(FileList &list) {
   if (list.empty() || cached_files_list_.empty())
     return;
 
-  pthread_mutex_lock(&mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   FileList remove_list;
 
   // Deletes local files
@@ -735,7 +719,6 @@ void FunapiHttpDownloaderImpl::CheckFileList(FileList &list) {
     }
     remove_list.clear();
   }
-  pthread_mutex_unlock(&mutex_);
 }
 
 
@@ -791,37 +774,6 @@ void FunapiHttpDownloaderImpl::DownloadResourceFile() {
       [this](void *data, const int len){ WebResponseBodyCb(data, len); });
   }
 }
-
-
-void FunapiHttpDownloaderImpl::DownloadListCbWrapper(int state, void *arg) {
-  FunapiHttpDownloaderImpl *obj = reinterpret_cast<FunapiHttpDownloaderImpl*>(arg);
-  obj->DownloadListCb(state);
-}
-
-
-void FunapiHttpDownloaderImpl::DownloadFileCbWrapper(int state, void *arg) {
-  FunapiHttpDownloaderImpl *obj = reinterpret_cast<FunapiHttpDownloaderImpl*>(arg);
-  obj->DownloadFileCb(state);
-}
-
-
-void FunapiHttpDownloaderImpl::WebResponseHeaderCbWrapper(void *data, int len, void *arg) {
-  FunapiHttpDownloaderImpl *obj = reinterpret_cast<FunapiHttpDownloaderImpl*>(arg);
-  obj->WebResponseHeaderCb(data, len);
-}
-
-
-void FunapiHttpDownloaderImpl::WebResponseBodyCbWrapper(void *data, int len, void *arg) {
-  FunapiHttpDownloaderImpl *obj = reinterpret_cast<FunapiHttpDownloaderImpl*>(arg);
-  obj->WebResponseBodyCb(data, len);
-}
-
-
-void FunapiHttpDownloaderImpl::ComputeMd5CbWrapper(string md5hash, void *arg) {
-  FunapiHttpDownloaderImpl *obj = reinterpret_cast<FunapiHttpDownloaderImpl*>(arg);
-  obj->ComputeMd5Cb(md5hash);
-}
-
 
 void FunapiHttpDownloaderImpl::DownloadListCb(int state) {
   LOG1("DownloadListCb called. state: %d", state);
@@ -959,14 +911,8 @@ FunapiHttpDownloader::FunapiHttpDownloader(
 
   // Creates a thread to handle async operations.
   async_thread_run = true;
-#if PLATFORM_WINDOWS
-  pthread_mutex_init(&async_queue_mutex, NULL);
-  async_queue_thread = (HANDLE)_beginthreadex(NULL, 0, AsyncQueueThreadProc, NULL, 0, NULL);
-  assert(async_queue_thread != 0);
-#else
-  int r = pthread_create(&async_queue_thread, NULL, AsyncQueueThreadProc, NULL);
-  assert(r == 0);
-#endif
+  async_queue_thread = std::thread(AsyncQueueThreadProc);
+  async_queue_thread.detach();
 }
 
 FunapiHttpDownloader::~FunapiHttpDownloader() {
@@ -974,18 +920,10 @@ FunapiHttpDownloader::~FunapiHttpDownloader() {
 
   // Terminates the thread for async operations.
   async_thread_run = false;
-#if PLATFORM_WINDOWS
-  WaitForSingleObject(async_queue_thread, INFINITE);
-  CloseHandle(async_queue_thread);
+  async_queue_cond.notify_all();
 
-  WaitForSingleObject(async_queue_mutex, INFINITE);
-  CloseHandle(async_queue_mutex);
-#else
-  pthread_cond_broadcast(&async_queue_cond);
-  void *dummy;
-  pthread_join(async_queue_thread, &dummy);
-  (void) dummy;
-#endif
+  if (async_queue_thread.joinable())
+    async_queue_thread.join();
 }
 
 bool FunapiHttpDownloader::StartDownload(const char *hostname_or_ip,

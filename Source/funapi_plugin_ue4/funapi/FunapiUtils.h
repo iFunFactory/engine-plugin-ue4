@@ -27,13 +27,6 @@ namespace fun
     #define F_OK      0
 
     #define mkdir(path, mode)    _mkdir(path)
-
-    #define pthread_mutex_init(mutex, attr)  *mutex = CreateMutex(NULL, true, NULL); ReleaseMutex(*mutex)
-    #define pthread_mutex_lock(mutex)        WaitForSingleObject(*mutex, INFINITE)
-    #define pthread_mutex_unlock(mutex)      ReleaseMutex(*mutex)
-    #define pthread_cond_wait(cond, mutex)   Sleep(1000)
-    #define pthread_cond_signal(cond)        ;
-
 } // namespace fun
 
 #endif // PLATFORM_WINDOWS

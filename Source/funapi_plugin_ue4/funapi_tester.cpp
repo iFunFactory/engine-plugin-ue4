@@ -42,8 +42,6 @@ void Afunapi_tester::BeginPlay()
 {
     Super::BeginPlay();
 
-    fun::FunapiNetwork::Initialize();
-
     // FOR TEST ////////////////////////////////////////////////////
     // downloader = new Fun::FunapiDownloader();
 }
@@ -51,8 +49,6 @@ void Afunapi_tester::BeginPlay()
 void Afunapi_tester::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
   Super::EndPlay(EndPlayReason);
-
-  fun::FunapiNetwork::Finalize();
 
   if (network_) {
     delete network_;

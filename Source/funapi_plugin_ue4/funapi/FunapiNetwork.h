@@ -54,6 +54,11 @@ enum class FunEncoding
   kProtobuf
 };
 
+namespace {
+  struct AsyncRequest;
+}
+
+class FunapiNetwork;
 class FunapiTransport {
  public:
   typedef std::map<string, string> HeaderType;
@@ -69,6 +74,7 @@ class FunapiTransport {
   virtual void SendMessage(FunMessage &message) = 0;
   virtual bool Started() const = 0;
   virtual TransportProtocol Protocol() const = 0;
+  virtual void SetNetwork(FunapiNetwork* network) = 0;
 
  protected:
   FunapiTransport() {}
@@ -88,6 +94,7 @@ class FunapiTcpTransport : public FunapiTransport {
   virtual void SendMessage(FunMessage &message);
   virtual bool Started() const;
   virtual TransportProtocol Protocol() const;
+  virtual void SetNetwork(FunapiNetwork* network);
 
  private:
   FunapiTransportImpl *impl_;
@@ -105,6 +112,7 @@ class FunapiUdpTransport : public FunapiTransport {
   virtual void SendMessage(FunMessage &message);
   virtual bool Started() const;
   virtual TransportProtocol Protocol() const;
+  virtual void SetNetwork(FunapiNetwork* network);
 
  private:
   FunapiTransportImpl *impl_;
@@ -124,6 +132,7 @@ class FunapiHttpTransport : public FunapiTransport {
   virtual void SendMessage(FunMessage &message);
   virtual bool Started() const;
   virtual TransportProtocol Protocol() const;
+  virtual void SetNetwork(FunapiNetwork* network);
 
  private:
   FunapiHttpTransportImpl *impl_;
@@ -154,6 +163,8 @@ class FunapiNetwork {
   bool Connected(TransportProtocol protocol = TransportProtocol::kDefault) const;
   void Update();
   void AttachTransport(FunapiTransport *funapi_transport);
+  void PushTaskQueue(const std::function<void()> task);
+  void PushAsyncQueue(const AsyncRequest r);
 
  private:
   FunapiNetworkImpl *impl_;

@@ -688,7 +688,7 @@ void FunapiTransportImpl::SendBytesCb(ssize_t nSent) {
       sending_.erase(itr);
     }
 
-    if (pending_.size() > 0) {
+    if (pending_.size() > 0 && sending_.empty()) {
       sending_.swap(pending_);
       sendable = true;
     }

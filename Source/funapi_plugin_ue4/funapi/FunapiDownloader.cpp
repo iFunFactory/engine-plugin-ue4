@@ -912,7 +912,6 @@ FunapiHttpDownloader::FunapiHttpDownloader(
   // Creates a thread to handle async operations.
   async_thread_run = true;
   async_queue_thread = std::thread(AsyncQueueThreadProc);
-  async_queue_thread.detach();
 }
 
 FunapiHttpDownloader::~FunapiHttpDownloader() {

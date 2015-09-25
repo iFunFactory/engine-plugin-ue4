@@ -1141,7 +1141,6 @@ class FunapiNetworkImpl {
   std::thread async_queue_thread_;
   std::mutex async_queue_mutex_;
   std::condition_variable_any async_queue_cond_;
-  std::future<int> async_queue_thread_future_;
 
   std::queue<std::function<void()>> tasks_queue_;
   std::mutex tasks_queue_mutex_;
@@ -1183,10 +1182,7 @@ void FunapiNetworkImpl::Initialize() {
 
   // Creates a thread to handle async operations.
   async_thread_run_ = true;
-  std::packaged_task<int()> task([this]()->int{ return AsyncQueueThreadProc(); });
-  async_queue_thread_future_ = task.get_future();
-  async_queue_thread_ = std::thread(std::move(task));
-  async_queue_thread_.detach();
+  async_queue_thread_ = std::thread([this](){ AsyncQueueThreadProc(); });
 
   // Now ready.
   initialized_ = true;
@@ -1198,7 +1194,8 @@ void FunapiNetworkImpl::Finalize() {
   // Terminates the thread for async operations.
   async_thread_run_ = false;
   async_queue_cond_.notify_all();
-  async_queue_thread_future_.get();
+  if (async_queue_thread_.joinable())
+    async_queue_thread_.join();
 
   // All set.
   initialized_ = false;

@@ -510,7 +510,9 @@ bool FunapiTransportBase::TryToDecodeBody() {
 
     // The network module eats the fields and invokes registered handler
     // LOG("Invoking a receive handler.");
-    network_->PushTaskQueue([this, buffer](){ on_received_(header_fields_, buffer); });
+    const OnReceived received = on_received_;
+    const HeaderFields fields = header_fields_;
+    network_->PushTaskQueue([received, fields, buffer](){ received(fields, buffer); });
   }
 
   // Prepares for a next message.

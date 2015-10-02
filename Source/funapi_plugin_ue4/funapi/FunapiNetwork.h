@@ -71,6 +71,7 @@ class FunapiTransport {
   virtual void Start() = 0;
   virtual void Stop() = 0;
   virtual void SendMessage(Json &message) = 0;
+  virtual void SendMessage(FJsonObject &message) = 0;
   virtual void SendMessage(FunMessage &message) = 0;
   virtual bool Started() const = 0;
   virtual TransportProtocol Protocol() const = 0;
@@ -91,6 +92,7 @@ class FunapiTcpTransport : public FunapiTransport {
   virtual void Start();
   virtual void Stop();
   virtual void SendMessage(Json &message);
+  virtual void SendMessage(FJsonObject &message);
   virtual void SendMessage(FunMessage &message);
   virtual bool Started() const;
   virtual TransportProtocol Protocol() const;
@@ -109,6 +111,7 @@ class FunapiUdpTransport : public FunapiTransport {
   virtual void Start();
   virtual void Stop();
   virtual void SendMessage(Json &message);
+  virtual void SendMessage(FJsonObject &message);
   virtual void SendMessage(FunMessage &message);
   virtual bool Started() const;
   virtual TransportProtocol Protocol() const;
@@ -129,6 +132,7 @@ class FunapiHttpTransport : public FunapiTransport {
   virtual void Start();
   virtual void Stop();
   virtual void SendMessage(Json &message);
+  virtual void SendMessage(FJsonObject &message);
   virtual void SendMessage(FunMessage &message);
   virtual bool Started() const;
   virtual TransportProtocol Protocol() const;
@@ -158,6 +162,7 @@ class FunapiNetwork {
   void Start();
   void Stop();
   void SendMessage(const string &msg_type, Json &body, TransportProtocol protocol = TransportProtocol::kDefault);
+  void SendMessage(const string &msg_type, FJsonObject &body, TransportProtocol protocol = TransportProtocol::kDefault);
   void SendMessage(FunMessage &message, TransportProtocol protocol = TransportProtocol::kDefault);
   bool Started() const;
   bool Connected(TransportProtocol protocol = TransportProtocol::kDefault) const;

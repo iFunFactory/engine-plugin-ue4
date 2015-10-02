@@ -170,6 +170,7 @@ class FunapiTransportBase : std::enable_shared_from_this<FunapiTransportBase> {
   void RegisterEventHandlers(const OnReceived &cb1, const OnStopped &cb2);
 
   void SendMessage(Json &message);
+  void SendMessage(FJsonObject &message);
   void SendMessage(FunMessage &message);
 
   void SetNetwork(FunapiNetwork* network);
@@ -385,6 +386,17 @@ void FunapiTransportBase::SendMessage(Json &message) {
   message.Accept(writer);
 
   SendMessage(string_buffer.GetString());
+}
+
+
+void FunapiTransportBase::SendMessage(FJsonObject &message) {
+  TSharedRef<FJsonObject> json_object = MakeShareable(new FJsonObject(message));
+
+  FString output_string;
+  TSharedRef<TJsonWriter<TCHAR>> writer = TJsonWriterFactory<TCHAR>::Create(&output_string);
+  FJsonSerializer::Serialize(json_object, writer);
+
+  SendMessage(TCHAR_TO_ANSI(*output_string));
 }
 
 
@@ -1101,6 +1113,7 @@ class FunapiNetworkImpl {
   void Start();
   void Stop();
   void SendMessage(const string &msg_type, Json &body, const TransportProtocol protocol);
+  void SendMessage(const string &msg_type, FJsonObject &body, const TransportProtocol protocol);
   void SendMessage(FunMessage& message, const TransportProtocol protocol);
   bool Started() const;
   bool Connected(const TransportProtocol protocol);
@@ -1500,6 +1513,37 @@ void FunapiNetworkImpl::SendMessage(const string &msg_type, Json &body, const Tr
 }
 
 
+void FunapiNetworkImpl::SendMessage(const string &msg_type, FJsonObject &body, const TransportProtocol protocol = TransportProtocol::kDefault) {
+  // Invalidates session id if it is too stale.
+  time_t now = time(NULL);
+  time_t delta = funapi_session_timeout_;
+
+  if (last_received_ != epoch_ && last_received_ + delta < now) {
+    LOG("Session is too stale. The server might have invalidated my session. Resetting.");
+    session_id_ = "";
+  }
+
+  body.SetStringField(FString(kMsgTypeBodyField), FString(msg_type.c_str()));
+
+  // Encodes a session id, if any.
+  if (!session_id_.empty()) {
+    body.SetStringField(FString(kSessionIdBodyField), FString(session_id_.c_str()));
+  }
+
+  // Sends the manipulated JSON object through the transport.
+  {
+    std::unique_lock<std::mutex> lock(mutex_transports_);
+    FunapiTransport* transport = GetTransport(protocol);
+    if (transport) {
+      transport->SendMessage(body);
+    }
+    else {
+      LOG("Invaild Protocol - Transport is not founded");
+    }
+  }
+}
+
+
 void FunapiNetworkImpl::SendMessage(FunMessage& message, const TransportProtocol protocol = TransportProtocol::kDefault) {
   // Invalidates session id if it is too stale.
   time_t now = time(NULL);
@@ -1715,6 +1759,12 @@ void FunapiTcpTransport::SendMessage(Json &message) {
   impl_->SendMessage(message);
 }
 
+
+void FunapiTcpTransport::SendMessage(FJsonObject &message) {
+  impl_->SendMessage(message);
+}
+
+
 void FunapiTcpTransport::SendMessage(FunMessage &message) {
   impl_->SendMessage(message);
 }
@@ -1773,6 +1823,11 @@ void FunapiUdpTransport::SendMessage(Json &message) {
 }
 
 
+void FunapiUdpTransport::SendMessage(FJsonObject &message) {
+  impl_->SendMessage(message);
+}
+
+
 void FunapiUdpTransport::SendMessage(FunMessage &message) {
   impl_->SendMessage(message);
 }
@@ -1825,6 +1880,11 @@ void FunapiHttpTransport::Stop() {
 
 
 void FunapiHttpTransport::SendMessage(Json &message) {
+  impl_->SendMessage(message);
+}
+
+
+void FunapiHttpTransport::SendMessage(FJsonObject &message) {
   impl_->SendMessage(message);
 }
 
@@ -1893,6 +1953,11 @@ void FunapiNetwork::Stop() {
 
 
 void FunapiNetwork::SendMessage(const string &msg_type, Json &body, const TransportProtocol protocol) {
+  return impl_->SendMessage(msg_type, body, protocol);
+}
+
+
+void FunapiNetwork::SendMessage(const string &msg_type, FJsonObject &body, const TransportProtocol protocol) {
   return impl_->SendMessage(msg_type, body, protocol);
 }
 

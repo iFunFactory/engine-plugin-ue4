@@ -112,12 +112,11 @@ bool Afunapi_tester::SendEchoMessage()
 
     if (msg_type_ == fun::kJsonEncoding)
     {
-        fun::Json msg;
-        msg.SetObject();
-        rapidjson::Value message_node("hello world", msg.GetAllocator());
-        msg.AddMember("message", message_node, msg.GetAllocator());
-        network_->SendMessage("echo", msg, protocol_);
-        return true;
+      FJsonObject json_object;
+      json_object.SetStringField(FString("message"), FString("hello world"));
+      network_->SendMessage("echo", json_object, protocol_);
+
+      return true;
     }
     else if (msg_type_ == fun::kProtobufEncoding)
     {

@@ -8,6 +8,7 @@
 
 #include "Engine.h"
 #include "UnrealString.h"
+#include "Http.h"
 
 #include <string>
 

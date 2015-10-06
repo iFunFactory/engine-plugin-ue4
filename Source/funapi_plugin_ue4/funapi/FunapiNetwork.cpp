@@ -5,8 +5,6 @@
 // consent of iFunFactory Inc.
 
 #include "funapi_plugin_ue4.h"
-#include "Engine.h"
-#include "UnrealString.h"
 
 #if PLATFORM_WINDOWS
 #include "AllowWindowsPlatformTypes.h"
@@ -29,7 +27,6 @@
 #include <thread>
 #include <future>
 
-#include "curl/curl.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
 #include "./FunapiNetwork.h"
@@ -121,10 +118,7 @@ struct AsyncRequest {
     AsyncWebRequestCallback request_callback_;
     AsyncWebResponseCallback receive_header_;
     AsyncWebResponseCallback receive_body_;
-    const char *url_;
-    const char *header_;
-    uint8_t *body_;
-    size_t body_len_;
+    TSharedPtr<IHttpRequest> http_request_;
   } web_request_;
 };
 
@@ -900,13 +894,8 @@ class FunapiHttpTransportImpl : public FunapiTransportBase {
 
   string host_url_;
   int recv_length_;
-
-  static bool curl_initialized_;
-  static int curl_initialized_count_;
 };
 
-bool FunapiHttpTransportImpl::curl_initialized_ = false;
-int FunapiHttpTransportImpl::curl_initialized_count_ = 0;
 
 FunapiHttpTransportImpl::FunapiHttpTransportImpl(const string &hostname_or_ip,
                                                  uint16_t port, bool https)
@@ -918,25 +907,10 @@ FunapiHttpTransportImpl::FunapiHttpTransportImpl(const string &hostname_or_ip,
   host_url_ = url;
   LOG1("Host url : %s", *FString(host_url_.c_str()));
 
-  if (!curl_initialized_) {
-    if (CURLE_OK == curl_global_init(CURL_GLOBAL_ALL)) {
-      curl_initialized_ = true;
-    }
-  }
-
-  if (curl_initialized_)
-    ++curl_initialized_count_;
 }
 
 
 FunapiHttpTransportImpl::~FunapiHttpTransportImpl() {
-  if (curl_initialized_) {
-    --curl_initialized_count_;
-    if (0 == curl_initialized_count_) {
-      curl_global_cleanup();
-      curl_initialized_ = false;
-    }
-  }
 }
 
 
@@ -1079,13 +1053,18 @@ void FunapiHttpTransportImpl::AsyncWebRequest(const char* host_url, const IoVecL
 
     AsyncRequest r;
     r.type_ = AsyncRequest::kWebRequest;
-    r.web_request_.url_ = host_url;
     r.web_request_.request_callback_ = callback;
     r.web_request_.receive_header_ = receive_header;
     r.web_request_.receive_body_ = receive_body;
-    r.web_request_.header_ = reinterpret_cast<char *>(header.iov_base);
-    r.web_request_.body_ = reinterpret_cast<uint8_t *>(body.iov_base);
-    r.web_request_.body_len_ = body.iov_len;
+
+    r.web_request_.http_request_ = FHttpModule::Get().CreateRequest();
+    r.web_request_.http_request_->SetURL(FString(host_url));
+    r.web_request_.http_request_->SetVerb(FString("POST"));
+    r.web_request_.http_request_->SetHeader(FString("Content-Type"), FString("application/json; charset=utf-8"));
+
+    TArray<uint8> temp_array;
+    temp_array.Append(body.iov_base,body.iov_len);
+    r.web_request_.http_request_->SetContent(temp_array);
 
     network_->PushAsyncQueue(r);
   }
@@ -1363,36 +1342,26 @@ int FunapiNetworkImpl::AsyncQueueThreadProc() {
         }
         break;
       case AsyncRequest::kWebRequest:
-        CURL *ctx = curl_easy_init();
-        if (ctx == NULL) {
-          LOG("Unable to initialize cURL interface.");
-          break;
-        }
+        const auto request_callback = i->web_request_.request_callback_;
+        const auto receive_header = i->web_request_.receive_header_;
+        const auto receive_body = i->web_request_.receive_body_;
 
-        i->web_request_.request_callback_(kWebRequestStart);
+        i->web_request_.http_request_->OnProcessRequestComplete().BindLambda(
+          [request_callback, receive_header, receive_body](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful) {
+          if (!bWasSuccessful) {
+            LOG("Response was invalid!");
+            return;
+          }
 
-        struct curl_slist *chunk = NULL;
-        chunk = curl_slist_append(chunk, i->web_request_.header_);
-        curl_easy_setopt(ctx, CURLOPT_HTTPHEADER, chunk);
-        curl_easy_setopt(ctx, CURLOPT_URL, i->web_request_.url_);
-        curl_easy_setopt(ctx, CURLOPT_POST, 1L);
-        curl_easy_setopt(ctx, CURLOPT_POSTFIELDS, i->web_request_.body_);
-        curl_easy_setopt(ctx, CURLOPT_POSTFIELDSIZE, i->web_request_.body_len_);
-        curl_easy_setopt(ctx, CURLOPT_HEADERDATA, &i->web_request_.receive_header_);
-        curl_easy_setopt(ctx, CURLOPT_WRITEDATA, &i->web_request_.receive_body_);
-        curl_easy_setopt(ctx, CURLOPT_WRITEFUNCTION, &FunapiNetworkImpl::HttpResponseCb);
-
-        CURLcode res = curl_easy_perform(ctx);
-        if (res != CURLE_OK) {
-          LOG1("Error from cURL: %s", *FString(curl_easy_strerror(res)));
-          assert(false);
-        }
-        else {
-          i->web_request_.request_callback_(kWebRequestEnd);
-        }
-
-        curl_easy_cleanup(ctx);
-        curl_slist_free_all(chunk);
+          request_callback(kWebRequestStart);
+          for (FString header : Response->GetAllHeaders()) {
+            receive_header(TCHAR_TO_ANSI(*header), header.Len() + 2);
+          }
+          TArray<uint8> body = Response->GetContent();
+          receive_body(body.GetData(), body.Num());
+          request_callback(kWebRequestEnd);
+        });
+        i->web_request_.http_request_->ProcessRequest();
         break;
       }
 

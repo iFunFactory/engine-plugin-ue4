@@ -42,12 +42,20 @@
 #include "HideWindowsPlatformTypes.h"
 #endif
 
-namespace fun {
-  namespace {
-    typedef rapidjson::Document Json;
-  }
+DECLARE_LOG_CATEGORY_EXTERN(LogFunapi, Log, All);
 
-  #define LOG(x) UE_LOG(LogClass, Log, TEXT(x));
-  #define LOG1(x, a1) UE_LOG(LogClass, Log, TEXT(x), a1);
-  #define LOG2(x, a1, a2) UE_LOG(LogClass, Log, TEXT(x), a1, a2);
-} // namespace Fun
+namespace fun {
+
+namespace {
+  typedef rapidjson::Document Json;
+}
+
+#define LOG(x)          UE_LOG(LogFunapi, Log, TEXT(x));
+#define LOG1(x, a1)     UE_LOG(LogFunapi, Log, TEXT(x), a1);
+#define LOG2(x, a1, a2) UE_LOG(LogFunapi, Log, TEXT(x), a1, a2);
+
+#define Log(fmt, ...)        UE_LOG(LogFunapi, Log, TEXT(fmt), __VA_ARGS__)
+#define LogWarning(fmt, ...) UE_LOG(LogFunapi, Warning, TEXT(fmt), __VA_ARGS__)
+#define LogError(fmt, ...)   UE_LOG(LogFunapi, Error, TEXT(fmt), __VA_ARGS__)
+
+} // namespace fun

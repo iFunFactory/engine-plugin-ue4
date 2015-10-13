@@ -291,26 +291,36 @@ int FunapiNetworkImpl::AsyncQueueThreadProc() {
         }
         break;
       case AsyncRequest::kWebRequest:
-        const auto request_callback = i->web_request_.request_callback_;
-        const auto receive_header = i->web_request_.receive_header_;
-        const auto receive_body = i->web_request_.receive_body_;
+        CURL *ctx = curl_easy_init();
+        if (ctx == NULL) {
+          LOG("Unable to initialize cURL interface.");
+          break;
+        }
 
-        i->web_request_.http_request_->OnProcessRequestComplete().BindLambda(
-          [request_callback, receive_header, receive_body](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful) {
-          if (!bWasSuccessful) {
-            LOG("Response was invalid!");
-            return;
-          }
+        i->web_request_.request_callback_(kWebRequestStart);
 
-          request_callback(kWebRequestStart);
-          for (FString header : Response->GetAllHeaders()) {
-            receive_header(TCHAR_TO_ANSI(*header), header.Len() + 2);
-          }
-          TArray<uint8> body = Response->GetContent();
-          receive_body(body.GetData(), body.Num());
-          request_callback(kWebRequestEnd);
-        });
-        i->web_request_.http_request_->ProcessRequest();
+        struct curl_slist *chunk = NULL;
+        chunk = curl_slist_append(chunk, i->web_request_.header_);
+        curl_easy_setopt(ctx, CURLOPT_HTTPHEADER, chunk);
+        curl_easy_setopt(ctx, CURLOPT_URL, i->web_request_.url_);
+        curl_easy_setopt(ctx, CURLOPT_POST, 1L);
+        curl_easy_setopt(ctx, CURLOPT_POSTFIELDS, i->web_request_.body_);
+        curl_easy_setopt(ctx, CURLOPT_POSTFIELDSIZE, i->web_request_.body_len_);
+        curl_easy_setopt(ctx, CURLOPT_HEADERDATA, &i->web_request_.receive_header_);
+        curl_easy_setopt(ctx, CURLOPT_WRITEDATA, &i->web_request_.receive_body_);
+        curl_easy_setopt(ctx, CURLOPT_WRITEFUNCTION, &FunapiNetworkImpl::HttpResponseCb);
+
+        CURLcode res = curl_easy_perform(ctx);
+        if (res != CURLE_OK) {
+          LOG1("Error from cURL: %s", *FString(curl_easy_strerror(res)));
+          assert(false);
+        }
+        else {
+          i->web_request_.request_callback_(kWebRequestEnd);
+        }
+
+        curl_easy_cleanup(ctx);
+        curl_slist_free_all(chunk);
         break;
       }
 

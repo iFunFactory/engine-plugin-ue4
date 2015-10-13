@@ -8,7 +8,6 @@
 
 #include "Engine.h"
 #include "UnrealString.h"
-#include "Http.h"
 #include "Json.h"
 
 #if PLATFORM_WINDOWS
@@ -34,6 +33,7 @@
 #include <condition_variable>
 #include <thread>
 
+#include "curl/curl.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/document.h"

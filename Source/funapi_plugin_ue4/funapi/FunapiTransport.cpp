@@ -777,8 +777,13 @@ class FunapiHttpTransportImpl : public FunapiTransportBase {
 
   std::string host_url_;
   int recv_length_;
+
+  static bool curl_initialized_;
+  static int curl_initialized_count_;
 };
 
+bool FunapiHttpTransportImpl::curl_initialized_ = false;
+int FunapiHttpTransportImpl::curl_initialized_count_ = 0;
 
 FunapiHttpTransportImpl::FunapiHttpTransportImpl(const std::string &hostname_or_ip,
                                                  uint16_t port, bool https)
@@ -790,10 +795,25 @@ FunapiHttpTransportImpl::FunapiHttpTransportImpl(const std::string &hostname_or_
   host_url_ = url;
   LOG1("Host url : %s", *FString(host_url_.c_str()));
 
+  if (!curl_initialized_) {
+    if (CURLE_OK == curl_global_init(CURL_GLOBAL_ALL)) {
+      curl_initialized_ = true;
+    }
+  }
+
+  if (curl_initialized_)
+    ++curl_initialized_count_;
 }
 
 
 FunapiHttpTransportImpl::~FunapiHttpTransportImpl() {
+  if (curl_initialized_) {
+    --curl_initialized_count_;
+    if (0 == curl_initialized_count_) {
+      curl_global_cleanup();
+      curl_initialized_ = false;
+    }
+  }
 }
 
 
@@ -936,18 +956,13 @@ void FunapiHttpTransportImpl::AsyncWebRequest(const char* host_url, const IoVecL
 
     AsyncRequest r;
     r.type_ = AsyncRequest::kWebRequest;
+    r.web_request_.url_ = host_url;
     r.web_request_.request_callback_ = callback;
     r.web_request_.receive_header_ = receive_header;
     r.web_request_.receive_body_ = receive_body;
-
-    r.web_request_.http_request_ = FHttpModule::Get().CreateRequest();
-    r.web_request_.http_request_->SetURL(FString(host_url));
-    r.web_request_.http_request_->SetVerb(FString("POST"));
-    r.web_request_.http_request_->SetHeader(FString("Content-Type"), FString("application/json; charset=utf-8"));
-
-    TArray<uint8> temp_array;
-    temp_array.Append(body.iov_base,body.iov_len);
-    r.web_request_.http_request_->SetContent(temp_array);
+    r.web_request_.header_ = reinterpret_cast<char *>(header.iov_base);
+    r.web_request_.body_ = reinterpret_cast<uint8_t *>(body.iov_base);
+    r.web_request_.body_len_ = body.iov_len;
 
     network_->PushAsyncQueue(r);
   }

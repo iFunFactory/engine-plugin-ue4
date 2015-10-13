@@ -82,7 +82,10 @@ struct AsyncRequest {
     AsyncWebRequestCallback request_callback_;
     AsyncWebResponseCallback receive_header_;
     AsyncWebResponseCallback receive_body_;
-    TSharedPtr<IHttpRequest> http_request_;
+    const char *url_;
+    const char *header_;
+    uint8_t *body_;
+    size_t body_len_;
   } web_request_;
 };
 

@@ -8,6 +8,8 @@
 
 #if PLATFORM_WINDOWS
 
+#include <stdint.h>
+
 #pragma warning(disable:4996)
 
 namespace fun

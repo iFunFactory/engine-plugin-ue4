@@ -5,8 +5,6 @@
 // consent of iFunFactory Inc.
 
 #include "funapi_plugin_ue4.h"
-#include "Engine.h"
-#include "UnrealString.h"
 
 #if PLATFORM_WINDOWS
 #include "AllowWindowsPlatformTypes.h"
@@ -42,6 +40,7 @@
 namespace fun {
 
 using std::map;
+typedef std::string string;
 
 
 namespace {
@@ -49,9 +48,9 @@ namespace {
 ////////////////////////////////////////////////////////////////////////////////
 // Types.
 
-typedef std::function<void(const int)> AsyncRequestCallback;
-typedef std::function<void(const std::string)> AsyncRequestMd5Callback;
-typedef std::function<void(void*,const int)> AsyncResponseCallback;
+typedef std::function<void(const int)> AsyncDownloaderRequestCallback;
+typedef std::function<void(const std::string)> AsyncDownloaderRequestMd5Callback;
+typedef std::function<void(void*,const int)> AsyncDownloaderResponseCallback;
 
 
 enum DownloadState {
@@ -62,7 +61,7 @@ enum DownloadState {
 };
 
 
-enum RequestState {
+enum DownloadRequestState {
   kWebRequestStart = 0,
   kWebRequestInProgress,
   kWebRequestEnd,
@@ -81,7 +80,7 @@ struct DownloadFile {
 };
 
 
-struct AsyncRequest {
+struct AsyncDownloaderRequest {
   enum RequestType {
     kRequestList = 0,
     kRequestFile,
@@ -99,14 +98,14 @@ struct AsyncRequest {
 
   struct {
     string url_;
-    AsyncRequestCallback callback_;
-    AsyncResponseCallback response_header_;
-    AsyncResponseCallback response_body_;
+    AsyncDownloaderRequestCallback callback_;
+    AsyncDownloaderResponseCallback response_header_;
+    AsyncDownloaderResponseCallback response_body_;
   } web_request_;
 
   struct {
     string path_;
-    AsyncRequestMd5Callback callback_;
+    AsyncDownloaderRequestMd5Callback callback_;
   } md5_request_;
 };
 
@@ -115,12 +114,12 @@ struct AsyncRequest {
 // Constants.
 
 // Funapi version
-const int kCurrentFunapiProtocolVersion = 1;
+const int kCurrentFunapiDownloaderProtocolVersion = 1;
 
 // Funapi header-related constants.
-const char kHeaderDelimeter[] = "\n";
-const char kHeaderFieldDelimeter[] = ":";
-const char kHeaderFieldContentLength[] = "content-length";
+const char kDownloaderHeaderDelimeter[] = "\n";
+const char kDownloaderHeaderFieldDelimeter[] = ":";
+const char kDownloaderHeaderFieldContentLength[] = "content-length";
 
 // File-related constants.
 const int kMd5DivideFileLength = 1024 * 1024;  // 1Mb
@@ -130,18 +129,18 @@ const char kCacheFileName[] = "cached_files_list";
 ////////////////////////////////////////////////////////////////////////////////
 // Global variables.
 
-typedef std::list<AsyncRequest> AsyncQueue;
-AsyncQueue async_queue;
+typedef std::list<AsyncDownloaderRequest> AsyncDownloaderQueue;
+AsyncDownloaderQueue async_downloader_queue;
 
-bool async_thread_run = false;
+bool async_downloader_thread_run = false;
 #if PLATFORM_WINDOWS
 #define PATH_DELIMITER        '\\'
 #else
 #define PATH_DELIMITER        '/'
 #endif
-std::thread async_queue_thread;
-std::mutex async_queue_mutex;
-std::condition_variable_any async_queue_cond;
+std::thread async_downloader_queue_thread;
+std::mutex async_downloader_queue_mutex;
+std::condition_variable_any async_downloader_queue_cond;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -155,7 +154,7 @@ struct compare_path : public std::binary_function<DownloadFile*, string, bool> {
 
 
 size_t HttpResponseCb(void *data, size_t size, size_t count, void *cb) {
-  AsyncResponseCallback *callback = (AsyncResponseCallback*)(cb);
+  AsyncDownloaderResponseCallback *callback = (AsyncDownloaderResponseCallback*)(cb);
   if (callback != NULL)
     (*callback)(data, size * count);
   return size * count;
@@ -178,25 +177,25 @@ int AsyncQueueThreadProc() {
   uint8_t *buffer = new uint8_t [kMd5DivideFileLength];
   int length = 0, read_len = 0, offset = 0;
 
-  while (async_thread_run) {
+  while (async_downloader_thread_run) {
     // Waits until we have something to process.
-    AsyncQueue work_queue;
+    AsyncDownloaderQueue work_queue;
     {
-      std::unique_lock<std::mutex> lock(async_queue_mutex);
-      while (async_thread_run && async_queue.empty()) {
-        async_queue_cond.wait(async_queue_mutex);
+      std::unique_lock<std::mutex> lock(async_downloader_queue_mutex);
+      while (async_downloader_thread_run && async_downloader_queue.empty()) {
+        async_downloader_queue_cond.wait(async_downloader_queue_mutex);
       }
 
       // Moves element to a worker queue and releaes the mutex
       // for contention prevention.
-      work_queue.swap(async_queue);
+      work_queue.swap(async_downloader_queue);
     }
 
-    for (AsyncQueue::iterator itr = work_queue.begin(); itr != work_queue.end(); ) {
+    for (AsyncDownloaderQueue::iterator itr = work_queue.begin(); itr != work_queue.end(); ) {
       switch (itr->type_) {
-      case AsyncRequest::kRequestList:
-      case AsyncRequest::kRequestFile: {
-          if (itr->state_ == AsyncRequest::kStateStart) {
+      case AsyncDownloaderRequest::kRequestList:
+      case AsyncDownloaderRequest::kRequestFile: {
+          if (itr->state_ == AsyncDownloaderRequest::kStateStart) {
             running = 0;
             ctx = curl_easy_init();
 
@@ -211,8 +210,8 @@ int AsyncQueueThreadProc() {
             itr->web_request_.callback_(kWebRequestStart);
 
             curl_multi_perform(mctx, &running);
-            itr->state_ = AsyncRequest::kStateUpdate;
-          } else if (itr->state_ == AsyncRequest::kStateUpdate) {
+            itr->state_ = AsyncDownloaderRequest::kStateUpdate;
+          } else if (itr->state_ == AsyncDownloaderRequest::kStateUpdate) {
             FD_ZERO(&fdread);
             FD_ZERO(&fdwrite);
             FD_ZERO(&fdexcep);
@@ -246,8 +245,8 @@ int AsyncQueueThreadProc() {
             }
 
             if (!running)
-              itr->state_ = AsyncRequest::kStateFinish;
-          } else if (itr->state_ == AsyncRequest::kStateFinish) {
+              itr->state_ = AsyncDownloaderRequest::kStateFinish;
+          } else if (itr->state_ == AsyncDownloaderRequest::kStateFinish) {
             itr->web_request_.callback_(kWebRequestEnd);
             itr = work_queue.erase(itr);
 
@@ -261,8 +260,8 @@ int AsyncQueueThreadProc() {
         }
         break;
 
-      case AsyncRequest::kRequestMD5: {
-          if (itr->state_ == AsyncRequest::kStateStart) {
+      case AsyncDownloaderRequest::kRequestMD5: {
+          if (itr->state_ == AsyncDownloaderRequest::kStateStart) {
             MD5_Init(&lctx);
 
             fp = fopen(itr->md5_request_.path_.c_str(), "rb");
@@ -272,8 +271,8 @@ int AsyncQueueThreadProc() {
             fseek(fp, 0, SEEK_SET);
 
             offset = 0;
-            itr->state_ = AsyncRequest::kStateUpdate;
-          } else if (itr->state_ == AsyncRequest::kStateUpdate) {
+            itr->state_ = AsyncDownloaderRequest::kStateUpdate;
+          } else if (itr->state_ == AsyncDownloaderRequest::kStateUpdate) {
             if (offset + kMd5DivideFileLength > length)
               read_len = length - offset;
             else
@@ -285,8 +284,8 @@ int AsyncQueueThreadProc() {
             offset += read_len;
 
             if (offset >= length)
-              itr->state_ = AsyncRequest::kStateFinish;
-          } else if (itr->state_ == AsyncRequest::kStateFinish) {
+              itr->state_ = AsyncDownloaderRequest::kStateFinish;
+          } else if (itr->state_ == AsyncDownloaderRequest::kStateFinish) {
             char md5msg[MD5_DIGEST_LENGTH * 2 + 1];
             unsigned char digest[MD5_DIGEST_LENGTH];
 
@@ -319,8 +318,8 @@ int AsyncQueueThreadProc() {
     // Puts back requests that requires more work.
     // We should respect the order.
     {
-      std::unique_lock<std::mutex> lock(async_queue_mutex);
-      async_queue.splice(async_queue.begin(), work_queue);
+      std::unique_lock<std::mutex> lock(async_downloader_queue_mutex);
+      async_downloader_queue.splice(async_downloader_queue.begin(), work_queue);
     }
   }
 
@@ -329,59 +328,60 @@ int AsyncQueueThreadProc() {
 }
 
 
-void AsyncRequestList(const string &url, AsyncRequestCallback cb_request,
-    AsyncResponseCallback cb_header, AsyncResponseCallback cb_body) {
+void AsyncRequestList(const string &url, AsyncDownloaderRequestCallback cb_request,
+    AsyncDownloaderResponseCallback cb_header, AsyncDownloaderResponseCallback cb_body) {
   LOG("Queueing async request list file.");
 
-  AsyncRequest r;
-  r.type_ = AsyncRequest::kRequestList;
-  r.state_ = AsyncRequest::kStateStart;
+  AsyncDownloaderRequest r;
+  r.type_ = AsyncDownloaderRequest::kRequestList;
+  r.state_ = AsyncDownloaderRequest::kStateStart;
   r.web_request_.callback_ = cb_request;
   r.web_request_.response_header_ = cb_header;
   r.web_request_.response_body_ = cb_body;
   r.web_request_.url_ = url;
 
+
   {
-    std::unique_lock<std::mutex> lock(async_queue_mutex);
-    async_queue.push_back(r);
-    async_queue_cond.notify_one();
+    std::unique_lock<std::mutex> lock(async_downloader_queue_mutex);
+    async_downloader_queue.push_back(r);
+    async_downloader_queue_cond.notify_one();
   }
 }
 
 
-void AsyncRequestFile (const string &url, AsyncRequestCallback cb_request,
-    AsyncResponseCallback cb_header, AsyncResponseCallback cb_body) {
+void AsyncRequestFile (const string &url, AsyncDownloaderRequestCallback cb_request,
+    AsyncDownloaderResponseCallback cb_header, AsyncDownloaderResponseCallback cb_body) {
   LOG("Queueing async request resource file.");
 
-  AsyncRequest r;
-  r.type_ = AsyncRequest::kRequestFile;
-  r.state_ = AsyncRequest::kStateStart;
+  AsyncDownloaderRequest r;
+  r.type_ = AsyncDownloaderRequest::kRequestFile;
+  r.state_ = AsyncDownloaderRequest::kStateStart;
   r.web_request_.callback_ = cb_request;
   r.web_request_.response_header_ = cb_header;
   r.web_request_.response_body_ = cb_body;
   r.web_request_.url_ = url;
 
   {
-    std::unique_lock<std::mutex> lock(async_queue_mutex);
-    async_queue.push_back(r);
-    async_queue_cond.notify_one();
+    std::unique_lock<std::mutex> lock(async_downloader_queue_mutex);
+    async_downloader_queue.push_back(r);
+    async_downloader_queue_cond.notify_one();
   }
 }
 
 
-void AsyncRequestMd5 (const string &path, AsyncRequestMd5Callback cb_request) {
+void AsyncRequestMd5 (const string &path, AsyncDownloaderRequestMd5Callback cb_request) {
   LOG("Queueing async request MD5.");
 
-  AsyncRequest r;
-  r.type_ = AsyncRequest::kRequestMD5;
-  r.state_ = AsyncRequest::kStateStart;
+  AsyncDownloaderRequest r;
+  r.type_ = AsyncDownloaderRequest::kRequestMD5;
+  r.state_ = AsyncDownloaderRequest::kStateStart;
   r.md5_request_.path_ = path;
   r.md5_request_.callback_ = cb_request;
 
   {
-    std::unique_lock<std::mutex> lock(async_queue_mutex);
-    async_queue.push_back(r);
-    async_queue_cond.notify_one();
+    std::unique_lock<std::mutex> lock(async_downloader_queue_mutex);
+    async_downloader_queue.push_back(r);
+    async_downloader_queue_cond.notify_one();
   }
 }
 
@@ -426,7 +426,7 @@ class FunapiHttpDownloaderImpl {
   void WebResponseBodyCb(void *data, int len);
   void ComputeMd5Cb(const string &md5hash);
 
-  static const int kUnitBufferSize = 65536;
+  static const int kDownloadUnitBufferSize = 65536;
 
   // State-related.
   std::mutex mutex_;
@@ -461,7 +461,7 @@ FunapiHttpDownloaderImpl::FunapiHttpDownloaderImpl(
 
   header_fields_.clear();
 
-  buffer_.iov_len = kUnitBufferSize;
+  buffer_.iov_len = kDownloadUnitBufferSize;
   buffer_.iov_base = new uint8_t[buffer_.iov_len + 1];
   assert(buffer_.iov_base);
 
@@ -513,7 +513,7 @@ void FunapiHttpDownloaderImpl::ClearCachedFileList() {
 
 bool FunapiHttpDownloaderImpl::StartDownload(const string url) {
   char ver[128];
-  sprintf(ver, "/v%d/", kCurrentFunapiProtocolVersion);
+  sprintf(ver, "/v%d/", kCurrentFunapiDownloaderProtocolVersion);
   int index = url.find(ver);
   if (index <= 0) {
     LOG1("Invalid request url : %s", *FString(url.c_str()));
@@ -581,7 +581,7 @@ void FunapiHttpDownloaderImpl::LoadCachedFileList() {
     return;
   }
 
-  Json json;
+  rapidjson::Document json;
   json.Parse<0>(buffer);
   assert(json.IsObject());
 
@@ -790,7 +790,7 @@ void FunapiHttpDownloaderImpl::DownloadListCb(int state) {
     data[recv_offset_] = '\0';
     LOG1("Json data >> %s", *FString(data));
 
-    Json json;
+    rapidjson::Document json;
     json.Parse<0>(data);
     assert(json.IsObject());
 
@@ -843,7 +843,7 @@ void FunapiHttpDownloaderImpl::DownloadFileCb(int state) {
       fclose(fp);
 
       AsyncRequestMd5(target,
-        [this](const std::string md5hash){ ComputeMd5Cb(md5hash); });
+        [this](const string md5hash){ ComputeMd5Cb(md5hash); });
     }
   }
 }
@@ -854,8 +854,8 @@ void FunapiHttpDownloaderImpl::WebResponseHeaderCb(void *data, int len) {
   memcpy(buf, data, len);
   buf[len-2] = '\0';
 
-  char *ptr = std::search(buf, buf + len, kHeaderFieldDelimeter,
-      kHeaderFieldDelimeter + sizeof(kHeaderFieldDelimeter) - 1);
+  char *ptr = std::search(buf, buf + len, kDownloaderHeaderFieldDelimeter,
+      kDownloaderHeaderFieldDelimeter + sizeof(kDownloaderHeaderFieldDelimeter) - 1);
   ssize_t eol_offset = ptr - buf;
   if (eol_offset >= len)
     return;
@@ -864,7 +864,7 @@ void FunapiHttpDownloaderImpl::WebResponseHeaderCb(void *data, int len) {
   *ptr = '\0';
   const char *e1 = buf, *e2 = ptr + 1;
   while (*e2 == ' ' || *e2 == '\t') ++e2;
-  if (std::strcmp(e1, kHeaderFieldContentLength) == 0) {
+  if (std::strcmp(e1, kDownloaderHeaderFieldContentLength) == 0) {
     file_length_ = atoi(e2);
 
     if (file_length_ >= buffer_.iov_len) {
@@ -906,23 +906,22 @@ void FunapiHttpDownloaderImpl::ComputeMd5Cb(const string &md5hash) {
 FunapiHttpDownloader::FunapiHttpDownloader(
     const char *target_path, const OnUpdate &cb1, const OnFinished &cb2)
     : impl_(new FunapiHttpDownloaderImpl(target_path, cb1, cb2)) {
-
   curl_global_init(CURL_GLOBAL_ALL);
 
   // Creates a thread to handle async operations.
-  async_thread_run = true;
-  async_queue_thread = std::thread(AsyncQueueThreadProc);
+  async_downloader_thread_run = true;
+  async_downloader_queue_thread = std::thread(AsyncQueueThreadProc);
 }
 
 FunapiHttpDownloader::~FunapiHttpDownloader() {
   curl_global_cleanup();
 
   // Terminates the thread for async operations.
-  async_thread_run = false;
-  async_queue_cond.notify_all();
+  async_downloader_thread_run = false;
+  async_downloader_queue_cond.notify_all();
 
-  if (async_queue_thread.joinable())
-    async_queue_thread.join();
+  if (async_downloader_queue_thread.joinable())
+    async_downloader_queue_thread.join();
 }
 
 bool FunapiHttpDownloader::StartDownload(const char *hostname_or_ip,
@@ -930,7 +929,7 @@ bool FunapiHttpDownloader::StartDownload(const char *hostname_or_ip,
   char url[1024];
   sprintf(url, "%s://%s:%d/v%d/%s",
       https ? "https" : "http", hostname_or_ip, port,
-      kCurrentFunapiProtocolVersion, list_filename);
+      kCurrentFunapiDownloaderProtocolVersion, list_filename);
 
   return impl_->StartDownload(url);
 }

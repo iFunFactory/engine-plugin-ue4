@@ -9,9 +9,6 @@
 #ifndef SRC_FUNAPI_DOWNLOADER_H_
 #define SRC_FUNAPI_DOWNLOADER_H_
 
-#include "./FunapiNetwork.h"
-
-
 namespace fun {
 
 enum DownloadResult {

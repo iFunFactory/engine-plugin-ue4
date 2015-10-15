@@ -21,7 +21,7 @@ enum class FunapiVersion : int
 };
 
 class FunapiNetworkImpl;
-class FunapiNetwork {
+class FunapiNetwork : public std::enable_shared_from_this<FunapiNetwork> {
  public:
   typedef std::function<void(const std::string &, const std::vector<uint8_t>&)> MessageHandler;
   typedef std::function<void(const std::string &)> OnSessionInitiated;
@@ -30,7 +30,7 @@ class FunapiNetwork {
   static void Initialize(time_t session_timeout = 3600);
   static void Finalize();
 
-  FunapiNetwork(FunapiTransport *funapi_transport, int type,
+  FunapiNetwork(std::shared_ptr<FunapiTransport> funapi_transport, int type,
                 const OnSessionInitiated &on_session_initiated,
                 const OnSessionClosed &on_session_closed);
   ~FunapiNetwork();
@@ -44,12 +44,12 @@ class FunapiNetwork {
   bool Started() const;
   bool Connected(TransportProtocol protocol = TransportProtocol::kDefault) const;
   void Update();
-  void AttachTransport(FunapiTransport *funapi_transport);
+  void AttachTransport(std::shared_ptr<FunapiTransport> funapi_transport);
   void PushTaskQueue(const std::function<void()> task);
   void PushAsyncQueue(const AsyncRequest r);
 
  private:
-  FunapiNetworkImpl *impl_;
+   std::shared_ptr<FunapiNetworkImpl> impl_;
 };
 
 }  // namespace fun

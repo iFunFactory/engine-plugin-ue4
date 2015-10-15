@@ -23,14 +23,14 @@ namespace fun {
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiNetworkImpl implementation.
 
-class FunapiNetworkImpl {
+class FunapiNetworkImpl : public std::enable_shared_from_this<FunapiNetworkImpl> {
  public:
   typedef FunapiTransport::HeaderType HeaderType;
   typedef FunapiNetwork::MessageHandler MessageHandler;
   typedef FunapiNetwork::OnSessionInitiated OnSessionInitiated;
   typedef FunapiNetwork::OnSessionClosed OnSessionClosed;
 
-  FunapiNetworkImpl(FunapiTransport *transport, int type,
+  FunapiNetworkImpl(std::shared_ptr<FunapiTransport> transport, int type,
                     OnSessionInitiated on_session_initiated,
                     OnSessionClosed on_session_closed,
                     FunapiNetwork *network);
@@ -46,8 +46,8 @@ class FunapiNetworkImpl {
   bool Started() const;
   bool Connected(const TransportProtocol protocol);
   void Update();
-  void AttachTransport(FunapiTransport *transport, FunapiNetwork *network);
-  FunapiTransport* GetTransport(const TransportProtocol protocol) const;
+  void AttachTransport(std::shared_ptr<FunapiTransport> transport, FunapiNetwork *network);
+  std::shared_ptr<FunapiTransport> GetTransport(const TransportProtocol protocol) const;
   void PushTaskQueue(std::function<void()> task);
   void PushAsyncQueue(const AsyncRequest r);
 
@@ -64,7 +64,7 @@ class FunapiNetworkImpl {
 
   bool started_;
   int encoding_type_;
-  std::map<TransportProtocol, FunapiTransport*> transports_;
+  std::map<TransportProtocol, std::shared_ptr<FunapiTransport>> transports_;
   OnSessionInitiated on_session_initiated_;
   OnSessionClosed on_session_closed_;
   std::string session_id_;
@@ -91,7 +91,7 @@ class FunapiNetworkImpl {
 
 
 
-FunapiNetworkImpl::FunapiNetworkImpl(FunapiTransport *transport, int type,
+FunapiNetworkImpl::FunapiNetworkImpl(std::shared_ptr<FunapiTransport> transport, int type,
                                      OnSessionInitiated on_session_initiated,
                                      OnSessionClosed on_session_closed,
                                      FunapiNetwork *network)
@@ -112,10 +112,6 @@ FunapiNetworkImpl::~FunapiNetworkImpl() {
 
   {
     std::unique_lock<std::mutex> lock(mutex_transports_);
-    for (auto iter : transports_)
-    {
-      delete iter.second;
-    }
     transports_.clear();
   }
 }
@@ -430,7 +426,7 @@ void FunapiNetworkImpl::SendMessage(const std::string &msg_type, Json &body, con
   // Sends the manipulated JSON object through the transport.
   {
     std::unique_lock<std::mutex> lock(mutex_transports_);
-    FunapiTransport* transport = GetTransport(protocol);
+    std::shared_ptr<FunapiTransport> transport = GetTransport(protocol);
     if (transport) {
       transport->SendMessage(body);
     }
@@ -461,7 +457,7 @@ void FunapiNetworkImpl::SendMessage(const std::string &msg_type, FJsonObject &bo
   // Sends the manipulated JSON object through the transport.
   {
     std::unique_lock<std::mutex> lock(mutex_transports_);
-    FunapiTransport* transport = GetTransport(protocol);
+    std::shared_ptr<FunapiTransport> transport = GetTransport(protocol);
     if (transport) {
       transport->SendMessage(body);
     }
@@ -490,7 +486,7 @@ void FunapiNetworkImpl::SendMessage(FunMessage& message, const TransportProtocol
   // Sends the manipulated Protobuf object through the transport.
   {
     std::unique_lock<std::mutex> lock(mutex_transports_);
-    FunapiTransport *transport = GetTransport(protocol);
+    std::shared_ptr<FunapiTransport> transport = GetTransport(protocol);
     if (transport) {
       transport->SendMessage(message);
     }
@@ -508,7 +504,7 @@ bool FunapiNetworkImpl::Started() const {
 
 bool FunapiNetworkImpl::Connected(TransportProtocol protocol = TransportProtocol::kDefault) {
   std::unique_lock<std::mutex> lock(mutex_transports_);
-  const FunapiTransport *transport = (const FunapiTransport*)GetTransport(protocol);
+  std::shared_ptr<FunapiTransport> transport = GetTransport(protocol);
 
   if (transport)
     return transport->Started();
@@ -604,7 +600,7 @@ void FunapiNetworkImpl::Update() {
   }
 }
 
-void FunapiNetworkImpl::AttachTransport(FunapiTransport *transport, FunapiNetwork *network) {
+void FunapiNetworkImpl::AttachTransport(std::shared_ptr<FunapiTransport> transport, FunapiNetwork *network) {
   transport->RegisterEventHandlers(
     [this](const HeaderType &header, const std::string &body){ OnTransportReceived(header, body); },
     [this](){ OnTransportStopped(); });
@@ -612,17 +608,18 @@ void FunapiNetworkImpl::AttachTransport(FunapiTransport *transport, FunapiNetwor
 
   {
     std::unique_lock<std::mutex> lock(mutex_transports_);
-    if (GetTransport(transport->Protocol()) == nullptr)
+    if (GetTransport(transport->Protocol()))
     {
+      LOG1("AttachTransport - transport of '%d' type already exists.", static_cast<int>(transport->Protocol()));
+      LOG(" You should call DetachTransport first.");
+    } else {
       transports_[transport->Protocol()] = transport;
     }
-    else
-      delete transport;
   }
 }
 
 // The caller must lock mutex_transports_ before call this function.
-FunapiTransport* FunapiNetworkImpl::GetTransport(const TransportProtocol protocol) const {
+std::shared_ptr<FunapiTransport> FunapiNetworkImpl::GetTransport(const TransportProtocol protocol) const {
   if (protocol == TransportProtocol::kDefault) {
     return transports_.begin()->second;
   }
@@ -663,19 +660,15 @@ void FunapiNetwork::Finalize() {
 
 
 FunapiNetwork::FunapiNetwork(
-    FunapiTransport *transport, int type,
+    std::shared_ptr<FunapiTransport> transport, int type,
     const OnSessionInitiated &on_session_initiated,
     const OnSessionClosed &on_session_closed)
-    : impl_(new FunapiNetworkImpl(transport, type,
+      : impl_(std::make_shared<FunapiNetworkImpl>(transport, type,
         on_session_initiated, on_session_closed, this)) {
 }
 
 
 FunapiNetwork::~FunapiNetwork() {
-  if (impl_) {
-    delete impl_;
-    impl_ = NULL;
-  }
 }
 
 
@@ -723,7 +716,7 @@ void FunapiNetwork::Update() {
   return impl_->Update();
 }
 
-void FunapiNetwork::AttachTransport(FunapiTransport *transport) {
+void FunapiNetwork::AttachTransport(std::shared_ptr<FunapiTransport> transport) {
   return impl_->AttachTransport(transport, this);
 }
 

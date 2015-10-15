@@ -154,7 +154,7 @@ class FunapiTcpTransport : public FunapiTransport {
   virtual void SetNetwork(FunapiNetwork* network);
 
  private:
-  FunapiTransportImpl *impl_;
+  std::shared_ptr<FunapiTransportImpl> impl_;
 };
 
 class FunapiUdpTransport : public FunapiTransport {
@@ -173,7 +173,7 @@ class FunapiUdpTransport : public FunapiTransport {
   virtual void SetNetwork(FunapiNetwork* network);
 
  private:
-  FunapiTransportImpl *impl_;
+  std::shared_ptr<FunapiTransportImpl> impl_;
 };
 
 class FunapiHttpTransportImpl;
@@ -193,7 +193,7 @@ class FunapiHttpTransport : public FunapiTransport {
   virtual void SetNetwork(FunapiNetwork* network);
 
  private:
-  FunapiHttpTransportImpl *impl_;
+  std::shared_ptr<FunapiHttpTransportImpl> impl_;
 };
 
 }  // namespace fun

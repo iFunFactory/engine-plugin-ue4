@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <memory>
 #include "GameFramework/Actor.h"
 #include "FunapiNetwork.h"
 #include "funapi_tester.generated.h"
@@ -57,10 +58,10 @@ public:
 
 private:
   void Connect(const fun::TransportProtocol protocol);
-  fun::FunapiTransport* GetNewTransport(fun::TransportProtocol protocol);
+  std::shared_ptr<fun::FunapiTransport> GetNewTransport(fun::TransportProtocol protocol);
 
   const std::string kServerIp = "127.0.0.1";
-  fun::FunapiNetwork* network_ = nullptr;
+  std::unique_ptr<fun::FunapiNetwork> network_;
   int8 msg_type_ = fun::kJsonEncoding;
   fun::TransportProtocol protocol_ = fun::TransportProtocol::kDefault;
 };

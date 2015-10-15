@@ -36,7 +36,7 @@ const int kCurrentFunapiProtocolVersion = 1;
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiTransportBase implementation.
 
-class FunapiTransportBase : std::enable_shared_from_this<FunapiTransportBase> {
+class FunapiTransportBase : public std::enable_shared_from_this<FunapiTransportBase> {
  public:
   typedef FunapiTransport::OnReceived OnReceived;
   typedef FunapiTransport::OnStopped OnStopped;
@@ -976,15 +976,11 @@ void FunapiHttpTransportImpl::AsyncWebRequest(const char* host_url, const IoVecL
 
 FunapiTcpTransport::FunapiTcpTransport(
     const std::string &hostname_or_ip, uint16_t port)
-    : impl_(new FunapiTransportImpl(kTcp, hostname_or_ip, port)) {
+    : impl_(std::make_shared<FunapiTransportImpl>(kTcp, hostname_or_ip, port)) {
 }
 
 
 FunapiTcpTransport::~FunapiTcpTransport() {
-  if (impl_) {
-    delete impl_;
-    impl_ = NULL;
-  }
 }
 
 
@@ -1039,15 +1035,11 @@ void FunapiTcpTransport::SetNetwork(FunapiNetwork* network)
 
 FunapiUdpTransport::FunapiUdpTransport(
     const std::string &hostname_or_ip, uint16_t port)
-    : impl_(new FunapiTransportImpl(kUdp, hostname_or_ip, port)) {
+    : impl_(std::make_shared<FunapiTransportImpl>(kUdp, hostname_or_ip, port)) {
 }
 
 
 FunapiUdpTransport::~FunapiUdpTransport() {
-  if (impl_) {
-    delete impl_;
-    impl_ = NULL;
-  }
 }
 
 
@@ -1100,15 +1092,11 @@ void FunapiUdpTransport::SetNetwork(FunapiNetwork* network)
 
 FunapiHttpTransport::FunapiHttpTransport(
     const std::string &hostname_or_ip, uint16_t port, bool https /*= false*/)
-    : impl_(new FunapiHttpTransportImpl(hostname_or_ip, port, https)) {
+    : impl_(std::make_shared<FunapiHttpTransportImpl>(hostname_or_ip, port, https)) {
 }
 
 
 FunapiHttpTransport::~FunapiHttpTransport() {
-  if (impl_) {
-    delete impl_;
-    impl_ = NULL;
-  }
 }
 
 

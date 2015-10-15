@@ -49,11 +49,6 @@ void Afunapi_tester::BeginPlay()
 void Afunapi_tester::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
   Super::EndPlay(EndPlayReason);
-
-  if (network_) {
-    delete network_;
-    network_ = nullptr;
-  }
 }
 
 void Afunapi_tester::Tick(float DeltaTime)
@@ -134,9 +129,7 @@ bool Afunapi_tester::SendEchoMessage()
 void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
 {
   if (!network_) {
-    fun::FunapiTransport *transport = GetNewTransport(protocol);
-
-    network_ = new fun::FunapiNetwork(transport, msg_type_,
+    network_ = std::make_unique<fun::FunapiNetwork>(GetNewTransport(protocol), msg_type_,
       [this](const std::string &session_id){ OnSessionInitiated(session_id); },
       [this]{ OnSessionClosed(); });
 
@@ -148,24 +141,23 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
     network_->Start();
   }
   else {
-    fun::FunapiTransport *transport = GetNewTransport(protocol);
-    network_->AttachTransport(transport);
+    network_->AttachTransport(GetNewTransport(protocol));
     network_->Start();
   }
 
   protocol_ = protocol;
 }
 
-fun::FunapiTransport* Afunapi_tester::GetNewTransport(fun::TransportProtocol protocol)
+std::shared_ptr<fun::FunapiTransport> Afunapi_tester::GetNewTransport(fun::TransportProtocol protocol)
 {
-  fun::FunapiTransport *transport = nullptr;
+  std::shared_ptr<fun::FunapiTransport> transport;
 
   if (protocol == fun::TransportProtocol::kTcp)
-    transport = new fun::FunapiTcpTransport(kServerIp, (uint16_t)(msg_type_ == fun::kProtobufEncoding ? 8022 : 8012));
+    transport = std::make_shared<fun::FunapiTcpTransport>(kServerIp, static_cast<uint16_t>(msg_type_ == fun::kProtobufEncoding ? 8022 : 8012));
   else if (protocol == fun::TransportProtocol::kUdp)
-    transport = new fun::FunapiUdpTransport(kServerIp, (uint16_t)(msg_type_ == fun::kProtobufEncoding ? 8023 : 8013));
+    transport = std::make_shared<fun::FunapiUdpTransport>(kServerIp, static_cast<uint16_t>(msg_type_ == fun::kProtobufEncoding ? 8023 : 8013));
   else if (protocol == fun::TransportProtocol::kHttp)
-    transport = new fun::FunapiHttpTransport(kServerIp, (uint16_t)(msg_type_ == fun::kProtobufEncoding ? 8028 : 8018), false);
+    transport = std::make_shared<fun::FunapiHttpTransport>(kServerIp, static_cast<uint16_t>(msg_type_ == fun::kProtobufEncoding ? 8028 : 8018), false);
 
   return transport;
 }

@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #if PLATFORM_WINDOWS
 #include <stdint.h>
@@ -49,5 +50,22 @@ string str_fmt(const char* fmt, Args... args)
   snprintf(buf.get(), length, fmt, args...);
   return string(buf.get(), buf.get() + length - 1);
 }
+
+
+// Function event
+template <typename ... Params>
+class fevent
+{
+private:
+  typedef std::function<void(Params...)> _function;
+
+public:
+  void operator+= (_function f) { vec.push_back(f); }
+  void operator() (Params... params) { for (auto f : vec) f(params...); }
+  bool empty() { return vec.empty(); }
+
+private:
+  std::vector<_function> vec;
+};
 
 } // namespace fun

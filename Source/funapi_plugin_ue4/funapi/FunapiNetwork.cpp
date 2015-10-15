@@ -12,14 +12,6 @@
 
 namespace fun {
 
-  namespace {
-    // Funapi message-related constants.
-    const char kMsgTypeBodyField[] = "_msgtype";
-    const char kSessionIdBodyField[] = "_sid";
-    const char kNewSessionMessageType[] = "_session_opened";
-    const char kSessionClosedMessageType[] = "_session_closed";
-  }
-
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiNetworkImpl implementation.
 
@@ -50,6 +42,12 @@ class FunapiNetworkImpl : public std::enable_shared_from_this<FunapiNetworkImpl>
   std::shared_ptr<FunapiTransport> GetTransport(const TransportProtocol protocol) const;
   void PushTaskQueue(std::function<void()> task);
   void PushAsyncQueue(const AsyncRequest r);
+
+  // Funapi message-related constants.
+  const std::string kMsgTypeBodyField = "_msgtype";
+  const std::string kSessionIdBodyField = "_sid";
+  const std::string kNewSessionMessageType = "_session_opened";
+  const std::string kSessionClosedMessageType = "_session_closed";
 
  private:
   void OnTransportReceived(const HeaderType &header, const std::string &body);
@@ -414,13 +412,13 @@ void FunapiNetworkImpl::SendMessage(const std::string &msg_type, Json &body, con
   // Encodes a messsage type.
   rapidjson::Value msg_type_node;
   msg_type_node = msg_type.c_str();
-  body.AddMember(kMsgTypeBodyField, msg_type_node, body.GetAllocator());
+  body.AddMember(kMsgTypeBodyField.c_str(), msg_type_node, body.GetAllocator());
 
   // Encodes a session id, if any.
   if (!session_id_.empty()) {
     rapidjson::Value session_id_node;
     session_id_node = session_id_.c_str();
-    body.AddMember(kSessionIdBodyField, session_id_node, body.GetAllocator());
+    body.AddMember(kSessionIdBodyField.c_str(), session_id_node, body.GetAllocator());
   }
 
   // Sends the manipulated JSON object through the transport.
@@ -447,11 +445,11 @@ void FunapiNetworkImpl::SendMessage(const std::string &msg_type, FJsonObject &bo
     session_id_ = "";
   }
 
-  body.SetStringField(FString(kMsgTypeBodyField), FString(msg_type.c_str()));
+  body.SetStringField(FString(kMsgTypeBodyField.c_str()), FString(msg_type.c_str()));
 
   // Encodes a session id, if any.
   if (!session_id_.empty()) {
-    body.SetStringField(FString(kSessionIdBodyField), FString(session_id_.c_str()));
+    body.SetStringField(FString(kSessionIdBodyField.c_str()), FString(session_id_.c_str()));
   }
 
   // Sends the manipulated JSON object through the transport.
@@ -528,15 +526,15 @@ void FunapiNetworkImpl::OnTransportReceived(
     json.Parse<0>(body.c_str());
     assert(json.IsObject());
 
-    const rapidjson::Value &msg_type_node = json[kMsgTypeBodyField];
+    const rapidjson::Value &msg_type_node = json[kMsgTypeBodyField.c_str()];
     assert(msg_type_node.IsString());
     msg_type = msg_type_node.GetString();
-    json.RemoveMember(kMsgTypeBodyField);
+    json.RemoveMember(kMsgTypeBodyField.c_str());
 
-    const rapidjson::Value &session_id_node = json[kSessionIdBodyField];
+    const rapidjson::Value &session_id_node = json[kSessionIdBodyField.c_str()];
     assert(session_id_node.IsString());
     session_id = session_id_node.GetString();
-    json.RemoveMember(kSessionIdBodyField);
+    json.RemoveMember(kSessionIdBodyField.c_str());
 
   } else if (encoding_type_ == kProtobufEncoding) {
     FunMessage proto;

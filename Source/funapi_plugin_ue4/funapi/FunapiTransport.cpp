@@ -78,7 +78,8 @@ class FunapiTransportBase : public std::enable_shared_from_this<FunapiTransportB
   FunapiTransportState state_;
   IoVecList sending_;
   IoVecList pending_;
-  struct iovec receiving_;
+  std::vector<uint8_t> receiving_;
+  int receiving_len_;
   bool header_decoded_;
   int received_size_;
   int next_decoding_offset_;
@@ -91,38 +92,16 @@ class FunapiTransportBase : public std::enable_shared_from_this<FunapiTransportB
 FunapiTransportBase::FunapiTransportBase(FunapiTransportType type)
     : type_(type), state_(kDisconnected), header_decoded_(false),
       received_size_(0), next_decoding_offset_(0) {
-  receiving_.iov_len = kUnitBufferSize;
-  receiving_.iov_base =
-      new uint8_t[receiving_.iov_len + kUnitBufferPaddingSize];
+  receiving_len_ = kUnitBufferSize;
+  receiving_.resize(kUnitBufferSize + kUnitBufferPaddingSize);
   assert(receiving_.iov_base);
 }
 
 
 FunapiTransportBase::~FunapiTransportBase() {
   header_fields_.clear();
-
-  IoVecList::iterator itr, itr_end;
-
-  for (itr = sending_.begin(), itr_end = sending_.end();
-      itr != itr_end;
-      ++itr) {
-    struct iovec &e = *itr;
-    delete [] reinterpret_cast<uint8_t *>(e.iov_base);
-  }
   sending_.clear();
-
-  for (itr = pending_.begin(), itr_end = pending_.end();
-      itr != itr_end;
-      ++itr) {
-    struct iovec &e = *itr;
-    delete [] reinterpret_cast<uint8_t *>(e.iov_base);
-  }
   pending_.clear();
-
-  if (receiving_.iov_base) {
-    delete [] reinterpret_cast<uint8_t *>(receiving_.iov_base);
-    receiving_.iov_base = NULL;
-  }
 }
 
 
@@ -140,11 +119,6 @@ void FunapiTransportBase::Init() {
   received_size_ = 0;
   next_decoding_offset_ = 0;
   header_fields_.clear();
-  for (IoVecList::iterator itr = sending_.begin(), itr_end = sending_.end();
-      itr != itr_end;
-      ++itr) {
-    delete [] reinterpret_cast<uint8_t *>(itr->iov_base);
-  }
   sending_.clear();
 }
 
@@ -155,7 +129,7 @@ bool FunapiTransportBase::EncodeMessage() {
   for (IoVecList::iterator itr = sending_.begin(), itr_end = sending_.end();
       itr != itr_end;
       ++itr) {
-    struct iovec &body_as_bytes = *itr;
+    auto &body_as_bytes = *itr;
 
     char header[1024];
     size_t offset = 0;
@@ -165,34 +139,27 @@ bool FunapiTransportBase::EncodeMessage() {
                          kCurrentFunapiProtocolVersion, kHeaderDelimeter);
       offset += snprintf(header + offset, sizeof(header)- offset, "%s%s%lu%s",
                          kLengthHeaderField, kHeaderFieldDelimeter,
-                         (unsigned long)body_as_bytes.iov_len, kHeaderDelimeter);
+                         (unsigned long)body_as_bytes.size(), kHeaderDelimeter);
       offset += snprintf(header + offset, sizeof(header)- offset, "%s",
                           kHeaderDelimeter);
     }
 
-    char *b = reinterpret_cast<char *>(body_as_bytes.iov_base);
-    b[body_as_bytes.iov_len] = '\0';
+    std::string b(body_as_bytes.begin(), body_as_bytes.end());
     header[offset] = '\0';
     LOG1("Header to send: %s", *FString(header));
-    LOG1("send message: %s", *FString(b));
+    LOG1("send message: %s", *FString(b.c_str()));
 
-    if (type_ == kTcp || type_ == kHttp) {
-      struct iovec header_as_bytes;
-      header_as_bytes.iov_len = offset;
-      // LOG 출력을 위하여 null 문자를 위한 + 1
-      header_as_bytes.iov_base = new uint8_t[header_as_bytes.iov_len + 1];
-      memcpy(header_as_bytes.iov_base,
-             header,
-             header_as_bytes.iov_len + 1);
+    std::vector<uint8_t> header_as_bytes(offset);
+    memcpy(header_as_bytes.data(),
+      header,
+      offset);
 
+    if (type_ == kTcp || type_ == kHttp)
+    {
       sending_.insert(itr, header_as_bytes);
-    } else if (type_ == kUdp) {
-      uint8_t* bytes = new uint8_t[offset + body_as_bytes.iov_len];
-      memcpy(bytes, header, offset);
-      memcpy(&bytes[offset], body_as_bytes.iov_base, body_as_bytes.iov_len);
-      delete [] reinterpret_cast<uint8_t *>(body_as_bytes.iov_base);
-      body_as_bytes.iov_base = bytes;
-      body_as_bytes.iov_len = offset + body_as_bytes.iov_len;
+    }
+    else if (type_ == kUdp) {
+      body_as_bytes.insert(body_as_bytes.begin(), header_as_bytes.begin(), header_as_bytes.end());
     }
   }
 
@@ -232,24 +199,21 @@ bool FunapiTransportBase::DecodeMessage(int nRead) {
     }
 
     // Checks buvffer space before starting another async receive.
-    if (receiving_.iov_len - received_size_ == 0) {
+    if (receiving_len_ - received_size_ == 0) {
       // If there are space can be collected, compact it first.
       // Otherwise, increase the receiving buffer size.
       if (next_decoding_offset_ > 0) {
         LOG1("Compacting a receive buffer to save %d bytes.", next_decoding_offset_);
-        uint8_t *base = reinterpret_cast<uint8_t *>(receiving_.iov_base);
+        uint8_t *base = reinterpret_cast<uint8_t *>(receiving_.data());
         memmove(base, base + next_decoding_offset_,
                 received_size_ - next_decoding_offset_);
         received_size_ -= next_decoding_offset_;
         next_decoding_offset_ = 0;
       } else {
-        size_t new_size = receiving_.iov_len + kUnitBufferSize;
+        size_t new_size = receiving_len_ + kUnitBufferSize;
         LOG1("Resizing a buffer to %d bytes.", new_size);
-        uint8_t *new_buffer = new uint8_t[new_size + kUnitBufferPaddingSize];
-        memmove(new_buffer, receiving_.iov_base, received_size_);
-        delete [] reinterpret_cast<uint8_t *>(receiving_.iov_base);
-        receiving_.iov_base = new_buffer;
-        receiving_.iov_len = new_size;
+        receiving_.resize(new_size + kUnitBufferPaddingSize);
+        receiving_len_ = new_size;
       }
     }
   }
@@ -284,12 +248,8 @@ void FunapiTransportBase::SendMessage(FunMessage &message) {
 
 
 void FunapiTransportBase::SendMessage(const char *body) {
-  iovec body_as_bytes;
-  body_as_bytes.iov_len = strlen(body);
-
-  // EncodeThenSendMessage() 에서 LOG 출력을 하기 위하여 null 문자를 위한 + 1
-  body_as_bytes.iov_base = new uint8_t[body_as_bytes.iov_len + 1];
-  memcpy(body_as_bytes.iov_base, body, body_as_bytes.iov_len);
+  std::vector<uint8_t> body_as_bytes(strlen(body));
+  memcpy(body_as_bytes.data(), body, strlen(body));
 
   bool sendable = false;
 
@@ -311,7 +271,7 @@ void FunapiTransportBase::SendMessage(const char *body) {
 bool FunapiTransportBase::TryToDecodeHeader() {
   LOG("Trying to decode header fields.");
   for (; next_decoding_offset_ < received_size_; ) {
-    char *base = reinterpret_cast<char *>(receiving_.iov_base);
+    char *base = reinterpret_cast<char *>(receiving_.data());
     char *ptr =
         std::search(base + next_decoding_offset_,
                     base + received_size_,
@@ -384,7 +344,7 @@ bool FunapiTransportBase::TryToDecodeBody() {
       return false;
     }
 
-    char *base = reinterpret_cast<char *>(receiving_.iov_base);
+    char *base = reinterpret_cast<char *>(receiving_.data());
 
     // Generates a null-termianted string for convenience.
     char tmp = base[next_decoding_offset_ + body_length];
@@ -499,7 +459,10 @@ void FunapiTransportImpl::Start() {
     state_ = kConnected;
 
     // Wait for message
-    AsyncReceiveFrom(sock_, recv_endpoint_, receiving_,
+    struct iovec temp_iovec;
+    temp_iovec.iov_base = receiving_.data();
+    temp_iovec.iov_len = receiving_.size();
+    AsyncReceiveFrom(sock_, recv_endpoint_, temp_iovec,
       [this](const ssize_t nRead){ReceiveBytesCb(nRead);});
   }
 }
@@ -541,8 +504,11 @@ void FunapiTransportImpl::StartCb(int rc) {
   state_ = kConnected;
 
   // Start to handle incoming messages.
+  struct iovec temp_iovec;
+  temp_iovec.iov_len = receiving_.size();
+  temp_iovec.iov_base = receiving_.data();
   AsyncReceive(
-      sock_, receiving_,
+      sock_, temp_iovec,
       [this](const ssize_t nRead){ ReceiveBytesCb(nRead); });
   LOG("Ready to receive");
 
@@ -575,7 +541,6 @@ void FunapiTransportImpl::SendBytesCb(ssize_t nSent) {
     if (!sending_.empty())
     {
       IoVecList::iterator itr = sending_.begin();
-      delete [] reinterpret_cast<uint8_t *>(itr->iov_base);
       sending_.erase(itr);
     }
 
@@ -605,9 +570,9 @@ void FunapiTransportImpl::ReceiveBytesCb(ssize_t nRead) {
     std::unique_lock<std::mutex> lock(mutex_);
 
     struct iovec residual;
-    residual.iov_len = receiving_.iov_len - received_size_;
+    residual.iov_len = receiving_len_ - received_size_;
     residual.iov_base =
-        reinterpret_cast<uint8_t *>(receiving_.iov_base) + received_size_;
+        reinterpret_cast<uint8_t *>(receiving_.data()) + received_size_;
     if (type_ == kTcp) {
       AsyncReceive(sock_, residual,
         [this](const ssize_t nRead){ ReceiveBytesCb(nRead); });
@@ -616,7 +581,7 @@ void FunapiTransportImpl::ReceiveBytesCb(ssize_t nRead) {
         [this](const ssize_t nRead){ ReceiveBytesCb(nRead); });
     }
     LOG1("Ready to receive more. We can receive upto %ld  more bytes.",
-         (receiving_.iov_len - received_size_));
+         (receiving_len_ - received_size_));
   }
 }
 
@@ -680,13 +645,13 @@ void FunapiTransportImpl::AsyncSend(int sock,
   for (IoVecList::const_iterator itr = sending.begin(), itr_end = sending.end();
     itr != itr_end;
     ++itr) {
-    const struct iovec &e = *itr;
+    auto &e = *itr;
     AsyncRequest r;
     r.type_ = AsyncRequest::kSend;
     r.sock_ = sock;
     r.send_.callback_ = callback;
-    r.send_.buf_ = reinterpret_cast<uint8_t *>(e.iov_base);
-    r.send_.buf_len_ = e.iov_len;
+    r.send_.buf_ = const_cast<uint8_t *>(e.data());
+    r.send_.buf_len_ = e.size();
     r.send_.buf_offset_ = 0;
 
     network_->PushAsyncQueue(r);
@@ -718,7 +683,7 @@ void FunapiTransportImpl::AsyncSendTo(int sock, const Endpoint &ep,
   for (IoVecList::const_iterator itr = sending.begin(), itr_end = sending.end();
     itr != itr_end;
     ++itr) {
-    const struct iovec &e = *itr;
+    auto &e = *itr;
 
     AsyncRequest r;
     r.type_ = AsyncRequest::kSendTo;
@@ -726,8 +691,8 @@ void FunapiTransportImpl::AsyncSendTo(int sock, const Endpoint &ep,
     r.sendto_.endpoint_ = ep;
     r.sendto_.callback_ = callback;
     r.sendto_.buf_offset_ = 0;
-    r.sendto_.buf_len_ = e.iov_len;
-    r.sendto_.buf_ = reinterpret_cast<uint8_t *>(e.iov_base);
+    r.sendto_.buf_len_ = e.size();
+    r.sendto_.buf_ = const_cast<uint8_t *>(e.data());
 
     network_->PushAsyncQueue(r);
   }
@@ -877,7 +842,6 @@ void FunapiHttpTransportImpl::WebRequestCb(int state) {
       IoVecList::iterator itr = sending_.begin();
       int index = 0;
       while (itr != sending_.end() && index < 2) {
-        delete [] reinterpret_cast<uint8_t *>(itr->iov_base);
         itr = sending_.erase(itr);
         ++index;
       }
@@ -898,7 +862,7 @@ void FunapiHttpTransportImpl::WebRequestCb(int state) {
     }
 
     LOG1("Ready to receive more. We can receive upto %ld more bytes.",
-         (receiving_.iov_len - received_size_));
+         (receiving_len_ - received_size_));
   }
 }
 
@@ -925,17 +889,14 @@ void FunapiHttpTransportImpl::WebResponseHeaderCb(void *data, int len) {
 
 void FunapiHttpTransportImpl::WebResponseBodyCb(void *data, int len) {
   int offset = received_size_ + recv_length_;
-  if (offset + len >= receiving_.iov_len) {
-    size_t new_size = receiving_.iov_len + kUnitBufferSize;
+  if (offset + len >= receiving_len_) {
+    size_t new_size = receiving_len_ + kUnitBufferSize;
     LOG1("Resizing a buffer to %dbytes.", new_size);
-    uint8_t *new_buffer = new uint8_t[new_size + kUnitBufferPaddingSize];
-    memmove(new_buffer, receiving_.iov_base, offset);
-    delete [] reinterpret_cast<uint8_t *>(receiving_.iov_base);
-    receiving_.iov_base = new_buffer;
-    receiving_.iov_len = new_size;
+    receiving_.resize(new_size + kUnitBufferPaddingSize);
+    receiving_len_ = new_size;
   }
 
-  uint8_t *buf = reinterpret_cast<uint8_t*>(receiving_.iov_base);
+  uint8_t *buf = reinterpret_cast<uint8_t*>(receiving_.data());
   memcpy(buf + offset, data, len);
   recv_length_ += len;
 }
@@ -951,8 +912,8 @@ void FunapiHttpTransportImpl::AsyncWebRequest(const char* host_url, const IoVecL
   for (IoVecList::const_iterator itr = sending.begin(), itr_end = sending.end();
     itr != itr_end;
     ++itr) {
-    const struct iovec &header = *itr;
-    const struct iovec &body = *(++itr);
+    const auto &header = *itr;
+    const auto &body = *(++itr);
 
     AsyncRequest r;
     r.type_ = AsyncRequest::kWebRequest;
@@ -960,9 +921,9 @@ void FunapiHttpTransportImpl::AsyncWebRequest(const char* host_url, const IoVecL
     r.web_request_.request_callback_ = callback;
     r.web_request_.receive_header_ = receive_header;
     r.web_request_.receive_body_ = receive_body;
-    r.web_request_.header_ = reinterpret_cast<char *>(header.iov_base);
-    r.web_request_.body_ = reinterpret_cast<uint8_t *>(body.iov_base);
-    r.web_request_.body_len_ = body.iov_len;
+    r.web_request_.header_ = std::string(header.begin(), header.end());
+    r.web_request_.body_ = body;
+    r.web_request_.body_len_ = body.size();
 
     network_->PushAsyncQueue(r);
   }

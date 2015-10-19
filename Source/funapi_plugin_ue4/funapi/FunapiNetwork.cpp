@@ -294,11 +294,11 @@ int FunapiNetworkImpl::AsyncQueueThreadProc() {
         i->web_request_.request_callback_(kWebRequestStart);
 
         struct curl_slist *chunk = NULL;
-        chunk = curl_slist_append(chunk, i->web_request_.header_);
+        chunk = curl_slist_append(chunk, i->web_request_.header_.c_str());
         curl_easy_setopt(ctx, CURLOPT_HTTPHEADER, chunk);
-        curl_easy_setopt(ctx, CURLOPT_URL, i->web_request_.url_);
+        curl_easy_setopt(ctx, CURLOPT_URL, i->web_request_.url_.c_str());
         curl_easy_setopt(ctx, CURLOPT_POST, 1L);
-        curl_easy_setopt(ctx, CURLOPT_POSTFIELDS, i->web_request_.body_);
+        curl_easy_setopt(ctx, CURLOPT_POSTFIELDS, i->web_request_.body_.data());
         curl_easy_setopt(ctx, CURLOPT_POSTFIELDSIZE, i->web_request_.body_len_);
         curl_easy_setopt(ctx, CURLOPT_HEADERDATA, &i->web_request_.receive_header_);
         curl_easy_setopt(ctx, CURLOPT_WRITEDATA, &i->web_request_.receive_body_);

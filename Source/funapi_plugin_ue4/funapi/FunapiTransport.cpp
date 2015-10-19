@@ -154,11 +154,10 @@ bool FunapiTransportBase::EncodeMessage() {
       header,
       offset);
 
-    if (type_ == kTcp || type_ == kHttp)
+    if (type_ == kHttp)
     {
       sending_.insert(itr, header_as_bytes);
-    }
-    else if (type_ == kUdp) {
+    } else {
       body_as_bytes.insert(body_as_bytes.begin(), header_as_bytes.begin(), header_as_bytes.end());
     }
   }

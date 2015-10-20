@@ -119,7 +119,7 @@ class FunapiTransport {
  public:
   typedef std::map<std::string, std::string> HeaderType;
 
-  typedef std::function<void(const HeaderType&,const std::string&)> OnReceived;
+  typedef std::function<void(const HeaderType&, const std::vector<uint8_t>&)> OnReceived;
   typedef std::function<void(void)> OnStopped;
 
   virtual ~FunapiTransport() {}

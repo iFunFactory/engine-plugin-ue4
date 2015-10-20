@@ -50,7 +50,7 @@ class FunapiNetworkImpl : public std::enable_shared_from_this<FunapiNetworkImpl>
   const std::string kSessionClosedMessageType = "_session_closed";
 
  private:
-  void OnTransportReceived(const HeaderType &header, const std::string &body);
+  void OnTransportReceived(const HeaderType &header, const std::vector<uint8_t> &body);
   void OnTransportStopped();
   void OnNewSession(const std::string &msg_type, const std::vector<uint8_t>&v_body);
   void OnSessionTimedout(const std::string &msg_type, const std::vector<uint8_t>&v_body);
@@ -512,7 +512,7 @@ bool FunapiNetworkImpl::Connected(TransportProtocol protocol = TransportProtocol
 
 
 void FunapiNetworkImpl::OnTransportReceived(
-    const HeaderType &header, const std::string &body) {
+    const HeaderType &header, const std::vector<uint8_t> &body) {
   LOG("OnReceived invoked");
 
   last_received_ = time(NULL);
@@ -523,7 +523,7 @@ void FunapiNetworkImpl::OnTransportReceived(
   if (encoding_type_ == kJsonEncoding) {
     // Parses the given json string.
     Json json;
-    json.Parse<0>(body.c_str());
+    json.Parse<0>((char*)(body.data()));
     assert(json.IsObject());
 
     const rapidjson::Value &msg_type_node = json[kMsgTypeBodyField.c_str()];
@@ -538,7 +538,7 @@ void FunapiNetworkImpl::OnTransportReceived(
 
   } else if (encoding_type_ == kProtobufEncoding) {
     FunMessage proto;
-    proto.ParseFromString(body);
+    proto.ParseFromArray(body.data(), body.size());
 
     msg_type = proto.msgtype();
     session_id = proto.sid();
@@ -561,10 +561,7 @@ void FunapiNetworkImpl::OnTransportReceived(
   if (it == message_handlers_.end()) {
     LOG1("No handler for message '%s'. Ignoring.", *FString(msg_type.c_str()));
   } else {
-    std::vector<uint8_t> v;
-    std::copy(body.cbegin(), body.cend(), std::back_inserter(v));
-    v.push_back('\0');
-    it->second(msg_type, v);
+    it->second(msg_type, body);
   }
 }
 
@@ -600,7 +597,7 @@ void FunapiNetworkImpl::Update() {
 
 void FunapiNetworkImpl::AttachTransport(std::shared_ptr<FunapiTransport> transport, FunapiNetwork *network) {
   transport->RegisterEventHandlers(
-    [this](const HeaderType &header, const std::string &body){ OnTransportReceived(header, body); },
+    [this](const HeaderType &header, const std::vector<uint8_t> &body){ OnTransportReceived(header, body); },
     [this](){ OnTransportStopped(); });
   transport->SetNetwork(network);
 

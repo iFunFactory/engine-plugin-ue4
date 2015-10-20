@@ -343,15 +343,8 @@ bool FunapiTransportBase::TryToDecodeBody() {
       return false;
     }
 
-    char *base = reinterpret_cast<char *>(receiving_.data());
-
-    // Generates a null-termianted string for convenience.
-    char tmp = base[next_decoding_offset_ + body_length];
-    base[next_decoding_offset_ + body_length] = '\0';
-
-    std::string buffer;
-    buffer.assign(base + next_decoding_offset_);
-    base[next_decoding_offset_ + body_length] = tmp;
+    std::vector<uint8_t> v(receiving_.begin() + next_decoding_offset_, receiving_.begin() + next_decoding_offset_ + body_length);
+    v.push_back('\0');
 
     // Moves the read offset.
     next_decoding_offset_ += body_length;
@@ -360,7 +353,7 @@ bool FunapiTransportBase::TryToDecodeBody() {
     // LOG("Invoking a receive handler.");
     const OnReceived received = on_received_;
     const HeaderFields fields = header_fields_;
-    network_->PushTaskQueue([received, fields, buffer](){ received(fields, buffer); });
+    network_->PushTaskQueue([received, fields, v](){ received(fields, v); });
   }
 
   // Prepares for a next message.

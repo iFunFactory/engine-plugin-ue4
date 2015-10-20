@@ -164,8 +164,8 @@ int FunapiNetworkImpl::AsyncQueueThreadProc() {
 
     // Makes fd_sets for select().
     int max_fd = -1;
-    for (AsyncQueue::const_iterator i = work_queue.begin();
-      i != work_queue.end(); ++i) {
+    for (AsyncQueue::const_iterator i = work_queue.cbegin();
+      i != work_queue.cend(); ++i) {
 
       switch (i->type_) {
       case AsyncRequest::kConnect:
@@ -332,7 +332,7 @@ int FunapiNetworkImpl::AsyncQueueThreadProc() {
     // We should respect the order.
     {
       std::unique_lock<std::mutex> lock(async_queue_mutex_);
-      async_queue_.splice(async_queue_.begin(), work_queue);
+      async_queue_.splice(async_queue_.cbegin(), work_queue);
     }
   }
 
@@ -562,7 +562,7 @@ void FunapiNetworkImpl::OnTransportReceived(
     LOG1("No handler for message '%s'. Ignoring.", *FString(msg_type.c_str()));
   } else {
     std::vector<uint8_t> v;
-    std::copy(body.begin(), body.end(), std::back_inserter(v));
+    std::copy(body.cbegin(), body.cend(), std::back_inserter(v));
     v.push_back('\0');
     it->second(msg_type, v);
   }
@@ -619,11 +619,11 @@ void FunapiNetworkImpl::AttachTransport(std::shared_ptr<FunapiTransport> transpo
 // The caller must lock mutex_transports_ before call this function.
 std::shared_ptr<FunapiTransport> FunapiNetworkImpl::GetTransport(const TransportProtocol protocol) const {
   if (protocol == TransportProtocol::kDefault) {
-    return transports_.begin()->second;
+    return transports_.cbegin()->second;
   }
 
   auto iter = transports_.find(protocol);
-  if (iter != transports_.end())
+  if (iter != transports_.cend())
     return iter->second;
 
   return nullptr;

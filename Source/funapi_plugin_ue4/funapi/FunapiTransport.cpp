@@ -144,7 +144,7 @@ bool FunapiTransportBase::EncodeMessage() {
                           kHeaderDelimeter);
     }
 
-    std::string b(body_as_bytes.begin(), body_as_bytes.end());
+    std::string b(body_as_bytes.cbegin(), body_as_bytes.cend());
     header[offset] = '\0';
     LOG1("Header to send: %s", *FString(header));
     LOG1("send message: %s", *FString(b.c_str()));
@@ -158,7 +158,7 @@ bool FunapiTransportBase::EncodeMessage() {
     {
       sending_.insert(itr, header_as_bytes);
     } else {
-      body_as_bytes.insert(body_as_bytes.begin(), header_as_bytes.begin(), header_as_bytes.end());
+      body_as_bytes.insert(body_as_bytes.cbegin(), header_as_bytes.cbegin(), header_as_bytes.cend());
     }
   }
 
@@ -641,7 +641,7 @@ void FunapiTransportImpl::AsyncSend(int sock,
   assert(!sending.empty());
   LOG1("Queueing %d async sends.", sending.size());
 
-  for (IoVecList::const_iterator itr = sending.begin(), itr_end = sending.end();
+  for (IoVecList::const_iterator itr = sending.cbegin(), itr_end = sending.cend();
     itr != itr_end;
     ++itr) {
     auto &e = *itr;
@@ -679,7 +679,7 @@ void FunapiTransportImpl::AsyncSendTo(int sock, const Endpoint &ep,
   assert(!sending.empty());
   LOG1("Queueing %d async sends.", sending.size());
 
-  for (IoVecList::const_iterator itr = sending.begin(), itr_end = sending.end();
+  for (IoVecList::const_iterator itr = sending.cbegin(), itr_end = sending.cend();
     itr != itr_end;
     ++itr) {
     auto &e = *itr;
@@ -908,7 +908,7 @@ void FunapiHttpTransportImpl::AsyncWebRequest(const char* host_url, const IoVecL
   assert(!sending.empty());
   LOG1("Queueing %d async sends.", sending.size());
 
-  for (IoVecList::const_iterator itr = sending.begin(), itr_end = sending.end();
+  for (IoVecList::const_iterator itr = sending.cbegin(), itr_end = sending.cend();
     itr != itr_end;
     ++itr) {
     const auto &header = *itr;
@@ -920,7 +920,7 @@ void FunapiHttpTransportImpl::AsyncWebRequest(const char* host_url, const IoVecL
     r.web_request_.request_callback_ = callback;
     r.web_request_.receive_header_ = receive_header;
     r.web_request_.receive_body_ = receive_body;
-    r.web_request_.header_ = std::string(header.begin(), header.end());
+    r.web_request_.header_ = std::string(header.cbegin(), header.cend());
     r.web_request_.body_ = body;
     r.web_request_.body_len_ = body.size();
 

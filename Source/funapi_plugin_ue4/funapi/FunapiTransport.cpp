@@ -198,7 +198,7 @@ bool FunapiTransportBase::DecodeMessage(int nRead) {
     }
 
     // Checks buvffer space before starting another async receive.
-    if (receiving_len_ - received_size_ == 0 || type_ == kHttp) {
+    if (receiving_len_ - received_size_ == 0 || type_ == kHttp || type_ == kUdp) {
       // If there are space can be collected, compact it first.
       // Otherwise, increase the receiving buffer size.
       if (next_decoding_offset_ > 0) {

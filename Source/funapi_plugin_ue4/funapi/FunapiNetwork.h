@@ -46,7 +46,6 @@ class FunapiNetwork : public std::enable_shared_from_this<FunapiNetwork> {
   void Update();
   void AttachTransport(std::shared_ptr<FunapiTransport> funapi_transport);
   void PushTaskQueue(const std::function<void()> task);
-  void PushAsyncQueue(const AsyncRequest r);
 
  private:
    std::shared_ptr<FunapiNetworkImpl> impl_;

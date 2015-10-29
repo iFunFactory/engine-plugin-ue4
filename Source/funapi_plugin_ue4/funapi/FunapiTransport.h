@@ -16,9 +16,6 @@ namespace fun {
 // Types.
 
 typedef sockaddr_in Endpoint;
-typedef std::function<void(const int)> AsyncConnectCallback;
-typedef std::function<void(const size_t)> AsyncSendCallback;
-typedef std::function<void(const size_t)> AsyncReceiveCallback;
 typedef std::function<void(const int)> AsyncWebRequestCallback;
 typedef std::function<void(void*, const int)> AsyncWebResponseCallback;
 
@@ -33,63 +30,6 @@ enum FunapiTransportState {
   kConnecting,
   kConnected,
 };
-
-enum WebRequestState {
-  kWebRequestStart = 0,
-  kWebRequestEnd,
-};
-
-struct AsyncRequest {
-  enum RequestType {
-    kConnect = 0,
-    kSend,
-    kSendTo,
-    kReceive,
-    kReceiveFrom,
-    kWebRequest,
-  };
-
-  RequestType type_;
-  int sock_;
-
-  struct {
-    AsyncConnectCallback callback_;
-    Endpoint endpoint_;
-  } connect_;
-
-  struct AsyncSendContext {
-    AsyncSendCallback callback_;
-    uint8_t *buf_;
-    size_t buf_len_;
-    size_t buf_offset_;
-  } send_;
-
-  struct AsyncReceiveContext {
-    AsyncReceiveCallback callback_;
-    uint8_t *buf_;
-    size_t capacity_;
-  } recv_;
-
-  struct AsyncSendToContext : AsyncSendContext {
-    Endpoint endpoint_;
-  } sendto_;
-
-  struct AsyncReceiveFromContext : AsyncReceiveContext {
-    Endpoint endpoint_;
-  } recvfrom_;
-
-  struct WebRequestContext {
-    AsyncWebRequestCallback request_callback_;
-    AsyncWebResponseCallback receive_header_;
-    AsyncWebResponseCallback receive_body_;
-    std::string url_;
-    std::string header_;
-    std::vector<uint8_t> body_;
-    size_t body_len_;
-  } web_request_;
-};
-
-typedef std::list<std::vector<uint8_t>> IoVecList;
 
 enum EncodingScheme {
   kUnknownEncoding = 0,
@@ -137,7 +77,7 @@ class FunapiTransport {
   FunapiTransport() {}
 };
 
-class FunapiTransportImpl;
+class FunapiTcpTransportImpl;
 class FunapiTcpTransport : public FunapiTransport {
  public:
   FunapiTcpTransport(const std::string &hostname_or_ip, uint16_t port);
@@ -154,9 +94,10 @@ class FunapiTcpTransport : public FunapiTransport {
   virtual void SetNetwork(FunapiNetwork* network);
 
  private:
-  std::shared_ptr<FunapiTransportImpl> impl_;
+  std::shared_ptr<FunapiTcpTransportImpl> impl_;
 };
 
+class FunapiUdpTransportImpl;
 class FunapiUdpTransport : public FunapiTransport {
  public:
   FunapiUdpTransport(const std::string &hostname_or_ip, uint16_t port);
@@ -173,7 +114,7 @@ class FunapiUdpTransport : public FunapiTransport {
   virtual void SetNetwork(FunapiNetwork* network);
 
  private:
-  std::shared_ptr<FunapiTransportImpl> impl_;
+  std::shared_ptr<FunapiUdpTransportImpl> impl_;
 };
 
 class FunapiHttpTransportImpl;

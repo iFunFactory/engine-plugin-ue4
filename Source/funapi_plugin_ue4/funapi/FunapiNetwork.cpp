@@ -41,7 +41,6 @@ class FunapiNetworkImpl : public std::enable_shared_from_this<FunapiNetworkImpl>
   void AttachTransport(std::shared_ptr<FunapiTransport> transport, FunapiNetwork *network);
   std::shared_ptr<FunapiTransport> GetTransport(const TransportProtocol protocol) const;
   void PushTaskQueue(std::function<void()> task);
-  void PushAsyncQueue(const AsyncRequest r);
 
   // Funapi message-related constants.
   const std::string kMsgTypeBodyField = "_msgtype";
@@ -57,8 +56,6 @@ class FunapiNetworkImpl : public std::enable_shared_from_this<FunapiNetworkImpl>
 
   void Initialize();
   void Finalize();
-  int AsyncQueueThreadProc();
-  static size_t HttpResponseCb(void *data, size_t size, size_t count, void *cb);
 
   bool started_;
   int encoding_type_;
@@ -74,14 +71,6 @@ class FunapiNetworkImpl : public std::enable_shared_from_this<FunapiNetworkImpl>
   bool initialized_ = false;
   time_t epoch_ = 0;
   const time_t funapi_session_timeout_ = 3600;
-
-  typedef std::list<AsyncRequest> AsyncQueue;
-  AsyncQueue async_queue_;
-
-  bool async_thread_run_ = false;
-  std::thread async_queue_thread_;
-  std::mutex async_queue_mutex_;
-  std::condition_variable_any async_queue_cond_;
 
   std::queue<std::function<void()>> tasks_queue_;
   std::mutex tasks_queue_mutex_;
@@ -117,10 +106,6 @@ FunapiNetworkImpl::~FunapiNetworkImpl() {
 void FunapiNetworkImpl::Initialize() {
   assert(!initialized);
 
-  // Creates a thread to handle async operations.
-  async_thread_run_ = true;
-  async_queue_thread_ = std::thread([this](){ AsyncQueueThreadProc(); });
-
   // Now ready.
   initialized_ = true;
 }
@@ -128,226 +113,9 @@ void FunapiNetworkImpl::Initialize() {
 void FunapiNetworkImpl::Finalize() {
   assert(initialized);
 
-  // Terminates the thread for async operations.
-  async_thread_run_ = false;
-  async_queue_cond_.notify_all();
-  if (async_queue_thread_.joinable())
-    async_queue_thread_.join();
-
   // All set.
   initialized_ = false;
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// Asynchronous operation related..
-int FunapiNetworkImpl::AsyncQueueThreadProc() {
-  LOG("Thread for async operation has been created.");
-
-  while (async_thread_run_) {
-    // Waits until we have something to process.
-    AsyncQueue work_queue;
-    {
-      std::unique_lock<std::mutex> lock(async_queue_mutex_);
-
-      while (async_thread_run_ && async_queue_.empty()) {
-        async_queue_cond_.wait(async_queue_mutex_);
-      }
-
-      // Moves element to a worker queue and releaes the mutex
-      // for contention prevention.
-      work_queue.swap(async_queue_);
-    }
-
-    fd_set rset, wset;
-    FD_ZERO(&rset);
-    FD_ZERO(&wset);
-
-    // Makes fd_sets for select().
-    int max_fd = -1;
-    for (AsyncQueue::const_iterator i = work_queue.cbegin();
-      i != work_queue.cend(); ++i) {
-
-      switch (i->type_) {
-      case AsyncRequest::kConnect:
-      case AsyncRequest::kSend:
-      case AsyncRequest::kSendTo:
-        //LOG("Checking " << i->type_ << " with fd [" << i->sock_ << "]");
-        FD_SET(i->sock_, &wset);
-        max_fd = std::max(max_fd, i->sock_);
-        break;
-      case AsyncRequest::kReceive:
-      case AsyncRequest::kReceiveFrom:
-        //LOG("Checking " << i->type_ << " with fd [" << i->sock_ << "]");
-        FD_SET(i->sock_, &rset);
-        max_fd = std::max(max_fd, i->sock_);
-        break;
-      case AsyncRequest::kWebRequest:
-        break;
-      default:
-        assert(false);
-        break;
-      }
-    }
-
-    // Waits until some events happen to fd in the sets.
-    if (max_fd != -1) {
-      struct timeval timeout = { 0, 1 };
-      int r = select(max_fd + 1, &rset, &wset, NULL, &timeout);
-
-      // Some fd can be invalidated if other thread closed.
-      assert(r >= 0 || (r < 0 && errno == EBADF));
-      // LOG("woke up: " << r);
-    }
-
-    // Checks if the fd is ready.
-    for (AsyncQueue::iterator i = work_queue.begin(); i != work_queue.end();) {
-      bool remove_request = true;
-      // Ready. Handles accordingly.
-      switch (i->type_) {
-      case AsyncRequest::kConnect:
-        if (!FD_ISSET(i->sock_, &wset)) {
-          remove_request = false;
-        }
-        else {
-          int e;
-          socklen_t e_size = sizeof(e);
-          int r = getsockopt(i->sock_, SOL_SOCKET, SO_ERROR, (char *)&e, &e_size);
-          if (r == 0) {
-            i->connect_.callback_(e);
-          }
-          else {
-            assert(r < 0 && errno == EBADF);
-          }
-        }
-        break;
-      case AsyncRequest::kSend:
-        if (!FD_ISSET(i->sock_, &wset)) {
-          remove_request = false;
-        }
-        else {
-          ssize_t nSent =
-            send(i->sock_, (char *)i->send_.buf_ + i->send_.buf_offset_,
-            i->send_.buf_len_ - i->send_.buf_offset_, 0);
-          if (nSent < 0) {
-            i->send_.callback_(nSent);
-          }
-          else if (nSent + i->send_.buf_offset_ == i->send_.buf_len_) {
-            i->send_.callback_(i->send_.buf_len_);
-          }
-          else {
-            i->send_.buf_offset_ += nSent;
-            remove_request = false;
-          }
-        }
-        break;
-      case AsyncRequest::kReceive:
-        if (!FD_ISSET(i->sock_, &rset)) {
-          remove_request = false;
-        }
-        else {
-          ssize_t nRead =
-            recv(i->sock_, (char *)i->recv_.buf_, i->recv_.capacity_, 0);
-          i->recv_.callback_(nRead);
-        }
-        break;
-      case AsyncRequest::kSendTo:
-        if (!FD_ISSET(i->sock_, &wset)) {
-          remove_request = false;
-        }
-        else {
-          socklen_t len = sizeof(i->sendto_.endpoint_);
-          ssize_t nSent =
-            sendto(i->sock_, (char *)i->sendto_.buf_ + i->sendto_.buf_offset_,
-            i->sendto_.buf_len_ - i->sendto_.buf_offset_, 0,
-            (struct sockaddr *)&i->sendto_.endpoint_, len);
-          if (nSent < 0) {
-            i->sendto_.callback_(nSent);
-          }
-          else if (nSent + i->sendto_.buf_offset_ == i->sendto_.buf_len_) {
-            i->sendto_.callback_(i->sendto_.buf_len_);
-          }
-          else {
-            i->sendto_.buf_offset_ += nSent;
-            remove_request = false;
-          }
-        }
-        break;
-      case AsyncRequest::kReceiveFrom:
-        if (!FD_ISSET(i->sock_, &rset)) {
-          remove_request = false;
-        }
-        else {
-          socklen_t len = sizeof(i->recvfrom_.endpoint_);
-          ssize_t nRead =
-            recvfrom(i->sock_, (char *)i->recvfrom_.buf_, i->recvfrom_.capacity_, 0,
-            (struct sockaddr *)&i->recvfrom_.endpoint_, &len);
-          i->recvfrom_.callback_(nRead);
-        }
-        break;
-      case AsyncRequest::kWebRequest:
-        CURL *ctx = curl_easy_init();
-        if (ctx == NULL) {
-          LOG("Unable to initialize cURL interface.");
-          break;
-        }
-
-        i->web_request_.request_callback_(kWebRequestStart);
-
-        struct curl_slist *chunk = NULL;
-        chunk = curl_slist_append(chunk, i->web_request_.header_.c_str());
-        curl_easy_setopt(ctx, CURLOPT_HTTPHEADER, chunk);
-        curl_easy_setopt(ctx, CURLOPT_URL, i->web_request_.url_.c_str());
-        curl_easy_setopt(ctx, CURLOPT_POST, 1L);
-        curl_easy_setopt(ctx, CURLOPT_POSTFIELDS, i->web_request_.body_.data());
-        curl_easy_setopt(ctx, CURLOPT_POSTFIELDSIZE, i->web_request_.body_len_);
-        curl_easy_setopt(ctx, CURLOPT_HEADERDATA, &i->web_request_.receive_header_);
-        curl_easy_setopt(ctx, CURLOPT_WRITEDATA, &i->web_request_.receive_body_);
-        curl_easy_setopt(ctx, CURLOPT_WRITEFUNCTION, &FunapiNetworkImpl::HttpResponseCb);
-
-        CURLcode res = curl_easy_perform(ctx);
-        if (res != CURLE_OK) {
-          LOG1("Error from cURL: %s", *FString(curl_easy_strerror(res)));
-          assert(false);
-        }
-        else {
-          i->web_request_.request_callback_(kWebRequestEnd);
-        }
-
-        curl_easy_cleanup(ctx);
-        curl_slist_free_all(chunk);
-        break;
-      }
-
-      // If we should keep the fd, puts it back to the queue.
-      if (remove_request) {
-        AsyncQueue::iterator to_delete = i++;
-        work_queue.erase(to_delete);
-      }
-      else {
-        ++i;
-      }
-    }
-
-    // Puts back requests that requires more work.
-    // We should respect the order.
-    {
-      std::unique_lock<std::mutex> lock(async_queue_mutex_);
-      async_queue_.splice(async_queue_.cbegin(), work_queue);
-    }
-  }
-
-  LOG("Thread for async operation is terminating.");
-  return 0;
-}
-
-
-size_t FunapiNetworkImpl::HttpResponseCb(void *data, size_t size, size_t count, void *cb) {
-  AsyncWebResponseCallback *callback = (AsyncWebResponseCallback*)(cb);
-  if (callback != NULL)
-    (*callback)(data, size * count);
-  return size * count;
-}
-
 
 void FunapiNetworkImpl::RegisterHandler(
     const std::string msg_type, const MessageHandler &handler) {
@@ -634,13 +402,6 @@ void FunapiNetworkImpl::PushTaskQueue(const std::function<void()> task)
 }
 
 
-void FunapiNetworkImpl::PushAsyncQueue(const AsyncRequest r)
-{
-  std::unique_lock<std::mutex> lock(async_queue_mutex_);
-  async_queue_.push_back(r);
-  async_queue_cond_.notify_one();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiNetwork implementation.
 
@@ -718,11 +479,6 @@ void FunapiNetwork::AttachTransport(std::shared_ptr<FunapiTransport> transport) 
 void FunapiNetwork::PushTaskQueue(const std::function<void()> task)
 {
   return impl_->PushTaskQueue(task);
-}
-
-void FunapiNetwork::PushAsyncQueue(const AsyncRequest r)
-{
-  return impl_->PushAsyncQueue(r);
 }
 
 }  // namespace fun

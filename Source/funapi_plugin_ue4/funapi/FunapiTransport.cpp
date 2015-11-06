@@ -563,6 +563,8 @@ void FunapiTcpTransportImpl::Connect() {
   assert(rc >= 0);
 #endif
 
+  time_t connect_timeout = time(NULL) + 10;
+
   // Tries to connect.
   rc = connect(sock_,
     reinterpret_cast<const struct sockaddr *>(&endpoint_),
@@ -602,9 +604,11 @@ void FunapiTcpTransportImpl::Connect() {
       }
     }
     else {
-      // TODO : check timeout
-      // LOG("failed - timeout");
-      // is_timeout = true;
+      time_t now = time(NULL);
+      if (now > connect_timeout) {
+        LOG("failed - tcp connect - timeout");
+        is_timeout = true;
+      }
     }
   }
 }

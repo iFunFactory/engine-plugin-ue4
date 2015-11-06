@@ -511,12 +511,12 @@ void FunapiTcpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
   }
 
   fd_set wset;
-  struct timeval timeout = { 0, 1 };
   int offset = 0;
 
   do {
     FD_ZERO(&wset);
     FD_SET(sock_, &wset);
+    struct timeval timeout = { 0, 1 };
 
     if (select(sock_ + 1, NULL, &wset, NULL, &timeout) > 0) {
       if (FD_ISSET(sock_, &wset)) {
@@ -613,7 +613,6 @@ void FunapiTcpTransportImpl::Connect() {
 void FunapiTcpTransportImpl::Recv() {
   std::vector<uint8_t> receiving_vector;
   fd_set rset;
-  struct timeval timeout = { 0, 1 };
 
   int next_decoding_offset = 0;
   bool header_decoded = false;
@@ -623,6 +622,7 @@ void FunapiTcpTransportImpl::Recv() {
   {
     FD_ZERO(&rset);
     FD_SET(sock_, &rset);
+    struct timeval timeout = { 0, 1 };
 
     if (select(sock_ + 1, &rset, NULL, NULL, &timeout) > 0) {
       if (FD_ISSET(sock_, &rset)) {
@@ -768,13 +768,13 @@ void FunapiUdpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
 void FunapiUdpTransportImpl::Recv() {
   std::vector<uint8_t> receiving_vector(kUnitBufferSize);
   fd_set rset;
-  struct timeval timeout = { 0, 1 };
   socklen_t len = sizeof(recv_endpoint_);
 
   while (recv_thread_run_)
   {
     FD_ZERO(&rset);
     FD_SET(sock_, &rset);
+    struct timeval timeout = { 0, 1 };
 
     if (select(sock_ + 1, &rset, NULL, NULL, &timeout) > 0) {
       if (FD_ISSET(sock_, &rset)) {

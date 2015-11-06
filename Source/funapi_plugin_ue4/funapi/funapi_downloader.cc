@@ -30,8 +30,8 @@
 #include "curl/curl.h"
 #include "rapidjson/stringbuffer.h"
 
-#include "./FunapiDownloader.h"
-#include "./FunapiUtils.h"
+#include "./funapi_downloader.h"
+#include "./funapi_utils.h"
 #if PLATFORM_WINDOWS
 #include "HideWindowsPlatformTypes.h"
 #endif

@@ -6,8 +6,8 @@
 
 #include "funapi_plugin_ue4.h"
 
-#include "FunapiUtils.h"
-#include "FunapiNetwork.h"
+#include "funapi_utils.h"
+#include "funapi_network.h"
 
 
 namespace fun {

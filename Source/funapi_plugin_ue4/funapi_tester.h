@@ -8,7 +8,7 @@
 
 #include <memory>
 #include "GameFramework/Actor.h"
-#include "FunapiNetwork.h"
+#include "funapi_network.h"
 #include "funapi_tester.generated.h"
 
 UCLASS()

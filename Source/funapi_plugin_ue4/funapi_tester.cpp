@@ -13,9 +13,9 @@
 #include <functional>
 
 #include "funapi_tester.h"
-#include "funapi/FunapiNetwork.h"
+#include "funapi/funapi_network.h"
 #include "funapi/test_messages.pb.h"
-// #include "Funapi/FunapiDownloader.h"
+// #include "Funapi/funapi_downloader.h"
 
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"

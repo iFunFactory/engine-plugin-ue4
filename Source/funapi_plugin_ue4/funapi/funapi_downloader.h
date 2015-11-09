@@ -4,39 +4,43 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
-/** @file */
+#pragma once
 
-#ifndef SRC_FUNAPI_DOWNLOADER_H_
-#define SRC_FUNAPI_DOWNLOADER_H_
+#include "funapi_utils.h"
 
 namespace fun {
 
 enum DownloadResult {
   kDownloadSuccess,
-  kDownloadFailed,
+  kDownloadFailure
 };
 
 
 class FunapiHttpDownloaderImpl;
 class FunapiHttpDownloader {
  public:
-   typedef std::function<void(const std::string&,const long,const long,const int)> OnUpdate;
-   typedef std::function<void(const int)> OnFinished;
+  typedef std::function<void(const std::string&,const long,const long,const int)> OnUpdate;
+  typedef std::function<void(const int)> OnFinished;
 
-  FunapiHttpDownloader(const char *target_path,
-      const OnUpdate &cb1, const OnFinished &cb2);
-  ~FunapiHttpDownloader();
+  FunapiHttpDownloader ();
+  ~FunapiHttpDownloader ();
 
-  bool StartDownload(const char *hostname_or_ip, uint16_t port,
-      const char *list_filename, bool https = false);
-  bool StartDownload(const char *url);
-  void Stop();
-  bool Connected() const;
+  void GetDownloadList (const char *hostname_or_ip, uint16_t port,
+                        bool https, const char *target_path);
+  void GetDownloadList (const char *url, const char *target_path);
+  void StartDownload ();
+  void Stop ();
+
+  bool IsDownloading () const;
+
+ public:
+  FEvent<string> VerifyCallback;
+  FEvent<int, uint64> ReadyCallback;
+  FEvent<string, uint64, uint64, int> UpdateCallback;
+  FEvent<DownloadResult> FinishCallback;
 
  private:
-   FunapiHttpDownloaderImpl *impl_;
+  FunapiHttpDownloaderImpl *impl_;
 };
 
 }  // namespace fun
-
-#endif  // SRC_FUNAPI_DOWNLOADER_H_

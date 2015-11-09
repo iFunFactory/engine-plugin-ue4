@@ -19,7 +19,6 @@
 namespace fun {
 
 #if PLATFORM_WINDOWS
-
 struct IOVec
 {
     uint8_t* iov_base;
@@ -34,8 +33,7 @@ struct IOVec
 
 #define F_OK      0
 
-#define mkdir(path, mode)    _mkdir(path)
-
+#define mkdir(path, mode)   _mkdir(path)
 #endif // PLATFORM_WINDOWS
 
 
@@ -43,7 +41,7 @@ struct IOVec
 typedef std::string string;
 
 template <typename ... Args>
-string str_fmt(const char* fmt, Args... args)
+string FormatString (const char* fmt, Args... args)
 {
   size_t length = snprintf(nullptr, 0, fmt, args...) + 1;
   std::unique_ptr<char[]> buf(new char[length]);
@@ -54,17 +52,16 @@ string str_fmt(const char* fmt, Args... args)
 
 // Function event
 template <typename ... Params>
-class fevent
+class FEvent
 {
-private:
-  typedef std::function<void(Params...)> _function;
+ typedef std::function<void(Params...)> _function;
 
-public:
+ public:
   void operator+= (_function f) { vec.push_back(f); }
   void operator() (Params... params) { for (auto f : vec) f(params...); }
   bool empty() { return vec.empty(); }
 
-private:
+ private:
   std::vector<_function> vec;
 };
 

@@ -15,7 +15,7 @@
 #include "funapi_tester.h"
 #include "funapi/funapi_network.h"
 #include "funapi/test_messages.pb.h"
-// #include "Funapi/funapi_downloader.h"
+#include "Funapi/funapi_downloader.h"
 
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
@@ -194,5 +194,16 @@ void Afunapi_tester::OnEchoProto(const std::string &type, const std::vector<uint
 
 bool Afunapi_tester::FileDownload()
 {
-    return true;
+  fun::FunapiHttpDownloader downloader;
+  downloader.ReadyCallback += [&downloader](int count, uint64 size) {
+    downloader.StartDownload();
+  };
+
+  downloader.GetDownloadList("http://127.0.0.1:8020", "C:\\download_test");
+
+  while (downloader.IsDownloading()) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+
+  return true;
 }

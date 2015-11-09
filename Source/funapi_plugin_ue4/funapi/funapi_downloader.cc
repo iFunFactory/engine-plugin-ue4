@@ -8,30 +8,15 @@
 
 #if PLATFORM_WINDOWS
 #include "AllowWindowsPlatformTypes.h"
-#include <process.h>
-#include <WinSock2.h>
-#include <ws2tcpip.h>
-#include <io.h>
-#include <direct.h>
-#else
-#include <netinet/in.h>
-#include <algorithm>
 #endif
+#include "funapi_downloader.h"
+#include "async_delegates.h"
 
-#include <list>
-#include <functional>
-#include <mutex>
-#include <condition_variable>
-#include <thread>
-
+#include <ctime>
+#include <fstream>
+#include <future>
 #include <sys/stat.h>
 
-#include <openssl/md5.h>
-#include "curl/curl.h"
-#include "rapidjson/stringbuffer.h"
-
-#include "./funapi_downloader.h"
-#include "./funapi_utils.h"
 #if PLATFORM_WINDOWS
 #include "HideWindowsPlatformTypes.h"
 #endif
@@ -39,32 +24,31 @@
 
 namespace fun {
 
-using std::map;
-typedef std::string string;
+using namespace std::chrono;
 
 
 namespace {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Types.
+const int kCurrentFunapiDownloaderProtocolVersion = 1;
 
-typedef std::function<void(const int)> AsyncDownloaderRequestCallback;
-typedef std::function<void(const std::string)> AsyncDownloaderRequestMd5Callback;
-typedef std::function<void(void*,const int)> AsyncDownloaderResponseCallback;
+const string kRootPath = "client_data";
+const string kCachedFilename = "cached_files";
+const int kDownloadUnitBufferSize = 65536;
+const int kBlockSize = 1024 * 1024; // 1M
 
+#if PLATFORM_WINDOWS
+#define PATH_DELIMITER        '\\'
+#else
+#define PATH_DELIMITER        '/'
+#endif
 
-enum DownloadState {
-  kDownloadReady,
-  kDownloadStart,
-  kDownloading,
-  kDownloadComplete,
-};
-
-
-enum DownloadRequestState {
-  kWebRequestStart = 0,
-  kWebRequestInProgress,
-  kWebRequestEnd,
+enum class State : short {
+  None,
+  Ready,
+  Start,
+  Downloading,
+  Completed
 };
 
 
@@ -74,315 +58,41 @@ struct DownloadUrl {
 };
 
 
-struct DownloadFile {
-  string path;
-  string md5;
+struct DownloadFileInfo {
+  string path;          // save path
+  uint32 size;          // file size
+  string hash;          // md5 hash
+  string hash_front;    // front part of file (1MB)
 };
-
-
-struct AsyncDownloaderRequest {
-  enum RequestType {
-    kRequestList = 0,
-    kRequestFile,
-    kRequestMD5,
-  };
-
-  enum AsyncState {
-    kStateStart = 0,
-    kStateUpdate,
-    kStateFinish,
-  };
-
-  RequestType type_;
-  AsyncState state_;
-
-  struct {
-    string url_;
-    AsyncDownloaderRequestCallback callback_;
-    AsyncDownloaderResponseCallback response_header_;
-    AsyncDownloaderResponseCallback response_body_;
-  } web_request_;
-
-  struct {
-    string path_;
-    AsyncDownloaderRequestMd5Callback callback_;
-  } md5_request_;
-};
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Constants.
-
-// Funapi version
-const int kCurrentFunapiDownloaderProtocolVersion = 1;
-
-// Funapi header-related constants.
-const char kDownloaderHeaderDelimeter[] = "\n";
-const char kDownloaderHeaderFieldDelimeter[] = ":";
-const char kDownloaderHeaderFieldContentLength[] = "content-length";
-
-// File-related constants.
-const int kMd5DivideFileLength = 1024 * 1024;  // 1Mb
-const char kCacheFileName[] = "cached_files_list";
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Global variables.
-
-typedef std::list<AsyncDownloaderRequest> AsyncDownloaderQueue;
-AsyncDownloaderQueue async_downloader_queue;
-
-bool async_downloader_thread_run = false;
-#if PLATFORM_WINDOWS
-#define PATH_DELIMITER        '\\'
-#else
-#define PATH_DELIMITER        '/'
-#endif
-std::thread async_downloader_queue_thread;
-std::mutex async_downloader_queue_mutex;
-std::condition_variable_any async_downloader_queue_cond;
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // Helper functions.
 
-struct compare_path : public std::binary_function<DownloadFile*, string, bool> {
-  bool operator() (const DownloadFile *lhs, const string &path) const {
-    return lhs->path == path;
-  }
-};
+string GetDirectory (const string& path) {
+  auto offset = path.find_last_of("\\/");
+  if (offset == string::npos)
+    return "";
 
-
-size_t HttpResponseCb(void *data, size_t size, size_t count, void *cb) {
-  AsyncDownloaderResponseCallback *callback = (AsyncDownloaderResponseCallback*)(cb);
-  if (callback != NULL)
-    (*callback)(data, size * count);
-  return size * count;
+  return path.substr(0, offset);
 }
 
+string GetFilename (const string& path) {
+  auto offset = path.find_last_of("\\/");
+  if (offset == string::npos)
+    return path;
 
-
-////////////////////////////////////////////////////////////////////////////////
-// Asynchronous operation related..
-int AsyncQueueThreadProc() {
-  LOG("Thread for async operation has been created.");
-
-  CURL *ctx = NULL;
-  CURLM *mctx = NULL;
-  int maxfd, running = 0;
-  struct timeval timeout;
-  fd_set fdread, fdwrite, fdexcep;
-  FILE *fp = NULL;
-  MD5_CTX lctx;
-  uint8_t *buffer = new uint8_t [kMd5DivideFileLength];
-  int length = 0, read_len = 0, offset = 0;
-
-  while (async_downloader_thread_run) {
-    // Waits until we have something to process.
-    AsyncDownloaderQueue work_queue;
-    {
-      std::unique_lock<std::mutex> lock(async_downloader_queue_mutex);
-      while (async_downloader_thread_run && async_downloader_queue.empty()) {
-        async_downloader_queue_cond.wait(async_downloader_queue_mutex);
-      }
-
-      // Moves element to a worker queue and releaes the mutex
-      // for contention prevention.
-      work_queue.swap(async_downloader_queue);
-    }
-
-    for (AsyncDownloaderQueue::iterator itr = work_queue.begin(); itr != work_queue.end(); ) {
-      switch (itr->type_) {
-      case AsyncDownloaderRequest::kRequestList:
-      case AsyncDownloaderRequest::kRequestFile: {
-          if (itr->state_ == AsyncDownloaderRequest::kStateStart) {
-            running = 0;
-            ctx = curl_easy_init();
-
-            curl_easy_setopt(ctx, CURLOPT_URL, itr->web_request_.url_.c_str());
-            curl_easy_setopt(ctx, CURLOPT_HEADERDATA, &itr->web_request_.response_header_);
-            curl_easy_setopt(ctx, CURLOPT_WRITEDATA, &itr->web_request_.response_body_);
-            curl_easy_setopt(ctx, CURLOPT_WRITEFUNCTION, &HttpResponseCb);
-
-            mctx = curl_multi_init();
-            curl_multi_add_handle(mctx, ctx);
-
-            itr->web_request_.callback_(kWebRequestStart);
-
-            curl_multi_perform(mctx, &running);
-            itr->state_ = AsyncDownloaderRequest::kStateUpdate;
-          } else if (itr->state_ == AsyncDownloaderRequest::kStateUpdate) {
-            FD_ZERO(&fdread);
-            FD_ZERO(&fdwrite);
-            FD_ZERO(&fdexcep);
-
-            timeout.tv_sec = 1;
-            timeout.tv_usec = 0;
-
-            long curl_timeo = -1;
-            curl_multi_timeout(mctx, &curl_timeo);
-            if (curl_timeo >= 0) {
-              timeout.tv_sec = curl_timeo / 1000;
-              if (timeout.tv_sec > 1)
-                timeout.tv_sec = 1;
-              else
-                timeout.tv_usec = (curl_timeo % 1000) * 1000;
-            }
-
-            maxfd = -1;
-            curl_multi_fdset(mctx, &fdread, &fdwrite, &fdexcep, &maxfd);
-
-            if (maxfd != -1) {
-              int rc = select(maxfd+1, &fdread, &fdwrite, &fdexcep, &timeout);
-              assert(rc >= 0);
-
-              if (rc == -1) {
-                running = 0;
-                LOG("select() returns error.");
-              } else {
-                curl_multi_perform(mctx, &running);
-              }
-            }
-
-            if (!running)
-              itr->state_ = AsyncDownloaderRequest::kStateFinish;
-          } else if (itr->state_ == AsyncDownloaderRequest::kStateFinish) {
-            itr->web_request_.callback_(kWebRequestEnd);
-            itr = work_queue.erase(itr);
-
-            curl_multi_remove_handle(mctx, ctx);
-            curl_easy_cleanup(ctx);
-            curl_multi_cleanup(mctx);
-          } else {
-            LOG1("Invalid state value. state: %d", (int)itr->state_);
-            assert(false);
-          }
-        }
-        break;
-
-      case AsyncDownloaderRequest::kRequestMD5: {
-          if (itr->state_ == AsyncDownloaderRequest::kStateStart) {
-            MD5_Init(&lctx);
-
-            fp = fopen(itr->md5_request_.path_.c_str(), "rb");
-            assert(fp != NULL);
-            fseek(fp, 0, SEEK_END);
-            length = ftell(fp);
-            fseek(fp, 0, SEEK_SET);
-
-            offset = 0;
-            itr->state_ = AsyncDownloaderRequest::kStateUpdate;
-          } else if (itr->state_ == AsyncDownloaderRequest::kStateUpdate) {
-            if (offset + kMd5DivideFileLength > length)
-              read_len = length - offset;
-            else
-              read_len = kMd5DivideFileLength;
-
-            fread(buffer, sizeof(uint8_t), read_len, fp);
-
-            MD5_Update(&lctx, buffer, read_len);
-            offset += read_len;
-
-            if (offset >= length)
-              itr->state_ = AsyncDownloaderRequest::kStateFinish;
-          } else if (itr->state_ == AsyncDownloaderRequest::kStateFinish) {
-            char md5msg[MD5_DIGEST_LENGTH * 2 + 1];
-            unsigned char digest[MD5_DIGEST_LENGTH];
-
-            MD5_Final(digest, &lctx);
-            fclose(fp);
-
-            for (int i = 0; i < MD5_DIGEST_LENGTH; ++i) {
-                sprintf(md5msg + (i * 2), "%02x", digest[i]);
-            }
-            md5msg[MD5_DIGEST_LENGTH * 2] = '\0';
-
-            LOG2("MD5(%s) >> %s", *FString(itr->md5_request_.path_.c_str()), *FString(md5msg));
-
-            itr->md5_request_.callback_(md5msg);
-            itr = work_queue.erase(itr);
-          } else {
-            LOG1("Invalid state value. state: %d", (int)itr->state_);
-            assert(false);
-          }
-        }
-        break;
-
-      default:
-        LOG1("Invalid request type. type: %d", (int)itr->type_);
-        ++itr;
-        break;
-      }
-    }
-
-    // Puts back requests that requires more work.
-    // We should respect the order.
-    {
-      std::unique_lock<std::mutex> lock(async_downloader_queue_mutex);
-      async_downloader_queue.splice(async_downloader_queue.begin(), work_queue);
-    }
-  }
-
-  LOG("Thread for async operation is terminating.");
-  return NULL;
+  return path.substr(offset + 1);
 }
 
-
-void AsyncRequestList(const string &url, AsyncDownloaderRequestCallback cb_request,
-    AsyncDownloaderResponseCallback cb_header, AsyncDownloaderResponseCallback cb_body) {
-  LOG("Queueing async request list file.");
-
-  AsyncDownloaderRequest r;
-  r.type_ = AsyncDownloaderRequest::kRequestList;
-  r.state_ = AsyncDownloaderRequest::kStateStart;
-  r.web_request_.callback_ = cb_request;
-  r.web_request_.response_header_ = cb_header;
-  r.web_request_.response_body_ = cb_body;
-  r.web_request_.url_ = url;
-
-
-  {
-    std::unique_lock<std::mutex> lock(async_downloader_queue_mutex);
-    async_downloader_queue.push_back(r);
-    async_downloader_queue_cond.notify_one();
+string MakeHashString (uint8* digest) {
+  char md5msg[32 + 1];
+  for (int i = 0; i < 16; ++i) {
+    sprintf(md5msg + (i * 2), "%02x", digest[i]);
   }
-}
+  md5msg[32] = '\0';
 
-
-void AsyncRequestFile (const string &url, AsyncDownloaderRequestCallback cb_request,
-    AsyncDownloaderResponseCallback cb_header, AsyncDownloaderResponseCallback cb_body) {
-  LOG("Queueing async request resource file.");
-
-  AsyncDownloaderRequest r;
-  r.type_ = AsyncDownloaderRequest::kRequestFile;
-  r.state_ = AsyncDownloaderRequest::kStateStart;
-  r.web_request_.callback_ = cb_request;
-  r.web_request_.response_header_ = cb_header;
-  r.web_request_.response_body_ = cb_body;
-  r.web_request_.url_ = url;
-
-  {
-    std::unique_lock<std::mutex> lock(async_downloader_queue_mutex);
-    async_downloader_queue.push_back(r);
-    async_downloader_queue_cond.notify_one();
-  }
-}
-
-
-void AsyncRequestMd5 (const string &path, AsyncDownloaderRequestMd5Callback cb_request) {
-  LOG("Queueing async request MD5.");
-
-  AsyncDownloaderRequest r;
-  r.type_ = AsyncDownloaderRequest::kRequestMD5;
-  r.state_ = AsyncDownloaderRequest::kStateStart;
-  r.md5_request_.path_ = path;
-  r.md5_request_.callback_ = cb_request;
-
-  {
-    std::unique_lock<std::mutex> lock(async_downloader_queue_mutex);
-    async_downloader_queue.push_back(r);
-    async_downloader_queue_cond.notify_one();
-  }
+  return md5msg;
 }
 
 }  // unnamed namespace
@@ -397,85 +107,117 @@ class FunapiHttpDownloaderImpl {
   typedef FunapiHttpDownloader::OnUpdate OnUpdate;
   typedef FunapiHttpDownloader::OnFinished OnFinished;
 
-  FunapiHttpDownloaderImpl(const char *target_path,
-      const OnUpdate &cb1, const OnFinished &cb2);
-  ~FunapiHttpDownloaderImpl();
+  FunapiHttpDownloaderImpl (FunapiHttpDownloader*);
+  ~FunapiHttpDownloaderImpl ();
 
-  bool StartDownload(const string url);
-  void Stop();
-  bool Connected() const;
+  bool IsDownloading () const;
+
+  void GetDownloadList (const char *url, const char *target_path);
+  void StartDownload ();
+  void Stop ();
+
+ private:
+   typedef std::list<DownloadFileInfo*> FileList;
+   typedef std::list<string> PathList;
+
+   void LoadCachedList ();
+   void UpdateCachedList ();
+
+   void CheckFileList (FileList&);
+   bool CheckMd5 (const string&, const DownloadFileInfo*);
+   void RemoveCachedList (PathList&);
+   void DeleteLocalFiles ();
+
+   void DownloadResourceFile ();
+
+   void DownloadListCb (const string&, bool);
+   void DownloadFileCb (const DownloadFileInfo*, bool);
 
  private:
   typedef std::list<DownloadUrl*> UrlList;
-  typedef std::list<DownloadFile*> FileList;
-  typedef std::map<string, string> HeaderFields;
 
-  void ClearDownloadList();
-  void ClearCachedFileList();
+  void ClearDownloadList ();
+  void ClearCachedFileList ();
 
-  void LoadCachedFileList();
-  void SaveCachedFileList();
+private:
+  std::unique_ptr<HttpFileDownloader> http_;
+  FunapiHttpDownloader *caller_;
 
-  void CheckFileList(FileList &list);
-  void DownloadListFile(const string &url);
-  void DownloadResourceFile();
-
-  void DownloadListCb(int state);
-  void DownloadFileCb(int state);
-  void WebResponseHeaderCb(void *data, int len);
-  void WebResponseBodyCb(void *data, int len);
-  void ComputeMd5Cb(const string &md5hash);
-
-  static const int kDownloadUnitBufferSize = 65536;
-
-  // State-related.
+  State state_;
   std::mutex mutex_;
-  DownloadState state_;
+  time_point<system_clock> check_time_;
 
   // Url-related.
   string host_url_;
   string target_path_;
   UrlList url_list_;
+
+  FileList cached_list_;
   FileList download_list_;
-  FileList cached_files_list_;
-  DownloadFile *cur_download_;
+  PathList delete_file_list_;
 
-  // Callback functions
-  OnUpdate on_update_;
-  OnFinished on_finished_;
-
-  // Buffer-related.
-  HeaderFields header_fields_;
-  struct iovec buffer_;
-  int recv_offset_;
-  int file_length_;
+  int cur_download_count_ = 0;
+  int total_download_count_ = 0;
+  uint64 cur_download_size_ = 0;
+  uint64 total_download_size_ = 0;
 };
 
 
-FunapiHttpDownloaderImpl::FunapiHttpDownloaderImpl(
-    const char *target_path, const OnUpdate &cb1, const OnFinished &cb2)
-    : state_(kDownloadReady), on_update_(cb1), on_finished_(cb2) {
+FunapiHttpDownloaderImpl::FunapiHttpDownloaderImpl (FunapiHttpDownloader* caller)
+  : state_(State::None), caller_(caller) {
+  http_ = std::make_unique<HttpFileDownloader>();
+}
+
+
+FunapiHttpDownloaderImpl::~FunapiHttpDownloaderImpl () {
+}
+
+bool FunapiHttpDownloaderImpl::IsDownloading () const {
+  return state_ == State::Start || state_ == State::Ready || state_ == State::Downloading;
+}
+
+void FunapiHttpDownloaderImpl::GetDownloadList (const char *url, const char *target_path) {
+  std::unique_lock<std::mutex> lock(mutex_);
+
+  if (caller_->ReadyCallback.empty()) {
+    LogError("You must register the ReadyCallback first.");
+    return;
+  }
+
+  if (IsDownloading()) {
+    LogWarning("The resource file is being downloaded, from %s.\
+ Please try again after the download is completed.", *FString(url));
+    return;
+  }
+
+  state_ = State::Start;
+
+  string host_url = url;
+  if (host_url.back() != '/')
+    host_url.append("/");
+  host_url_ = host_url;
+  Log("Download url: %s", *FString(host_url_.c_str()));
+
   target_path_ = target_path;
-  if (target_path_.at(target_path_.length() - 1) != PATH_DELIMITER)
+  if (target_path_.back() != PATH_DELIMITER)
     target_path_.append(1, PATH_DELIMITER);
+  target_path_.append(kRootPath);
+  target_path_.append(1, PATH_DELIMITER);
+  Log("Download path: %s", *FString(target_path_.c_str()));
 
-  header_fields_.clear();
+  cur_download_count_ = 0;
+  cur_download_size_ = 0;
+  total_download_count_ = 0;
+  total_download_size_ = 0;
 
-  buffer_.iov_len = kDownloadUnitBufferSize;
-  buffer_.iov_base = new uint8_t[buffer_.iov_len + 1];
-  assert(buffer_.iov_base);
+  LoadCachedList();
 
-  LoadCachedFileList();
+  // Requests a list file.
+  http_->AddRequest(host_url_, [this](const string& data, bool success) {
+                      DownloadListCb(data, success); });
 }
 
-
-FunapiHttpDownloaderImpl::~FunapiHttpDownloaderImpl() {
-  ClearDownloadList();
-  ClearCachedFileList();
-}
-
-
-void FunapiHttpDownloaderImpl::ClearDownloadList() {
+void FunapiHttpDownloaderImpl::ClearDownloadList () {
   std::unique_lock<std::mutex> lock(mutex_);
   if (!url_list_.empty()) {
     UrlList::iterator itr = url_list_.begin();
@@ -495,458 +237,566 @@ void FunapiHttpDownloaderImpl::ClearDownloadList() {
 }
 
 
-void FunapiHttpDownloaderImpl::ClearCachedFileList() {
-  if (cached_files_list_.empty())
+void FunapiHttpDownloaderImpl::ClearCachedFileList () {
+  if (cached_list_.empty())
     return;
 
   {
     std::unique_lock<std::mutex> lock(mutex_);
-    FileList::iterator itr = cached_files_list_.begin();
-    for (; itr != cached_files_list_.end(); ++itr) {
+    FileList::iterator itr = cached_list_.begin();
+    for (; itr != cached_list_.end(); ++itr) {
       delete (*itr);
     }
 
-    cached_files_list_.clear();
+    cached_list_.clear();
   }
 }
 
 
-bool FunapiHttpDownloaderImpl::StartDownload(const string url) {
-  char ver[128];
-  sprintf(ver, "/v%d/", kCurrentFunapiDownloaderProtocolVersion);
-  int index = url.find(ver);
-  if (index <= 0) {
-    LOG1("Invalid request url : %s", *FString(url.c_str()));
-    assert(false);
-    return false;
+void FunapiHttpDownloaderImpl::StartDownload () {
+  if (state_ != State::Ready) {
+    LogError("You must call GetDownloadList function first.");
+    return;
   }
 
-  {
-    std::unique_lock<std::mutex> lock(mutex_);
-    string host_url = url.substr(0, index + strlen(ver));
-    DownloadUrl *info = new DownloadUrl();
-    info->host = host_url;
-    info->url = url;
+  //std::unique_lock<std::mutex> lock(mutex_);
 
-    if (state_ == kDownloading) {
-      url_list_.push_back(info);
-    } else {
-      state_ = kDownloadStart;
-      host_url_ = host_url;
-      LOG("Start Download.");
-
-      DownloadListFile(url);
+  if (total_download_count_ > 0) {
+    float size;
+    string unit;
+    if (total_download_size_ < 1024 * 1024) {
+      size = total_download_size_ / float(1024);
+      unit = "K";
     }
+    else {
+      size = total_download_size_ / float(1024 * 1024);
+      unit = "M";
+    }
+    size = int(size * pow(10, 3)) / pow(10, 3);
+    Log("Ready to download %d files (%s%s)", total_download_count_,
+        *FString::SanitizeFloat(size), *FString(unit.c_str()));
   }
-  return true;
+
+  state_ = State::Downloading;
+  check_time_ = system_clock::now();
+
+  // Deletes files
+  DeleteLocalFiles();
+
+  // Starts download
+  DownloadResourceFile();
 }
 
 
-void FunapiHttpDownloaderImpl::Stop() {
-  if (state_ == kDownloadStart || state_ == kDownloading) {
-    on_finished_(kDownloadFailed);
+void FunapiHttpDownloaderImpl::Stop () {
+  if (state_ == State::Start || state_ == State::Downloading) {
+    caller_->FinishCallback(kDownloadFailure);
   }
 
   ClearDownloadList();
 }
 
+void FunapiHttpDownloaderImpl::LoadCachedList () {
+  cached_list_.clear();
 
-bool FunapiHttpDownloaderImpl::Connected() const {
-  return state_ == kDownloading || state_ == kDownloadComplete;
-}
-
-
-void FunapiHttpDownloaderImpl::LoadCachedFileList() {
-  ClearCachedFileList();
-
-  string path = target_path_ + kCacheFileName;
-  LOG1("Cached file path: %s", *FString(path.c_str()));
-  if (access(path.c_str(), F_OK) == -1)
+  string path = target_path_ + kCachedFilename;
+  std::ifstream fs(path.c_str(), std::ios::in | std::ios::ate);
+  if (!fs.is_open())
     return;
 
-  FILE *fp = fopen(path.c_str(), "r");
-  assert(fp != NULL);
-  fseek(fp,0,SEEK_END);
-  ssize_t size = ftell(fp);
-  fseek(fp,0,SEEK_SET);
-
-  char *buffer = new char [size + 1];
-  size_t readsize = fread(buffer, sizeof(unsigned char), size, fp);
-  buffer[readsize] = '\0';
-  fclose(fp);
-
-  if (readsize <= 0) {
-    LOG1("Get data from file '%s' failed!", *FString(path.c_str()));
-    assert(false);
-    return;
-  }
+  int length = fs.tellg();
+  char *buffer = new char[length + 1];
+  fs.seekg(0, std::ios::beg);
+  fs.read(buffer, length);
+  buffer[length] = '\0';
+  fs.close();
 
   rapidjson::Document json;
   json.Parse<0>(buffer);
   assert(json.IsObject());
+  delete[] buffer;
 
-  rapidjson::Value &list = json["data"];
+  rapidjson::Value &list = json["list"];
   assert(list.IsArray());
 
   int count = (int)list.Size();
   for (int i = 0; i < count; ++i) {
-    DownloadFile *info = new DownloadFile();
+    DownloadFileInfo *info = new DownloadFileInfo();
     info->path = list[i]["path"].GetString();
-    info->md5 = list[i]["md5"].GetString();
-    cached_files_list_.push_back(info);
-  }
+    info->size = list[i]["size"].GetUint();
+    info->hash = list[i]["hash"].GetString();
+    if (list[i].HasMember("front"))
+      info->hash_front = list[i]["front"].GetString();
+    else
+      info->hash_front = "";
 
-  LOG1("Load file's information : %d", cached_files_list_.size());
+    cached_list_.push_back(info);
+  }
+  
+  Log("Loads cached list : %d", cached_list_.size());
 }
 
+void FunapiHttpDownloaderImpl::UpdateCachedList () {
+  std::stringstream data;
+  int count = cached_list_.size();
 
-void FunapiHttpDownloaderImpl::SaveCachedFileList() {
-  string data = "{ \"data\": [ ";
-  int index = 0;
-
-  FileList::const_iterator itr = cached_files_list_.begin();
-  for (; itr != cached_files_list_.end(); ++itr, ++index) {
-    const DownloadFile *info = *itr;
-    data.append("{ \"path\":\"");
-    data.append(info->path);
-    data.append("\", \"md5\":\"");
-    data.append(info->md5);
-    data.append("\" }");
-    if (index < cached_files_list_.size() - 1)
-      data.append(", ");
+  data << "{ \"list\": [ ";
+  for (auto info : cached_list_) {
+    data << "{ \"path\":\"" << info->path << "\", ";
+    data << "\"size\":" << info->size << ", ";
+    if (info->hash_front.length() > 0)
+      data << "\"front\":\"" << info->hash_front << "\", ";
+    data << "\"hash\":\"" << info->hash << "\" }";
+    if (--count > 0)
+      data << ", ";
   }
-  data.append(" ] }");
-  LOG1("SAVE DATA : %s", *FString(data.c_str()));
+  data << " ] }";
 
-  string path = target_path_ + kCacheFileName;
-  if (access(path.c_str(), F_OK) == -1)
-    remove(path.c_str());
-
-  FILE *fp = fopen(path.c_str(), "w");
-  assert(fp != NULL);
-  fwrite(data.c_str(), sizeof(char), data.length(), fp);
-  fclose(fp);
-
-  LOG1("Save file's information : %d", cached_files_list_.size());
-}
-
-
-// Check MD5
-void FunapiHttpDownloaderImpl::CheckFileList(FileList &list) {
-  if (list.empty() || cached_files_list_.empty())
+  string path = target_path_ + kCachedFilename;
+  std::ofstream fs(path.c_str(), std::ios::out | std::ios::trunc);
+  if (!fs.is_open()) {
+    LogWarning("Failed to update cached list. can't open the file.");
     return;
+  }
 
+  string buf = data.str();
+  int length = data.tellg();
+  fs.write(buf.c_str(), buf.length());
+  fs.close();
+  
+  Log("Updates cached list : %d", cached_list_.size());
+}
+
+void FunapiHttpDownloaderImpl::CheckFileList (FileList &list) {
   std::unique_lock<std::mutex> lock(mutex_);
-  FileList remove_list;
+  std::mutex list_lock;
 
-  // Deletes local files
-  FileList::const_iterator itr = cached_files_list_.begin();
-  for (; itr != cached_files_list_.end(); ++itr) {
-    DownloadFile *info = *itr;
-    FileList::iterator itr_find = std::find_if(list.begin(), list.end(),
-        std::bind2nd<compare_path>(compare_path(), info->path));
-    if (itr_find == list.end()) {
-      string path = target_path_ + info->path;
-      remove(path.c_str());
-      remove_list.push_back(info);
-      LOG1("Deleted resource file. path: %s", *FString(path.c_str()));
+  time_point<system_clock> start, end;
+  start = system_clock::now();
+
+  FileList tmp_list(list);
+  PathList verify_file_list;
+  PathList remove_list;
+  std::list<int> rnd_list;
+  bool verify_success = true;
+  int rnd_index = -1;
+
+  string file_path = target_path_ + kCachedFilename;
+  struct stat file_stat;
+  stat(file_path.c_str(), &file_stat);
+
+  delete_file_list_.clear();
+
+  // Randomly check list
+  if (!cached_list_.empty()) {
+    int max_count = cached_list_.size();
+    int count = std::min(std::max(1, max_count / 10), 10);
+    std::srand(std::time(0));
+
+    while (rnd_list.size() < count) {
+      rnd_index = std::rand() % max_count;
+      if (std::find(rnd_list.begin(), rnd_list.end(), rnd_index) == rnd_list.end())
+        rnd_list.push_back(rnd_index);
+    }
+    Log("Random check file count is %d", rnd_list.size());
+
+    rnd_index = -1;
+    if (!rnd_list.empty()) {
+      rnd_index = rnd_list.front();
+      rnd_list.pop_front();
     }
   }
 
-  if (!remove_list.empty()) {
-    for (itr = remove_list.begin(); itr != remove_list.end(); ++itr) {
-      DownloadFile *info = *itr;
-      delete info;
-      cached_files_list_.remove(info);
-    }
-    remove_list.clear();
-  }
+  // Checks local files
+  try {
+    int index = 0;
+    for (auto file : cached_list_) {
+      DownloadFileInfo* item = nullptr;
+      {
+        std::unique_lock<std::mutex> lock(list_lock);
+        auto it = std::find_if(list.begin(), list.end(), [&file](const DownloadFileInfo* f) {
+                                 return file->path == f->path; });
+          if (it != list.end())
+            item = *it;
+      }
 
-  // Check download files
-  string path = target_path_ + kCacheFileName;
-  struct tm *tm;
-  struct stat st;
-  stat(path.c_str(), &st);
-#if PLATFORM_ANDROID
-  tm = gmtime((time_t*)&(st.st_mtime_nsec));
-#elif PLATFORM_WINDOWS
-  tm = gmtime(&st.st_mtime);
-#else
-  tm = gmtime(&st.st_mtimespec.tv_sec);
+      if (item != nullptr) {
+        string path = target_path_ + file->path;
+        struct stat st;
+        stat(path.c_str(), &st);
+
+        if (!std::ifstream(path) || item->size != st.st_size || item->hash != file->hash) {
+          std::unique_lock<std::mutex> lock(list_lock);
+          remove_list.push_back(file->path);
+        }
+        else {
+          string filename = GetFilename(item->path);
+
+          if (filename.front() == '_' || index == rnd_index ||
+#if PLATFORM_WINDOWS || PLATFORM_ANDROID
+              st.st_mtime > file_stat.st_mtime) {
+#elif PLATFORM_MAC || PLATFORM_IOS
+              st.st_mtimespec.tv_sec > file_stat.st_mtimespec.tv_sec) {
 #endif
+            if (index == rnd_index) {
+              rnd_index = -1;
+              if (!rnd_list.empty()) {
+                rnd_index = rnd_list.front();
+                rnd_list.pop_front();
+              }
+            }
 
-  for (itr = list.begin(); itr != list.end(); ++itr) {
-    DownloadFile *info = *itr;
-    FileList::iterator itr_find = std::find_if(
-        cached_files_list_.begin(), cached_files_list_.end(),
-        std::bind2nd<compare_path>(compare_path(), info->path));
-    if (itr_find != cached_files_list_.end()) {
-      bool is_same = true;
-      const DownloadFile *find_info = *itr_find;
-      if (info->md5 != find_info->md5) {
-        is_same = false;
-      } else {
-        string path2 = target_path_ + find_info->path;
-        struct tm *tm2;
-        struct stat st2;
-        stat(path2.c_str(), &st2);
-#if PLATFORM_ANDROID
-        tm2 = gmtime((time_t*)&(st2.st_mtime_nsec));
-#elif PLATFORM_WINDOWS
-        tm2 = gmtime(&st.st_mtime);
-#else
-        tm2 = gmtime(&(st2.st_mtimespec.tv_sec));
-#endif
-        if (tm->tm_year != tm2->tm_year || tm->tm_yday != tm2->tm_yday ||
-            tm->tm_hour != tm2->tm_hour || tm->tm_min != tm2->tm_min ||
-            tm->tm_sec != tm2->tm_sec)
-          is_same = false;
+            {
+              std::unique_lock<std::mutex> lock(list_lock);
+              verify_file_list.push_back(file->path);
+            }
+
+            // Checks md5 hash
+            auto handle = std::async(std::launch::async, [&, path, item]() {
+              bool is_match = CheckMd5(path, item);
+
+              caller_->VerifyCallback(path);
+
+              {
+                std::unique_lock<std::mutex> lock(list_lock);
+                verify_file_list.remove(item->path);
+
+                if (is_match) {
+                  list.remove(item);
+                }
+                else {
+                  remove_list.push_back(item->path);
+                  verify_success = false;
+                }
+              }
+            });
+          }
+          else {
+            std::unique_lock<std::mutex> lock(list_lock);
+            list.remove(item);
+          }
+        }
+      }
+      else {
+        std::unique_lock<std::mutex> lock(list_lock);
+        remove_list.push_back(file->path);
       }
 
-      if (is_same) {
-        remove_list.push_back(info);
-      } else {
-        cached_files_list_.remove(info);
+      ++index;
+    }
+  }
+  catch (std::system_error &e) {
+    LogError("Failed to random check files. %s", *FString(e.what()));
+    return;
+  }
+
+  while (!verify_file_list.empty()) {
+    std::this_thread::sleep_for(milliseconds(100));
+  }
+
+  RemoveCachedList(remove_list);
+
+  string ret = verify_success ? "succeeded" : "failed";
+  Log("Random validation has %s", *FString(ret.c_str()));
+
+  // Checks all local files
+  if (!verify_success) {
+    try {
+      for (auto file : cached_list_) {
+        auto it = std::find_if(tmp_list.begin(), tmp_list.end(), [&file](const DownloadFileInfo* f) {
+                                 return file->path == f->path; });
+        if (it != tmp_list.end()) {
+          DownloadFileInfo* item = *it;
+          string path = target_path_ + file->path;
+
+          {
+            std::unique_lock<std::mutex> lock(list_lock);
+            verify_file_list.push_back(file->path);
+          }
+
+          // Checks md5 hash
+          auto handle = std::async(std::launch::async, [&, path, item]() {
+            bool is_match = CheckMd5(path, item);
+
+            caller_->VerifyCallback(path);
+
+            {
+              std::unique_lock<std::mutex> lock(list_lock);
+              verify_file_list.remove(item->path);
+
+              if (!is_match) {
+                remove_list.push_back(item->path);
+
+                it = std::find(list.begin(), list.end(), item);
+                if (it == list.end())
+                  list.push_back(item);
+              }
+            }
+          });
+        }
       }
     }
+    catch (std::system_error &e) {
+      LogError("Failed to check all files. %s", *FString(e.what()));
+      return;
+    }
+
+    while (!verify_file_list.empty()) {
+      std::this_thread::sleep_for(milliseconds(100));
+    }
+
+    RemoveCachedList(remove_list);
   }
 
-  if (!remove_list.empty()) {
-    for (itr = remove_list.begin(); itr != remove_list.end(); ++itr) {
-      DownloadFile *info = *itr;
-      delete info;
-      list.remove(info);
-    }
-    remove_list.clear();
+  end = system_clock::now();
+  auto elapsed = duration_cast<milliseconds>(end - start);
+  Log("File check total time - %ss", *FString::SanitizeFloat(elapsed.count() / (float)1000));
+
+  total_download_count_ = list.size();
+
+  for (auto item : list) {
+    total_download_size_ += item->size;
   }
-}
 
+  if (total_download_count_ > 0) {
+    state_ = State::Ready;
+    caller_->ReadyCallback(total_download_count_, total_download_size_);
+  }
+  else {
+    DeleteLocalFiles();
+    UpdateCachedList();
 
-void FunapiHttpDownloaderImpl::DownloadListFile(const string &url) {
-  cur_download_ = NULL;
-
-  // Request a list of download files.
-  LOG1("List file url : %s", *FString(url.c_str()));
-  AsyncRequestList(url,
-      [this](const int state){ DownloadListCb(state); },
-      [this](void *data, const int len){ WebResponseHeaderCb(data, len); },
-      [this](void *data, const int len){ WebResponseBodyCb(data, len); });
-}
-
-
-void FunapiHttpDownloaderImpl::DownloadResourceFile() {
-  if (download_list_.size() <= 0) {
-    if (url_list_.size() > 0) {
-      DownloadUrl *info = *url_list_.begin();
-      url_list_.erase(url_list_.begin());
-
-      host_url_ = info->host;
-      DownloadListFile(info->url);
-    } else {
-      state_ = kDownloadComplete;
-      LOG("Download completed.");
-
-      on_finished_(kDownloadSuccess);
-
-      SaveCachedFileList();
-    }
-  } else {
-    cur_download_ = *download_list_.begin();
-
-    // Check directory
-    string path = target_path_;
-    int offset = cur_download_->path.find_last_of('/');
-    if (offset >= 0)
-      path.append(cur_download_->path.substr(0, offset));
-
-    if (access(path.c_str(), F_OK) == -1) {
-      if (mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO) == -1) {
-        LOG1("Create folder failed. path: %s", *FString(path.c_str()));
-        assert(false);
-        return;
-      }
-    }
-
-    string url = host_url_ + cur_download_->path;
-    AsyncRequestFile(url,
-      [this](const int state){ DownloadFileCb(state); },
-      [this](void *data, const int len){ WebResponseHeaderCb(data, len); },
-      [this](void *data, const int len){ WebResponseBodyCb(data, len); });
+    state_ = State::Completed;
+    Log("All resources are up to date.");
+    caller_->FinishCallback(kDownloadSuccess);
   }
 }
 
-void FunapiHttpDownloaderImpl::DownloadListCb(int state) {
-  LOG1("DownloadListCb called. state: %d", state);
-  if (state == kWebRequestStart) {
-    recv_offset_ = 0;
-    file_length_ = 0;
-    header_fields_.clear();
-  } else if (state == kWebRequestEnd) {
-    state_ = kDownloading;
+bool FunapiHttpDownloaderImpl::CheckMd5 (const string &path, const DownloadFileInfo* info) {
+  std::ifstream fs(path.c_str(), std::ios::in | std::ios::binary);
+  if (!fs.is_open())
+    return false;
 
-    char *data = reinterpret_cast<char *>(buffer_.iov_base);
-    bool failed = false;
+  int buf_size = info->size;
+  std::unique_ptr<char[]> buffer(new char[buf_size]);
+  fs.read(buffer.get(), buf_size);
+  fs.close();
 
-    data[recv_offset_] = '\0';
-    LOG1("Json data >> %s", *FString(data));
+  uint8 digest[16];
 
-    rapidjson::Document json;
-    json.Parse<0>(data);
-    assert(json.IsObject());
-
-    const rapidjson::Value& list = json["data"];
-    assert(list.IsArray());
-    if (list.Size() <= 0) {
-      LOG("Invalid list data. List count is 0.");
-      assert(false);
-      failed = true;
-    } else {
-      int count = (int)list.Size();
-      for (int i = 0; i < count; ++i) {
-        DownloadFile *info = new DownloadFile();
-        info->path = list[i]["path"].GetString();
-        info->md5 = list[i]["md5"].GetString();
-
-        download_list_.push_back(info);
-      }
-
-      // Check files
-      CheckFileList(download_list_);
-
-      // Downlaod file
-      DownloadResourceFile();
-    }
-
-    if (failed)
-      Stop();
+  if (info->hash_front.length() > 0) {
+    FMD5 md5;
+    int len = buf_size < kBlockSize ? buf_size : kBlockSize;
+    md5.Update((uint8*)buffer.get(), len);
+    md5.Final(digest);
+    
+    string hash = MakeHashString(digest);
+    if (hash != info->hash_front)
+      return false;
   }
+
+  if (buf_size > 0) {
+    FMD5 md5;
+    md5.Update((uint8*)buffer.get(), buf_size);
+    md5.Final(digest);
+  }
+  else {
+    FMD5 md5;
+    md5.Final(digest);
+  }
+
+  string hash = MakeHashString(digest);
+  return hash == info->hash;
 }
 
-
-void FunapiHttpDownloaderImpl::DownloadFileCb(int state) {
-  LOG1("DownloadFileCb called. state: %d", state);
-  if (state == kWebRequestStart) {
-    recv_offset_ = 0;
-    file_length_ = 0;
-    header_fields_.clear();
-  } else if (state == kWebRequestEnd) {
-    if (download_list_.size() > 0) {
-      cached_files_list_.push_back(cur_download_);
-      download_list_.erase(download_list_.begin());
-
-      LOG1("Download complete - %s", *FString(cur_download_->path.c_str()));
-      string target = target_path_ + cur_download_->path;
-      LOG1("Save file : %s", *FString(target.c_str()));
-      FILE *fp = fopen(target.c_str(), "wb");
-      assert(fp != NULL);
-      fwrite(buffer_.iov_base, sizeof(uint8_t), recv_offset_, fp);
-      fclose(fp);
-
-      AsyncRequestMd5(target,
-        [this](const string md5hash){ ComputeMd5Cb(md5hash); });
-    }
-  }
-}
-
-
-void FunapiHttpDownloaderImpl::WebResponseHeaderCb(void *data, int len) {
-  char buf[1024];
-  memcpy(buf, data, len);
-  buf[len-2] = '\0';
-
-  char *ptr = std::search(buf, buf + len, kDownloaderHeaderFieldDelimeter,
-      kDownloaderHeaderFieldDelimeter + sizeof(kDownloaderHeaderFieldDelimeter) - 1);
-  ssize_t eol_offset = ptr - buf;
-  if (eol_offset >= len)
+void FunapiHttpDownloaderImpl::RemoveCachedList (PathList &remove_list) {
+  if (remove_list.empty())
     return;
 
-  // Generates null-terminated string by replacing the delimeter with \0.
-  *ptr = '\0';
-  const char *e1 = buf, *e2 = ptr + 1;
-  while (*e2 == ' ' || *e2 == '\t') ++e2;
-  if (std::strcmp(e1, kDownloaderHeaderFieldContentLength) == 0) {
-    file_length_ = atoi(e2);
+  cached_list_.remove_if([&remove_list](const DownloadFileInfo* info) {
+    return std::find(remove_list.begin(), remove_list.end(), info->path) != remove_list.end();
+  });
 
-    if (file_length_ >= buffer_.iov_len) {
-      size_t new_size = file_length_ + 1;
-      LOG1("Resizing a buffer to %d bytes.", new_size);
-      uint8_t *new_buffer = new uint8_t[new_size + 1];
-      memmove(new_buffer, buffer_.iov_base, recv_offset_);
-      delete [] reinterpret_cast<uint8_t *>(buffer_.iov_base);
-      buffer_.iov_base = new_buffer;
-      buffer_.iov_len = new_size;
+  for (auto path : remove_list) {
+    delete_file_list_.push_back(target_path_ + path);
+  }
+
+  remove_list.clear();
+}
+
+void FunapiHttpDownloaderImpl::DeleteLocalFiles () {
+  if (delete_file_list_.empty())
+    return;
+
+  for (string path : delete_file_list_) {
+    if (std::ifstream(path)) {
+      std::remove(path.c_str());
+      Log("Deleted resource file. path: %s", *FString(path.c_str()));
     }
   }
-  LOG2("Decoded header field '%s' => '%s'", *FString(e1), *FString(e2));
-  header_fields_[e1] = e2;
+
+  delete_file_list_.clear();
 }
 
+void FunapiHttpDownloaderImpl::DownloadResourceFile () {
+  if (download_list_.empty()) {
+    UpdateCachedList();
 
-void FunapiHttpDownloaderImpl::WebResponseBodyCb(void *data, int len) {
-  int offset = recv_offset_;
-  uint8_t *buf = reinterpret_cast<uint8_t*>(buffer_.iov_base);
-  memcpy(buf + offset, data, len);
-  recv_offset_ += len;
+    time_point<system_clock> end = system_clock::now();
+    auto elapsed = duration_cast<milliseconds>(end - check_time_);
+    Log("File download total time - %ss",
+        *FString::SanitizeFloat(elapsed.count() / (float)1000));
 
-  //LOG("path: " << cur_download_->path << " total: " << file_length_ << " receive: " << len);
+    state_ = State::Completed;
+    Log("Download completed.");
+    caller_->FinishCallback(kDownloadSuccess);
+  }
+  else {
+    const DownloadFileInfo* info = download_list_.front();
+
+    // Checks directory
+    string path = GetDirectory(info->path);
+    if (!path.empty()) {
+      path = target_path_ + path;
+      if (access(path.c_str(), F_OK) == -1) {
+        if (mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO) == -1) {
+          LogError("Failed to create folder. path: %s", *FString(path.c_str()));
+          return;
+        }
+      }
+    }
+
+    string file_path = target_path_ + info->path;
+    if (std::ifstream(file_path)) {
+      std::remove(file_path.c_str());
+    }
+
+    // Requests a resource file
+    Log("Download file - %s", *FString(file_path.c_str()));
+    string url = host_url_ + info->path;
+    http_->AddRequest(url, file_path, [this, info](const string& data, bool success) {
+                        DownloadFileCb(info, success);
+                      }, [this](const string& path, uint64 received, uint64 total, int percent) {
+                        caller_->UpdateCallback(path, received, total, percent);
+                      }
+    );
+  }
 }
 
+void FunapiHttpDownloaderImpl::DownloadListCb (const string& data, bool success) {
+  Log("DownloadListCb called. Download list %s.", *FString(success ? "succeed" : "failed"));
+  std::unique_lock<std::mutex> lock(mutex_);
 
-void FunapiHttpDownloaderImpl::ComputeMd5Cb(const string &md5hash) {
-  cur_download_->md5 = md5hash;
+  if (!success) {
+    Stop();
+    return;
+  }
+
+  bool failed = false;
+  //Log("Json data >> %s", *FString(data.c_str()));
+
+  // Parse json
+  rapidjson::Document json;
+  json.Parse<0>(data.c_str());
+  assert(json.IsObject());
+
+  // Redirect url
+  if (json.HasMember("url")) {
+    string url = json["url"].GetString();
+    if (url.back() != '/')
+      url.append("/");
+
+    host_url_ = url;
+    Log("Redirect download url: %s", *FString(url.c_str()));
+  }
+
+  const rapidjson::Value& list = json["data"];
+  assert(list.IsArray());
+  if (list.Empty()) {
+    Log("Invalid list data. List count is 0.");
+    assert(false);
+    failed = true;
+  }
+  else {
+    download_list_.clear();
+
+    int count = (int)list.Size();
+    for (int i = 0; i < count; ++i) {
+      DownloadFileInfo *info = new DownloadFileInfo();
+      info->path = list[i]["path"].GetString();
+      info->size = list[i]["size"].GetUint();
+      info->hash = list[i]["md5"].GetString();
+      if (list[i].HasMember("md5_front"))
+        info->hash_front = list[i]["md5_front"].GetString();
+      else
+        info->hash_front = "";
+
+      download_list_.push_back(info);
+    }
+
+    // Check files
+    AsyncEvent::instance().AddEvent(
+      [this](){ CheckFileList(download_list_); });
+  }
+
+  if (failed)
+    Stop();
+}
+
+void FunapiHttpDownloaderImpl::DownloadFileCb (const DownloadFileInfo* info, bool success) {
+  Log("DownloadFileCb called. Download list %s.", *FString(success ? "succeed" : "failed"));
+  std::unique_lock<std::mutex> lock(mutex_);
+
+  if (!success) {
+    Stop();
+    return;
+  }
+
+  ++cur_download_count_;
+  cur_download_size_ += info->size;
+
+  DownloadFileInfo* item = const_cast<DownloadFileInfo*>(info);
+  download_list_.remove(item);
+  cached_list_.push_back(item);
 
   DownloadResourceFile();
 }
 
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiHttpDownloader implementation.
 
-FunapiHttpDownloader::FunapiHttpDownloader(
-    const char *target_path, const OnUpdate &cb1, const OnFinished &cb2)
-    : impl_(new FunapiHttpDownloaderImpl(target_path, cb1, cb2)) {
-  curl_global_init(CURL_GLOBAL_ALL);
-
-  // Creates a thread to handle async operations.
-  async_downloader_thread_run = true;
-  async_downloader_queue_thread = std::thread(AsyncQueueThreadProc);
+FunapiHttpDownloader::FunapiHttpDownloader ()
+  : impl_(new FunapiHttpDownloaderImpl(this)) {
 }
 
 FunapiHttpDownloader::~FunapiHttpDownloader() {
-  curl_global_cleanup();
-
-  // Terminates the thread for async operations.
-  async_downloader_thread_run = false;
-  async_downloader_queue_cond.notify_all();
-
-  if (async_downloader_queue_thread.joinable())
-    async_downloader_queue_thread.join();
+  delete impl_;
 }
 
-bool FunapiHttpDownloader::StartDownload(const char *hostname_or_ip,
-    uint16_t port, const char *list_filename, bool https) {
-  char url[1024];
-  sprintf(url, "%s://%s:%d/v%d/%s",
-      https ? "https" : "http", hostname_or_ip, port,
-      kCurrentFunapiDownloaderProtocolVersion, list_filename);
+void FunapiHttpDownloader::GetDownloadList (const char *hostname_or_ip, uint16_t port,
+                                            bool https, const char *target_path) {
+  string url = FormatString("%s://%s:%d",
+                            (https ? "https" : "http"), hostname_or_ip, port);
 
-  return impl_->StartDownload(url);
+  impl_->GetDownloadList(url.c_str(), target_path);
 }
 
+void FunapiHttpDownloader::GetDownloadList (const char *url, const char *target_path) {
+  impl_->GetDownloadList(url, target_path);
+}
 
-bool FunapiHttpDownloader::StartDownload(const char *url) {
-  return impl_->StartDownload(url);
+void FunapiHttpDownloader::StartDownload () {
+  impl_->StartDownload();
 }
 
 
-void FunapiHttpDownloader::Stop() {
+void FunapiHttpDownloader::Stop () {
   impl_->Stop();
 }
 
-
-bool FunapiHttpDownloader::Connected() const {
-  return impl_->Connected();
+bool FunapiHttpDownloader::IsDownloading() const {
+  return impl_->IsDownloading();
 }
 
 }  // namespace fun

@@ -94,13 +94,8 @@ FunapiNetworkImpl::FunapiNetworkImpl(std::shared_ptr<FunapiTransport> transport,
 
 FunapiNetworkImpl::~FunapiNetworkImpl() {
   Finalize();
-
-  message_handlers_.clear();
-
-  {
-    std::unique_lock<std::mutex> lock(mutex_transports_);
-    transports_.clear();
-  }
+  Stop();
+  Update();
 }
 
 void FunapiNetworkImpl::Initialize() {

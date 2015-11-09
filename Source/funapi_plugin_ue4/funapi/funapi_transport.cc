@@ -294,8 +294,8 @@ bool FunapiTransportBase::TryToDecodeBody(std::vector<uint8_t> &receiving, int &
 
     // The network module eats the fields and invokes registered handler
     // LOG("Invoking a receive handler.");
-    const OnReceived received = on_received_;
-    network_->PushTaskQueue([received, header_fields, v](){ received(header_fields, v); });
+    auto self(shared_from_this());
+    network_->PushTaskQueue([self, this, header_fields, v](){ on_received_(header_fields, v); });
   }
 
   // Prepares for a next message.
@@ -503,7 +503,8 @@ void FunapiTcpTransportImpl::Stop() {
 
 void FunapiTcpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
   if (!EncodeMessage(body)) {
-    network_->PushTaskQueue([this]{
+    auto self(shared_from_this());
+    network_->PushTaskQueue([self, this]{
       Stop();
       on_stopped_();
     });
@@ -523,7 +524,8 @@ void FunapiTcpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
         int nSent = send(sock_, (char*)body.data() + offset, body.size() - offset, 0);
 
         if (nSent < 0) {
-          network_->PushTaskQueue([this]{
+          auto self(shared_from_this());
+          network_->PushTaskQueue([self, this]{
             Stop();
             on_stopped_();
           });
@@ -640,7 +642,8 @@ void FunapiTcpTransportImpl::Recv() {
             LOG1("receive failed: %s", *FString(strerror(errno)));
           }
 
-          network_->PushTaskQueue([this]{
+          auto self(shared_from_this());
+          network_->PushTaskQueue([self, this]{
             Stop();
             on_stopped_();
           });
@@ -653,7 +656,8 @@ void FunapiTcpTransportImpl::Recv() {
           if (nRead == 0)
             LOG1("Socket [%d] closed.", sock_);
 
-          network_->PushTaskQueue([this]{
+          auto self(shared_from_this());
+          network_->PushTaskQueue([self, this]{
             Stop();
             on_stopped_();
           });
@@ -733,7 +737,8 @@ void FunapiUdpTransportImpl::Stop() {
 
 void FunapiUdpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
   if (!EncodeMessage(body)) {
-    network_->PushTaskQueue([this]{
+    auto self(shared_from_this());
+    network_->PushTaskQueue([self, this]{
       Stop();
       on_stopped_();
     });
@@ -756,7 +761,8 @@ void FunapiUdpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
       int nSent = sendto(sock_, (char*)body.data(), body.size(), 0, (struct sockaddr*)&endpoint_, len);
 
       if (nSent < 0) {
-        network_->PushTaskQueue([this]{
+        auto self(shared_from_this());
+        network_->PushTaskQueue([self, this]{
           Stop();
           on_stopped_();
         });
@@ -789,7 +795,8 @@ void FunapiUdpTransportImpl::Recv() {
 
         if (nRead < 0) {
           LOG1("receive failed: %s", *FString(strerror(errno)));
-          network_->PushTaskQueue([this]{
+          auto self(shared_from_this());
+          network_->PushTaskQueue([self, this]{
             Stop();
             on_stopped_();
           });
@@ -800,7 +807,8 @@ void FunapiUdpTransportImpl::Recv() {
           if (nRead == 0)
             LOG1("Socket [%d] closed.", sock_);
 
-          network_->PushTaskQueue([this]{
+          auto self(shared_from_this());
+          network_->PushTaskQueue([self, this]{
             Stop();
             on_stopped_();
           });
@@ -925,7 +933,8 @@ void FunapiHttpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
     bool header_decoded = true;
     int next_decoding_offset = 0;
     if (TryToDecodeBody(receiving, next_decoding_offset, header_decoded, header_fields) == false) {
-      network_->PushTaskQueue([this]{
+      auto self(shared_from_this());
+      network_->PushTaskQueue([self, this]{
         Stop();
         on_stopped_();
       });

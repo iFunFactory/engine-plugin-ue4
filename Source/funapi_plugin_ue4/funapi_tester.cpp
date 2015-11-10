@@ -129,9 +129,9 @@ bool Afunapi_tester::SendEchoMessage()
 void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
 {
   if (!network_) {
-    network_ = std::make_unique<fun::FunapiNetwork>(GetNewTransport(protocol), msg_type_,
+    network_ = std::unique_ptr<fun::FunapiNetwork>(new fun::FunapiNetwork(GetNewTransport(protocol), msg_type_,
       [this](const std::string &session_id){ OnSessionInitiated(session_id); },
-      [this]{ OnSessionClosed(); });
+      [this]{ OnSessionClosed(); }));
 
     if (msg_type_ == fun::kJsonEncoding)
       network_->RegisterHandler("echo", [this](const std::string &type, const std::vector<uint8_t> &v_body){ OnEchoJson(type, v_body); });

@@ -34,6 +34,7 @@ class FunapiTransportBase : public std::enable_shared_from_this<FunapiTransportB
   virtual ~FunapiTransportBase();
 
   bool Started();
+  virtual void Stop() = 0;
 
   void RegisterEventHandlers(const OnReceived &cb1, const OnStopped &cb2);
 
@@ -379,6 +380,7 @@ class FunapiTransportImpl : public FunapiTransportBase {
    FunapiTransportImpl(FunapiTransportType type,
                       const std::string &hostname_or_ip, uint16_t port);
    virtual ~FunapiTransportImpl();
+   void Stop();
 
 protected:
   virtual void JoinThread();
@@ -415,6 +417,12 @@ FunapiTransportImpl::FunapiTransportImpl(FunapiTransportType type,
 FunapiTransportImpl::~FunapiTransportImpl() {
 }
 
+void FunapiTransportImpl::Stop() {
+  state_ = kDisconnected;
+
+  CloseSocket();
+  JoinThread();
+}
 
 void FunapiTransportImpl::CloseSocket() {
   if (sock_ >= 0) {
@@ -447,7 +455,6 @@ public:
   virtual ~FunapiTcpTransportImpl();
 
   void Start();
-  void Stop();
 
 protected:
   virtual void EncodeThenSendMessage(std::vector<uint8_t> body);
@@ -490,14 +497,6 @@ void FunapiTcpTransportImpl::Start() {
   connect_thread_ = std::thread([this] {
     Connect();
   });
-}
-
-
-void FunapiTcpTransportImpl::Stop() {
-  state_ = kDisconnected;
-
-  CloseSocket();
-  JoinThread();
 }
 
 
@@ -679,7 +678,6 @@ public:
   virtual ~FunapiUdpTransportImpl();
 
   void Start();
-  void Stop();
 
 protected:
   virtual void EncodeThenSendMessage(std::vector<uint8_t> body);
@@ -724,14 +722,6 @@ void FunapiUdpTransportImpl::Start() {
   send_thread_ = std::thread([this] {
     Send();
   });
-}
-
-
-void FunapiUdpTransportImpl::Stop() {
-  state_ = kDisconnected;
-
-  CloseSocket();
-  JoinThread();
 }
 
 

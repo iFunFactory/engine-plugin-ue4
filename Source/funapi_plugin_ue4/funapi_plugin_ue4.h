@@ -20,6 +20,8 @@
 #else
 #include <netdb.h>
 #include <netinet/in.h>
+#include <fcntl.h>
+#include <assert.h>
 #endif
 
 #include <map>

@@ -42,7 +42,7 @@ class FunapiTransportBase : public std::enable_shared_from_this<FunapiTransportB
   void SendMessage(FJsonObject &message);
   void SendMessage(FunMessage &message);
 
-  void SetNetwork(FunapiNetwork* network);
+  void SetNetwork(std::weak_ptr<FunapiNetwork> network);
 
  protected:
   typedef std::map<std::string, std::string> HeaderFields;
@@ -71,7 +71,7 @@ class FunapiTransportBase : public std::enable_shared_from_this<FunapiTransportB
   FunapiTransportType type_;
   FunapiTransportState state_;
 
-  FunapiNetwork *network_ = nullptr;
+  std::weak_ptr<FunapiNetwork> network_;
 
   std::queue<std::function<void()>> send_queue_;
   std::mutex send_queue_mutex_;
@@ -88,7 +88,6 @@ FunapiTransportBase::FunapiTransportBase(FunapiTransportType type)
 
 
 FunapiTransportBase::~FunapiTransportBase() {
-  network_ = nullptr;
 }
 
 
@@ -329,7 +328,8 @@ std::string FunapiTransportBase::MakeHeaderString(const std::vector<uint8_t> &bo
 }
 
 
-void FunapiTransportBase::SetNetwork(FunapiNetwork* network) {
+void FunapiTransportBase::SetNetwork(std::weak_ptr<FunapiNetwork> network)
+{
   network_ = network;
 }
 
@@ -375,9 +375,10 @@ void FunapiTransportBase::Send() {
 
 
 void FunapiTransportBase::PushTaskQueue(std::function<void()> task) {
-  if (network_) {
+  auto network = network_.lock();
+  if (network) {
     auto self(shared_from_this());
-    network_->PushTaskQueue([self, task]{ task(); });
+    network->PushTaskQueue([self, task]{ task(); });
   }
 }
 
@@ -995,7 +996,7 @@ TransportProtocol FunapiTcpTransport::Protocol() const {
 }
 
 
-void FunapiTcpTransport::SetNetwork(FunapiNetwork* network)
+void FunapiTcpTransport::SetNetwork(std::weak_ptr<FunapiNetwork> network)
 {
   impl_->SetNetwork(network);
 }
@@ -1053,7 +1054,7 @@ TransportProtocol FunapiUdpTransport::Protocol() const {
   return TransportProtocol::kUdp;
 }
 
-void FunapiUdpTransport::SetNetwork(FunapiNetwork* network)
+void FunapiUdpTransport::SetNetwork(std::weak_ptr<FunapiNetwork> network)
 {
   impl_->SetNetwork(network);
 }
@@ -1110,7 +1111,7 @@ TransportProtocol FunapiHttpTransport::Protocol() const {
   return TransportProtocol::kHttp;
 }
 
-void FunapiHttpTransport::SetNetwork(FunapiNetwork *network) {
+void FunapiHttpTransport::SetNetwork(std::weak_ptr<FunapiNetwork> network) {
   impl_->SetNetwork(network);
 }
 

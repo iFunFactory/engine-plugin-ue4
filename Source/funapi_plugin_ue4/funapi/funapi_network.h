@@ -30,7 +30,7 @@ class FunapiNetwork : public std::enable_shared_from_this<FunapiNetwork> {
   static void Initialize(time_t session_timeout = 3600);
   static void Finalize();
 
-  FunapiNetwork(std::shared_ptr<FunapiTransport> funapi_transport, int type,
+  FunapiNetwork(int type,
                 const OnSessionInitiated &on_session_initiated,
                 const OnSessionClosed &on_session_closed);
   ~FunapiNetwork();

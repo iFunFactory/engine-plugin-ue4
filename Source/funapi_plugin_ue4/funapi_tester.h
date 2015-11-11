@@ -60,7 +60,7 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
   std::shared_ptr<fun::FunapiTransport> GetNewTransport(fun::TransportProtocol protocol);
 
   const std::string kServerIp = "127.0.0.1";
-  std::unique_ptr<fun::FunapiNetwork> network_;
+  std::shared_ptr<fun::FunapiNetwork> network_;
   int8 msg_type_ = fun::kJsonEncoding;
   fun::TransportProtocol protocol_ = fun::TransportProtocol::kDefault;
 };

@@ -19,13 +19,6 @@
 namespace fun {
 
 #if PLATFORM_WINDOWS
-struct IOVec
-{
-    uint8_t* iov_base;
-    size_t iov_len;
-};
-
-#define iovec     IOVec
 #define ssize_t   size_t
 
 #define access    _access

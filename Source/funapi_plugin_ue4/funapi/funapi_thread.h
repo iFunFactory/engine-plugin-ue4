@@ -10,26 +10,21 @@
 
 namespace fun {
 
-// State
-enum ThreadState {
-  kThreadStart,
-  kThreadUpdate,
-  kThreadFinish,
-  kThreadError
-};
-
 // Request object
-struct AsyncRequest {
+class AsyncRequest {
+ public:
   typedef std::function<bool(AsyncRequest*)> AsyncProc;
-  AsyncRequest (AsyncProc &proc) : state(kThreadStart), proc(proc) {}
+  AsyncRequest (AsyncProc &proc) : proc(proc) {}
+  virtual ~AsyncRequest () {}
 
-  ThreadState state;
   AsyncProc proc;
 };
 
 template<typename T>
-struct AsyncRequestEx : public AsyncRequest {
+class AsyncRequestEx : public AsyncRequest {
+ public:
   AsyncRequestEx (AsyncProc proc) : AsyncRequest(proc) {}
+  virtual ~AsyncRequestEx () {}
 
   T object;
 };
@@ -44,6 +39,7 @@ class AsyncThread {
   void Destroy ();
 
   void AddRequest (AsyncRequest*);
+  void CancelRequest ();
 
  private:
   static int ThreadProc (AsyncThread*);
@@ -51,6 +47,7 @@ class AsyncThread {
 
  private:
   bool running_;
+  bool cancel_request_;
   std::mutex mutex_;
   std::thread thread_;
   std::condition_variable_any cond_;

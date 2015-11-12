@@ -45,9 +45,10 @@ const int kBlockSize = 1024 * 1024; // 1M
 
 enum class State : short {
   None,
-  Ready,
   Start,
+  Ready,
   Downloading,
+  Paused,
   Completed
 };
 
@@ -110,13 +111,14 @@ class FunapiHttpDownloaderImpl {
   FunapiHttpDownloaderImpl (FunapiHttpDownloader*);
   ~FunapiHttpDownloaderImpl ();
 
-  bool IsDownloading () const;
-
   void GetDownloadList (const char *url, const char *target_path);
   void StartDownload ();
+  void ContinueDownload ();
   void Stop ();
 
- private:
+  bool IsDownloading() const;
+
+  private:
    typedef std::list<DownloadFileInfo*> FileList;
    typedef std::list<string> PathList;
 
@@ -134,28 +136,24 @@ class FunapiHttpDownloaderImpl {
    void DownloadFileCb (const DownloadFileInfo*, bool);
 
  private:
-  typedef std::list<DownloadUrl*> UrlList;
-
-  void ClearDownloadList ();
-  void ClearCachedFileList ();
-
-private:
   std::unique_ptr<HttpFileDownloader> http_;
   FunapiHttpDownloader *caller_;
 
   State state_;
-  std::mutex mutex_;
   time_point<system_clock> check_time_;
 
   // Url-related.
   string host_url_;
   string target_path_;
-  UrlList url_list_;
 
   FileList cached_list_;
   FileList download_list_;
   PathList delete_file_list_;
 
+  string cur_download_path_ = "";
+  int retry_download_count_ = 0;
+
+ public:
   int cur_download_count_ = 0;
   int total_download_count_ = 0;
   uint64 cur_download_size_ = 0;
@@ -172,13 +170,7 @@ FunapiHttpDownloaderImpl::FunapiHttpDownloaderImpl (FunapiHttpDownloader* caller
 FunapiHttpDownloaderImpl::~FunapiHttpDownloaderImpl () {
 }
 
-bool FunapiHttpDownloaderImpl::IsDownloading () const {
-  return state_ == State::Start || state_ == State::Ready || state_ == State::Downloading;
-}
-
 void FunapiHttpDownloaderImpl::GetDownloadList (const char *url, const char *target_path) {
-  std::unique_lock<std::mutex> lock(mutex_);
-
   if (caller_->ReadyCallback.empty()) {
     LogError("You must register the ReadyCallback first.");
     return;
@@ -217,49 +209,11 @@ void FunapiHttpDownloaderImpl::GetDownloadList (const char *url, const char *tar
                       DownloadListCb(data, success); });
 }
 
-void FunapiHttpDownloaderImpl::ClearDownloadList () {
-  std::unique_lock<std::mutex> lock(mutex_);
-  if (!url_list_.empty()) {
-    UrlList::iterator itr = url_list_.begin();
-    for (; itr != url_list_.end(); ++itr) {
-      delete (*itr);
-    }
-    url_list_.clear();
-  }
-
-  if (!download_list_.empty()) {
-    FileList::iterator itr = download_list_.begin();
-    for (; itr != download_list_.end(); ++itr) {
-      delete (*itr);
-    }
-    download_list_.clear();
-  }
-}
-
-
-void FunapiHttpDownloaderImpl::ClearCachedFileList () {
-  if (cached_list_.empty())
-    return;
-
-  {
-    std::unique_lock<std::mutex> lock(mutex_);
-    FileList::iterator itr = cached_list_.begin();
-    for (; itr != cached_list_.end(); ++itr) {
-      delete (*itr);
-    }
-
-    cached_list_.clear();
-  }
-}
-
-
 void FunapiHttpDownloaderImpl::StartDownload () {
   if (state_ != State::Ready) {
     LogError("You must call GetDownloadList function first.");
     return;
   }
-
-  //std::unique_lock<std::mutex> lock(mutex_);
 
   if (total_download_count_ > 0) {
     float size;
@@ -279,6 +233,7 @@ void FunapiHttpDownloaderImpl::StartDownload () {
 
   state_ = State::Downloading;
   check_time_ = system_clock::now();
+  retry_download_count_ = 0;
 
   // Deletes files
   DeleteLocalFiles();
@@ -287,13 +242,31 @@ void FunapiHttpDownloaderImpl::StartDownload () {
   DownloadResourceFile();
 }
 
+void FunapiHttpDownloaderImpl::ContinueDownload () {
+  if (state_ != State::Paused || download_list_.empty())
+    return;
+
+  state_ = State::Downloading;
+  DownloadResourceFile();
+}
 
 void FunapiHttpDownloaderImpl::Stop () {
-  if (state_ == State::Start || state_ == State::Downloading) {
+  if (state_ == State::None || state_ == State::Completed)
+    return;
+
+  Log("Stopping downloads.");
+  if (state_ == State::Downloading) {
+    state_ = State::Paused;
+    http_->CancelRequest();
     caller_->FinishCallback(kDownloadFailure);
   }
+  else {
+    state_ = State::None;
+  }
+}
 
-  ClearDownloadList();
+bool FunapiHttpDownloaderImpl::IsDownloading() const {
+  return state_ == State::Start || state_ == State::Ready || state_ == State::Downloading;
 }
 
 void FunapiHttpDownloaderImpl::LoadCachedList () {
@@ -310,6 +283,11 @@ void FunapiHttpDownloaderImpl::LoadCachedList () {
   fs.read(buffer, length);
   buffer[length] = '\0';
   fs.close();
+
+  if (length <= 0) {
+    Log("Failed to get a cached file list.");
+    return;
+  }
 
   rapidjson::Document json;
   json.Parse<0>(buffer);
@@ -363,14 +341,12 @@ void FunapiHttpDownloaderImpl::UpdateCachedList () {
   int length = data.tellg();
   fs.write(buf.c_str(), buf.length());
   fs.close();
-  
+
   Log("Updates cached list : %d", cached_list_.size());
 }
 
 void FunapiHttpDownloaderImpl::CheckFileList (FileList &list) {
-  std::unique_lock<std::mutex> lock(mutex_);
   std::mutex list_lock;
-
   time_point<system_clock> start, end;
   start = system_clock::now();
 
@@ -673,8 +649,12 @@ void FunapiHttpDownloaderImpl::DownloadResourceFile () {
 
     // Requests a resource file
     Log("Download file - %s", *FString(file_path.c_str()));
+    retry_download_count_ = 0;
+    cur_download_path_ = GetDirectory(file_path);
+    cur_download_path_.append(tmpnam(NULL));
+
     string url = host_url_ + info->path;
-    http_->AddRequest(url, file_path, [this, info](const string& data, bool success) {
+    http_->AddRequest(url, cur_download_path_, [this, info](const string& data, bool success) {
                         DownloadFileCb(info, success);
                       }, [this](const string& path, uint64 received, uint64 total, int percent) {
                         caller_->UpdateCallback(path, received, total, percent);
@@ -684,10 +664,8 @@ void FunapiHttpDownloaderImpl::DownloadResourceFile () {
 }
 
 void FunapiHttpDownloaderImpl::DownloadListCb (const string& data, bool success) {
-  Log("DownloadListCb called. Download list %s.", *FString(success ? "succeed" : "failed"));
-  std::unique_lock<std::mutex> lock(mutex_);
-
-  if (!success) {
+  if (!success || data.length() <= 1) {
+    Log("Failed to getting resource file list.");
     Stop();
     return;
   }
@@ -744,13 +722,14 @@ void FunapiHttpDownloaderImpl::DownloadListCb (const string& data, bool success)
 }
 
 void FunapiHttpDownloaderImpl::DownloadFileCb (const DownloadFileInfo* info, bool success) {
-  Log("DownloadFileCb called. Download list %s.", *FString(success ? "succeed" : "failed"));
-  std::unique_lock<std::mutex> lock(mutex_);
-
   if (!success) {
+    Log("Failed to downloading file. path:%s", *FString(info->path.c_str()));
     Stop();
     return;
   }
+
+  string file_path = target_path_ + info->path;
+  rename(cur_download_path_.c_str(), file_path.c_str());
 
   ++cur_download_count_;
   cur_download_size_ += info->size;
@@ -790,6 +769,9 @@ void FunapiHttpDownloader::StartDownload () {
   impl_->StartDownload();
 }
 
+void FunapiHttpDownloader::ContinueDownload () {
+  impl_->ContinueDownload();
+}
 
 void FunapiHttpDownloader::Stop () {
   impl_->Stop();
@@ -797,6 +779,22 @@ void FunapiHttpDownloader::Stop () {
 
 bool FunapiHttpDownloader::IsDownloading() const {
   return impl_->IsDownloading();
+}
+
+int FunapiHttpDownloader::CurrentDownloadFileCount () const {
+  return impl_->cur_download_count_;
+}
+
+int FunapiHttpDownloader::TotalDownloadFileCount () const {
+  return impl_->total_download_count_;
+}
+
+int FunapiHttpDownloader::CurrentDownloadFileSize () const {
+  return impl_->cur_download_size_;
+}
+
+int FunapiHttpDownloader::TotalDownloadFileSize () const {
+  return impl_->total_download_size_;
 }
 
 }  // namespace fun

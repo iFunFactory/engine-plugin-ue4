@@ -11,7 +11,7 @@
 namespace fun {
 
 AsyncThread::AsyncThread ()
-  : running_(false) {
+  : running_(false), cancel_request_(false) {
 }
 
 void AsyncThread::Create () {
@@ -33,6 +33,10 @@ void AsyncThread::AddRequest (AsyncRequest* request) {
   std::unique_lock<std::mutex> lock(mutex_);
   queue_.push_back(request);
   cond_.notify_one();
+}
+
+void AsyncThread::CancelRequest () {
+  cancel_request_ = true;
 }
 
 int AsyncThread::ThreadProc (AsyncThread* pThis) {
@@ -66,6 +70,18 @@ void AsyncThread::DoWork () {
       else {
         ++it;
       }
+
+      if (cancel_request_)
+        break;
+    }
+
+    if (cancel_request_) {
+      cancel_request_ = false;
+
+      for (auto r : work_queue) {
+        delete r;
+      }
+      work_queue.clear();
     }
 
     // Puts back requests that requires more work.

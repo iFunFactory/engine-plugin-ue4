@@ -20,6 +20,13 @@ const char kDownloaderHeaderFieldDelimeter[] = ":";
 const char kDownloaderHeaderFieldContentLength[] = "content-length";
 const int kDownloadUnitBufferSize = 65536;
 
+// State
+enum ThreadState {
+  kThreadStart,
+  kThreadUpdate,
+  kThreadFinish,
+  kThreadError
+};
 } // unnamed namespace
 
 
@@ -51,23 +58,24 @@ bool AsyncEvent::AsyncRequestCb (AsyncRequest* r) {
 
 // Http file request
 class HttpFileRequest {
-public:
+ public:
   HttpFileRequest ();
   ~HttpFileRequest ();
 
-private:
+ private:
   static size_t WriteCb (void*, size_t, size_t, void*);
   bool AsyncRequestCb (AsyncRequest*);
   void HeaderDataCb (void*, const int);
   void BodyDataCb (void*, const int);
 
-private:
+ private:
   friend class HttpFileDownloader;
   typedef std::function<void(void*, const int)> DataCallback;
 
   string url_;
   string target_;   // text or save path
 
+  ThreadState state_;
   bool is_file_ = false;
   std::ofstream file_;
   int file_length_;
@@ -88,13 +96,24 @@ private:
 };
 
 
-HttpFileRequest::HttpFileRequest () {
+HttpFileRequest::HttpFileRequest ()
+  : state_(kThreadStart) {
   // curl callbacks
   header_callback_ = [this](void *data, const int len){ HeaderDataCb(data, len); };
   body_callback_ = [this](void *data, const int len){ BodyDataCb(data, len); };
 }
 
 HttpFileRequest::~HttpFileRequest () {
+  if (state_ == kThreadUpdate) {
+    curl_multi_remove_handle(mctx_, ctx_);
+    curl_easy_cleanup(ctx_);
+    curl_multi_cleanup(mctx_);
+
+    if (file_.is_open()) {
+      file_.close();
+      std::remove(target_.c_str());
+    }
+  }
 }
 
 size_t HttpFileRequest::WriteCb (void *data, size_t size, size_t count, void *cb) {
@@ -106,7 +125,7 @@ size_t HttpFileRequest::WriteCb (void *data, size_t size, size_t count, void *cb
 }
 
 bool HttpFileRequest::AsyncRequestCb (AsyncRequest* request) {
-  if (request->state == kThreadStart) {
+  if (state_ == kThreadStart) {
     running_ = 0;
     ctx_ = curl_easy_init();
 
@@ -127,14 +146,14 @@ bool HttpFileRequest::AsyncRequestCb (AsyncRequest* request) {
       file_.open(target_.c_str(), std::ios::out | std::ios::binary);
       if (!file_.is_open()) {
         LogError("Failed to create file for downloading. path:%s", *FString(target_.c_str()));
-        request->state = kThreadError;
+        state_ = kThreadError;
         return true;
       }
     }
 
-    request->state = kThreadUpdate;
+    state_ = kThreadUpdate;
   }
-  else if (request->state == kThreadUpdate) {
+  else if (state_ == kThreadUpdate) {
     FD_ZERO(&fdread_);
     FD_ZERO(&fdwrite_);
     FD_ZERO(&fdexcep_);
@@ -161,7 +180,7 @@ bool HttpFileRequest::AsyncRequestCb (AsyncRequest* request) {
 
       if (rc == -1) {
         running_ = 0;
-        request->state = kThreadError;
+        state_ = kThreadError;
         LogError("select() returns error.");
         return false;
       }
@@ -171,9 +190,9 @@ bool HttpFileRequest::AsyncRequestCb (AsyncRequest* request) {
     }
 
     if (!running_)
-      request->state = kThreadFinish;
+      state_ = kThreadFinish;
   }
-  else if (request->state == kThreadFinish || request->state == kThreadError) {
+  else if (state_ == kThreadFinish || state_ == kThreadError) {
     curl_multi_remove_handle(mctx_, ctx_);
     curl_easy_cleanup(ctx_);
     curl_multi_cleanup(mctx_);
@@ -183,12 +202,15 @@ bool HttpFileRequest::AsyncRequestCb (AsyncRequest* request) {
     else
       target_.append(1, '\0');
 
-    bool succeed = request->state == kThreadFinish;
+    bool succeed = false;
+    if (target_.length() > 1 && state_ == kThreadFinish)
+      succeed = true;
+
     finish_callback_(target_, succeed);
     return true;
   }
   else {
-    Log("Invalid state value. state: %d", (int)request->state);
+    Log("Invalid state value. state: %d", (int)state_);
     assert(false);
   }
 
@@ -214,7 +236,7 @@ void HttpFileRequest::HeaderDataCb (void *data, const int len) {
     file_length_ = atoi(e2);
   }
 
-  Log("Decoded header field '%s' => '%s'", *FString(e1), *FString(e2));
+  //Log("Decoded header field '%s' => '%s'", *FString(e1), *FString(e2));
 }
 
 void HttpFileRequest::BodyDataCb (void *data, const int len) {
@@ -258,6 +280,11 @@ void HttpFileDownloader::AddRequest (const std::string& url, const string& targe
   request->object.finish_callback_ = finish;
 
   thread_.AddRequest(request);
+}
+
+void HttpFileDownloader::CancelRequest () {
+  Log("Cancel download files.")
+  thread_.CancelRequest();
 }
 
 bool HttpFileDownloader::AsyncRequestCb (AsyncRequest *request) {

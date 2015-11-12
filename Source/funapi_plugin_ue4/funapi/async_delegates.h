@@ -27,7 +27,8 @@ class AsyncEvent {
   bool AsyncRequestCb (AsyncRequest*);
 
  private:
-  struct EventInfo : public AsyncRequest {
+  class EventInfo : public AsyncRequest {
+   public:
     EventInfo (AsyncProc proc, EventCallback cb)
       : AsyncRequest(proc), callback(cb) {}
 
@@ -50,6 +51,7 @@ class HttpFileDownloader {
   void AddRequest (const string& url, FinishCallback finish);
   void AddRequest (const string& url, const string& target_path,
                    FinishCallback finish, UpdateCallback update = nullptr);
+  void CancelRequest ();
 
  private:
   static bool AsyncRequestCb (AsyncRequest*);

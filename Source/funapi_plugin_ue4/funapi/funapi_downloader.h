@@ -29,9 +29,14 @@ class FunapiHttpDownloader {
                         bool https, const char *target_path);
   void GetDownloadList (const char *url, const char *target_path);
   void StartDownload ();
+  void ContinueDownload ();
   void Stop ();
 
   bool IsDownloading () const;
+  int CurrentDownloadFileCount () const;
+  int TotalDownloadFileCount () const;
+  int CurrentDownloadFileSize () const;
+  int TotalDownloadFileSize () const;
 
  public:
   FEvent<string> VerifyCallback;

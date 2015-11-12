@@ -29,8 +29,8 @@
 // Sets default values
 Afunapi_tester::Afunapi_tester()
 {
-    // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-    PrimaryActorTick.bCanEverTick = true;
+  // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+  PrimaryActorTick.bCanEverTick = true;
 }
 
 Afunapi_tester::~Afunapi_tester()
@@ -40,10 +40,7 @@ Afunapi_tester::~Afunapi_tester()
 // Called when the game starts or when spawned
 void Afunapi_tester::BeginPlay()
 {
-    Super::BeginPlay();
-
-    // FOR TEST ////////////////////////////////////////////////////
-    // downloader = new Fun::FunapiDownloader();
+  Super::BeginPlay();
 }
 
 void Afunapi_tester::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -83,47 +80,47 @@ bool Afunapi_tester::ConnectHttp()
 
 bool Afunapi_tester::IsConnected()
 {
-    return network_ != nullptr && network_->Connected();
+  return network_ != nullptr && network_->Connected();
 }
 
 void Afunapi_tester::Disconnect()
 {
-    if (network_ == nullptr || network_->Started() == false)
-    {
-        LOG("You should connect first.");
-        return;
-    }
+  if (network_ == nullptr || network_->Started() == false)
+  {
+      LOG("You should connect first.");
+      return;
+  }
 
-    network_->Stop();
+  network_->Stop();
 }
 
 bool Afunapi_tester::SendEchoMessage()
 {
-    if (network_ == NULL || network_->Started() == false)
-    {
-        LOG("You should connect first.");
-        return false;
-    }
+  if (network_ == NULL || network_->Started() == false)
+  {
+      LOG("You should connect first.");
+      return false;
+  }
 
-    if (msg_type_ == fun::kJsonEncoding)
-    {
-      FJsonObject json_object;
-      json_object.SetStringField(FString("message"), FString("hello world"));
-      network_->SendMessage("echo", json_object, protocol_);
+  if (msg_type_ == fun::kJsonEncoding)
+  {
+    FJsonObject json_object;
+    json_object.SetStringField(FString("message"), FString("hello world"));
+    network_->SendMessage("echo", json_object, protocol_);
 
+    return true;
+  }
+  else if (msg_type_ == fun::kProtobufEncoding)
+  {
+      FunMessage msg;
+      msg.set_msgtype("pbuf_echo");
+      PbufEchoMessage *echo = msg.MutableExtension(pbuf_echo);
+      echo->set_msg("hello proto");
+      network_->SendMessage(msg, protocol_);
       return true;
-    }
-    else if (msg_type_ == fun::kProtobufEncoding)
-    {
-        FunMessage msg;
-        msg.set_msgtype("pbuf_echo");
-        PbufEchoMessage *echo = msg.MutableExtension(pbuf_echo);
-        echo->set_msg("hello proto");
-        network_->SendMessage(msg, protocol_);
-        return true;
-    }
+  }
 
-    return false;
+  return false;
 }
 
 void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
@@ -201,7 +198,7 @@ bool Afunapi_tester::FileDownload()
   downloader.GetDownloadList("http://127.0.0.1:8020", "C:\\download_test");
 
   while (downloader.IsDownloading()) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
   }
 
   return true;

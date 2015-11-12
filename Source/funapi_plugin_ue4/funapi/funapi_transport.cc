@@ -34,6 +34,7 @@ class FunapiTransportBase : public std::enable_shared_from_this<FunapiTransportB
   virtual ~FunapiTransportBase();
 
   bool Started();
+  virtual void Start() = 0;
   virtual void Stop() = 0;
 
   void RegisterEventHandlers(const OnReceived &cb1, const OnStopped &cb2);
@@ -946,172 +947,72 @@ void FunapiHttpTransportImpl::WebResponseBodyCb(void *data, int len, std::vector
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiTcpTransport implementation.
 
-FunapiTcpTransport::FunapiTcpTransport(
-    const std::string &hostname_or_ip, uint16_t port)
-    : impl_(std::make_shared<FunapiTcpTransportImpl>(kTcp, hostname_or_ip, port)) {
-}
-
-
-FunapiTcpTransport::~FunapiTcpTransport() {
-}
-
-
-void FunapiTcpTransport::RegisterEventHandlers(
-    const OnReceived &on_received, const OnStopped &on_stopped) {
-  impl_->RegisterEventHandlers(on_received, on_stopped);
-}
-
-
-void FunapiTcpTransport::Start() {
-  impl_->Start();
-}
-
-
-void FunapiTcpTransport::Stop() {
-  impl_->Stop();
-}
-
-
-void FunapiTcpTransport::SendMessage(Json &message) {
-  impl_->SendMessage(message);
-}
-
-
-void FunapiTcpTransport::SendMessage(FJsonObject &message) {
-  impl_->SendMessage(message);
-}
-
-
-void FunapiTcpTransport::SendMessage(FunMessage &message) {
-  impl_->SendMessage(message);
-}
-
-
-bool FunapiTcpTransport::Started() const {
-  return impl_->Started();
+FunapiTcpTransport::FunapiTcpTransport (const std::string &hostname_or_ip, uint16_t port) {
+  impl_ = std::make_shared<FunapiTcpTransportImpl>(kTcp, hostname_or_ip, port);
 }
 
 TransportProtocol FunapiTcpTransport::Protocol() const {
   return TransportProtocol::kTcp;
 }
 
-
-void FunapiTcpTransport::SetNetwork(std::weak_ptr<FunapiNetwork> network)
-{
-  impl_->SetNetwork(network);
-}
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiUdpTransport implementation.
 
-FunapiUdpTransport::FunapiUdpTransport(
-    const std::string &hostname_or_ip, uint16_t port)
-    : impl_(std::make_shared<FunapiUdpTransportImpl>(kUdp, hostname_or_ip, port)) {
-}
-
-
-FunapiUdpTransport::~FunapiUdpTransport() {
-}
-
-
-void FunapiUdpTransport::RegisterEventHandlers(
-    const OnReceived &on_received, const OnStopped &on_stopped) {
-  impl_->RegisterEventHandlers(on_received, on_stopped);
-}
-
-
-void FunapiUdpTransport::Start() {
-  impl_->Start();
-}
-
-
-void FunapiUdpTransport::Stop() {
-  impl_->Stop();
-}
-
-
-void FunapiUdpTransport::SendMessage(Json &message) {
-  impl_->SendMessage(message);
-}
-
-
-void FunapiUdpTransport::SendMessage(FJsonObject &message) {
-  impl_->SendMessage(message);
-}
-
-
-void FunapiUdpTransport::SendMessage(FunMessage &message) {
-  impl_->SendMessage(message);
-}
-
-
-bool FunapiUdpTransport::Started() const {
-  return impl_->Started();
+FunapiUdpTransport::FunapiUdpTransport (const std::string &hostname_or_ip, uint16_t port) {
+  impl_ = std::make_shared<FunapiUdpTransportImpl>(kUdp, hostname_or_ip, port);
 }
 
 TransportProtocol FunapiUdpTransport::Protocol() const {
   return TransportProtocol::kUdp;
 }
 
-void FunapiUdpTransport::SetNetwork(std::weak_ptr<FunapiNetwork> network)
-{
-  impl_->SetNetwork(network);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiHttpTransport implementation.
 
-FunapiHttpTransport::FunapiHttpTransport(
-    const std::string &hostname_or_ip, uint16_t port, bool https /*= false*/)
-    : impl_(std::make_shared<FunapiHttpTransportImpl>(hostname_or_ip, port, https)) {
-}
-
-
-FunapiHttpTransport::~FunapiHttpTransport() {
-}
-
-
-void FunapiHttpTransport::RegisterEventHandlers(
-    const OnReceived &on_received, const OnStopped &on_stopped) {
-  impl_->RegisterEventHandlers(on_received, on_stopped);
-}
-
-
-void FunapiHttpTransport::Start() {
-  impl_->Start();
-}
-
-
-void FunapiHttpTransport::Stop() {
-  impl_->Stop();
-}
-
-
-void FunapiHttpTransport::SendMessage(Json &message) {
-  impl_->SendMessage(message);
-}
-
-
-void FunapiHttpTransport::SendMessage(FJsonObject &message) {
-  impl_->SendMessage(message);
-}
-
-
-void FunapiHttpTransport::SendMessage(FunMessage &message) {
-  impl_->SendMessage(message);
-}
-
-
-bool FunapiHttpTransport::Started() const {
-  return impl_->Started();
+FunapiHttpTransport::FunapiHttpTransport (const std::string &hostname_or_ip,
+  uint16_t port,
+  bool https /*= false*/) {
+  impl_ = std::make_shared<FunapiHttpTransportImpl>(hostname_or_ip, port, https);
 }
 
 TransportProtocol FunapiHttpTransport::Protocol() const {
   return TransportProtocol::kHttp;
 }
 
-void FunapiHttpTransport::SetNetwork(std::weak_ptr<FunapiNetwork> network) {
+////////////////////////////////////////////////////////////////////////////////
+// FunapiTransport implementation.
+
+void FunapiTransport::RegisterEventHandlers(
+  const OnReceived &on_received, const OnStopped &on_stopped) {
+  impl_->RegisterEventHandlers(on_received, on_stopped);
+}
+
+void FunapiTransport::Start() {
+  impl_->Start();
+}
+
+void FunapiTransport::Stop() {
+  impl_->Stop();
+}
+
+void FunapiTransport::SendMessage(Json &message) {
+  impl_->SendMessage(message);
+}
+
+void FunapiTransport::SendMessage(FJsonObject &message) {
+  impl_->SendMessage(message);
+}
+
+void FunapiTransport::SendMessage(FunMessage &message) {
+  impl_->SendMessage(message);
+}
+
+bool FunapiTransport::Started() const {
+  return impl_->Started();
+}
+
+void FunapiTransport::SetNetwork(std::weak_ptr<FunapiNetwork> network)
+{
   impl_->SetNetwork(network);
 }
 

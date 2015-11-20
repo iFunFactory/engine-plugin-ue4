@@ -424,12 +424,21 @@ FunapiTransportImpl::FunapiTransportImpl(FunapiTransportType type,
   struct hostent *entry = gethostbyname(hostname_or_ip.c_str());
   assert(entry);
 
-  struct in_addr **l = reinterpret_cast<struct in_addr **>(entry->h_addr_list);
-  assert(l);
-  assert(l[0]);
+  struct in_addr addr;
+
+  if (entry) {
+    struct in_addr **l = reinterpret_cast<struct in_addr **>(entry->h_addr_list);
+    assert(l);
+    assert(l[0]);
+
+    addr = *l[0];
+  }
+  else {
+    addr.s_addr = INADDR_NONE;
+  }
 
   endpoint_.sin_family = AF_INET;
-  endpoint_.sin_addr = *l[0];
+  endpoint_.sin_addr = addr;
   endpoint_.sin_port = htons(port);
 }
 

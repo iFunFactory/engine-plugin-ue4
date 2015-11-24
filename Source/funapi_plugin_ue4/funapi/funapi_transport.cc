@@ -538,6 +538,9 @@ void FunapiTcpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
   fd_set wset;
   int offset = 0;
 
+  if (sock_ < 0)
+    return;
+
   do {
     FD_ZERO(&wset);
     FD_SET(sock_, &wset);
@@ -579,9 +582,9 @@ void FunapiTcpTransportImpl::Connect() {
   assert(flag >= 0);
   int rc;
 #else
-  int flag = fcntl(sock, F_GETFL);
+  int flag = fcntl(sock_, F_GETFL);
   assert(flag >= 0);
-  int rc = fcntl(sock, F_SETFL, O_NONBLOCK | flag);
+  int rc = fcntl(sock_, F_SETFL, O_NONBLOCK | flag);
   assert(rc >= 0);
 #endif
 
@@ -596,6 +599,9 @@ void FunapiTcpTransportImpl::Connect() {
   bool is_connected = false;
   bool is_timeout = false;
   while (connect_thread_run_ && !is_connected && !is_timeout) {
+    if (sock_ < 0)
+      break;
+
     fd_set wset;
     FD_ZERO(&wset);
     FD_SET(sock_, &wset);
@@ -646,6 +652,9 @@ void FunapiTcpTransportImpl::Recv() {
 
   while (recv_thread_run_)
   {
+    if (sock_ < 0)
+      break;
+
     FD_ZERO(&rset);
     FD_SET(sock_, &rset);
     struct timeval timeout = { 0, 1 };
@@ -751,6 +760,9 @@ void FunapiUdpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
   struct timeval timeout = { 0, 1 };
   socklen_t len = sizeof(endpoint_);
 
+  if (sock_ < 0)
+    return;
+
   FD_ZERO(&wset);
   FD_SET(sock_, &wset);
 
@@ -776,6 +788,9 @@ void FunapiUdpTransportImpl::Recv() {
 
   while (recv_thread_run_)
   {
+    if (sock_<0)
+      break;
+
     FD_ZERO(&rset);
     FD_SET(sock_, &rset);
     struct timeval timeout = { 0, 1 };

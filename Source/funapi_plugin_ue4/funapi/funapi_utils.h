@@ -4,30 +4,28 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
-#pragma once
+#ifndef SRC_FUNAPI_UTILS_H_
+#define SRC_FUNAPI_UTILS_H_
 
-#include <memory>
-#include <string>
-#include <vector>
+#include "funapi_plugin.h"
+//#include <memory>
+//#include <string>
+//#include <vector>
 
-#if PLATFORM_WINDOWS
+#ifdef FUNAPI_PLATFORM_WINDOWS
 #include <stdint.h>
-
 #pragma warning(disable:4996)
 #endif
 
 namespace fun {
 
-#if PLATFORM_WINDOWS
+#ifdef FUNAPI_PLATFORM_WINDOWS
 #define ssize_t   size_t
-
 #define access    _access
 #define snprintf  _snprintf
-
 #define F_OK      0
-
 #define mkdir(path, mode)   _mkdir(path)
-#endif // PLATFORM_WINDOWS
+#endif
 
 
 // Format string
@@ -44,18 +42,95 @@ string FormatString (const char* fmt, Args... args)
 
 
 // Function event
-template <typename ... Params>
-class FEvent
+template <typename T>
+class FunapiEvent
 {
- typedef std::function<void(Params...)> _function;
-
  public:
-  void operator+= (_function f) { vec.push_back(f); }
-  void operator() (Params... params) { for (auto f : vec) f(params...); }
-  bool empty() { return vec.empty(); }
+  // void operator+= (const T &handler) { std::unique_lock<std::mutex> lock(mutex_); vector_.push_back(handler); }
+  void operator+= (const T &handler) { vector_.push_back(handler); }
+  template <typename... ARGS>
+  // void operator() (const ARGS&... args) { std::unique_lock<std::mutex> lock(mutex_); for (const auto &f : vector_) f(args...); }
+  void operator() (const ARGS&... args) { for (const auto &f : vector_) f(args...); }
+  bool empty() { return vector_.empty(); }
 
  private:
-  std::vector<_function> vec;
+  std::vector<T> vector_;
+//  std::mutex mutex_;
 };
 
-} // namespace fun
+
+class FunapiTimer
+{
+ public:
+  FunapiTimer(time_t seconds = 0) {
+    SetTimer(seconds);
+  }
+
+  bool IsExpired() const {
+    // UE_LOG(LogClass, Warning, TEXT("IsExpired - return false"));
+    // return false; 
+    /*
+    {
+      time_t now = time(NULL);
+      UE_LOG(LogClass, Warning, TEXT("now = %ld, time= %ld"), now, time_);
+    }
+    */
+
+    // if (time_miliseconds_ == 0)
+    if (time_ == 0)
+      return false;
+
+    // if ((std::chrono::system_clock::now().time_since_epoch().count()/1000) > time_miliseconds_)
+    if (time(NULL) > time_)
+      return true;
+
+    return false;
+  };
+
+  void SetTimer(const time_t seconds) {
+    // time_miliseconds_ = static_cast<int64_t>((std::chrono::system_clock::now().time_since_epoch().count()/1000) + (seconds*1000));
+    time_ = time(NULL) + seconds;
+  };
+
+ private:
+  // int64_t time_miliseconds_ = 0;
+   time_t time_ = 0;
+};
+
+
+class DebugUtils
+{
+ public:
+  template <typename ... Args>
+  static void Log(const char* fmt, Args... args) {
+#ifdef FUNAPI_COCOS2D
+    std::string temp_string = fun::FormatString(fmt, args...);
+    CCLOG("%s", temp_string.c_str());
+#endif
+
+#ifdef FUNAPI_UE4_PLATFORM_WINDOWS
+    std::string temp_string = fun::FormatString(fmt, args...);
+    UE_LOG(LogClass, Warning, TEXT("%s"), *FString(temp_string.c_str()));
+    // UE_LOG(LogClass, Warning, TEXT("%s"), *FString(fmt));
+#endif
+  };
+
+  /*
+  template <>
+  static void Log(const char* fmt) {
+#ifdef FUNAPI_COCOS2D
+//    std::string temp_string = fun::FormatString(fmt, args...);
+//    CCLOG("%s", temp_string.c_str());
+#endif
+
+#ifdef FUNAPI_UE4
+    // std::string temp_string = fun::FormatString(fmt, args...);
+    UE_LOG(LogClass, Warning, TEXT("%s"), *FString(fmt));
+#endif
+  };
+  */
+};
+
+}  // namespace fun
+
+#endif  // SRC_FUNAPI_UTILS_H_

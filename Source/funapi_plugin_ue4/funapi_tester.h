@@ -9,6 +9,7 @@
 #include <memory>
 #include "GameFramework/Actor.h"
 #include "funapi_network.h"
+#include "funapi_multicasting.h"
 #include "funapi_tester.generated.h"
 
 UCLASS()
@@ -49,18 +50,45 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
   UFUNCTION(BlueprintCallable, Category="Funapi")
   bool FileDownload();
 
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool CreateMulticast();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool JoinMulticastChannel();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool SendMulticastMessage();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool LeaveMulticastChannel();
+
   // callback
   void OnSessionInitiated(const std::string &session_id);
   void OnSessionClosed();
-  void OnEchoJson(const std::string &type, const std::vector<uint8_t> &v_body);
-  void OnEchoProto(const std::string &type, const std::vector<uint8_t> &v_body);
+  void OnEchoJson(const fun::TransportProtocol protocol, const std::string &type, const std::vector<uint8_t> &v_body);
+  void OnEchoProto(const fun::TransportProtocol protocol, const std::string &type, const std::vector<uint8_t> &v_body);
+
+  void OnMaintenanceMessage(const fun::TransportProtocol protocol, const std::string &type, const std::vector<uint8_t> &v_body);
+  void OnStoppedAllTransport();
+  void OnTransportConnectFailed(const fun::TransportProtocol protocol);
+  void OnTransportConnectTimeout(const fun::TransportProtocol protocol);
 
  private:
   void Connect(const fun::TransportProtocol protocol);
-  std::shared_ptr<fun::FunapiTransport> GetNewTransport(fun::TransportProtocol protocol);
+  std::shared_ptr<fun::FunapiTransport> GetNewTransport(const fun::TransportProtocol protocol);
 
+  // Please change this address for test.
   const std::string kServerIp = "127.0.0.1";
-  std::shared_ptr<fun::FunapiNetwork> network_;
-  int8 msg_type_ = fun::kJsonEncoding;
-  fun::TransportProtocol protocol_ = fun::TransportProtocol::kDefault;
+
+  // member variables.
+  bool with_protobuf_ = false;
+  bool with_session_reliability_ = false;
+
+  std::shared_ptr<fun::FunapiNetwork> network_ = nullptr;
+
+  const std::string kMulticastTestChannel = "multicast";
+  std::shared_ptr<fun::FunapiMulticastClient> multicast_ = nullptr;
+  fun::FunEncoding multicast_encoding_;
+
+  void OnMulticastChannelSignalle(const std::string &channel_id, const std::string &sender, const std::vector<uint8_t> &v_body);
 };

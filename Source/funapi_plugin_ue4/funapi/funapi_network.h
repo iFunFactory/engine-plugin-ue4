@@ -4,51 +4,63 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
-/** @file */
-
 #ifndef SRC_FUNAPI_NETWORK_H_
 #define SRC_FUNAPI_NETWORK_H_
 
 #include "funapi_transport.h"
 
+
 namespace fun {
 
-// Funapi version
 enum class FunapiVersion : int
 {
   kProtocolVersion = 1,
-  kPluginVersion = 2,
+  kPluginVersion = 3,
 };
 
 class FunapiNetworkImpl;
 class FunapiNetwork : public std::enable_shared_from_this<FunapiNetwork> {
  public:
-  typedef std::function<void(const std::string &, const std::vector<uint8_t>&)> MessageHandler;
-  typedef std::function<void(const std::string &)> OnSessionInitiated;
-  typedef std::function<void()> OnSessionClosed;
+  typedef std::function<void(const TransportProtocol, const std::string &, const std::vector<uint8_t> &)> MessageEventHandler;
+  typedef std::function<void(const std::string &)> SessionInitHandler;
+  typedef std::function<void()> SessionCloseHandler;
+  typedef std::function<void()> NotifyHandler;
+  typedef FunapiTransport::TransportEventHandler TransportEventHandler;
 
-  static void Initialize(time_t session_timeout = 3600);
-  static void Finalize();
-
-  FunapiNetwork(int type,
-                const OnSessionInitiated &on_session_initiated,
-                const OnSessionClosed &on_session_closed);
+  FunapiNetwork(bool session_reliability = false);
   ~FunapiNetwork();
 
-  void RegisterHandler(const std::string msg_type, const MessageHandler &handler);
+  void RegisterHandler(const std::string msg_type, const MessageEventHandler &handler);
   void Start();
   void Stop();
-  void SendMessage(const std::string &msg_type, Json &body, TransportProtocol protocol = TransportProtocol::kDefault);
-  void SendMessage(const std::string &msg_type, FJsonObject &body, TransportProtocol protocol = TransportProtocol::kDefault);
+  void SendMessage(const std::string &msg_type, std::string &json_string, TransportProtocol protocol = TransportProtocol::kDefault);
   void SendMessage(FunMessage &message, TransportProtocol protocol = TransportProtocol::kDefault);
-  bool Started() const;
-  bool Connected(TransportProtocol protocol = TransportProtocol::kDefault) const;
+
+  bool IsStarted() const;
+  bool IsConnected(const TransportProtocol protocol = TransportProtocol::kDefault) const;
   void Update();
-  void AttachTransport(std::shared_ptr<FunapiTransport> funapi_transport);
-  void PushTaskQueue(const std::function<void()> task);
+  void AttachTransport(const std::shared_ptr<FunapiTransport> &transport);
+  void PushTaskQueue(const std::function<void()> &task);
+
+  std::shared_ptr<FunapiTransport> GetTransport(const TransportProtocol protocol) const;  
+  bool HasTransport(const TransportProtocol protocol) const;
+  void SetDefaultProtocol(const TransportProtocol protocol);
+
+  bool IsSessionReliability() const;
+
+  FunEncoding GetEncoding(const TransportProtocol protocol) const;
+  TransportProtocol GetDefaultProtocol() const;
+
+  void AddSessionInitiatedCallback(const SessionInitHandler &handler);
+  void AddSessionClosedCallback(const SessionCloseHandler &handler);
+  void AddMaintenanceCallback(const MessageEventHandler &handler);
+  void AddStoppedAllTransportCallback(const NotifyHandler &handler);
+  void AddTransportConnectFailedCallback(const TransportEventHandler &handler);
+  void AddTransportDisconnectedCallback(const TransportEventHandler &handler);
+  void AddTransportConnectTimeoutCallback(const TransportEventHandler &handler);  
 
  private:
-   std::shared_ptr<FunapiNetworkImpl> impl_;
+  std::shared_ptr<FunapiNetworkImpl> impl_;
 };
 
 }  // namespace fun

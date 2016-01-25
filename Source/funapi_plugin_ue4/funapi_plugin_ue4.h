@@ -6,6 +6,9 @@
 
 #pragma once
 
+#include "funapi/funapi_plugin.h"
+
+/*
 #include "Engine.h"
 #include "UnrealString.h"
 #include "Json.h"
@@ -61,4 +64,6 @@ namespace {
 #define LogWarning(fmt, ...) UE_LOG(LogFunapi, Warning, TEXT(fmt), __VA_ARGS__)
 #define LogError(fmt, ...)   UE_LOG(LogFunapi, Error, TEXT(fmt), __VA_ARGS__)
 
+
 } // namespace fun
+*/

@@ -231,18 +231,14 @@ void FunapiNetworkImpl::SendMessage(const std::string &msg_type, std::string &js
 
   // Encodes a messsage type.
   rapidjson::Value msg_type_node;
-  // msg_type_node.SetString(rapidjson::StringRef(msg_type.c_str()));
-  msg_type_node = msg_type.c_str();
-  // body.AddMember(rapidjson::StringRef(kMsgTypeBodyField), msg_type_node, body.GetAllocator());
-  body.AddMember(kMsgTypeBodyField, msg_type_node, body.GetAllocator());
+  msg_type_node.SetString(rapidjson::StringRef(msg_type.c_str()));
+  body.AddMember(rapidjson::StringRef(kMsgTypeBodyField), msg_type_node, body.GetAllocator());
 
   // Encodes a session id, if any.
   if (!session_id_.empty()) {
     rapidjson::Value session_id_node;
-    // session_id_node.SetString(rapidjson::StringRef(session_id_.c_str()));
-    session_id_node = session_id_.c_str();
-    // body.AddMember(rapidjson::StringRef(kSessionIdBodyField), session_id_node, body.GetAllocator());
-    body.AddMember(kSessionIdBodyField, session_id_node, body.GetAllocator());
+    session_id_node.SetString(rapidjson::StringRef(session_id_.c_str()));
+    body.AddMember(rapidjson::StringRef(kSessionIdBodyField), session_id_node, body.GetAllocator());
   }
 
   if (protocol == TransportProtocol::kDefault)

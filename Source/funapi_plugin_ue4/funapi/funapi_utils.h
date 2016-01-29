@@ -101,17 +101,22 @@ class FunapiTimer
 class DebugUtils
 {
  public:
-  template <typename ... Args>
-  static void Log(const char* fmt, Args... args) {
+   static void Log(std::string fmt, ...) {
+    const int MAX_LENGTH = 2048;
+
+    va_list args;
+    char buffer[MAX_LENGTH];
+
+    va_start(args, fmt);
+    vsnprintf(buffer, MAX_LENGTH, fmt.c_str(), args);
+    va_end(args);
+
 #ifdef FUNAPI_COCOS2D
-    std::string temp_string = fun::FormatString(fmt, args...);
-    CCLOG("%s", temp_string.c_str());
+    CCLOG("%s", buffer);
 #endif
 
-#ifdef FUNAPI_UE4_PLATFORM_WINDOWS
-    std::string temp_string = fun::FormatString(fmt, args...);
-    UE_LOG(LogClass, Warning, TEXT("%s"), *FString(temp_string.c_str()));
-    // UE_LOG(LogClass, Warning, TEXT("%s"), *FString(fmt));
+#ifdef FUNAPI_UE4
+    UE_LOG(LogClass, Warning, TEXT("%s"), *FString(buffer));
 #endif
   };
 

@@ -155,16 +155,13 @@ bool FunapiMulticastClientImpl::JoinChannel(const std::string &channel_id, const
     msg.SetObject();
 
     rapidjson::Value channel_id_node(channel_id.c_str(), msg.GetAllocator());
-    // msg.AddMember(rapidjson::StringRef(kChannelId), channel_id_node, msg.GetAllocator());
-    msg.AddMember(kChannelId, channel_id_node, msg.GetAllocator());
+    msg.AddMember(rapidjson::StringRef(kChannelId), channel_id_node, msg.GetAllocator());
 
     rapidjson::Value sender_node(sender_.c_str(), msg.GetAllocator());
-    // msg.AddMember(rapidjson::StringRef(kSender), sender_node, msg.GetAllocator());
-    msg.AddMember(kSender, sender_node, msg.GetAllocator());
+    msg.AddMember(rapidjson::StringRef(kSender), sender_node, msg.GetAllocator());
 
     rapidjson::Value join_node(true);
-    // msg.AddMember(rapidjson::StringRef(kJoin), join_node, msg.GetAllocator());
-    msg.AddMember(kJoin, join_node, msg.GetAllocator());
+    msg.AddMember(rapidjson::StringRef(kJoin), join_node, msg.GetAllocator());
 
     // Convert JSON document to string
     rapidjson::StringBuffer buffer;
@@ -199,16 +196,13 @@ bool FunapiMulticastClientImpl::LeaveChannel(const std::string &channel_id) {
     msg.SetObject();
 
     rapidjson::Value channel_id_node(channel_id.c_str(), msg.GetAllocator());
-    // msg.AddMember(rapidjson::StringRef(kChannelId), channel_id_node, msg.GetAllocator());
-    msg.AddMember(kChannelId, channel_id_node, msg.GetAllocator());
+    msg.AddMember(rapidjson::StringRef(kChannelId), channel_id_node, msg.GetAllocator());
 
     rapidjson::Value sender_node(sender_.c_str(), msg.GetAllocator());
-    // msg.AddMember(rapidjson::StringRef(kSender), sender_node, msg.GetAllocator());
-    msg.AddMember(kSender, sender_node, msg.GetAllocator());
+    msg.AddMember(rapidjson::StringRef(kSender), sender_node, msg.GetAllocator());
 
     rapidjson::Value leave_node(true);
-    // msg.AddMember(rapidjson::StringRef(kLeave), leave_node, msg.GetAllocator());
-    msg.AddMember(kLeave, leave_node, msg.GetAllocator());
+    msg.AddMember(rapidjson::StringRef(kLeave), leave_node, msg.GetAllocator());
 
     // Convert JSON document to string
     rapidjson::StringBuffer buffer;
@@ -251,8 +245,7 @@ bool FunapiMulticastClientImpl::SendToChannel(std::string &json_string) {
   }
 
   rapidjson::Value sender_node(sender_.c_str(), msg.GetAllocator());
-  // msg.AddMember(rapidjson::StringRef(kSender), sender_node, msg.GetAllocator());
-  msg.AddMember(kSender, sender_node, msg.GetAllocator());
+  msg.AddMember(rapidjson::StringRef(kSender), sender_node, msg.GetAllocator());
 
   // Convert JSON document to string
   rapidjson::StringBuffer buffer;

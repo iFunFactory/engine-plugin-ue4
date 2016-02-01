@@ -10,29 +10,16 @@
 #include "AllowWindowsPlatformTypes.h"
 #endif
 
-// #include <functional>
-
-// #include "funapi_tester.h"
-// #include "funapi/funapi_network.h"
-// #include "funapi/test_messages.pb.h"
-// #include "Funapi/funapi_downloader.h"
-
 #include "funapi/funapi_network.h"
 #include "funapi/pb/test_messages.pb.h"
 #include "funapi/pb/management/maintenance_message.pb.h"
 #include "funapi/pb/service/multicast_message.pb.h"
 #include "funapi/funapi_utils.h"
-
 #include "funapi_tester.h"
-
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
 
 #if PLATFORM_WINDOWS
 #include "HideWindowsPlatformTypes.h"
 #endif
-
-
 
 
 // Sets default values
@@ -159,20 +146,18 @@ bool Afunapi_tester::SendEchoMessage()
         ss_temp <<  "hello world - " << static_cast<int>(i);
         std::string temp_string = ss_temp.str();
 
-        // rapidjson을 사용해서 json 메시지를 생성합니다.
-        rapidjson::Document msg;
-        msg.SetObject();
-        rapidjson::Value message_node(temp_string.c_str(), msg.GetAllocator());
-        msg.AddMember("message", message_node, msg.GetAllocator());
+        // json 메시지를 생성합니다.
+        TSharedRef<FJsonObject> json_object = MakeShareable(new FJsonObject);
+        json_object->SetStringField(FString("message"), FString(temp_string.c_str()));
 
         // Convert JSON document to string
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        msg.Accept(writer);
-        std::string json_string = buffer.GetString();
+        FString ouput_fstring;
+        TSharedRef<TJsonWriter<TCHAR>> writer = TJsonWriterFactory<TCHAR>::Create(&ouput_fstring);
+        FJsonSerializer::Serialize(json_object, writer);
+        std::string json_stiring = TCHAR_TO_ANSI(*ouput_fstring);
 
         // 메시지 전송
-        network_->SendMessage("echo", json_string);
+        network_->SendMessage("echo", json_stiring);
       }
     }
   }

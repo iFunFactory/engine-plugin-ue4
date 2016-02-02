@@ -36,7 +36,7 @@ class FunapiMulticastClient : public std::enable_shared_from_this<FunapiMulticas
   bool JoinChannel(const std::string &channel_id, const ChannelMessage &handler);
   bool LeaveChannel(const std::string &channel_id);
 
-  bool SendToChannel(FunMulticastMessage &mcast_msg);
+  bool SendToChannel(FunMessage &msg);
   bool SendToChannel(std::string &json_string);
 
  private:

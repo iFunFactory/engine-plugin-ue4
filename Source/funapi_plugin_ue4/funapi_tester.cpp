@@ -282,7 +282,16 @@ bool Afunapi_tester::SendMulticastMessage()
 
       // encoding 타입이 protobuf일 경우
       if (multicast_encoding_ == fun::FunEncoding::kProtobuf) {
+        FunMessage msg;
 
+        FunMulticastMessage* mcast_msg = msg.MutableExtension(multicast);
+        mcast_msg->set_channel(kMulticastTestChannel.c_str());
+        mcast_msg->set_bounce(true);
+
+        FunChatMessage *chat_msg = mcast_msg->MutableExtension(chat);
+        chat_msg->set_text("multicast test message");
+
+        multicast_->SendToChannel(msg);
       }
     }
   }
@@ -488,7 +497,10 @@ void Afunapi_tester::OnMulticastChannelSignalle(const std::string &channel_id, c
     msg.ParseFromString(body);
 
     // 멀티캐스팅 메시지입니다.
-    FunMulticastMessage multicast_msg = msg.GetExtension(multicast);
-    // multicast_msg.channel();
+    FunMulticastMessage* mcast_msg = msg.MutableExtension(multicast);
+    FunChatMessage *chat_msg = mcast_msg->MutableExtension(chat);
+    std::string message = chat_msg->text();
+
+    fun::DebugUtils::Log("channel_id=%s, sender=%s, message=%s", channel_id.c_str(), sender.c_str(), message.c_str());
   }
 }

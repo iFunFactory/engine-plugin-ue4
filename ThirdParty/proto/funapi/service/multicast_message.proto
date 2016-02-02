@@ -7,10 +7,18 @@
 import "funapi/network/fun_message.proto";
 
 message FunMulticastMessage {
+  enum ErrorCode {
+    EC_ALREADY_JOINED = 1;
+    EC_ALREADY_LEFT = 2;
+    EC_FULL_MEMBER = 3;
+  }
+
   required string channel = 1;
   optional bool join = 2;   // when subscribing to the channel.
   optional bool leave = 3;  // when unsubscribing from the channel.
   optional bool bounce = 4;
+  optional string sender = 5;
+  optional ErrorCode error_code = 6;
 
   ////////////////////////////////////////////////////////////////////
   // GAME SHOULD EXTEND FunMultiCastMessage.
@@ -22,8 +30,7 @@ message FunMulticastMessage {
 
 
 message FunChatMessage {
-  optional string sender = 1;
-  optional string text = 2;
+  optional string text = 1;
 }
 
 

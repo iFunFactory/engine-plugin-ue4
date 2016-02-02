@@ -39,7 +39,7 @@ class FunapiMulticastClientImpl : public std::enable_shared_from_this<FunapiMult
   bool JoinChannel(const std::string &channel_id, const ChannelMessage &handler);
   bool LeaveChannel(const std::string &channel_id);
 
-  bool SendToChannel(FunMulticastMessage &mcast_msg);
+  bool SendToChannel(FunMessage &msg);
   bool SendToChannel(std::string &json_string);
 
   void AddJoinedCallback(const ChannelNotify &handler);
@@ -173,7 +173,15 @@ bool FunapiMulticastClientImpl::JoinChannel(const std::string &channel_id, const
   }
 
   if (encoding_ == FunEncoding::kProtobuf) {
+    FunMessage msg;
+    msg.set_msgtype(kMulticastMsgType);
 
+    FunMulticastMessage *mcast_msg = msg.MutableExtension(multicast);
+    mcast_msg->set_channel(channel_id.c_str());
+    mcast_msg->set_join(true);
+    mcast_msg->set_sender(sender_.c_str());
+
+    network_->SendMessage(msg);
   }
 
   return true;
@@ -214,7 +222,15 @@ bool FunapiMulticastClientImpl::LeaveChannel(const std::string &channel_id) {
   }
 
   if (encoding_ == FunEncoding::kProtobuf) {
-    
+    FunMessage msg;
+    msg.set_msgtype(kMulticastMsgType);
+
+    FunMulticastMessage *mcast_msg = msg.MutableExtension(multicast);
+    mcast_msg->set_channel(channel_id.c_str());
+    mcast_msg->set_leave(true);
+    mcast_msg->set_sender(sender_.c_str());
+
+    network_->SendMessage(msg);
   }
 
   channels_.erase(channel_id);
@@ -223,7 +239,20 @@ bool FunapiMulticastClientImpl::LeaveChannel(const std::string &channel_id) {
 }
 
 
-bool FunapiMulticastClientImpl::SendToChannel(FunMulticastMessage &mcast_msg) {
+bool FunapiMulticastClientImpl::SendToChannel(FunMessage &msg) {
+  FunMulticastMessage *mcast_msg = msg.MutableExtension(multicast);
+  std::string channel_id = mcast_msg->channel();
+
+  if (!IsInChannel(channel_id)) {
+    DebugUtils::Log("You are not in the channel: %s", channel_id.c_str());
+    return false;
+  }
+
+  msg.set_msgtype(kMulticastMsgType);
+  mcast_msg->set_sender(sender_.c_str());
+
+  network_->SendMessage(msg);
+
   return true;
 }
 
@@ -295,6 +324,30 @@ void FunapiMulticastClientImpl::OnReceived(const fun::TransportProtocol protocol
   }
 
   if (encoding_ == fun::FunEncoding::kProtobuf) {
+    std::string body(v_body.cbegin(), v_body.cend());
+
+    FunMessage msg;
+    msg.ParseFromString(body);
+
+    FunMulticastMessage *mcast_msg = msg.MutableExtension(multicast);
+
+    channel_id = mcast_msg->channel();
+
+    if (mcast_msg->has_sender()) {
+      sender = mcast_msg->sender();
+    }
+
+    if (mcast_msg->has_error_code()) {
+      error_code = mcast_msg->error_code();
+    }
+
+    if (mcast_msg->has_join()) {
+      join = mcast_msg->join();
+    }
+
+    if (mcast_msg->has_leave()) {
+      leave = mcast_msg->leave();
+    }
   }
 
   if (error_code != 0) {
@@ -378,8 +431,8 @@ bool FunapiMulticastClient::LeaveChannel(const std::string &channel_id) {
 }
 
 
-bool FunapiMulticastClient::SendToChannel(FunMulticastMessage &mcast_msg) {
-  return impl_->SendToChannel(mcast_msg);
+bool FunapiMulticastClient::SendToChannel(FunMessage &msg) {
+  return impl_->SendToChannel(msg);
 }
 
 

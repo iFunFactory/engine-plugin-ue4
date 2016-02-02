@@ -10,4 +10,5 @@ Intermediate
 *.sln
 Binaries
 funapi_plugin_ue4.xcodeproj
-Build/
+Build
+funapi_plugin_ue4.xcworkspace

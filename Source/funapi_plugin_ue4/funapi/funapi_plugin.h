@@ -70,16 +70,6 @@
 #include "HideWindowsPlatformTypes.h"
 #endif
 
-//namespace fun {
-//
-////#ifdef FUNAPI_COCOS2D
-////#define FUNAPI_LOG(fmt, ...)          CCLOG(fmt, ##__VA_ARGS__)
-////#define FUNAPI_LOG_WARNING(fmt, ...)  CCLOG(fmt, ##__VA_ARGS__)
-////#define FUNAPI_LOG_ERROR(fmt, ...)    CCLOG(fmt, ##__VA_ARGS__)
-////#endif 
-//
-//} // namespace fun
-
 #ifdef FUNAPI_UE4
 DECLARE_LOG_CATEGORY_EXTERN(LogFunapi, Log, All);
 #endif

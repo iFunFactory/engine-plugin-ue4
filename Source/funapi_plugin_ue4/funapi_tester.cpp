@@ -200,12 +200,12 @@ bool Afunapi_tester::CreateMulticast()
       // multicast_->SetEncoding(multicast_encoding_);
 
       // 채널 입장 콜백 등록
-      multicast_->AddJoinedCallback([](const std::string &channel_id, const std::string &sender) {
-        fun::DebugUtils::Log("JoinedCallback called. channel_id:%s player:%s", channel_id.c_str(), sender.c_str());
+      multicast_->AddJoinedCallback([](const std::string &channel_id, const std::string &s) {
+        fun::DebugUtils::Log("JoinedCallback called. channel_id:%s player:%s", channel_id.c_str(), s.c_str());
       });
       // 채널 퇴장 콜백 등록
-      multicast_->AddLeftCallback([](const std::string &channel_id, const std::string &sender) {
-        fun::DebugUtils::Log("LeftCallback called. channel_id:%s player:%s", channel_id.c_str(), sender.c_str());
+      multicast_->AddLeftCallback([](const std::string &channel_id, const std::string &s) {
+        fun::DebugUtils::Log("LeftCallback called. channel_id:%s player:%s", channel_id.c_str(), s.c_str());
       });
       // 에러 콜백 등록
       multicast_->AddErrorCallback([](int error) {

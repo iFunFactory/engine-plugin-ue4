@@ -711,8 +711,8 @@ void FunapiTcpTransportImpl::Start() {
         // Makes a state transition.
         state_ = kConnected;
 
-        on_socket_select_ = [this](const fd_set r, const fd_set w, const fd_set e) {
-          FunapiSocketTransportImpl::OnSocketSelect(r, w, e);
+        on_socket_select_ = [this](const fd_set rs, const fd_set ws, const fd_set es) {
+          FunapiSocketTransportImpl::OnSocketSelect(rs, ws, es);
         };
 
         client_ping_timeout_timer_.SetTimer(kPingIntervalSecond + kPingTimeoutSeconds);

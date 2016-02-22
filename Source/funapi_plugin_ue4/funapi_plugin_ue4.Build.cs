@@ -88,9 +88,10 @@ public class funapi_plugin_ue4 : ModuleRules
             PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include", "iOS"));
 
             LibPath += "lib/iOS";
-            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl.4.dylib"));
-            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcrypto.1.0.0.dylib"));
-            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libprotobuf.9.dylib"));
+            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl.a"));
+            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcrypto.a"));
+            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libssl.a"));
+            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libprotobuf.a"));
         }
     }
 }

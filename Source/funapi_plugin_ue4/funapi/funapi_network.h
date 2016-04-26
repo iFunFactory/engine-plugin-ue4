@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2015 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -15,7 +15,7 @@ namespace fun {
 enum class FunapiVersion : int
 {
   kProtocolVersion = 1,
-  kPluginVersion = 4,
+  kPluginVersion = 5,
 };
 
 class FunapiNetworkImpl;
@@ -40,13 +40,12 @@ class FunapiNetwork : public std::enable_shared_from_this<FunapiNetwork> {
   bool IsConnected(const TransportProtocol protocol = TransportProtocol::kDefault) const;
   void Update();
   void AttachTransport(const std::shared_ptr<FunapiTransport> &transport);
-  void PushTaskQueue(const std::function<void()> &task);
 
-  std::shared_ptr<FunapiTransport> GetTransport(const TransportProtocol protocol) const;  
+  std::shared_ptr<FunapiTransport> GetTransport(const TransportProtocol protocol) const;
   bool HasTransport(const TransportProtocol protocol) const;
   void SetDefaultProtocol(const TransportProtocol protocol);
 
-  bool IsSessionReliability() const;
+  bool IsReliableSession() const;
 
   FunEncoding GetEncoding(const TransportProtocol protocol) const;
   TransportProtocol GetDefaultProtocol() const;
@@ -57,7 +56,9 @@ class FunapiNetwork : public std::enable_shared_from_this<FunapiNetwork> {
   void AddStoppedAllTransportCallback(const NotifyHandler &handler);
   void AddTransportConnectFailedCallback(const TransportEventHandler &handler);
   void AddTransportDisconnectedCallback(const TransportEventHandler &handler);
-  void AddTransportConnectTimeoutCallback(const TransportEventHandler &handler);  
+  void AddTransportConnectTimeoutCallback(const TransportEventHandler &handler);
+  void AddTransportStartedCallback(const TransportEventHandler &handler);
+  void AddTransportClosedCallback(const TransportEventHandler &handler);
 
  private:
   std::shared_ptr<FunapiNetworkImpl> impl_;

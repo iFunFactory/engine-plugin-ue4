@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2015 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -35,6 +35,7 @@ class FunapiMulticastClient : public std::enable_shared_from_this<FunapiMulticas
 
   bool JoinChannel(const std::string &channel_id, const ChannelMessage &handler);
   bool LeaveChannel(const std::string &channel_id);
+  bool LeaveAllChannels();
 
   bool SendToChannel(FunMessage &msg);
   bool SendToChannel(std::string &json_string);

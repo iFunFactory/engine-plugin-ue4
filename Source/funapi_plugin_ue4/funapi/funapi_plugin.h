@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2015 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -8,10 +8,6 @@
 #define SRC_FUNAPI_PLUGIN_H_
 
 #include "funapi_build_config.h"
-
-#ifdef FUNAPI_COCOS2D
-#include "cocos2d.h"
-#endif
 
 #ifdef FUNAPI_UE4
 #include "Engine.h"
@@ -37,6 +33,7 @@
 #include <netinet/tcp.h>
 #include <fcntl.h>
 #include <assert.h>
+#include <unistd.h>
 #endif
 
 #include <map>
@@ -51,6 +48,7 @@
 #include <thread>
 #include <chrono>
 #include <algorithm>
+#include <random>
 
 #include "curl/curl.h"
 

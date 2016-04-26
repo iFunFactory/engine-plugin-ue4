@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2015 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -29,16 +29,14 @@ template <typename T>
 class FunapiEvent
 {
  public:
-  // void operator+= (const T &handler) { std::unique_lock<std::mutex> lock(mutex_); vector_.push_back(handler); }
-  void operator+= (const T &handler) { vector_.push_back(handler); }
+  void operator+= (const T &handler) { std::unique_lock<std::mutex> lock(mutex_); vector_.push_back(handler); }
   template <typename... ARGS>
-  // void operator() (const ARGS&... args) { std::unique_lock<std::mutex> lock(mutex_); for (const auto &f : vector_) f(args...); }
-  void operator() (const ARGS&... args) { for (const auto &f : vector_) f(args...); }
+  void operator() (const ARGS&... args) { std::unique_lock<std::mutex> lock(mutex_); for (const auto &f : vector_) f(args...); }
   bool empty() { return vector_.empty(); }
 
  private:
   std::vector<T> vector_;
-//  std::mutex mutex_;
+  std::mutex mutex_;
 };
 
 
@@ -72,6 +70,7 @@ class DebugUtils
 {
  public:
    static void Log(std::string fmt, ...) {
+#ifdef DEBUG_LOG
     const int MAX_LENGTH = 2048;
 
     va_list args;
@@ -88,9 +87,23 @@ class DebugUtils
 #ifdef FUNAPI_UE4
     UE_LOG(LogClass, Warning, TEXT("%s"), *FString(buffer));
 #endif
+
+#endif // DEBUG_LOG
   };
 };
 
 }  // namespace fun
+
+
+class FunapiUtil
+{
+ public:
+  static bool SeqLess(const uint32_t x, const uint32_t y) {
+    // 아래 참고
+    //  - http://en.wikipedia.org/wiki/Serial_number_arithmetic
+    //  - RFC 1982
+    return (int32_t)(y - x) > 0;
+  }
+};
 
 #endif  // SRC_FUNAPI_UTILS_H_

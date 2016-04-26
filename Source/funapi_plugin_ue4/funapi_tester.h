@@ -72,6 +72,8 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
   void OnStoppedAllTransport();
   void OnTransportConnectFailed(const fun::TransportProtocol protocol);
   void OnTransportConnectTimeout(const fun::TransportProtocol protocol);
+  void OnTransportStarted(const fun::TransportProtocol protocol);
+  void OnTransportClosed(const fun::TransportProtocol protocol);
 
  private:
   void Connect(const fun::TransportProtocol protocol);

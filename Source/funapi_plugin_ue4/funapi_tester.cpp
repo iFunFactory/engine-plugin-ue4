@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2015 iFunFactory Inc. All Rights Reserved.
+﻿// Copyright (C) 2013-2015 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -86,6 +86,10 @@ bool Afunapi_tester::IsConnected()
 // 서버와의 연결을 끊습니다.
 void Afunapi_tester::Disconnect()
 {
+  if (multicast_) {
+    multicast_->LeaveAllChannels();
+  }
+
   if (network_ == nullptr || network_->IsStarted() == false)
   {
     fun::DebugUtils::Log("You should connect first.");
@@ -101,7 +105,7 @@ bool Afunapi_tester::SendEchoMessage()
 {
   // 연결 여부를 확인합니다.
   // 연결이 끊긴 상태에서도 Session reliability 옵션이 켜져 있다면 메시지를 보낼 수 있습니다. (나중에 연결되면 전송됨)
-  if (network_ == nullptr || (network_->IsStarted() == false && network_->IsSessionReliability()))
+  if (network_ == nullptr || (network_->IsStarted() == false && network_->IsReliableSession()))
   {
     fun::DebugUtils::Log("You should connect first.");
   }
@@ -118,8 +122,8 @@ bool Afunapi_tester::SendEchoMessage()
     // encoding 타입이 protobuf일 경우 protobuf 메시지를 보냅니다.
     if (encoding == fun::FunEncoding::kProtobuf)
     {
-      // protobuf 메시지를 100개 보냅니다.
-      for (int i = 1; i < 100; ++i) {
+      // protobuf 메시지를 10개 보냅니다.
+      for (int i = 0; i < 10; ++i) {
         // std::to_string is not supported on android, using std::stringstream instead.
         std::stringstream ss_temp;
         ss_temp << "hello proto - " << static_cast<int>(i);
@@ -139,8 +143,8 @@ bool Afunapi_tester::SendEchoMessage()
     // encoding 타입이 json일 경우 json 메시지를 보냅니다.
     if (encoding == fun::FunEncoding::kJson)
     {
-      // json 메시지를 100개 보냅니다.
-      for (int i = 1; i < 100; ++i) {
+      // json 메시지를 10개 보냅니다.
+      for (int i = 0; i < 10; ++i) {
         // std::to_string is not supported on android, using std::stringstream instead.
         std::stringstream ss_temp;
         ss_temp <<  "hello world - " << static_cast<int>(i);
@@ -186,8 +190,10 @@ bool Afunapi_tester::CreateMulticast()
 
       // random sender id 만들기
       std::stringstream ss_temp;
-      srand(time(NULL));
-      ss_temp << "player" << static_cast<int>(rand() % 100 + 1);
+      std::random_device rd;
+      std::default_random_engine re(rd());
+      std::uniform_int_distribution<int> dist(1, 100);
+      ss_temp << "player" << dist(re);
       std::string sender = ss_temp.str();
 
       fun::DebugUtils::Log("sender = %s", sender.c_str());
@@ -209,11 +215,9 @@ bool Afunapi_tester::CreateMulticast()
       });
       // 에러 콜백 등록
       multicast_->AddErrorCallback([](int error) {
-        /*
-        EC_ALREADY_JOINED = 1,
-        EC_ALREADY_LEFT,
-        EC_FULL_MEMBER
-        */
+        // EC_ALREADY_JOINED = 1,
+        // EC_ALREADY_LEFT,
+        // EC_FULL_MEMBER
       });
 
       return true;
@@ -317,7 +321,7 @@ bool Afunapi_tester::LeaveMulticastChannel()
 // FunapiNetwork 객체를 생성하고 연결을 시작합니다.
 void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
 {
-  if (!network_ || !network_->IsSessionReliability()) {
+  if (!network_ || !network_->IsReliableSession()) {
     // FunapiNetwork 객체 생성
     network_ = std::make_shared<fun::FunapiNetwork>(with_session_reliability_);
 
@@ -329,6 +333,8 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
     network_->AddStoppedAllTransportCallback([this]() { OnStoppedAllTransport(); });
     network_->AddTransportConnectFailedCallback([this](const fun::TransportProtocol p) { OnTransportConnectFailed(p); });
     network_->AddTransportConnectTimeoutCallback([this](const fun::TransportProtocol p) { OnTransportConnectTimeout(p); });
+    network_->AddTransportStartedCallback([this](const fun::TransportProtocol p) { OnTransportStarted(p); });
+    network_->AddTransportClosedCallback([this](const fun::TransportProtocol p) { OnTransportClosed(p); });
 
     // 정기점검 관련 콜백 등록
     network_->AddMaintenanceCallback([this](const fun::TransportProtocol p, const std::string &type, const std::vector<uint8_t> &v_body) { OnMaintenanceMessage(p, type, v_body); });
@@ -368,7 +374,8 @@ std::shared_ptr<fun::FunapiTransport> Afunapi_tester::GetNewTransport(fun::Trans
     // transport->SetAutoReconnect(true);
     // transport->SetEnablePing(true);
     // transport->SetDisableNagle(true);
-    // transport->SetConnectTimeout(100);
+    // transport->SetConnectTimeout(10);
+    // transport->SetSequenceNumberValidation(true);
   }
   else if (protocol == fun::TransportProtocol::kUdp) {
     // Udp transport 객체 생성
@@ -377,6 +384,7 @@ std::shared_ptr<fun::FunapiTransport> Afunapi_tester::GetNewTransport(fun::Trans
   else if (protocol == fun::TransportProtocol::kHttp) {
     // Http transport 객체 생성
     transport = fun::FunapiHttpTransport::create(kServerIp, static_cast<uint16_t>(with_protobuf_ ? 8028 : 8018), false, encoding);
+    // transport->SetSequenceNumberValidation(true);
   }
 
   return transport;
@@ -392,6 +400,9 @@ void Afunapi_tester::OnSessionInitiated(const std::string &session_id)
 void Afunapi_tester::OnSessionClosed()
 {
   fun::DebugUtils::Log("session closed");
+
+  network_ = nullptr;
+  multicast_ = nullptr;
 }
 
 // Json "echo" 메시지에 대한 응답을 받으면 호출되는 콜백 함수입니다.
@@ -408,10 +419,8 @@ void Afunapi_tester::OnEchoProto(const fun::TransportProtocol protocol, const st
 {
   fun::DebugUtils::Log("msg '%s' arrived.", type.c_str());
 
-  std::string body(v_body.begin(), v_body.end());
-
   FunMessage msg;
-  msg.ParseFromString(body);
+  msg.ParseFromArray(v_body.data(), static_cast<int>(v_body.size()));
   PbufEchoMessage echo = msg.GetExtension(pbuf_echo);
   fun::DebugUtils::Log("proto: %s", echo.msg().c_str());
 }
@@ -448,10 +457,8 @@ void Afunapi_tester::OnMaintenanceMessage(const fun::TransportProtocol protocol,
   }
 
   if (encoding == fun::FunEncoding::kProtobuf) {
-    std::string body(v_body.cbegin(), v_body.cend());
-
     FunMessage msg;
-    msg.ParseFromString(body);
+    msg.ParseFromArray(v_body.data(), static_cast<int>(v_body.size()));
 
     MaintenanceMessage maintenance = msg.GetExtension(pbuf_maintenance);
     std::string date_start = maintenance.date_start();
@@ -480,6 +487,16 @@ void Afunapi_tester::OnTransportConnectTimeout(const fun::TransportProtocol prot
   fun::DebugUtils::Log("OnTransportConnectTimeout called.");
 }
 
+void Afunapi_tester::OnTransportStarted(const fun::TransportProtocol protocol)
+{
+  fun::DebugUtils::Log("OnTransportStarted called.");
+}
+
+void Afunapi_tester::OnTransportClosed(const fun::TransportProtocol protocol)
+{
+  fun::DebugUtils::Log("OnTransportClosed called.");
+}
+
 // 멀티캐스팅 메시지를 받으면 호출되는 콜백 함수입니다.
 void Afunapi_tester::OnMulticastChannelSignalle(const std::string &channel_id, const std::string &sender, const std::vector<uint8_t> &v_body)
 {
@@ -489,12 +506,10 @@ void Afunapi_tester::OnMulticastChannelSignalle(const std::string &channel_id, c
   }
 
   if (multicast_encoding_ == fun::FunEncoding::kProtobuf) {
-    std::string body(v_body.cbegin(), v_body.cend());
-
     // 모든 protobuf 메시지는 FunMessage로 되어 있습니다.
     // FunMessage에 extend로 추가된 메시지를 꺼내서 사용해야합니다.
     FunMessage msg;
-    msg.ParseFromString(body);
+    msg.ParseFromArray(v_body.data(), static_cast<int>(v_body.size()));
 
     // 멀티캐스팅 메시지입니다.
     FunMulticastMessage* mcast_msg = msg.MutableExtension(multicast);

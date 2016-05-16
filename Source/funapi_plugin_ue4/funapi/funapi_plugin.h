@@ -13,6 +13,7 @@
 #include "Engine.h"
 #include "UnrealString.h"
 #include "Json.h"
+#include "Http.h"
 #endif
 
 #ifdef FUNAPI_UE4_PLATFORM_WINDOWS

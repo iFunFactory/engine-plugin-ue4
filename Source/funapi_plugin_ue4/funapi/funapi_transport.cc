@@ -772,21 +772,25 @@ void FunapiTransportImpl::OnTransportStarted(const TransportProtocol protocol) {
 
 void FunapiTransportImpl::OnTransportClosed(const TransportProtocol protocol) {
   on_transport_closed_(protocol);
+  state_ = TransportState::kDisconnected;
 }
 
 
 void FunapiTransportImpl::OnTransportConnectFailed(const TransportProtocol protocol) {
   on_transport_connect_failed_(protocol);
+  state_ = TransportState::kDisconnected;
 }
 
 
 void FunapiTransportImpl::OnTransportConnectTimeout(const TransportProtocol protocol) {
   on_transport_connect_timeout_(protocol);
+  state_ = TransportState::kDisconnected;
 }
 
 
 void FunapiTransportImpl::OnTransportDisconnected(const TransportProtocol protocol) {
   on_transport_disconnect_(protocol);
+  state_ = TransportState::kDisconnected;
 }
 
 
@@ -977,20 +981,23 @@ class FunapiSocketTransportImpl : public FunapiTransportImpl {
                       const std::string &hostname_or_ip, uint16_t port, FunEncoding encoding);
   virtual ~FunapiSocketTransportImpl();
   void Stop();
-
-  virtual void Update();
-
-  virtual void OnSocketSelect(const fd_set rset, const fd_set wset, const fd_set eset);
   int GetSocket();
-  void SetSocket(int socket);
 
  protected:
+  void SetSocket(int socket);
+  virtual void Update();
+  void OnSocketSelect(const fd_set rset, const fd_set wset, const fd_set eset);
   void CloseSocket();
   virtual void Recv() = 0;
+  void FreeAddrInfo();
+  bool InitSocket(struct addrinfo *info);
+  bool InitAddrInfo(int socktype);
+  void ServerAddressStringFromAddrInfo(std::string &server_address, struct addrinfo *info);
 
-  Endpoint endpoint_;
-  std::vector<struct in_addr> in_addrs_;
+  struct addrinfo *addrinfo_ = nullptr;
+  struct addrinfo *addrinfo_res_ = nullptr;
   uint16_t port_;
+  std::string hostname_or_ip_;
 
  private:
   int socket_;
@@ -1001,41 +1008,100 @@ class FunapiSocketTransportImpl : public FunapiTransportImpl {
 FunapiSocketTransportImpl::FunapiSocketTransportImpl(TransportProtocol protocol,
                                          const std::string &hostname_or_ip,
                                          uint16_t port, FunEncoding encoding)
-    : FunapiTransportImpl(protocol, encoding), socket_(-1), port_(port) {
-  struct hostent *entry = gethostbyname(hostname_or_ip.c_str());
-  // assert(entry);
-
-  struct in_addr addr;
-
-  if (entry) {
-    int index = 0;
-    while (entry->h_addr_list[index]) {
-      memcpy(&addr, entry->h_addr_list[index], entry->h_length);
-      in_addrs_.push_back(addr);
-      ++index;
-    }
-
-    addr = in_addrs_[0];
-
-    // log
-    /*
-    for (auto t : in_addrs_)
-    {
-      printf ("%s\n", inet_ntoa(t));
-    }
-    */
-  }
-  else {
-    addr.s_addr = INADDR_NONE;
-  }
-
-  endpoint_.sin_family = AF_INET;
-  endpoint_.sin_addr = addr;
-  endpoint_.sin_port = htons(port);
+    : FunapiTransportImpl(protocol, encoding), port_(port), hostname_or_ip_(hostname_or_ip), socket_(-1) {
 }
 
 
 FunapiSocketTransportImpl::~FunapiSocketTransportImpl() {
+  CloseSocket();
+  FreeAddrInfo();
+}
+
+
+void FunapiSocketTransportImpl::FreeAddrInfo() {
+  if (addrinfo_) {
+    freeaddrinfo(addrinfo_);
+  }
+}
+
+
+bool FunapiSocketTransportImpl::InitAddrInfo(int socktype) {
+  FreeAddrInfo();
+
+  struct addrinfo hints;
+  int error;
+
+  std::stringstream ss_port;
+  ss_port << static_cast<int>(port_);
+
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = socktype;
+  error = getaddrinfo(hostname_or_ip_.c_str(), ss_port.str().c_str(), &hints, &addrinfo_);
+  if (error) {
+    DebugUtils::Log("%s", gai_strerror(error));
+    return false;
+  }
+
+  return true;
+}
+
+
+bool FunapiSocketTransportImpl::InitSocket(struct addrinfo *info) {
+  if (!info) {
+    return false;
+  }
+
+  CloseSocket();
+
+  int fd = -1;
+
+  for (addrinfo_res_ = info;addrinfo_res_;addrinfo_res_ = addrinfo_res_->ai_next) {
+    fd = socket(addrinfo_res_->ai_family, addrinfo_res_->ai_socktype, addrinfo_res_->ai_protocol);
+    if (fd < 0) {
+      switch errno {
+      case EAFNOSUPPORT:
+      case EPROTONOSUPPORT:
+        if (addrinfo_res_->ai_next)
+          continue;
+        else {
+          break;
+        }
+
+      default:
+        /* handle other socket errors */
+        ;
+      }
+    }
+    else {
+      break;
+    }
+  }
+
+  if (fd < 0) {
+    return false;
+  }
+
+  SetSocket(fd);
+
+  return true;
+}
+
+
+void FunapiSocketTransportImpl::ServerAddressStringFromAddrInfo(std::string &server_address, struct addrinfo *info) {
+  char addrStr[INET6_ADDRSTRLEN];
+  if (addrinfo_res_->ai_family == AF_INET)
+  {
+    struct sockaddr_in *sin = (struct sockaddr_in*) addrinfo_res_->ai_addr;
+    inet_ntop(addrinfo_res_->ai_family, (void*)&sin->sin_addr, addrStr, sizeof(addrStr));
+  }
+  else if (addrinfo_res_->ai_family == AF_INET6)
+  {
+    struct sockaddr_in6 *sin = (struct sockaddr_in6*) addrinfo_res_->ai_addr;
+    inet_ntop(addrinfo_res_->ai_family, (void*)&sin->sin6_addr, addrStr, sizeof(addrStr));
+  }
+
+  server_address = addrStr;
 }
 
 
@@ -1045,8 +1111,6 @@ void FunapiSocketTransportImpl::Stop() {
   Send(true);
 
   CloseSocket();
-
-  state_ = TransportState::kDisconnected;
 
   if (ack_receiving_) {
     reconnect_first_ack_receiving_ = true;
@@ -1082,12 +1146,19 @@ void FunapiSocketTransportImpl::SetSocket(int fd) {
 
 
 void FunapiSocketTransportImpl::OnSocketSelect(const fd_set rset, const fd_set wset, const fd_set eset) {
+  if (state_ != TransportState::kConnected) {
+    return;
+  }
+
   int fd = GetSocket();
   if (fd < 0) return;
 
   if (FD_ISSET(fd, &rset)) {
     Recv();
   }
+
+  fd = GetSocket();
+  if (fd < 0) return;
 
   if (FD_ISSET(fd, &wset)) {
     Send();
@@ -1116,16 +1187,15 @@ class FunapiTcpTransportImpl : public FunapiSocketTransportImpl {
   void SetEnablePing(const bool enable_ping);
   void ResetClientPingTimeout();
 
-  void OnSocketSelect(const fd_set rset, const fd_set wset, const fd_set eset);
-  void Update();
-
   void SetSendClientPingMessageHandler(std::function<bool(const TransportProtocol protocol)> handler);
   void SetSequenceNumberValidation(const bool validation);
 
  protected:
+  void Update();
   bool EncodeThenSendMessage(std::vector<uint8_t> body);
   void Connect();
   void Recv();
+  void InitTcpSocketOption();
 
  private:
   // Ping message-related constants.
@@ -1152,11 +1222,12 @@ class FunapiTcpTransportImpl : public FunapiSocketTransportImpl {
   };
   UpdateState update_state_ = UpdateState::kNone;
 
-  void InitSocket();
-
   void Ping();
   void CheckConnectTimeout();
   void WaitForAutoReconnect();
+
+  void OnTcpSocketSelect(const fd_set rset, const fd_set wset, const fd_set eset);
+  void CheckTcpSocketConnect(const fd_set rset, const fd_set wset, const fd_set eset);
 
   int reconnect_count_ = 0;
   int connect_addr_index_ = 0;
@@ -1211,62 +1282,16 @@ FunapiTcpTransportImpl::FunapiTcpTransportImpl(TransportProtocol protocol,
     };
 
     on_socket_select_[static_cast<int>(SocketSelectState::kSelect)] = [this](const fd_set rset, const fd_set wset, const fd_set eset) {
-      FunapiSocketTransportImpl::OnSocketSelect(rset, wset, eset);
+      OnSocketSelect(rset, wset, eset);
     };
 
     on_socket_select_[static_cast<int>(SocketSelectState::kConnect)] = [this](const fd_set rset, const fd_set wset, const fd_set eset) {
-      if (state_ != TransportState::kConnecting) return;
-
-      int fd = GetSocket();
-      if (fd < 0) return;
-
-      if (FD_ISSET(fd, &rset) && FD_ISSET(fd, &wset)) {
-        bool isConnected = true;
-
-#ifdef FUNAPI_PLATFORM_WINDOWS
-        if (FD_ISSET(fd, &eset)) {
-          isConnected = false;
-        }
-#else
-        int e;
-        socklen_t e_size = sizeof(e);
-
-        int r = getsockopt(fd, SOL_SOCKET, SO_ERROR, reinterpret_cast<char *>(&e), &e_size);
-        if (r < 0 || e != 0) {
-          isConnected = false;
-        }
-#endif
-
-        if (isConnected) {
-          socket_select_state_ = SocketSelectState::kSelect;
-
-          client_ping_timeout_timer_.SetTimer(kPingIntervalSecond + kPingTimeoutSeconds);
-          ping_send_timer_.SetTimer(kPingIntervalSecond);
-
-          update_state_ = UpdateState::kPing;
-
-          state_ = TransportState::kConnected;
-
-          if (seq_receiving_) {
-            send_ack_handler_(TransportProtocol::kTcp, seq_recvd_ + 1);
-          }
-
-          OnTransportStarted(TransportProtocol::kTcp);
-        }
-        else {
-          DebugUtils::Log("failed - tcp connect");
-          OnTransportConnectFailed(TransportProtocol::kTcp);
-
-          ++connect_addr_index_;
-          Connect();
-        }
-      }
+      CheckTcpSocketConnect(rset, wset, eset);
     };
 }
 
 
 FunapiTcpTransportImpl::~FunapiTcpTransportImpl() {
-  CloseSocket();
 }
 
 
@@ -1276,24 +1301,33 @@ TransportProtocol FunapiTcpTransportImpl::GetProtocol() {
 
 
 void FunapiTcpTransportImpl::Start() {
-  if (state_ == TransportState::kConnected)
+  if (state_ != TransportState::kDisconnected)
     return;
 
   state_ = TransportState::kConnecting;
 
+  if (!InitAddrInfo(SOCK_STREAM)) {
+    DebugUtils::Log("Failed - tcp connect");
+    OnTransportConnectFailed(TransportProtocol::kTcp);
+    return;
+  }
+
+  addrinfo_res_ = addrinfo_;
+
   update_state_ = UpdateState::kNone;
-  socket_select_state_ = SocketSelectState::kConnect;
+  socket_select_state_ = SocketSelectState::kNone;
 
   reconnect_count_ = 0;
   connect_addr_index_ = 0;
   reconnect_wait_seconds_ = 1;
 
-  std::shared_ptr<FunapiTransportHandlers> handlers = std::make_shared<FunapiTransportHandlers>([this]() {
+  auto self = shared_from_this();
+  std::shared_ptr<FunapiTransportHandlers> handlers = std::make_shared<FunapiTransportHandlers>([this, self]() {
     Update();
-  }, [this]()->int {
+  }, [this, self]()->int {
    return GetSocket();
-  }, [this](const fd_set rset, const fd_set wset, const fd_set eset) {
-    OnSocketSelect(rset, wset, eset);
+  }, [this, self](const fd_set rset, const fd_set wset, const fd_set eset) {
+    OnTcpSocketSelect(rset, wset, eset);
   });
   GetManager()->AddTransportHandlers(shared_from_this(), handlers);
 
@@ -1319,14 +1353,14 @@ void FunapiTcpTransportImpl::Ping() {
 
 void FunapiTcpTransportImpl::CheckConnectTimeout() {
   if (connect_timeout_timer_.IsExpired()) {
-    DebugUtils::Log("failed - tcp connect - timeout");
+    DebugUtils::Log("Failed - tcp connect - timeout");
     OnTransportConnectTimeout(TransportProtocol::kTcp);
 
     if (auto_reconnect_) {
       ++reconnect_count_;
 
       if (kMaxReconnectCount < reconnect_count_) {
-        ++connect_addr_index_;
+        addrinfo_res_ = addrinfo_res_->ai_next;
         reconnect_count_ = 0;
         reconnect_wait_seconds_ = 1;
 
@@ -1341,7 +1375,7 @@ void FunapiTcpTransportImpl::CheckConnectTimeout() {
       }
     }
     else {
-      ++connect_addr_index_;
+      addrinfo_res_ = addrinfo_res_->ai_next;
       Connect();
     }
   }
@@ -1397,7 +1431,7 @@ bool FunapiTcpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
   int nSent = static_cast<int>(send(fd, reinterpret_cast<char*>(body.data()) + offset_, body.size() - offset_, 0));
 
   if (nSent < 0) {
-    Stop();
+    DebugUtils::Log("send (%d) : %s", errno, strerror(errno));
     return false;
   }
   else {
@@ -1420,11 +1454,8 @@ bool FunapiTcpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
 }
 
 
-void FunapiTcpTransportImpl::InitSocket() {
-  // Initiates a new socket.
-  int fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-  SetSocket(fd);
-  // assert(fd >= 0);
+void FunapiTcpTransportImpl::InitTcpSocketOption() {
+  int fd = GetSocket();
 
   // Makes the fd non-blocking.
 #ifdef FUNAPI_PLATFORM_WINDOWS
@@ -1453,34 +1484,34 @@ void FunapiTcpTransportImpl::InitSocket() {
 
 
 void FunapiTcpTransportImpl::Connect() {
-  CloseSocket();
+  update_state_ = UpdateState::kNone;
+  socket_select_state_ = SocketSelectState::kNone;
+  state_ = TransportState::kConnecting;
 
-  if (connect_addr_index_ >= in_addrs_.size()) {
+  if (!InitSocket(addrinfo_res_)) {
+    return;
+  }
+  InitTcpSocketOption();
+
+  // Tries to connect.
+  std::string server_address;
+  ServerAddressStringFromAddrInfo(server_address, addrinfo_res_);
+  DebugUtils::Log("Try to connect to server - %s", server_address.c_str());
+
+  int fd = GetSocket();
+  int rc = connect(fd,addrinfo_res_->ai_addr, addrinfo_res_->ai_addrlen);
+
+  if (!(rc == 0 || (rc < 0 && errno == EINPROGRESS))) {
+    DebugUtils::Log("Failed - tcp connect");
     update_state_ = UpdateState::kNone;
     socket_select_state_ = SocketSelectState::kNone;
+    GetManager()->RemoveTransportHandlers(shared_from_this());
+    OnTransportConnectFailed(TransportProtocol::kTcp);
     return;
   }
 
-  Endpoint endpoint;
-  endpoint.sin_family = AF_INET;
-  endpoint.sin_addr = in_addrs_[connect_addr_index_];
-  endpoint.sin_port = htons(port_);
-
-  InitSocket();
-
+  socket_select_state_ = SocketSelectState::kConnect;
   connect_timeout_timer_.SetTimer(connect_timeout_seconds_);
-
-  int fd = GetSocket();
-  if (fd < 0) return;
-
-  // Tries to connect.
-  int rc = connect(fd,
-                   reinterpret_cast<const struct sockaddr *>(&endpoint_),
-                   sizeof(endpoint_));
-  assert(rc == 0 || (rc < 0 && errno == EINPROGRESS));
-
-  DebugUtils::Log("Try to connect to server - %s", inet_ntoa(endpoint.sin_addr));
-
   update_state_ = UpdateState::kCheckConnectTimeout;
 }
 
@@ -1493,31 +1524,80 @@ void FunapiTcpTransportImpl::Recv() {
 
   int nRead = static_cast<int>(recv(fd, reinterpret_cast<char*>(buffer.data()), kUnitBufferSize, 0));
 
-  if (nRead <= 0) {
-    if (nRead < 0) {
-      DebugUtils::Log("receive failed: %s", strerror(errno));
-    }
-    Stop();
+  if (nRead < 0) {
+    DebugUtils::Log("recv (%d) : %s", errno, strerror(errno));
+    return;
+  }
+
+  if (nRead == 0) {
+    DebugUtils::Log("Socket [%d] closed.", fd);
     OnTransportDisconnected(GetProtocol());
+    Stop();
     return;
   }
 
   receiving_vector_.insert(receiving_vector_.end(), buffer.cbegin(), buffer.cbegin() + nRead);
 
   if (!DecodeMessage(nRead, receiving_vector_, next_decoding_offset_, header_decoded_, header_fields_)) {
-    if (nRead == 0) {
-      DebugUtils::Log("Socket [%d] closed.", fd);
-      OnTransportDisconnected(GetProtocol());
-    }
-
     Stop();
   }
 }
 
 
-void FunapiTcpTransportImpl::OnSocketSelect(const fd_set rset, const fd_set wset, const fd_set eset)
+void FunapiTcpTransportImpl::OnTcpSocketSelect(const fd_set rset, const fd_set wset, const fd_set eset)
 {
   on_socket_select_[static_cast<int>(socket_select_state_)](rset, wset, eset);
+}
+
+
+void FunapiTcpTransportImpl::CheckTcpSocketConnect(const fd_set rset, const fd_set wset, const fd_set eset)
+{
+  if (state_ != TransportState::kConnecting) return;
+
+  int fd = GetSocket();
+  if (fd < 0) return;
+
+  if (FD_ISSET(fd, &rset) && FD_ISSET(fd, &wset)) {
+    bool isConnected = true;
+
+#ifdef FUNAPI_PLATFORM_WINDOWS
+    if (FD_ISSET(fd, &eset)) {
+      isConnected = false;
+    }
+#else
+    int e;
+    socklen_t e_size = sizeof(e);
+
+    int r = getsockopt(fd, SOL_SOCKET, SO_ERROR, reinterpret_cast<char *>(&e), &e_size);
+    if (r < 0 || e != 0) {
+      isConnected = false;
+    }
+#endif
+
+    if (isConnected) {
+      client_ping_timeout_timer_.SetTimer(kPingIntervalSecond + kPingTimeoutSeconds);
+      ping_send_timer_.SetTimer(kPingIntervalSecond);
+
+      update_state_ = UpdateState::kPing;
+
+      state_ = TransportState::kConnected;
+
+      if (seq_receiving_) {
+        send_ack_handler_(TransportProtocol::kTcp, seq_recvd_ + 1);
+      }
+
+      OnTransportStarted(TransportProtocol::kTcp);
+
+      socket_select_state_ = SocketSelectState::kSelect;
+    }
+    else {
+      DebugUtils::Log("Failed - tcp connect");
+      OnTransportConnectFailed(TransportProtocol::kTcp);
+
+      addrinfo_res_ = addrinfo_res_->ai_next;
+      Connect();
+    }
+  }
 }
 
 
@@ -1552,9 +1632,6 @@ public:
 protected:
   bool EncodeThenSendMessage(std::vector<uint8_t> body);
   void Recv();
-
-private:
-  Endpoint recv_endpoint_;
 };
 
 
@@ -1563,14 +1640,10 @@ FunapiUdpTransportImpl::FunapiUdpTransportImpl(TransportProtocol protocol,
   uint16_t port,
   FunEncoding encoding)
   : FunapiSocketTransportImpl(protocol, hostname_or_ip, port, encoding) {
-  recv_endpoint_.sin_family = AF_INET;
-  recv_endpoint_.sin_addr.s_addr = htonl(INADDR_ANY);
-  recv_endpoint_.sin_port = htons(port);
 }
 
 
 FunapiUdpTransportImpl::~FunapiUdpTransportImpl() {
-  CloseSocket();
 }
 
 
@@ -1580,20 +1653,32 @@ TransportProtocol FunapiUdpTransportImpl::GetProtocol() {
 
 
 void FunapiUdpTransportImpl::Start() {
-  if (state_ == TransportState::kConnected)
+  if (state_ != TransportState::kDisconnected)
     return;
 
-  CloseSocket();
+  state_ = TransportState::kConnecting;
 
-  int fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-  SetSocket(fd);
-  // assert(fd >= 0);
+  std::function<void()> on_connect_failed = [this]() {
+    DebugUtils::Log("Failed - udp connect");
+    OnTransportConnectFailed(TransportProtocol::kUdp);
+  };
 
-  std::shared_ptr<FunapiTransportHandlers> handlers = std::make_shared<FunapiTransportHandlers>([this]() {
+  if (!InitAddrInfo(SOCK_DGRAM)) {
+    on_connect_failed();
+    return;
+  }
+
+  if (!InitSocket(addrinfo_)) {
+    on_connect_failed();
+    return;
+  }
+
+  auto self = shared_from_this();
+  std::shared_ptr<FunapiTransportHandlers> handlers = std::make_shared<FunapiTransportHandlers>([this, self]() {
     Update();
-  }, [this]()->int {
+  }, [this, self]()->int {
     return GetSocket();
-  }, [this](const fd_set rset, const fd_set wset, const fd_set eset) {
+  }, [this, self](const fd_set rset, const fd_set wset, const fd_set eset) {
     OnSocketSelect(rset, wset, eset);
   });
   GetManager()->AddTransportHandlers(shared_from_this(), handlers);
@@ -1613,13 +1698,11 @@ bool FunapiUdpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
   // std::string temp_string(body.cbegin(), body.cend());
   // FUNAPI_LOG("Send = %s", *FString(temp_string.c_str()));
 
-  socklen_t len = sizeof(endpoint_);
-
   int fd = GetSocket();
   if (fd < 0)
     return false;
 
-  int nSent = static_cast<int>(sendto(fd, reinterpret_cast<char*>(body.data()), body.size(), 0, reinterpret_cast<struct sockaddr*>(&endpoint_), len));
+  int nSent = static_cast<int>(sendto(fd, reinterpret_cast<char*>(body.data()), body.size(), 0, addrinfo_res_->ai_addr, addrinfo_res_->ai_addrlen));
 
   if (nSent < 0) {
     Stop();
@@ -1634,12 +1717,21 @@ bool FunapiUdpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
 
 void FunapiUdpTransportImpl::Recv() {
   std::vector<uint8_t> receiving_vector(kUnitBufferSize);
-  socklen_t len = sizeof(recv_endpoint_);
 
   int fd = GetSocket();
   if (fd < 0) return;
 
-  int nRead = static_cast<int>(recvfrom(fd, reinterpret_cast<char*>(receiving_vector.data()), receiving_vector.size(), 0, reinterpret_cast<struct sockaddr*>(&recv_endpoint_), &len));
+#ifdef FUNAPI_PLATFORM_WINDOWS
+  int nRead = static_cast<int>(recvfrom(fd,
+    reinterpret_cast<char*>(receiving_vector.data()),
+    receiving_vector.size(), 0, addrinfo_res_->ai_addr,
+    reinterpret_cast<int*>(&addrinfo_res_->ai_addrlen)));
+#else
+  int nRead = static_cast<int>(recvfrom(fd,
+    reinterpret_cast<char*>(receiving_vector.data()),
+    receiving_vector.size(), 0, addrinfo_res_->ai_addr,
+    (&addrinfo_res_->ai_addrlen)));
+#endif // FUNAPI_COCOS2D_PLATFORM_WINDOWS
 
   // FUNAPI_LOG("nRead = %d", nRead);
 
@@ -1682,16 +1774,13 @@ class FunapiHttpTransportImpl : public FunapiTransportImpl {
   bool EncodeThenSendMessage(std::vector<uint8_t> body);
 
  private:
-#ifdef FUNAPI_COCOS2D
-  static size_t HttpResponseCb(void *data, size_t size, size_t count, void *cb);
-#endif // FUNAPI_COCOS2D
-  void WebResponseHeaderCb(void *data, int len, HeaderFields &header_fields);
+  void WebResponseHeaderCb(const void *data, int len, HeaderFields &header_fields);
   void WebResponseBodyCb(const void *data, int len, std::vector<uint8_t> &receiving);
 
 #ifdef FUNAPI_UE4
   TSharedPtr<IHttpRequest> http_request_;
-  bool http_request_processing_ = false;
 #endif // FUNAPI_UE4
+  bool http_request_processing_ = false;
 
   std::string host_url_;
   std::string cookie_;
@@ -1721,22 +1810,25 @@ TransportProtocol FunapiHttpTransportImpl::GetProtocol() {
 
 
 void FunapiHttpTransportImpl::Start() {
-  if (state_ == TransportState::kConnected)
+  if (state_ != TransportState::kDisconnected)
     return;
 
-  state_ = TransportState::kConnected;
+  state_ = TransportState::kConnecting;
 
   // log
   // DebugUtils::Log("Started.");
   // //
 
-  std::shared_ptr<FunapiTransportHandlers> handlers = std::make_shared<FunapiTransportHandlers>([this]() {
+  auto self = shared_from_this();
+  std::shared_ptr<FunapiTransportHandlers> handlers = std::make_shared<FunapiTransportHandlers>([this, self]() {
     Update();
-  }, [this]()->int {
+  }, [this, self]()->int {
     return -1;
-  }, [this](const fd_set rset, const fd_set wset, const fd_set eset) {
+  }, [this, self](const fd_set rset, const fd_set wset, const fd_set eset) {
   });
   GetManager()->AddTransportHandlers(shared_from_this(), handlers);
+
+  state_ = TransportState::kConnected;
 
   OnTransportStarted(TransportProtocol::kHttp);
 }
@@ -1849,16 +1941,11 @@ bool FunapiHttpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
 
 
 #ifdef FUNAPI_COCOS2D
-size_t FunapiHttpTransportImpl::HttpResponseCb(void *data, size_t size, size_t count, void *cb) {
-  AsyncWebResponseCallback *callback = (AsyncWebResponseCallback*)(cb);
-  if (callback != NULL)
-    (*callback)(data, static_cast<int>(size * count));
-  return size * count;
-}
-
-
 bool FunapiHttpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
   if (state_ != TransportState::kConnected) return false;
+
+  if (http_request_processing_)
+    return false;
 
   HeaderFields header_fields_for_send;
   MakeHeaderFields(header_fields_for_send, body);
@@ -1870,81 +1957,92 @@ bool FunapiHttpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
     header_fields_for_send[kCookieRequestHeaderField] = cookie_;
   }
 
-  // log
-  // std::string temp_string(body.cbegin(), body.cend());
-  // FUNAPI_LOG("HTTP Send header = %s \n body = %s", *FString(header.c_str()), *FString(temp_string.c_str()));
+  cocos2d::network::HttpRequest* request = new (std::nothrow) cocos2d::network::HttpRequest();
+  request->setUrl(host_url_.c_str());
+  request->setRequestType(cocos2d::network::HttpRequest::Type::POST);
 
-  CURL *ctx = curl_easy_init();
-  if (ctx == NULL) {
-    DebugUtils::Log("Unable to initialize cURL interface.");
-    return false;
-  }
-
-  HeaderFields header_fields;
-  std::vector<uint8_t> receiving;
-
-  AsyncWebResponseCallback receive_header = [this, &header_fields](void* data, int len){ WebResponseHeaderCb(data, len, header_fields); };
-  AsyncWebResponseCallback receive_body = [this, &receiving](void* data, int len){ WebResponseBodyCb(data, len, receiving); };
-
-  // set http header
-  struct curl_slist *chunk = NULL;
+  std::vector<std::string> headers;
 
   for (auto it : header_fields_for_send) {
     std::stringstream ss;
     ss << it.first << ": " << it.second;
 
-    // DebugUtils::Log("ss.str() = %s", ss.str().c_str());
-
-    chunk = curl_slist_append(chunk, ss.str().c_str());
+    headers.push_back(ss.str().c_str());
   }
-  curl_easy_setopt(ctx, CURLOPT_HTTPHEADER, chunk);
 
-  curl_easy_setopt(ctx, CURLOPT_URL, host_url_.c_str());
-  curl_easy_setopt(ctx, CURLOPT_POST, 1L);
-  curl_easy_setopt(ctx, CURLOPT_POSTFIELDS, body.data());
-  curl_easy_setopt(ctx, CURLOPT_POSTFIELDSIZE, body.size());
-  curl_easy_setopt(ctx, CURLOPT_HEADERDATA, &receive_header);
-  curl_easy_setopt(ctx, CURLOPT_WRITEDATA, &receive_body);
-  curl_easy_setopt(ctx, CURLOPT_WRITEFUNCTION, &FunapiHttpTransportImpl::HttpResponseCb);
+  request->setHeaders(headers);
+  request->setRequestData(reinterpret_cast<char*>(body.data()), body.size());
 
-  CURLcode res = curl_easy_perform(ctx);
-  if (res != CURLE_OK) {
-    DebugUtils::Log("Error from cURL: %s", curl_easy_strerror(res));
-    return false;
-  }
-  else {
-    // std::to_string is not supported on android, using std::stringstream instead.
-    std::stringstream ss_protocol_version;
-    ss_protocol_version << static_cast<int>(FunapiVersion::kProtocolVersion);
-    header_fields[kVersionHeaderField] = ss_protocol_version.str();
+  request->setResponseCallback([this](cocos2d::network::HttpClient *sender, cocos2d::network::HttpResponse *response) {
+    if (!response->isSucceed()) {
+      DebugUtils::Log("Response was invalid!");
+    }
+    else {
+      HeaderFields header_fields;
 
-    std::stringstream ss_version_header_field;
-    ss_version_header_field << receiving.size();
-    header_fields[kLengthHeaderField] = ss_version_header_field.str();
+      char* start = response->getResponseHeader()->data();
+      int len = static_cast<int>(response->getResponseHeader()->size());
+      int count = 0;
+      ssize_t eol_offset;
 
-    // cookie
-    auto it = header_fields.find(kCookieResponseHeaderField);
-    if (it != header_fields.end()) {
-      cookie_ = it->second;
+      do {
+        char *end = std::search(start, start + len, kHeaderDelimeter,
+                                kHeaderDelimeter + strlen(kHeaderDelimeter));
+        eol_offset = end - start;
+
+        if (count != 0) {
+          WebResponseHeaderCb(start, static_cast<int>(eol_offset + 2), header_fields);
+        }
+
+        start = end + 1;
+        len -= eol_offset + 1;
+
+        ++count;
+
+        if (len <= 0) {
+          break;
+        }
+      } while (len > 0);
+
+      std::vector<uint8_t> receiving(response->getResponseData()->begin(), response->getResponseData()->end());
+
+      // std::to_string is not supported on android, using std::stringstream instead.
+      std::stringstream ss_protocol_version;
+      ss_protocol_version << static_cast<int>(FunapiVersion::kProtocolVersion);
+      header_fields[kVersionHeaderField] = ss_protocol_version.str();
+
+      std::stringstream ss_version_header_field;
+      ss_version_header_field << receiving.size();
+      header_fields[kLengthHeaderField] = ss_version_header_field.str();
+
+      // cookie
+      auto it = header_fields.find(kCookieResponseHeaderField);
+      if (it != header_fields.end()) {
+        cookie_ = it->second;
+      }
+
+      encrytion_->SetHeaderFieldsForHttpRecv(header_fields);
+
+      bool header_decoded = true;
+      int next_decoding_offset = 0;
+      if (TryToDecodeBody(receiving, next_decoding_offset, header_decoded, header_fields) == false) {
+        Stop();
+      }
     }
 
-    encrytion_->SetHeaderFieldsForHttpRecv(header_fields);
+    http_request_processing_ = false;
+  });
 
-    bool header_decoded = true;
-    int next_decoding_offset = 0;
-    if (TryToDecodeBody(receiving, next_decoding_offset, header_decoded, header_fields) == false) {
-      Stop();
-    }
-  }
-
-  curl_easy_cleanup(ctx);
-  curl_slist_free_all(chunk);
+  http_request_processing_ = true;
+  cocos2d::network::HttpClient::getInstance()->sendImmediate(request);
+  request->release();
 
   return true;
 }
 #endif // FUNAPI_COCOS2D
 
-void FunapiHttpTransportImpl::WebResponseHeaderCb(void *data, int len, HeaderFields &header_fields) {
+
+void FunapiHttpTransportImpl::WebResponseHeaderCb(const void *data, int len, HeaderFields &header_fields) {
   char buf[1024];
   memcpy(buf, data, len);
   buf[len-2] = '\0';

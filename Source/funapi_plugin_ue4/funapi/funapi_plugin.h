@@ -51,12 +51,11 @@
 #include <algorithm>
 #include <random>
 
-#include "curl/curl.h"
-
 #ifdef FUNAPI_COCOS2D
 #include "json/stringbuffer.h"
 #include "json/writer.h"
 #include "json/document.h"
+#include "network/HttpClient.h"
 #endif
 
 #ifdef FUNAPI_UE4

@@ -229,6 +229,8 @@ void FunapiNetworkImpl::Stop() {
     if (transport)
       transport->Stop();
   }
+
+  OnStoppedAllTransport();
 }
 
 void FunapiNetworkImpl::CheckSessionTimeout() {
@@ -497,7 +499,6 @@ void FunapiNetworkImpl::AttachTransport(const std::shared_ptr<FunapiTransport> &
     OnTransportStarted(protocol);
   });
   transport->AddClosedCallback([this](const TransportProtocol protocol){
-    OnTransportStopped();
     OnTransportClosed(protocol);
   });
   transport->AddConnectFailedCallback([this](const TransportProtocol protocol){ OnTransportConnectFailed(protocol); });

@@ -100,7 +100,7 @@ class FunapiNetworkImpl : public std::enable_shared_from_this<FunapiNetworkImpl>
   std::string session_id_;
   typedef std::map<std::string, MessageEventHandler> MessageHandlerMap;
   MessageHandlerMap message_handlers_;
-  time_t last_received_;
+  time_t last_received_ = 0;
 
   bool initialized_ = false;
   time_t epoch_ = 0;
@@ -123,7 +123,7 @@ class FunapiNetworkImpl : public std::enable_shared_from_this<FunapiNetworkImpl>
 
 
 FunapiNetworkImpl::FunapiNetworkImpl(const bool &session_reliability)
-  : session_id_(""), last_received_(0), session_reliability_(session_reliability) {
+  : session_reliability_(session_reliability), session_id_("") {
   Initialize();
 }
 

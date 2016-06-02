@@ -274,7 +274,7 @@ class FunapiTransportImpl : public std::enable_shared_from_this<FunapiTransportI
 
   virtual bool EncodeThenSendMessage(std::vector<uint8_t> body) = 0;
   void PushSendQueue(const char* body, bool use_sent_queue, uint32_t seq, bool priority);
-  void Send(bool send_all = false);
+  virtual void Send(bool send_all = false);
 
   bool DecodeMessage(int nRead, std::vector<uint8_t> &receiving, int &next_decoding_offset, bool &header_decoded, HeaderFields &header_fields);
   bool TryToDecodeHeader(std::vector<uint8_t> &receiving, int &next_decoding_offset, bool &header_decoded, HeaderFields &header_fields);
@@ -343,8 +343,8 @@ class FunapiTransportImpl : public std::enable_shared_from_this<FunapiTransportI
 
 
 FunapiTransportImpl::FunapiTransportImpl(TransportProtocol protocol, FunEncoding encoding)
-  : protocol_(protocol), encoding_(encoding), state_(TransportState::kDisconnected),
-    encrytion_(std::make_shared<FunapiEncryption>()) {
+  : encoding_(encoding), state_(TransportState::kDisconnected),
+    encrytion_(std::make_shared<FunapiEncryption>()), protocol_(protocol) {
   std::random_device rd;
   std::default_random_engine re(rd());
   std::uniform_int_distribution<uint32_t> dist(0,std::numeric_limits<uint32_t>::max());
@@ -1000,7 +1000,7 @@ class FunapiSocketTransportImpl : public FunapiTransportImpl {
   std::string hostname_or_ip_;
 
  private:
-  int socket_;
+  int socket_ = -1;
   std::mutex socket_mutex_;
 };
 
@@ -1008,7 +1008,7 @@ class FunapiSocketTransportImpl : public FunapiTransportImpl {
 FunapiSocketTransportImpl::FunapiSocketTransportImpl(TransportProtocol protocol,
                                          const std::string &hostname_or_ip,
                                          uint16_t port, FunEncoding encoding)
-    : FunapiTransportImpl(protocol, encoding), port_(port), hostname_or_ip_(hostname_or_ip), socket_(-1) {
+    : FunapiTransportImpl(protocol, encoding), port_(port), hostname_or_ip_(hostname_or_ip) {
 }
 
 
@@ -1771,15 +1771,13 @@ class FunapiHttpTransportImpl : public FunapiTransportImpl {
   void SetSequenceNumberValidation(const bool validation);
 
  protected:
+  void Send(bool send_all = false);
   bool EncodeThenSendMessage(std::vector<uint8_t> body);
 
  private:
   void WebResponseHeaderCb(const void *data, int len, HeaderFields &header_fields);
   void WebResponseBodyCb(const void *data, int len, std::vector<uint8_t> &receiving);
 
-#ifdef FUNAPI_UE4
-  TSharedPtr<IHttpRequest> http_request_;
-#endif // FUNAPI_UE4
   bool http_request_processing_ = false;
 
   std::string host_url_;
@@ -1851,6 +1849,19 @@ void FunapiHttpTransportImpl::Stop() {
   // //
 }
 
+
+void FunapiHttpTransportImpl::Send(bool send_all) {
+  if (http_request_processing_) {
+    // log
+    // DebugUtils::Log("http_request_processing_ = true");
+    // //
+  }
+  else {
+    FunapiTransportImpl::Send(send_all);
+  }
+}
+
+
 #ifdef FUNAPI_UE4
 bool FunapiHttpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
   if (state_ != TransportState::kConnected) return false;
@@ -1868,10 +1879,10 @@ bool FunapiHttpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
     header_fields_for_send[kCookieRequestHeaderField] = cookie_;
   }
 
-  http_request_ = FHttpModule::Get().CreateRequest();
-  http_request_->SetURL(FString(host_url_.c_str()));
-  http_request_->SetVerb(FString("POST"));
-  http_request_->SetHeader(FString("Content-Type"), FString("application/json; charset=utf-8"));
+  auto http_request = FHttpModule::Get().CreateRequest();
+  http_request->SetURL(FString(host_url_.c_str()));
+  http_request->SetVerb(FString("POST"));
+  http_request->SetHeader(FString("Content-Type"), FString("application/json; charset=utf-8"));
 
   for (auto it : header_fields_for_send) {
     // debug
@@ -1882,16 +1893,21 @@ bool FunapiHttpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
     */
     // //
 
-    http_request_->SetHeader(FString(it.first.c_str()), FString(it.second.c_str()));
+    http_request->SetHeader(FString(it.first.c_str()), FString(it.second.c_str()));
   }
 
   TArray<uint8> temp_array;
   if (!body.empty()) {
     temp_array.Append(body.data(), body.size());
   }
-  http_request_->SetContent(temp_array);
+  http_request->SetContent(temp_array);
 
-  http_request_->OnProcessRequestComplete().BindLambda(
+  http_request->OnRequestProgress().BindLambda([this](FHttpRequestPtr request, int32 nSend, int32 nRecv) {
+    // DebugUtils::Log("OnRequestProgress - nSend = %d, nRecv = %d, status = %d", nSend, nRecv, request->GetStatus());
+    http_request_processing_ = false;
+  });
+
+  http_request->OnProcessRequestComplete().BindLambda(
     [this](FHttpRequestPtr request, FHttpResponsePtr response, bool succeed) {
     if (!succeed) {
       DebugUtils::Log("Response was invalid!");
@@ -1929,11 +1945,9 @@ bool FunapiHttpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
         Stop();
       }
     }
-
-    http_request_processing_ = false;
   });
   http_request_processing_ = true;
-  http_request_->ProcessRequest();
+  http_request->ProcessRequest();
 
   return true;
 }
@@ -1943,9 +1957,6 @@ bool FunapiHttpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
 #ifdef FUNAPI_COCOS2D
 bool FunapiHttpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
   if (state_ != TransportState::kConnected) return false;
-
-  if (http_request_processing_)
-    return false;
 
   HeaderFields header_fields_for_send;
   MakeHeaderFields(header_fields_for_send, body);
@@ -2029,12 +2040,9 @@ bool FunapiHttpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
         Stop();
       }
     }
-
-    http_request_processing_ = false;
   });
 
-  http_request_processing_ = true;
-  cocos2d::network::HttpClient::getInstance()->sendImmediate(request);
+  cocos2d::network::HttpClient::getInstance()->send(request);
   request->release();
 
   return true;

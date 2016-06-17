@@ -2,8 +2,7 @@
 // source: funapi/network/fun_message.proto
 
 #define INTERNAL_SUPPRESS_PROTOBUF_FIELD_DEPRECATION
-// #include "funapi/network/fun_message.pb.h"
-#include "fun_message.pb.h"
+#include "funapi/network/fun_message.pb.h"
 
 #include <algorithm>
 
@@ -33,11 +32,12 @@ void protobuf_AssignDesc_funapi_2fnetwork_2ffun_5fmessage_2eproto() {
       "funapi/network/fun_message.proto");
   GOOGLE_CHECK(file != NULL);
   FunMessage_descriptor_ = file->message_type(0);
-  static const int FunMessage_offsets_[4] = {
+  static const int FunMessage_offsets_[5] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMessage, sid_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMessage, msgtype_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMessage, seq_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMessage, ack_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMessage, urgent_),
   };
   FunMessage_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -80,9 +80,10 @@ void protobuf_AddDesc_funapi_2fnetwork_2ffun_5fmessage_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n funapi/network/fun_message.proto\"N\n\nFu"
+    "\n funapi/network/fun_message.proto\"^\n\nFu"
     "nMessage\022\013\n\003sid\030\001 \001(\t\022\017\n\007msgtype\030\002 \001(\t\022\013"
-    "\n\003seq\030\003 \001(\r\022\013\n\003ack\030\004 \001(\r*\010\010\010\020\200\200\200\200\002", 114);
+    "\n\003seq\030\003 \001(\r\022\013\n\003ack\030\004 \001(\r\022\016\n\006urgent\030\005 \001(\010"
+    "*\010\010\010\020\200\200\200\200\002", 130);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "funapi/network/fun_message.proto", &protobuf_RegisterTypes);
   FunMessage::default_instance_ = new FunMessage();
@@ -104,6 +105,7 @@ const int FunMessage::kSidFieldNumber;
 const int FunMessage::kMsgtypeFieldNumber;
 const int FunMessage::kSeqFieldNumber;
 const int FunMessage::kAckFieldNumber;
+const int FunMessage::kUrgentFieldNumber;
 #endif  // !_MSC_VER
 
 FunMessage::FunMessage()
@@ -129,6 +131,7 @@ void FunMessage::SharedCtor() {
   msgtype_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   seq_ = 0u;
   ack_ = 0u;
+  urgent_ = false;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -181,8 +184,8 @@ void FunMessage::Clear() {
     ::memset(&first, 0, n);                                \
   } while (0)
 
-  if (_has_bits_[0 / 32] & 15) {
-    ZR_(seq_, ack_);
+  if (_has_bits_[0 / 32] & 31) {
+    ZR_(seq_, urgent_);
     if (has_sid()) {
       if (sid_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
         sid_->clear();
@@ -271,6 +274,21 @@ bool FunMessage::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(40)) goto parse_urgent;
+        break;
+      }
+
+      // optional bool urgent = 5;
+      case 5: {
+        if (tag == 40) {
+         parse_urgent:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &urgent_)));
+          set_has_urgent();
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -335,6 +353,11 @@ void FunMessage::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(4, this->ack(), output);
   }
 
+  // optional bool urgent = 5;
+  if (has_urgent()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(5, this->urgent(), output);
+  }
+
   // Extension range [8, 536870912)
   _extensions_.SerializeWithCachedSizes(
       8, 536870912, output);
@@ -381,6 +404,11 @@ void FunMessage::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(4, this->ack(), target);
   }
 
+  // optional bool urgent = 5;
+  if (has_urgent()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(5, this->urgent(), target);
+  }
+
   // Extension range [8, 536870912)
   target = _extensions_.SerializeWithCachedSizesToArray(
       8, 536870912, target);
@@ -425,6 +453,11 @@ int FunMessage::ByteSize() const {
           this->ack());
     }
 
+    // optional bool urgent = 5;
+    if (has_urgent()) {
+      total_size += 1 + 1;
+    }
+
   }
   total_size += _extensions_.ByteSize();
 
@@ -466,6 +499,9 @@ void FunMessage::MergeFrom(const FunMessage& from) {
     if (from.has_ack()) {
       set_ack(from.ack());
     }
+    if (from.has_urgent()) {
+      set_urgent(from.urgent());
+    }
   }
   _extensions_.MergeFrom(from._extensions_);
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -495,6 +531,7 @@ void FunMessage::Swap(FunMessage* other) {
     std::swap(msgtype_, other->msgtype_);
     std::swap(seq_, other->seq_);
     std::swap(ack_, other->ack_);
+    std::swap(urgent_, other->urgent_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

@@ -4,7 +4,7 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
-#include "pb/network/ping_message.pb.h"
+#include "network/ping_message.pb.h"
 #include "funapi_plugin.h"
 #include "funapi_utils.h"
 #include "funapi_network.h"
@@ -594,8 +594,8 @@ void FunapiNetworkImpl::AddTransportClosedCallback(const TransportEventHandler &
 
 
 void FunapiNetworkImpl::OnSessionInitiated(const std::string &session_id) {
-  PushTaskQueue([this]() {
-    on_session_initiated_(session_id_);
+  PushTaskQueue([this, session_id]() {
+    on_session_initiated_(session_id);
   });
 }
 

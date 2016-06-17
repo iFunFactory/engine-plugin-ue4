@@ -2,8 +2,7 @@
 // source: funapi/service/multicast_message.proto
 
 #define INTERNAL_SUPPRESS_PROTOBUF_FIELD_DEPRECATION
-// #include "funapi/service/multicast_message.pb.h"
-#include "multicast_message.pb.h"
+#include "funapi/service/multicast_message.pb.h"
 
 #include <algorithm>
 
@@ -19,6 +18,9 @@
 
 namespace {
 
+const ::google::protobuf::Descriptor* FunMulticastChannelListMessage_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  FunMulticastChannelListMessage_reflection_ = NULL;
 const ::google::protobuf::Descriptor* FunMulticastMessage_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   FunMulticastMessage_reflection_ = NULL;
@@ -36,14 +38,31 @@ void protobuf_AssignDesc_funapi_2fservice_2fmulticast_5fmessage_2eproto() {
     ::google::protobuf::DescriptorPool::generated_pool()->FindFileByName(
       "funapi/service/multicast_message.proto");
   GOOGLE_CHECK(file != NULL);
-  FunMulticastMessage_descriptor_ = file->message_type(0);
-  static const int FunMulticastMessage_offsets_[6] = {
+  FunMulticastChannelListMessage_descriptor_ = file->message_type(0);
+  static const int FunMulticastChannelListMessage_offsets_[2] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMulticastChannelListMessage, channel_name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMulticastChannelListMessage, num_members_),
+  };
+  FunMulticastChannelListMessage_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      FunMulticastChannelListMessage_descriptor_,
+      FunMulticastChannelListMessage::default_instance_,
+      FunMulticastChannelListMessage_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMulticastChannelListMessage, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMulticastChannelListMessage, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(FunMulticastChannelListMessage));
+  FunMulticastMessage_descriptor_ = file->message_type(1);
+  static const int FunMulticastMessage_offsets_[7] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMulticastMessage, channel_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMulticastMessage, join_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMulticastMessage, leave_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMulticastMessage, bounce_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMulticastMessage, sender_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMulticastMessage, error_code_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMulticastMessage, channels_),
   };
   FunMulticastMessage_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -57,7 +76,7 @@ void protobuf_AssignDesc_funapi_2fservice_2fmulticast_5fmessage_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(FunMulticastMessage));
   FunMulticastMessage_ErrorCode_descriptor_ = FunMulticastMessage_descriptor_->enum_type(0);
-  FunChatMessage_descriptor_ = file->message_type(1);
+  FunChatMessage_descriptor_ = file->message_type(2);
   static const int FunChatMessage_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunChatMessage, text_),
   };
@@ -85,6 +104,8 @@ inline void protobuf_AssignDescriptorsOnce() {
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    FunMulticastChannelListMessage_descriptor_, &FunMulticastChannelListMessage::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     FunMulticastMessage_descriptor_, &FunMulticastMessage::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     FunChatMessage_descriptor_, &FunChatMessage::default_instance());
@@ -93,6 +114,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_funapi_2fservice_2fmulticast_5fmessage_2eproto() {
+  delete FunMulticastChannelListMessage::default_instance_;
+  delete FunMulticastChannelListMessage_reflection_;
   delete FunMulticastMessage::default_instance_;
   delete FunMulticastMessage_reflection_;
   delete FunChatMessage::default_instance_;
@@ -108,19 +131,23 @@ void protobuf_AddDesc_funapi_2fservice_2fmulticast_5fmessage_2eproto() {
   ::protobuf_AddDesc_funapi_2fnetwork_2ffun_5fmessage_2eproto();
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n&funapi/service/multicast_message.proto"
-    "\032 funapi/network/fun_message.proto\"\356\001\n\023F"
-    "unMulticastMessage\022\017\n\007channel\030\001 \002(\t\022\014\n\004j"
-    "oin\030\002 \001(\010\022\r\n\005leave\030\003 \001(\010\022\016\n\006bounce\030\004 \001(\010"
-    "\022\016\n\006sender\030\005 \001(\t\0222\n\nerror_code\030\006 \001(\0162\036.F"
-    "unMulticastMessage.ErrorCode\"K\n\tErrorCod"
-    "e\022\025\n\021EC_ALREADY_JOINED\020\001\022\023\n\017EC_ALREADY_L"
-    "EFT\020\002\022\022\n\016EC_FULL_MEMBER\020\003*\010\010\010\020\200\200\200\200\002\"\036\n\016F"
-    "unChatMessage\022\014\n\004text\030\001 \001(\t:3\n\004chat\022\024.Fu"
-    "nMulticastMessage\030\010 \001(\0132\017.FunChatMessage"
-    ":4\n\tmulticast\022\013.FunMessage\030\010 \001(\0132\024.FunMu"
-    "lticastMessage", 454);
+    "\032 funapi/network/fun_message.proto\"K\n\036Fu"
+    "nMulticastChannelListMessage\022\024\n\014channel_"
+    "name\030\001 \002(\t\022\023\n\013num_members\030\002 \001(\r\"\260\002\n\023FunM"
+    "ulticastMessage\022\017\n\007channel\030\001 \001(\t\022\014\n\004join"
+    "\030\002 \001(\010\022\r\n\005leave\030\003 \001(\010\022\016\n\006bounce\030\004 \001(\010\022\016\n"
+    "\006sender\030\005 \001(\t\0222\n\nerror_code\030\006 \001(\0162\036.FunM"
+    "ulticastMessage.ErrorCode\0221\n\010channels\030\007 "
+    "\003(\0132\037.FunMulticastChannelListMessage\"Z\n\t"
+    "ErrorCode\022\025\n\021EC_ALREADY_JOINED\020\001\022\023\n\017EC_A"
+    "LREADY_LEFT\020\002\022\022\n\016EC_FULL_MEMBER\020\003\022\r\n\tEC_"
+    "CLOSED\020\004*\010\010\010\020\200\200\200\200\002\"\036\n\016FunChatMessage\022\014\n\004"
+    "text\030\001 \001(\t:3\n\004chat\022\024.FunMulticastMessage"
+    "\030\010 \001(\0132\017.FunChatMessage:4\n\tmulticast\022\013.F"
+    "unMessage\030\010 \001(\0132\024.FunMulticastMessage", 597);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "funapi/service/multicast_message.proto", &protobuf_RegisterTypes);
+  FunMulticastChannelListMessage::default_instance_ = new FunMulticastChannelListMessage();
   FunMulticastMessage::default_instance_ = new FunMulticastMessage();
   FunChatMessage::default_instance_ = new FunChatMessage();
   ::google::protobuf::internal::ExtensionSet::RegisterMessageExtension(
@@ -131,6 +158,7 @@ void protobuf_AddDesc_funapi_2fservice_2fmulticast_5fmessage_2eproto() {
     &::FunMessage::default_instance(),
     8, 11, false, false,
     &::FunMulticastMessage::default_instance());
+  FunMulticastChannelListMessage::default_instance_->InitAsDefaultInstance();
   FunMulticastMessage::default_instance_->InitAsDefaultInstance();
   FunChatMessage::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_funapi_2fservice_2fmulticast_5fmessage_2eproto);
@@ -145,6 +173,291 @@ struct StaticDescriptorInitializer_funapi_2fservice_2fmulticast_5fmessage_2eprot
 
 // ===================================================================
 
+#ifndef _MSC_VER
+const int FunMulticastChannelListMessage::kChannelNameFieldNumber;
+const int FunMulticastChannelListMessage::kNumMembersFieldNumber;
+#endif  // !_MSC_VER
+
+FunMulticastChannelListMessage::FunMulticastChannelListMessage()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:FunMulticastChannelListMessage)
+}
+
+void FunMulticastChannelListMessage::InitAsDefaultInstance() {
+}
+
+FunMulticastChannelListMessage::FunMulticastChannelListMessage(const FunMulticastChannelListMessage& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+  // @@protoc_insertion_point(copy_constructor:FunMulticastChannelListMessage)
+}
+
+void FunMulticastChannelListMessage::SharedCtor() {
+  ::google::protobuf::internal::GetEmptyString();
+  _cached_size_ = 0;
+  channel_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  num_members_ = 0u;
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+FunMulticastChannelListMessage::~FunMulticastChannelListMessage() {
+  // @@protoc_insertion_point(destructor:FunMulticastChannelListMessage)
+  SharedDtor();
+}
+
+void FunMulticastChannelListMessage::SharedDtor() {
+  if (channel_name_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    delete channel_name_;
+  }
+  if (this != default_instance_) {
+  }
+}
+
+void FunMulticastChannelListMessage::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* FunMulticastChannelListMessage::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return FunMulticastChannelListMessage_descriptor_;
+}
+
+const FunMulticastChannelListMessage& FunMulticastChannelListMessage::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_funapi_2fservice_2fmulticast_5fmessage_2eproto();
+  return *default_instance_;
+}
+
+FunMulticastChannelListMessage* FunMulticastChannelListMessage::default_instance_ = NULL;
+
+FunMulticastChannelListMessage* FunMulticastChannelListMessage::New() const {
+  return new FunMulticastChannelListMessage;
+}
+
+void FunMulticastChannelListMessage::Clear() {
+  if (_has_bits_[0 / 32] & 3) {
+    if (has_channel_name()) {
+      if (channel_name_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+        channel_name_->clear();
+      }
+    }
+    num_members_ = 0u;
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool FunMulticastChannelListMessage::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:FunMulticastChannelListMessage)
+  for (;;) {
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // required string channel_name = 1;
+      case 1: {
+        if (tag == 10) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_channel_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+            this->channel_name().data(), this->channel_name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE,
+            "channel_name");
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(16)) goto parse_num_members;
+        break;
+      }
+
+      // optional uint32 num_members = 2;
+      case 2: {
+        if (tag == 16) {
+         parse_num_members:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &num_members_)));
+          set_has_num_members();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectAtEnd()) goto success;
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0 ||
+            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:FunMulticastChannelListMessage)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:FunMulticastChannelListMessage)
+  return false;
+#undef DO_
+}
+
+void FunMulticastChannelListMessage::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:FunMulticastChannelListMessage)
+  // required string channel_name = 1;
+  if (has_channel_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->channel_name().data(), this->channel_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "channel_name");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      1, this->channel_name(), output);
+  }
+
+  // optional uint32 num_members = 2;
+  if (has_num_members()) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->num_members(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:FunMulticastChannelListMessage)
+}
+
+::google::protobuf::uint8* FunMulticastChannelListMessage::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // @@protoc_insertion_point(serialize_to_array_start:FunMulticastChannelListMessage)
+  // required string channel_name = 1;
+  if (has_channel_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->channel_name().data(), this->channel_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "channel_name");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->channel_name(), target);
+  }
+
+  // optional uint32 num_members = 2;
+  if (has_num_members()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->num_members(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:FunMulticastChannelListMessage)
+  return target;
+}
+
+int FunMulticastChannelListMessage::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // required string channel_name = 1;
+    if (has_channel_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->channel_name());
+    }
+
+    // optional uint32 num_members = 2;
+    if (has_num_members()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->num_members());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void FunMulticastChannelListMessage::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const FunMulticastChannelListMessage* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const FunMulticastChannelListMessage*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void FunMulticastChannelListMessage::MergeFrom(const FunMulticastChannelListMessage& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_channel_name()) {
+      set_channel_name(from.channel_name());
+    }
+    if (from.has_num_members()) {
+      set_num_members(from.num_members());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void FunMulticastChannelListMessage::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void FunMulticastChannelListMessage::CopyFrom(const FunMulticastChannelListMessage& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool FunMulticastChannelListMessage::IsInitialized() const {
+  if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
+
+  return true;
+}
+
+void FunMulticastChannelListMessage::Swap(FunMulticastChannelListMessage* other) {
+  if (other != this) {
+    std::swap(channel_name_, other->channel_name_);
+    std::swap(num_members_, other->num_members_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata FunMulticastChannelListMessage::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = FunMulticastChannelListMessage_descriptor_;
+  metadata.reflection = FunMulticastChannelListMessage_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
 const ::google::protobuf::EnumDescriptor* FunMulticastMessage_ErrorCode_descriptor() {
   protobuf_AssignDescriptorsOnce();
   return FunMulticastMessage_ErrorCode_descriptor_;
@@ -154,6 +467,7 @@ bool FunMulticastMessage_ErrorCode_IsValid(int value) {
     case 1:
     case 2:
     case 3:
+    case 4:
       return true;
     default:
       return false;
@@ -164,6 +478,7 @@ bool FunMulticastMessage_ErrorCode_IsValid(int value) {
 const FunMulticastMessage_ErrorCode FunMulticastMessage::EC_ALREADY_JOINED;
 const FunMulticastMessage_ErrorCode FunMulticastMessage::EC_ALREADY_LEFT;
 const FunMulticastMessage_ErrorCode FunMulticastMessage::EC_FULL_MEMBER;
+const FunMulticastMessage_ErrorCode FunMulticastMessage::EC_CLOSED;
 const FunMulticastMessage_ErrorCode FunMulticastMessage::ErrorCode_MIN;
 const FunMulticastMessage_ErrorCode FunMulticastMessage::ErrorCode_MAX;
 const int FunMulticastMessage::ErrorCode_ARRAYSIZE;
@@ -175,6 +490,7 @@ const int FunMulticastMessage::kLeaveFieldNumber;
 const int FunMulticastMessage::kBounceFieldNumber;
 const int FunMulticastMessage::kSenderFieldNumber;
 const int FunMulticastMessage::kErrorCodeFieldNumber;
+const int FunMulticastMessage::kChannelsFieldNumber;
 #endif  // !_MSC_VER
 
 FunMulticastMessage::FunMulticastMessage()
@@ -272,6 +588,7 @@ void FunMulticastMessage::Clear() {
 #undef OFFSET_OF_FIELD_
 #undef ZR_
 
+  channels_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -286,7 +603,7 @@ bool FunMulticastMessage::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // required string channel = 1;
+      // optional string channel = 1;
       case 1: {
         if (tag == 10) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
@@ -380,6 +697,20 @@ bool FunMulticastMessage::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(58)) goto parse_channels;
+        break;
+      }
+
+      // repeated .FunMulticastChannelListMessage channels = 7;
+      case 7: {
+        if (tag == 58) {
+         parse_channels:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+                input, add_channels()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(58)) goto parse_channels;
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -414,7 +745,7 @@ failure:
 void FunMulticastMessage::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:FunMulticastMessage)
-  // required string channel = 1;
+  // optional string channel = 1;
   if (has_channel()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->channel().data(), this->channel().length(),
@@ -455,6 +786,12 @@ void FunMulticastMessage::SerializeWithCachedSizes(
       6, this->error_code(), output);
   }
 
+  // repeated .FunMulticastChannelListMessage channels = 7;
+  for (int i = 0; i < this->channels_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      7, this->channels(i), output);
+  }
+
   // Extension range [8, 536870912)
   _extensions_.SerializeWithCachedSizes(
       8, 536870912, output);
@@ -469,7 +806,7 @@ void FunMulticastMessage::SerializeWithCachedSizes(
 ::google::protobuf::uint8* FunMulticastMessage::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:FunMulticastMessage)
-  // required string channel = 1;
+  // optional string channel = 1;
   if (has_channel()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->channel().data(), this->channel().length(),
@@ -512,6 +849,13 @@ void FunMulticastMessage::SerializeWithCachedSizes(
       6, this->error_code(), target);
   }
 
+  // repeated .FunMulticastChannelListMessage channels = 7;
+  for (int i = 0; i < this->channels_size(); i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        7, this->channels(i), target);
+  }
+
   // Extension range [8, 536870912)
   target = _extensions_.SerializeWithCachedSizesToArray(
       8, 536870912, target);
@@ -528,7 +872,7 @@ int FunMulticastMessage::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required string channel = 1;
+    // optional string channel = 1;
     if (has_channel()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -564,6 +908,14 @@ int FunMulticastMessage::ByteSize() const {
     }
 
   }
+  // repeated .FunMulticastChannelListMessage channels = 7;
+  total_size += 1 * this->channels_size();
+  for (int i = 0; i < this->channels_size(); i++) {
+    total_size +=
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        this->channels(i));
+  }
+
   total_size += _extensions_.ByteSize();
 
   if (!unknown_fields().empty()) {
@@ -591,6 +943,7 @@ void FunMulticastMessage::MergeFrom(const ::google::protobuf::Message& from) {
 
 void FunMulticastMessage::MergeFrom(const FunMulticastMessage& from) {
   GOOGLE_CHECK_NE(&from, this);
+  channels_.MergeFrom(from.channels_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_channel()) {
       set_channel(from.channel());
@@ -628,8 +981,8 @@ void FunMulticastMessage::CopyFrom(const FunMulticastMessage& from) {
 }
 
 bool FunMulticastMessage::IsInitialized() const {
-  if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
 
+  if (!::google::protobuf::internal::AllAreInitialized(this->channels())) return false;
 
   if (!_extensions_.IsInitialized()) return false;  return true;
 }
@@ -642,6 +995,7 @@ void FunMulticastMessage::Swap(FunMulticastMessage* other) {
     std::swap(bounce_, other->bounce_);
     std::swap(sender_, other->sender_);
     std::swap(error_code_, other->error_code_);
+    channels_.Swap(&other->channels_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

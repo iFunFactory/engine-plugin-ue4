@@ -8,7 +8,7 @@
 #define SRC_FUNAPI_TRANSPORT_H_
 
 #include "funapi_plugin.h"
-#include "pb/network/fun_message.pb.h"
+#include "network/fun_message.pb.h"
 
 
 namespace fun {

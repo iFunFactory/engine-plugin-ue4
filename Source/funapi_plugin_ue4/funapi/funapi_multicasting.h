@@ -8,7 +8,7 @@
 #define SRC_FUNAPI_MULTICASTING_H_
 
 #include "funapi_transport.h"
-#include "pb/service/multicast_message.pb.h"
+#include "service/multicast_message.pb.h"
 
 namespace fun {
 

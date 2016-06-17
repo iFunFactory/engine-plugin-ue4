@@ -1,5 +1,5 @@
 
-../build/Mac/protoc --cpp_out=../../Source/funapi_plugin_ue4/funapi \
+../build/Mac/protoc --cpp_out=../../Source/funapi_plugin_ue4 \
 funapi/management/maintenance_message.proto \
 funapi/network/fun_message.proto \
 funapi/network/ping_message.proto \

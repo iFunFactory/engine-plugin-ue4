@@ -2,8 +2,7 @@
 // source: funapi/network/ping_message.proto
 
 #define INTERNAL_SUPPRESS_PROTOBUF_FIELD_DEPRECATION
-// #include "funapi/network/ping_message.pb.h"
-#include "ping_message.pb.h"
+#include "funapi/network/ping_message.pb.h"
 
 #include <algorithm>
 

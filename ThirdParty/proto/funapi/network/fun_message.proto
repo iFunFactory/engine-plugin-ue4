@@ -20,6 +20,7 @@ message FunMessage {
   optional string msgtype = 2;
   optional uint32 seq = 3;
   optional uint32 ack = 4;
+  optional bool urgent = 5;
 
   ////////////////////////////////////////////////////////////////////
   // CAUTION: EXTENSIONS FROM 8 THROUGH 15 ARE RESERVED BY THE ENGINE.

@@ -2,8 +2,7 @@
 // source: funapi/management/maintenance_message.proto
 
 #define INTERNAL_SUPPRESS_PROTOBUF_FIELD_DEPRECATION
-// #include "funapi/management/maintenance_message.pb.h"
-#include "maintenance_message.pb.h"
+#include "funapi/management/maintenance_message.pb.h"
 
 #include <algorithm>
 

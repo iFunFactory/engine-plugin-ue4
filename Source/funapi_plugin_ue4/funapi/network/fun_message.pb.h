@@ -139,6 +139,13 @@ class FunMessage : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 ack() const;
   inline void set_ack(::google::protobuf::uint32 value);
 
+  // optional bool urgent = 5;
+  inline bool has_urgent() const;
+  inline void clear_urgent();
+  static const int kUrgentFieldNumber = 5;
+  inline bool urgent() const;
+  inline void set_urgent(bool value);
+
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(FunMessage)
   // @@protoc_insertion_point(class_scope:FunMessage)
  private:
@@ -150,6 +157,8 @@ class FunMessage : public ::google::protobuf::Message {
   inline void clear_has_seq();
   inline void set_has_ack();
   inline void clear_has_ack();
+  inline void set_has_urgent();
+  inline void clear_has_urgent();
 
   ::google::protobuf::internal::ExtensionSet _extensions_;
 
@@ -161,6 +170,7 @@ class FunMessage : public ::google::protobuf::Message {
   ::std::string* msgtype_;
   ::google::protobuf::uint32 seq_;
   ::google::protobuf::uint32 ack_;
+  bool urgent_;
   friend void  protobuf_AddDesc_funapi_2fnetwork_2ffun_5fmessage_2eproto();
   friend void protobuf_AssignDesc_funapi_2fnetwork_2ffun_5fmessage_2eproto();
   friend void protobuf_ShutdownFile_funapi_2fnetwork_2ffun_5fmessage_2eproto();
@@ -373,6 +383,30 @@ inline void FunMessage::set_ack(::google::protobuf::uint32 value) {
   set_has_ack();
   ack_ = value;
   // @@protoc_insertion_point(field_set:FunMessage.ack)
+}
+
+// optional bool urgent = 5;
+inline bool FunMessage::has_urgent() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void FunMessage::set_has_urgent() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void FunMessage::clear_has_urgent() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void FunMessage::clear_urgent() {
+  urgent_ = false;
+  clear_has_urgent();
+}
+inline bool FunMessage::urgent() const {
+  // @@protoc_insertion_point(field_get:FunMessage.urgent)
+  return urgent_;
+}
+inline void FunMessage::set_urgent(bool value) {
+  set_has_urgent();
+  urgent_ = value;
+  // @@protoc_insertion_point(field_set:FunMessage.urgent)
 }
 
 

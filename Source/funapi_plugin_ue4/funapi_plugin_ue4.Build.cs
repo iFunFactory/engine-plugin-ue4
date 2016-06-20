@@ -12,7 +12,8 @@ public class funapi_plugin_ue4 : ModuleRules
     public funapi_plugin_ue4(TargetInfo Target)
     {
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
-        PublicDependencyModuleNames.AddRange(new string[] { "Json", "HTTP" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Json", "HTTP", "UMG" });
+        PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 
         // Third party library
         var ModulePath = Path.GetDirectoryName(RulesCompiler.GetModuleFilename(this.GetType().Name));

@@ -62,6 +62,9 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
   UFUNCTION(BlueprintCallable, Category = "Funapi")
   bool LeaveMulticastChannel();
 
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool RequestMulticastChannelList();
+
   // callback
   void OnSessionInitiated(const std::string &session_id);
   void OnSessionClosed();

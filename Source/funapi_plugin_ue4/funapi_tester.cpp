@@ -318,6 +318,17 @@ bool Afunapi_tester::LeaveMulticastChannel()
   return true;
 }
 
+bool Afunapi_tester::RequestMulticastChannelList()
+{
+  UE_LOG(LogClass, Warning, TEXT("RequestMulticastChannelList button clicked."));
+
+  if (multicast_) {
+
+  }
+
+  return true;
+}
+
 // FunapiNetwork 객체를 생성하고 연결을 시작합니다.
 void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
 {

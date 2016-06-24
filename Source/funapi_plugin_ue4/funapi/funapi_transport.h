@@ -87,7 +87,7 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
   // Send a message
   virtual void SendMessage(rapidjson::Document &message) = 0;
   virtual void SendMessage(FunMessage &message) = 0;
-  virtual void SendMessage(const char *body, bool use_sent_queue, uint32_t seq, bool priority = false) = 0;
+  virtual void SendMessage(const std::string &body, bool use_sent_queue, uint32_t seq, bool priority = false) = 0;
 
   virtual TransportProtocol GetProtocol() const = 0;
   virtual FunEncoding GetEncoding() const = 0;
@@ -127,7 +127,7 @@ class FunapiTcpTransport : public FunapiTransport {
   // Send a message
   void SendMessage(rapidjson::Document &message);
   void SendMessage(FunMessage &message);
-  void SendMessage(const char *body, bool use_sent_queue, uint32_t seq, bool priority = false);
+  void SendMessage(const std::string &body, bool use_sent_queue, uint32_t seq, bool priority = false);
 
   TransportProtocol GetProtocol() const;
   FunEncoding GetEncoding() const;
@@ -170,7 +170,7 @@ class FunapiUdpTransport : public FunapiTransport {
   // Send a message
   void SendMessage(rapidjson::Document &message);
   void SendMessage(FunMessage &message);
-  void SendMessage(const char *body, bool use_sent_queue, uint32_t seq, bool priority = false);
+  void SendMessage(const std::string &body, bool use_sent_queue, uint32_t seq, bool priority = false);
 
   TransportProtocol GetProtocol() const;
   FunEncoding GetEncoding() const;
@@ -208,7 +208,7 @@ class FunapiHttpTransport : public FunapiTransport {
   // Send a message
   void SendMessage(rapidjson::Document &message);
   void SendMessage(FunMessage &message);
-  void SendMessage(const char *body, bool use_sent_queue, uint32_t seq, bool priority = false);
+  void SendMessage(const std::string &body, bool use_sent_queue, uint32_t seq, bool priority = false);
 
   TransportProtocol GetProtocol() const;
   FunEncoding GetEncoding() const;

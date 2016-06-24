@@ -84,7 +84,7 @@ class FunapiNetworkImpl : public std::enable_shared_from_this<FunapiNetworkImpl>
   void Initialize();
   void Finalize();
 
-  void SendMessage(const char *body, TransportProtocol protocol, bool priority = false);
+  void SendMessage(const std::string &body, TransportProtocol protocol, bool priority = false);
   void SendEmptyMessage(const TransportProtocol protocol);
   bool SendClientPingMessage(const TransportProtocol protocol);
   void SendAck(const TransportProtocol protocol, const uint32_t ack);
@@ -292,7 +292,7 @@ void FunapiNetworkImpl::SendMessage(FunMessage& message, TransportProtocol proto
 }
 
 
-void FunapiNetworkImpl::SendMessage(const char *body, TransportProtocol protocol = TransportProtocol::kDefault, bool priority) {
+void FunapiNetworkImpl::SendMessage(const std::string &body, TransportProtocol protocol = TransportProtocol::kDefault, bool priority) {
   CheckSessionTimeout();
 
   if (protocol == TransportProtocol::kDefault)
@@ -416,8 +416,7 @@ void FunapiNetworkImpl::OnServerPingMessage(
 
   if (encoding == FunEncoding::kJson)
   {
-    std::string body(v_body.cbegin(), v_body.cend());
-    SendMessage(body.c_str(), protocol);
+    SendMessage(std::string(v_body.cbegin(), v_body.cend()), protocol);
   }
 
   if (encoding == FunEncoding::kProtobuf)
@@ -425,7 +424,7 @@ void FunapiNetworkImpl::OnServerPingMessage(
     FunMessage msg;
     msg.ParseFromArray(v_body.data(), static_cast<int>(v_body.size()));
 
-    SendMessage(msg.SerializeAsString().c_str(), protocol);
+    SendMessage(msg.SerializeAsString(), protocol);
   }
 }
 
@@ -695,7 +694,7 @@ void FunapiNetworkImpl::SendEmptyMessage(const TransportProtocol protocol) {
     }
     else if (encoding == FunEncoding::kProtobuf) {
       FunMessage msg;
-      SendMessage(msg.SerializeAsString().c_str());
+      SendMessage(msg.SerializeAsString());
     }
   }
 }
@@ -724,7 +723,7 @@ bool FunapiNetworkImpl::SendClientPingMessage(const TransportProtocol protocol) 
       msg.set_sid(session_id_.c_str());
     }
 
-    SendMessage(msg.SerializeAsString().c_str(), protocol);
+    SendMessage(msg.SerializeAsString(), protocol);
   }
   else if (encoding == fun::FunEncoding::kJson) {
     rapidjson::Document msg;
@@ -752,7 +751,7 @@ bool FunapiNetworkImpl::SendClientPingMessage(const TransportProtocol protocol) 
     msg.Accept(writer);
     std::string json_string = buffer.GetString();
 
-    SendMessage(json_string.c_str(), protocol);
+    SendMessage(json_string, protocol);
   }
 
   return true;
@@ -785,7 +784,7 @@ void FunapiNetworkImpl::SendAck(const TransportProtocol protocol, const uint32_t
     msg.Accept(writer);
     std::string json_string = buffer.GetString();
 
-    SendMessage(json_string.c_str(), protocol, true);
+    SendMessage(json_string, protocol, true);
   }
   else if (transport->GetEncoding() == FunEncoding::kProtobuf) {
     FunMessage msg;
@@ -795,7 +794,7 @@ void FunapiNetworkImpl::SendAck(const TransportProtocol protocol, const uint32_t
       msg.set_sid(session_id_.c_str());
     }
 
-    SendMessage(msg.SerializeAsString().c_str(), protocol, true);
+    SendMessage(msg.SerializeAsString(), protocol, true);
   }
 }
 

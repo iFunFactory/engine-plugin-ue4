@@ -18,7 +18,7 @@ namespace fun {
 class FunapiMessage : public std::enable_shared_from_this<FunapiMessage> {
  public:
   FunapiMessage() = delete;
-  FunapiMessage(const char* body, bool use_sent_queue, int seq);
+  FunapiMessage(const std::string &body, bool use_sent_queue, int seq);
   ~FunapiMessage();
 
   bool UseSentQueue();
@@ -32,12 +32,9 @@ class FunapiMessage : public std::enable_shared_from_this<FunapiMessage> {
 };
 
 
-FunapiMessage::FunapiMessage(const char* body, bool use_sent_queue, int seq)
-  : use_sent_queue_(use_sent_queue), seq_(seq)
+FunapiMessage::FunapiMessage(const std::string &body, bool use_sent_queue, int seq)
+  : body_(body.begin(), body.end()), use_sent_queue_(use_sent_queue), seq_(seq)
 {
-  size_t length = strlen(body);
-  body_.resize(length);
-  memcpy (body_.data(), body, length);
 }
 
 
@@ -242,7 +239,7 @@ class FunapiTransportImpl : public std::enable_shared_from_this<FunapiTransportI
 
   void SendMessage(rapidjson::Document &message);
   void SendMessage(FunMessage &message);
-  void SendMessage(const char *body, bool use_sent_queue, uint32_t seq, bool priority);
+  void SendMessage(const std::string &body, bool use_sent_queue, uint32_t seq, bool priority);
 
   virtual TransportProtocol GetProtocol() { return TransportProtocol::kDefault; };
   FunEncoding GetEncoding() { return encoding_; };
@@ -273,7 +270,7 @@ class FunapiTransportImpl : public std::enable_shared_from_this<FunapiTransportI
   bool OnSeqReceived(const uint32_t seq);
 
   virtual bool EncodeThenSendMessage(std::vector<uint8_t> body) = 0;
-  void PushSendQueue(const char* body, bool use_sent_queue, uint32_t seq, bool priority);
+  void PushSendQueue(const std::string &body, bool use_sent_queue, uint32_t seq, bool priority);
   virtual void Send(bool send_all = false);
 
   bool DecodeMessage(int nRead, std::vector<uint8_t> &receiving, int &next_decoding_offset, bool &header_decoded, HeaderFields &header_fields);
@@ -476,11 +473,11 @@ void FunapiTransportImpl::SendMessage(FunMessage &message) {
     ++seq_;
   }
 
-  SendMessage(message.SerializeAsString().c_str(), IsReliableSession(), seq, false);
+  SendMessage(message.SerializeAsString(), IsReliableSession(), seq, false);
 }
 
 
-void FunapiTransportImpl::SendMessage(const char *body, bool use_sent_queue, uint32_t seq, bool priority) {
+void FunapiTransportImpl::SendMessage(const std::string &body, bool use_sent_queue, uint32_t seq, bool priority) {
   PushSendQueue(body, use_sent_queue, seq, priority);
 }
 
@@ -662,7 +659,7 @@ bool FunapiTransportImpl::IsStarted() {
 }
 
 
-void FunapiTransportImpl::PushSendQueue(const char* body, bool use_sent_queue, uint32_t seq, bool priority) {
+void FunapiTransportImpl::PushSendQueue(const std::string &body, bool use_sent_queue, uint32_t seq, bool priority) {
   std::shared_ptr<FunapiMessage> msg = std::make_shared<FunapiMessage>(body, use_sent_queue, seq);
 
   if (priority) {
@@ -2168,7 +2165,7 @@ void FunapiTcpTransport::SendMessage(FunMessage &message) {
 }
 
 
-void FunapiTcpTransport::SendMessage(const char *body, bool use_sent_queue, uint32_t seq, bool priority) {
+void FunapiTcpTransport::SendMessage(const std::string &body, bool use_sent_queue, uint32_t seq, bool priority) {
   impl_->SendMessage(body, use_sent_queue, seq, priority);
 }
 
@@ -2291,7 +2288,7 @@ void FunapiUdpTransport::SendMessage(FunMessage &message) {
 }
 
 
-void FunapiUdpTransport::SendMessage(const char *body, bool use_sent_queue, uint32_t seq, bool priority) {
+void FunapiUdpTransport::SendMessage(const std::string &body, bool use_sent_queue, uint32_t seq, bool priority) {
   impl_->SendMessage(body, use_sent_queue, seq, priority);
 }
 
@@ -2391,7 +2388,7 @@ void FunapiHttpTransport::SendMessage(FunMessage &message) {
 }
 
 
-void FunapiHttpTransport::SendMessage(const char *body, bool use_sent_queue, uint32_t seq, bool priority) {
+void FunapiHttpTransport::SendMessage(const std::string &body, bool use_sent_queue, uint32_t seq, bool priority) {
   impl_->SendMessage(body, use_sent_queue, seq, priority);
 }
 

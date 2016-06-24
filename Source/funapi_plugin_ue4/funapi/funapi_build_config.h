@@ -27,4 +27,8 @@
 
 #define DEBUG_LOG
 
+#ifdef FUNAPI_PLATFORM_WINDOWS
+#define NOMINMAX
+#endif
+
 #endif  // SRC_FUNAPI_BUILD_CONFIG_H_

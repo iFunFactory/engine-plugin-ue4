@@ -5,10 +5,12 @@
 // consent of iFunFactory Inc.
 
 #include "funapi_plugin.h"
+#include "funapi_version.h"
 #include "funapi_utils.h"
 #include "funapi_transport.h"
 #include "funapi_network.h"
 #include "funapi_encryption.h"
+#include "network/fun_message.pb.h"
 
 namespace fun {
 
@@ -87,14 +89,14 @@ FunapiTransportHandlers::~FunapiTransportHandlers() {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// FunapiManagerImpl implementation.
+// FunapiNetworkThread implementation.
 
 class FunapiTransportImpl;
-class FunapiManager : public std::enable_shared_from_this<FunapiManager>
+class FunapiNetworkThread : public std::enable_shared_from_this<FunapiNetworkThread>
 {
  public:
-  FunapiManager();
-  ~FunapiManager();
+  FunapiNetworkThread();
+  ~FunapiNetworkThread();
   void AddTransportHandlers (std::shared_ptr<FunapiTransportImpl> transport, std::shared_ptr<FunapiTransportHandlers> handlers);
   void RemoveTransportHandlers (std::shared_ptr<FunapiTransportImpl> transport);
 
@@ -113,28 +115,28 @@ class FunapiManager : public std::enable_shared_from_this<FunapiManager>
 };
 
 
-FunapiManager::FunapiManager() {
+FunapiNetworkThread::FunapiNetworkThread() {
   Initialize();
 }
 
 
-FunapiManager::~FunapiManager() {
+FunapiNetworkThread::~FunapiNetworkThread() {
   Finalize();
 }
 
 
-void FunapiManager::Initialize() {
+void FunapiNetworkThread::Initialize() {
   run_ = true;
   thread_ = std::thread([this]{ Thread(); });
 }
 
 
-void FunapiManager::Finalize() {
+void FunapiNetworkThread::Finalize() {
   JoinThread();
 }
 
 
-void FunapiManager::JoinThread() {
+void FunapiNetworkThread::JoinThread() {
   run_ = false;
   condition_.notify_all();
   if (thread_.joinable())
@@ -142,7 +144,7 @@ void FunapiManager::JoinThread() {
 }
 
 
-void FunapiManager::Thread() {
+void FunapiNetworkThread::Thread() {
   while (run_) {
     {
       std::unique_lock<std::mutex> lock(mutex_);
@@ -156,7 +158,7 @@ void FunapiManager::Thread() {
 }
 
 
-void FunapiManager::Update() {
+void FunapiNetworkThread::Update() {
   int max_fd = -1;
 
   fd_set rset;
@@ -200,7 +202,7 @@ void FunapiManager::Update() {
 }
 
 
-void FunapiManager::AddTransportHandlers (std::shared_ptr<FunapiTransportImpl> transport,
+void FunapiNetworkThread::AddTransportHandlers (std::shared_ptr<FunapiTransportImpl> transport,
                                           std::shared_ptr<FunapiTransportHandlers> handlers) {
   std::unique_lock<std::mutex> lock(mutex_);
   transport_handlers_[transport] = handlers;
@@ -209,11 +211,340 @@ void FunapiManager::AddTransportHandlers (std::shared_ptr<FunapiTransportImpl> t
 }
 
 
-void FunapiManager::RemoveTransportHandlers (std::shared_ptr<FunapiTransportImpl> transport) {
+void FunapiNetworkThread::RemoveTransportHandlers (std::shared_ptr<FunapiTransportImpl> transport) {
   std::unique_lock<std::mutex> lock(mutex_);
   auto iter = transport_handlers_.find(transport);
   if (iter != transport_handlers_.cend())
     transport_handlers_.erase(iter);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FunapiTransportOptionImpl implementation.
+
+class FunapiTransportOptionImpl : public std::enable_shared_from_this<FunapiTransportOptionImpl> {
+ public:
+  FunapiTransportOptionImpl() = default;
+  ~FunapiTransportOptionImpl() = default;
+
+  virtual void SetEncryptionType(EncryptionType type) = 0;
+  virtual EncryptionType GetEncryptionType() = 0;
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FunapiTcpTransportOptionImpl implementation.
+
+class FunapiTcpTransportOptionImpl : public FunapiTransportOptionImpl {
+public:
+  FunapiTcpTransportOptionImpl() = default;
+  virtual ~FunapiTcpTransportOptionImpl() = default;
+
+  void SetDisableNagle(const bool disable_nagle);
+  bool GetDisableNagle();
+
+  void SetAutoReconnect(const bool auto_reconnect);
+  bool GetAutoReconnect();
+
+  void SetEnablePing(const bool enable_ping);
+  bool GetEnablePing();
+
+  void SetSequenceNumberValidation(const bool validation);
+  bool GetSequenceNumberValidation();
+
+  void SetConnectTimeout(const int seconds);
+  int GetConnectTimeout();
+
+  void SetEncryptionType(EncryptionType type);
+  EncryptionType GetEncryptionType();
+
+private:
+  bool disable_nagle_ = false;
+  bool auto_reconnect_ = false;
+  bool enable_ping_ = false;
+  bool sequence_number_validation_ = false;
+  int timeout_seconds_ = 10;
+  EncryptionType encryption_type_ = static_cast<EncryptionType>(0);
+};
+
+
+void FunapiTcpTransportOptionImpl::SetDisableNagle(const bool disable_nagle) {
+  disable_nagle_ = disable_nagle;
+}
+
+
+bool FunapiTcpTransportOptionImpl::GetDisableNagle() {
+  return disable_nagle_;
+}
+
+
+void FunapiTcpTransportOptionImpl::SetAutoReconnect(const bool auto_reconnect) {
+  auto_reconnect_ = auto_reconnect;
+}
+
+
+bool FunapiTcpTransportOptionImpl::GetAutoReconnect() {
+  return auto_reconnect_;
+}
+
+
+void FunapiTcpTransportOptionImpl::SetEnablePing(const bool enable_ping) {
+  enable_ping_ = enable_ping;
+}
+
+
+bool FunapiTcpTransportOptionImpl::GetEnablePing() {
+  return enable_ping_;
+}
+
+
+void FunapiTcpTransportOptionImpl::SetSequenceNumberValidation(const bool validation) {
+  sequence_number_validation_ = validation;
+}
+
+
+bool FunapiTcpTransportOptionImpl::GetSequenceNumberValidation() {
+  return sequence_number_validation_;
+}
+
+
+void FunapiTcpTransportOptionImpl::SetConnectTimeout(const int seconds) {
+  timeout_seconds_ = seconds;
+}
+
+
+int FunapiTcpTransportOptionImpl::GetConnectTimeout() {
+  return timeout_seconds_;
+}
+
+
+void FunapiTcpTransportOptionImpl::SetEncryptionType(EncryptionType type) {
+  encryption_type_ = type;
+}
+
+
+EncryptionType FunapiTcpTransportOptionImpl::GetEncryptionType() {
+  return encryption_type_;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FunapiUdpTransportOptionImpl implementation.
+
+class FunapiUdpTransportOptionImpl : public FunapiTransportOptionImpl {
+public:
+  FunapiUdpTransportOptionImpl() = default;
+  virtual ~FunapiUdpTransportOptionImpl() = default;
+
+  void SetEncryptionType(EncryptionType type);
+  EncryptionType GetEncryptionType();
+
+private:
+  EncryptionType encryption_type_ = static_cast<EncryptionType>(0);
+};
+
+
+void FunapiUdpTransportOptionImpl::SetEncryptionType(EncryptionType type) {
+  encryption_type_ = type;
+}
+
+
+EncryptionType FunapiUdpTransportOptionImpl::GetEncryptionType() {
+  return encryption_type_;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FunapiHttpTransportOptionImpl implementation.
+
+class FunapiHttpTransportOptionImpl : public FunapiTransportOptionImpl {
+ public:
+  FunapiHttpTransportOptionImpl() = default;
+  virtual ~FunapiHttpTransportOptionImpl() = default;
+
+  void SetSequenceNumberValidation(const bool validation);
+  bool GetSequenceNumberValidation();
+
+  void SetUseHttps(const bool https);
+  bool GetUseHttps();
+
+  void SetEncryptionType(EncryptionType type);
+  EncryptionType GetEncryptionType();
+
+ private:
+  bool sequence_number_validation_ = false;
+  bool use_https_ = false;
+  EncryptionType encryption_type_ = static_cast<EncryptionType>(0);
+};
+
+
+void FunapiHttpTransportOptionImpl::SetSequenceNumberValidation(const bool validation) {
+  sequence_number_validation_ = validation;
+}
+
+
+bool FunapiHttpTransportOptionImpl::GetSequenceNumberValidation() {
+  return sequence_number_validation_;
+}
+
+
+void FunapiHttpTransportOptionImpl::SetUseHttps(const bool https) {
+  use_https_ = https;
+}
+
+
+bool FunapiHttpTransportOptionImpl::GetUseHttps() {
+  return use_https_;
+}
+
+
+void FunapiHttpTransportOptionImpl::SetEncryptionType(EncryptionType type) {
+  encryption_type_ = type;
+}
+
+
+EncryptionType FunapiHttpTransportOptionImpl::GetEncryptionType() {
+  return encryption_type_;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FunapiTcpTransportOption implementation.
+
+FunapiTcpTransportOption::FunapiTcpTransportOption ()
+: impl_(std::make_shared<FunapiTcpTransportOptionImpl>()) {
+}
+
+
+std::shared_ptr<FunapiTcpTransportOption> FunapiTcpTransportOption::create() {
+  return std::make_shared<FunapiTcpTransportOption>();
+}
+
+
+void FunapiTcpTransportOption::SetDisableNagle(const bool disable_nagle) {
+  impl_->SetDisableNagle(disable_nagle);
+}
+
+
+bool FunapiTcpTransportOption::GetDisableNagle() {
+  return impl_->GetDisableNagle();
+}
+
+
+void FunapiTcpTransportOption::SetAutoReconnect(const bool auto_reconnect) {
+  return impl_->SetAutoReconnect(auto_reconnect);
+
+}
+
+
+bool FunapiTcpTransportOption::GetAutoReconnect() {
+  return impl_->GetAutoReconnect();
+}
+
+
+void FunapiTcpTransportOption::SetEnablePing(const bool enable_ping) {
+  impl_->SetEnablePing(enable_ping);
+}
+
+
+bool FunapiTcpTransportOption::GetEnablePing() {
+  return impl_->GetEnablePing();
+}
+
+
+void FunapiTcpTransportOption::SetSequenceNumberValidation(const bool validation) {
+  impl_->SetSequenceNumberValidation(validation);
+}
+
+
+bool FunapiTcpTransportOption::GetSequenceNumberValidation() {
+  return impl_->GetSequenceNumberValidation();
+}
+
+
+void FunapiTcpTransportOption::SetConnectTimeout(const int seconds) {
+  impl_->SetConnectTimeout(seconds);
+}
+
+
+int FunapiTcpTransportOption::GetConnectTimeout() {
+  return impl_->GetConnectTimeout();
+}
+
+
+void FunapiTcpTransportOption::SetEncryptionType(EncryptionType type) {
+  impl_->SetEncryptionType(type);
+}
+
+
+EncryptionType FunapiTcpTransportOption::GetEncryptionType() {
+  return impl_->GetEncryptionType();
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FunapiUdpTransportOption implementation.
+
+FunapiUdpTransportOption::FunapiUdpTransportOption ()
+: impl_(std::make_shared<FunapiUdpTransportOptionImpl>()) {
+}
+
+
+std::shared_ptr<FunapiUdpTransportOption> FunapiUdpTransportOption::create() {
+  return std::make_shared<FunapiUdpTransportOption>();
+}
+
+
+void FunapiUdpTransportOption::SetEncryptionType(EncryptionType type) {
+  impl_->SetEncryptionType(type);
+}
+
+
+EncryptionType FunapiUdpTransportOption::GetEncryptionType() {
+  return impl_->GetEncryptionType();
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FunapiHttpTransportOption implementation.
+
+FunapiHttpTransportOption::FunapiHttpTransportOption ()
+: impl_(std::make_shared<FunapiHttpTransportOptionImpl>()) {
+}
+
+
+std::shared_ptr<FunapiHttpTransportOption> FunapiHttpTransportOption::create() {
+  return std::make_shared<FunapiHttpTransportOption>();
+}
+
+
+void FunapiHttpTransportOption::SetSequenceNumberValidation(const bool validation) {
+  impl_->SetSequenceNumberValidation(validation);
+}
+
+
+bool FunapiHttpTransportOption::GetSequenceNumberValidation() {
+  return impl_->GetSequenceNumberValidation();
+}
+
+
+void FunapiHttpTransportOption::SetUseHttps(const bool https) {
+  impl_->SetUseHttps(https);
+}
+
+
+bool FunapiHttpTransportOption::GetUseHttps() {
+  return impl_->GetUseHttps();
+}
+
+
+void FunapiHttpTransportOption::SetEncryptionType(EncryptionType type) {
+  impl_->SetEncryptionType(type);
+}
+
+
+EncryptionType FunapiHttpTransportOption::GetEncryptionType() {
+  return impl_->GetEncryptionType();
 }
 
 
@@ -262,7 +593,7 @@ class FunapiTransportImpl : public std::enable_shared_from_this<FunapiTransportI
   virtual void SetSequenceNumberValidation(const bool validation);
 
  protected:
-  std::shared_ptr<FunapiManager> GetManager();
+  std::shared_ptr<FunapiNetworkThread> GetNetworkThread();
 
   void OnReceived(const TransportProtocol protocol, const FunEncoding encoding, const HeaderFields &header, const std::vector<uint8_t> &body);
 
@@ -454,7 +785,7 @@ void FunapiTransportImpl::SendMessage(rapidjson::Document &message) {
     rapidjson::Value seq_node;
     seq_node.SetUint(seq);
     ++seq_;
-    message.AddMember(rapidjson::StringRef(kSeqNumberField), seq_node, message.GetAllocator());
+    message.AddMember(rapidjson::StringRef(kSeqNumAttributeName), seq_node, message.GetAllocator());
   }
 
   rapidjson::StringBuffer string_buffer;
@@ -912,22 +1243,22 @@ void FunapiTransportImpl::OnReceived(const TransportProtocol protocol,
     json.Parse<0>(reinterpret_cast<char*>(const_cast<uint8_t*>(body.data())));
     assert(json.IsObject());
 
-    if (json.HasMember(kMsgTypeBodyField)) {
-      const rapidjson::Value &msg_type_node = json[kMsgTypeBodyField];
+    if (json.HasMember(kMessageTypeAttributeName)) {
+      const rapidjson::Value &msg_type_node = json[kMessageTypeAttributeName];
       assert(msg_type_node.IsString());
       msg_type = msg_type_node.GetString();
     }
 
-    hasAck = json.HasMember(kAckNumberField);
+    hasAck = json.HasMember(kAckNumAttributeName);
     if (hasAck) {
-      ack = json[kAckNumberField].GetUint();
-      json.RemoveMember(kAckNumberField);
+      ack = json[kAckNumAttributeName].GetUint();
+      json.RemoveMember(kAckNumAttributeName);
     }
 
-    hasSeq = json.HasMember(kSeqNumberField);
+    hasSeq = json.HasMember(kSeqNumAttributeName);
     if (hasSeq) {
-      seq = json[kSeqNumberField].GetUint();
-      json.RemoveMember(kSeqNumberField);
+      seq = json[kSeqNumAttributeName].GetUint();
+      json.RemoveMember(kSeqNumAttributeName);
     }
   } else if (encoding == FunEncoding::kProtobuf) {
     FunMessage proto;
@@ -963,9 +1294,9 @@ void FunapiTransportImpl::ResetClientPingTimeout() {
 }
 
 
-std::shared_ptr<FunapiManager> FunapiTransportImpl::GetManager() {
-  static std::shared_ptr<FunapiManager> manager = std::make_shared<FunapiManager>();
-  return manager;
+std::shared_ptr<FunapiNetworkThread> FunapiTransportImpl::GetNetworkThread() {
+  static std::shared_ptr<FunapiNetworkThread> nt = std::make_shared<FunapiNetworkThread>();
+  return nt;
 }
 
 
@@ -1103,7 +1434,7 @@ void FunapiSocketTransportImpl::ServerAddressStringFromAddrInfo(std::string &ser
 
 
 void FunapiSocketTransportImpl::Stop() {
-  GetManager()->RemoveTransportHandlers(shared_from_this());
+  GetNetworkThread()->RemoveTransportHandlers(shared_from_this());
 
   Send(true);
 
@@ -1326,7 +1657,7 @@ void FunapiTcpTransportImpl::Start() {
   }, [this, self](const fd_set rset, const fd_set wset, const fd_set eset) {
     OnTcpSocketSelect(rset, wset, eset);
   });
-  GetManager()->AddTransportHandlers(shared_from_this(), handlers);
+  GetNetworkThread()->AddTransportHandlers(shared_from_this(), handlers);
 
   Connect();
 }
@@ -1502,7 +1833,7 @@ void FunapiTcpTransportImpl::Connect() {
     DebugUtils::Log("Failed - tcp connect");
     update_state_ = UpdateState::kNone;
     socket_select_state_ = SocketSelectState::kNone;
-    GetManager()->RemoveTransportHandlers(shared_from_this());
+    GetNetworkThread()->RemoveTransportHandlers(shared_from_this());
     OnTransportConnectFailed(TransportProtocol::kTcp);
     return;
   }
@@ -1678,7 +2009,7 @@ void FunapiUdpTransportImpl::Start() {
   }, [this, self](const fd_set rset, const fd_set wset, const fd_set eset) {
     OnSocketSelect(rset, wset, eset);
   });
-  GetManager()->AddTransportHandlers(shared_from_this(), handlers);
+  GetNetworkThread()->AddTransportHandlers(shared_from_this(), handlers);
 
   state_ = TransportState::kConnected;
 
@@ -1728,7 +2059,7 @@ void FunapiUdpTransportImpl::Recv() {
     reinterpret_cast<char*>(receiving_vector.data()),
     receiving_vector.size(), 0, addrinfo_res_->ai_addr,
     (&addrinfo_res_->ai_addrlen)));
-#endif // FUNAPI_COCOS2D_PLATFORM_WINDOWS
+#endif // FUNAPI_PLATFORM_WINDOWS
 
   // FUNAPI_LOG("nRead = %d", nRead);
 
@@ -1821,7 +2152,7 @@ void FunapiHttpTransportImpl::Start() {
     return -1;
   }, [this, self](const fd_set rset, const fd_set wset, const fd_set eset) {
   });
-  GetManager()->AddTransportHandlers(shared_from_this(), handlers);
+  GetNetworkThread()->AddTransportHandlers(shared_from_this(), handlers);
 
   state_ = TransportState::kConnected;
 
@@ -1833,7 +2164,7 @@ void FunapiHttpTransportImpl::Stop() {
   if (state_ == TransportState::kDisconnected)
     return;
 
-  GetManager()->RemoveTransportHandlers(shared_from_this());
+  GetNetworkThread()->RemoveTransportHandlers(shared_from_this());
 
   Send(true);
 
@@ -2205,6 +2536,11 @@ void FunapiTcpTransport::AddConnectTimeoutCallback(const TransportEventHandler &
 }
 
 
+void FunapiTcpTransport::AddDisconnectedCallback(const TransportEventHandler &handler) {
+  return impl_->AddDisconnectedCallback(handler);
+}
+
+
 void FunapiTcpTransport::SetDisableNagle(const bool disable_nagle) {
   return impl_->SetDisableNagle(disable_nagle);
 }
@@ -2328,6 +2664,11 @@ void FunapiUdpTransport::AddConnectTimeoutCallback(const TransportEventHandler &
 }
 
 
+void FunapiUdpTransport::AddDisconnectedCallback(const TransportEventHandler &handler) {
+  return impl_->AddDisconnectedCallback(handler);
+}
+
+
 void FunapiUdpTransport::SetReceivedHandler(TransportReceivedHandler handler) {
   return impl_->SetReceivedHandler(handler);
 }
@@ -2425,6 +2766,11 @@ void FunapiHttpTransport::AddConnectFailedCallback(const TransportEventHandler &
 
 void FunapiHttpTransport::AddConnectTimeoutCallback(const TransportEventHandler &handler) {
   return impl_->AddConnectTimeoutCallback(handler);
+}
+
+
+void FunapiHttpTransport::AddDisconnectedCallback(const TransportEventHandler &handler) {
+  return impl_->AddDisconnectedCallback(handler);
 }
 
 

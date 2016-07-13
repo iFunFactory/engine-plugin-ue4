@@ -92,18 +92,31 @@ class DebugUtils
   };
 };
 
-}  // namespace fun
-
 
 class FunapiUtil
 {
- public:
+public:
   static bool SeqLess(const uint32_t x, const uint32_t y) {
     // 아래 참고
     //  - http://en.wikipedia.org/wiki/Serial_number_arithmetic
     //  - RFC 1982
     return (int32_t)(y - x) > 0;
   }
+
+  static std::string GetWritablePath() {
+#ifdef FUNAPI_COCOS2D
+    static std::string writablePath = cocos2d::FileUtils::getInstance()->getWritablePath();
+#endif
+
+#ifdef FUNAPI_UE4
+    static std::string writablePath = "";
+#endif
+
+    return writablePath;
+  };
 };
+
+}  // namespace fun
+
 
 #endif  // SRC_FUNAPI_UTILS_H_

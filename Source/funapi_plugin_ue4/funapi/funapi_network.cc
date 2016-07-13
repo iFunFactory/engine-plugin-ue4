@@ -4,6 +4,8 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
+/*** DEPRECATED: The FunapiNetwork class should no longer be used.  FunapiSession is the replacement for FunapiNetwork ***/
+
 #include "network/ping_message.pb.h"
 #include "funapi_plugin.h"
 #include "funapi_utils.h"
@@ -139,7 +141,7 @@ void FunapiNetworkImpl::Initialize() {
   assert(!initialized_);
 
   // Installs event handlers.
-  message_handlers_[kNewSessionMessageType] =
+  message_handlers_[kSessionOpenedMessageType] =
     [this](const TransportProtocol &p, const std::string&s, const std::vector<uint8_t>&v) { OnNewSession(s, v); };
   message_handlers_[kSessionClosedMessageType] =
     [this](const TransportProtocol &p, const std::string&s, const std::vector<uint8_t>&v) { OnSessionTimedout(s, v); };
@@ -254,14 +256,14 @@ void FunapiNetworkImpl::SendMessage(const std::string &msg_type, std::string &js
   if (msg_type.length() > 0) {
     rapidjson::Value msg_type_node;
     msg_type_node.SetString(rapidjson::StringRef(msg_type.c_str()));
-    body.AddMember(rapidjson::StringRef(kMsgTypeBodyField), msg_type_node, body.GetAllocator());
+    body.AddMember(rapidjson::StringRef(kMessageTypeAttributeName), msg_type_node, body.GetAllocator());
   }
 
   // Encodes a session id, if any.
   if (!session_id_.empty()) {
     rapidjson::Value session_id_node;
     session_id_node.SetString(rapidjson::StringRef(session_id_.c_str()));
-    body.AddMember(rapidjson::StringRef(kSessionIdBodyField), session_id_node, body.GetAllocator());
+    body.AddMember(rapidjson::StringRef(kSessionIdAttributeName), session_id_node, body.GetAllocator());
   }
 
   if (protocol == TransportProtocol::kDefault)
@@ -334,18 +336,18 @@ void FunapiNetworkImpl::OnTransportReceived(
     json.Parse<0>(reinterpret_cast<char*>(const_cast<uint8_t*>(body.data())));
     assert(json.IsObject());
 
-    if (json.HasMember(kMsgTypeBodyField)) {
-      const rapidjson::Value &msg_type_node = json[kMsgTypeBodyField];
+    if (json.HasMember(kMessageTypeAttributeName)) {
+      const rapidjson::Value &msg_type_node = json[kMessageTypeAttributeName];
       assert(msg_type_node.IsString());
       msg_type = msg_type_node.GetString();
-      json.RemoveMember(kMsgTypeBodyField);
+      json.RemoveMember(kMessageTypeAttributeName);
     }
 
-    if (json.HasMember(kSessionIdBodyField)) {
-      const rapidjson::Value &session_id_node = json[kSessionIdBodyField];
+    if (json.HasMember(kSessionIdAttributeName)) {
+      const rapidjson::Value &session_id_node = json[kSessionIdAttributeName];
       assert(session_id_node.IsString());
       session_id = session_id_node.GetString();
-      json.RemoveMember(kSessionIdBodyField);
+      json.RemoveMember(kSessionIdAttributeName);
     }
   } else if (encoding == FunEncoding::kProtobuf) {
     FunMessage proto;
@@ -736,13 +738,13 @@ bool FunapiNetworkImpl::SendClientPingMessage(const TransportProtocol protocol) 
     // Encodes a messsage type.
     rapidjson::Value msg_type_node;
     msg_type_node.SetString(rapidjson::StringRef(kClientPingMessageType));
-    msg.AddMember(rapidjson::StringRef(kMsgTypeBodyField), msg_type_node, msg.GetAllocator());
+    msg.AddMember(rapidjson::StringRef(kMessageTypeAttributeName), msg_type_node, msg.GetAllocator());
 
     // Encodes a session id, if any.
     if (!session_id_.empty()) {
       rapidjson::Value session_id_node;
       session_id_node.SetString(rapidjson::StringRef(session_id_.c_str()));
-      msg.AddMember(rapidjson::StringRef(kSessionIdBodyField), session_id_node, msg.GetAllocator());
+      msg.AddMember(rapidjson::StringRef(kSessionIdAttributeName), session_id_node, msg.GetAllocator());
     }
 
     // Convert JSON document to string
@@ -767,7 +769,7 @@ void FunapiNetworkImpl::SendAck(const TransportProtocol protocol, const uint32_t
   if (transport->GetEncoding() == FunEncoding::kJson) {
     rapidjson::Document msg;
     msg.SetObject();
-    rapidjson::Value key(kAckNumberField, msg.GetAllocator());
+    rapidjson::Value key(kAckNumAttributeName, msg.GetAllocator());
     rapidjson::Value ack_node(rapidjson::kNumberType);
     ack_node.SetUint(ack);
     msg.AddMember(key, ack_node, msg.GetAllocator());
@@ -775,7 +777,7 @@ void FunapiNetworkImpl::SendAck(const TransportProtocol protocol, const uint32_t
     if (!session_id_.empty()) {
       rapidjson::Value session_id_node;
       session_id_node.SetString(rapidjson::StringRef(session_id_.c_str()));
-      msg.AddMember(rapidjson::StringRef(kSessionIdBodyField), session_id_node, msg.GetAllocator());
+      msg.AddMember(rapidjson::StringRef(kSessionIdAttributeName), session_id_node, msg.GetAllocator());
     }
 
     // Convert JSON document to string
@@ -809,6 +811,8 @@ bool FunapiNetworkImpl::IsReliableSession() const {
 
 FunapiNetwork::FunapiNetwork(bool session_reliability)
   : impl_(std::make_shared<FunapiNetworkImpl>(session_reliability)) {
+  /*** DEPRECATED: The FunapiNetwork class should no longer be used.  FunapiSession is the replacement for FunapiNetwork ***/
+  DebugUtils::Log("DEPRECATED: The FunapiNetwork class should no longer be used.  FunapiSession is the replacement for FunapiNetwork");
 }
 
 

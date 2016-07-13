@@ -4,19 +4,16 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
+/*** DEPRECATED: The FunapiNetwork class should no longer be used.  FunapiSession is the replacement for FunapiNetwork ***/
+
 #ifndef SRC_FUNAPI_NETWORK_H_
 #define SRC_FUNAPI_NETWORK_H_
 
 #include "funapi_transport.h"
+#include "funapi_version.h"
 
 
 namespace fun {
-
-enum class FunapiVersion : int
-{
-  kProtocolVersion = 1,
-  kPluginVersion = 6,
-};
 
 class FunapiNetworkImpl;
 class FunapiNetwork : public std::enable_shared_from_this<FunapiNetwork> {

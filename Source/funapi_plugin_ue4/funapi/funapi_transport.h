@@ -8,28 +8,25 @@
 #define SRC_FUNAPI_TRANSPORT_H_
 
 #include "funapi_plugin.h"
-#include "network/fun_message.pb.h"
 
+class FunMessage;
 
 namespace fun {
 
-// Funapi header-related constants.
 static const char* kHeaderDelimeter = "\n";
 static const char* kHeaderFieldDelimeter = ":";
 static const char* kVersionHeaderField = "VER";
 static const char* kPluginVersionHeaderField = "PVER";
 static const char* kLengthHeaderField = "LEN";
 
-// Funapi message-related constants.
-static const char* kMsgTypeBodyField = "_msgtype";
-static const char* kSessionIdBodyField = "_sid";
-static const char* kSeqNumberField = "_seq";
-static const char* kAckNumberField = "_ack";
-static const char* kNewSessionMessageType = "_session_opened";
+static const char* kMessageTypeAttributeName = "_msgtype";
+static const char* kSessionIdAttributeName = "_sid";
+static const char* kSeqNumAttributeName = "_seq";
+static const char* kAckNumAttributeName = "_ack";
+
+static const char* kSessionOpenedMessageType = "_session_opened";
 static const char* kSessionClosedMessageType = "_session_closed";
 static const char* kMaintenanceMessageType = "_maintenance";
-
-// Ping message-related constants.
 static const char* kServerPingMessageType = "_ping_s";
 static const char* kClientPingMessageType = "_ping_c";
 static const char* kPingTimestampField = "timestamp";
@@ -38,7 +35,6 @@ static const char* kPingTimestampField = "timestamp";
 static const char* kCookieRequestHeaderField = "Cookie";
 static const char* kCookieResponseHeaderField = "SET-COOKIE";
 
-typedef sockaddr_in Endpoint;
 typedef std::function<void(void*, const int)> AsyncWebResponseCallback;
 
 enum class TransportState : int {
@@ -50,10 +46,10 @@ enum class TransportState : int {
 // Funapi transport protocol
 enum class TransportProtocol : int
 {
-  kDefault = 0,
-  kTcp,
+  kTcp = 0,
   kUdp,
-  kHttp
+  kHttp,
+  kDefault,
 };
 
 // Message encoding type
@@ -66,7 +62,85 @@ enum class FunEncoding
 
 enum class EncryptionType : int;
 
-class FunapiNetwork;
+class FunapiTransportOption : public std::enable_shared_from_this<FunapiTransportOption> {
+ public:
+  FunapiTransportOption() = default;
+  virtual ~FunapiTransportOption() = default;
+
+  virtual void SetEncryptionType(EncryptionType type) = 0;
+  virtual EncryptionType GetEncryptionType() = 0;
+};
+
+
+class FunapiTcpTransportOptionImpl;
+class FunapiTcpTransportOption : public FunapiTransportOption {
+ public:
+  FunapiTcpTransportOption();
+  virtual ~FunapiTcpTransportOption() = default;
+
+  static std::shared_ptr<FunapiTcpTransportOption> create();
+
+  void SetDisableNagle(const bool disable_nagle);
+  bool GetDisableNagle();
+
+  void SetAutoReconnect(const bool auto_reconnect);
+  bool GetAutoReconnect();
+
+  void SetEnablePing(const bool enable_ping);
+  bool GetEnablePing();
+
+  void SetSequenceNumberValidation(const bool validation);
+  bool GetSequenceNumberValidation();
+
+  void SetConnectTimeout(const int seconds);
+  int GetConnectTimeout();
+
+  void SetEncryptionType(EncryptionType type);
+  EncryptionType GetEncryptionType();
+
+ private:
+  std::shared_ptr<FunapiTcpTransportOptionImpl> impl_;
+};
+
+
+class FunapiUdpTransportOptionImpl;
+class FunapiUdpTransportOption : public FunapiTransportOption {
+ public:
+  FunapiUdpTransportOption();
+  virtual ~FunapiUdpTransportOption() = default;
+
+  static std::shared_ptr<FunapiUdpTransportOption> create();
+
+  void SetEncryptionType(EncryptionType type);
+  EncryptionType GetEncryptionType();
+
+ private:
+  std::shared_ptr<FunapiUdpTransportOptionImpl> impl_;
+};
+
+
+class FunapiHttpTransportOptionImpl;
+class FunapiHttpTransportOption : public FunapiTransportOption {
+ public:
+  FunapiHttpTransportOption();
+  virtual ~FunapiHttpTransportOption() = default;
+
+  static std::shared_ptr<FunapiHttpTransportOption> create();
+
+  void SetSequenceNumberValidation(const bool validation);
+  bool GetSequenceNumberValidation();
+
+  void SetUseHttps(const bool https);
+  bool GetUseHttps();
+
+  void SetEncryptionType(EncryptionType type);
+  EncryptionType GetEncryptionType();
+
+ private:
+  std::shared_ptr<FunapiHttpTransportOptionImpl> impl_;
+};
+
+
 class FunapiTransportImpl;
 class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
  public:
@@ -98,6 +172,7 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
   virtual void AddClosedCallback(const TransportEventHandler &handler) = 0;
   virtual void AddConnectFailedCallback(const TransportEventHandler &handler) = 0;
   virtual void AddConnectTimeoutCallback(const TransportEventHandler &handler) = 0;
+  virtual void AddDisconnectedCallback(const TransportEventHandler &handler) = 0;
 
   virtual void SetDisableNagle(const bool disable_nagle);
   virtual void SetAutoReconnect(const bool auto_reconnect);
@@ -138,6 +213,7 @@ class FunapiTcpTransport : public FunapiTransport {
   void AddClosedCallback(const TransportEventHandler &handler);
   void AddConnectFailedCallback(const TransportEventHandler &handler);
   void AddConnectTimeoutCallback(const TransportEventHandler &handler);
+  void AddDisconnectedCallback(const TransportEventHandler &handler);
 
   void SetDisableNagle(const bool disable_nagle);
   void SetAutoReconnect(const bool auto_reconnect);
@@ -181,6 +257,7 @@ class FunapiUdpTransport : public FunapiTransport {
   void AddClosedCallback(const TransportEventHandler &handler);
   void AddConnectFailedCallback(const TransportEventHandler &handler);
   void AddConnectTimeoutCallback(const TransportEventHandler &handler);
+  void AddDisconnectedCallback(const TransportEventHandler &handler);
 
   void SetEncryptionType(EncryptionType type);
 
@@ -221,6 +298,7 @@ class FunapiHttpTransport : public FunapiTransport {
   void AddClosedCallback(const TransportEventHandler &handler);
   void AddConnectFailedCallback(const TransportEventHandler &handler);
   void AddConnectTimeoutCallback(const TransportEventHandler &handler);
+  void AddDisconnectedCallback(const TransportEventHandler &handler);
 
   void SetReceivedHandler(TransportReceivedHandler handler);
   void SetIsReliableSessionHandler(std::function<bool()> handler);

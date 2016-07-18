@@ -667,7 +667,7 @@ class FunapiMulticastImpl : public std::enable_shared_from_this<FunapiMulticastI
 
 
 FunapiMulticastImpl::FunapiMulticastImpl(const char* sender, const char* hostname_or_ip, uint16_t port, FunEncoding encoding)
-: sender_(sender), port_(port), encoding_(encoding) {
+: encoding_(encoding), sender_(sender), port_(port) {
   session_ = FunapiSession::create(hostname_or_ip);
   session_->AddJsonRecvCallback([this](const std::shared_ptr<fun::FunapiSession> &session,
                                        const fun::TransportProtocol protocol,
@@ -686,9 +686,9 @@ FunapiMulticastImpl::FunapiMulticastImpl(const char* sender, const char* hostnam
   });
 
   AddJoinedCallback([this](const std::shared_ptr<fun::FunapiMulticast>& multicast,
-                           const std::string &channel_id, const std::string &sender) {
+                           const std::string &channel_id, const std::string &multicast_sender) {
     // fun::DebugUtils::Log("JoinedCallback called. channel_id:%s player:%s", channel_id.c_str(), sender.c_str());
-    if (sender_.compare(sender) == 0) {
+    if (sender_.compare(multicast_sender) == 0) {
       std::unique_lock<std::mutex> lock(channels_mutex_);
       channels_.insert(channel_id);
     }

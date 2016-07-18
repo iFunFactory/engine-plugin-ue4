@@ -35,7 +35,7 @@ class FunapiMessage : public std::enable_shared_from_this<FunapiMessage> {
 
 
 FunapiMessage::FunapiMessage(const std::string &body, bool use_sent_queue, int seq)
-  : body_(body.begin(), body.end()), use_sent_queue_(use_sent_queue), seq_(seq)
+  : use_sent_queue_(use_sent_queue), seq_(seq), body_(body.begin(), body.end())
 {
 }
 

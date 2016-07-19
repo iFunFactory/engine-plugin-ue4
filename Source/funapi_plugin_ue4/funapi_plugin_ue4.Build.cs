@@ -16,12 +16,11 @@ public class funapi_plugin_ue4 : ModuleRules
         PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 
         // Third party library
-        var ModulePath = Path.GetDirectoryName(RulesCompiler.GetModuleFilename(this.GetType().Name));
-        var ThirdPartyPath = Path.GetFullPath(Path.Combine(ModulePath, "..", "..", "ThirdParty/"));
+        var ThirdPartyPath = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "ThirdParty/"));
 
         // include path
         PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include"));
-        PublicIncludePaths.Add(Path.GetFullPath(Path.Combine(ModulePath, "funapi")));
+        PublicIncludePaths.Add(Path.GetFullPath(Path.Combine(ModuleDirectory, "funapi")));
 
         // definitions
         Definitions.Add("GOOGLE_PROTOBUF_NO_RTTI=1");

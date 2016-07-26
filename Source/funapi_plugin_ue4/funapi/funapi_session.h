@@ -45,7 +45,8 @@ class FunapiSession : public std::enable_shared_from_this<FunapiSession> {
 
   typedef std::function<void(const std::shared_ptr<FunapiSession>&,
                              const TransportProtocol,
-                             const TransportEventType)> TransportEventHandler;
+                             const TransportEventType,
+                             const std::shared_ptr<FunapiError>&)> TransportEventHandler;
 
   FunapiSession() = delete;
   FunapiSession(const char* hostname_or_ip, bool reliability = false);

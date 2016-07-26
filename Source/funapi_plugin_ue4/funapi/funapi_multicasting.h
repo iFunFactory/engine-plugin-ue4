@@ -77,16 +77,18 @@ public:
                              const std::string&)> SessionEventHandler;
 
   typedef std::function<void(const std::shared_ptr<FunapiMulticast>&,
-                             const TransportEventType)> TransportEventHandler;
+                             const TransportEventType,
+                             const std::shared_ptr<FunapiError>&)>TransportEventHandler;
 
   FunapiMulticast() = delete;
-  FunapiMulticast(const char* sender, const char* hostname_or_ip, uint16_t port, FunEncoding encoding);
+  FunapiMulticast(const char* sender, const char* hostname_or_ip, uint16_t port, FunEncoding encoding, bool reliability);
   ~FunapiMulticast();
 
   static std::shared_ptr<FunapiMulticast> create(const char* sender,
-                                               const char* hostname_or_ip,
-                                               uint16_t port,
-                                               FunEncoding encoding);
+                                                 const char* hostname_or_ip,
+                                                 uint16_t port,
+                                                 FunEncoding encoding,
+                                                 bool reliability = false);
 
   void AddJoinedCallback(const ChannelNotify &handler);
   void AddLeftCallback(const ChannelNotify &handler);

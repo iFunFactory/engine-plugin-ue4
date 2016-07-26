@@ -62,6 +62,13 @@ enum class FunEncoding
 
 enum class EncryptionType : int;
 
+class FunapiError : public std::enable_shared_from_this<FunapiError> {
+public:
+  FunapiError() = default;
+  ~FunapiError() = default;
+};
+
+
 class FunapiTransportOption : public std::enable_shared_from_this<FunapiTransportOption> {
  public:
   FunapiTransportOption() = default;

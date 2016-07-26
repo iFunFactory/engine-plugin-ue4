@@ -599,7 +599,7 @@ class FunapiMulticastImpl : public std::enable_shared_from_this<FunapiMulticastI
   typedef FunapiMulticast::ProtobufChannelMessageHandler ProtobufChannelMessageHandler;
 
   FunapiMulticastImpl() = delete;
-  FunapiMulticastImpl(const char* sender, const char* hostname_or_ip, uint16_t port, FunEncoding encoding);
+  FunapiMulticastImpl(const char* sender, const char* hostname_or_ip, uint16_t port, FunEncoding encoding, bool reliability);
   ~FunapiMulticastImpl();
 
   bool IsConnected() const;
@@ -666,9 +666,13 @@ class FunapiMulticastImpl : public std::enable_shared_from_this<FunapiMulticastI
 };
 
 
-FunapiMulticastImpl::FunapiMulticastImpl(const char* sender, const char* hostname_or_ip, uint16_t port, FunEncoding encoding)
+FunapiMulticastImpl::FunapiMulticastImpl(const char* sender,
+                                         const char* hostname_or_ip,
+                                         uint16_t port,
+                                         FunEncoding encoding,
+                                         bool reliability)
 : encoding_(encoding), sender_(sender), port_(port) {
-  session_ = FunapiSession::create(hostname_or_ip);
+  session_ = FunapiSession::create(hostname_or_ip, reliability);
   session_->AddJsonRecvCallback([this](const std::shared_ptr<fun::FunapiSession> &session,
                                        const fun::TransportProtocol protocol,
                                        const std::string &msg_type,
@@ -1147,9 +1151,10 @@ void FunapiMulticastImpl::AddTransportEventCallback(const FunapiMulticast::Trans
   if (session_) {
     session_->AddTransportEventCallback([this, handler](const std::shared_ptr<fun::FunapiSession> &session,
                                                         const fun::TransportProtocol protocol,
-                                                        const fun::TransportEventType type) {
+                                                        const fun::TransportEventType type,
+                                                        const std::shared_ptr<FunapiError> &error) {
       if (auto m = multicast_.lock()) {
-        handler(m, type);
+        handler(m, type, error);
       }
     });
   }
@@ -1187,8 +1192,8 @@ void FunapiMulticastImpl::AddJsonChannelMessageCallback(const std::string &chann
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiMulticast implementation.
 
-FunapiMulticast::FunapiMulticast(const char* sender, const char* hostname_or_ip, uint16_t port, FunEncoding encoding)
-: impl_(std::make_shared<FunapiMulticastImpl>(sender, hostname_or_ip, port, encoding)) {
+FunapiMulticast::FunapiMulticast(const char* sender, const char* hostname_or_ip, uint16_t port, FunEncoding encoding, bool reliability)
+: impl_(std::make_shared<FunapiMulticastImpl>(sender, hostname_or_ip, port, encoding, reliability)) {
 }
 
 
@@ -1196,8 +1201,8 @@ FunapiMulticast::~FunapiMulticast() {
 }
 
 
-std::shared_ptr<FunapiMulticast> FunapiMulticast::create(const char* sender, const char* hostname_or_ip, uint16_t port, FunEncoding encoding) {
-  return std::make_shared<FunapiMulticast>(sender, hostname_or_ip, port, encoding);
+std::shared_ptr<FunapiMulticast> FunapiMulticast::create(const char* sender, const char* hostname_or_ip, uint16_t port, FunEncoding encoding, bool reliability) {
+  return std::make_shared<FunapiMulticast>(sender, hostname_or_ip, port, encoding, reliability);
 }
 
 

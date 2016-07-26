@@ -1814,12 +1814,13 @@ void FunapiTcpTransportImpl::InitTcpSocketOption() {
 void FunapiTcpTransportImpl::Connect() {
   update_state_ = UpdateState::kNone;
   socket_select_state_ = SocketSelectState::kNone;
-  state_ = TransportState::kConnecting;
 
   if (!InitSocket(addrinfo_res_)) {
     return;
   }
   InitTcpSocketOption();
+
+  state_ = TransportState::kConnecting;
 
   // Tries to connect.
   std::string server_address;

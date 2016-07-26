@@ -758,7 +758,7 @@ void FunapiSessionImpl::OnSessionEvent(const TransportProtocol protocol,
 void FunapiSessionImpl::OnTransportEvent(const TransportProtocol protocol, const TransportEventType type) {
   PushTaskQueue([this, protocol, type]()->bool {
     if (auto s = session_.lock()) {
-      on_transport_event_(s, protocol, type);
+      on_transport_event_(s, protocol, type, nullptr);
     }
     return true;
   });

@@ -221,7 +221,8 @@ bool Afunapi_tester::CreateMulticast()
       */
     });
     multicast_->AddTransportEventCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
-      const fun::TransportEventType type) {
+                                             const fun::TransportEventType type,
+                                             const std::shared_ptr<fun::FunapiError> &error) {
       if (type == fun::TransportEventType::kStarted) {
         fun::DebugUtils::Log("Transport Started called.");
       }
@@ -390,8 +391,9 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
     });
 
     session_->AddTransportEventCallback([](const std::shared_ptr<fun::FunapiSession> &session,
-      const fun::TransportProtocol transport_protocol,
-      const fun::TransportEventType type) {
+                                           const fun::TransportProtocol transport_protocol,
+                                           const fun::TransportEventType type,
+                                           const std::shared_ptr<fun::FunapiError> &error) {
       if (type == fun::TransportEventType::kStarted) {
         fun::DebugUtils::Log("Transport Started called.");
       }

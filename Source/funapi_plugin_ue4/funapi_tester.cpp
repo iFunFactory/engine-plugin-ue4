@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2013-2015 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -57,6 +57,71 @@ void Afunapi_tester::Tick(float DeltaTime)
 
   if (multicast_) {
     multicast_->Update();
+  }
+
+  UpdateUI();
+}
+
+void Afunapi_tester::UpdateUI()
+{
+  bool is_connected_session = false;
+  if (session_) {
+    if (session_->IsConnected()) {
+      is_connected_session = true;
+    }
+  }
+
+  if (is_connected_session) {
+    EnableButtonConnectTcp = false;
+    EnableButtonConnectUdp = false;
+    EnableButtonConnectHttp = false;
+    EnableButtonDisconnect = true;
+    EnableButtonSendEchoMessage = true;
+  }
+  else {
+    EnableButtonConnectTcp = true;
+    EnableButtonConnectUdp = true;
+    EnableButtonConnectHttp = true;
+    EnableButtonDisconnect = false;
+    EnableButtonSendEchoMessage = false;
+  }
+
+  bool is_connected_multicast = false;
+  if (multicast_) {
+    if (multicast_->IsConnected()) {
+      is_connected_multicast = true;
+    }
+  }
+
+  if (is_connected_multicast) {
+    EnableButtonCreateMulticast = false;
+    if (multicast_->IsInChannel(kMulticastTestChannel)) {
+      EnableButtonJoinChannel = false;
+      EnableButtonSendMulticastMessage = true;
+      EnableButtonLeaveChannel = true;
+      EnableButtonLeaveAllChannels = true;
+    }
+    else {
+      EnableButtonJoinChannel = true;
+      EnableButtonSendMulticastMessage = false;
+      EnableButtonLeaveChannel = false;
+      EnableButtonLeaveAllChannels = false;
+    }
+    EnableButtonRequestList = true;
+  }
+  else {
+      EnableButtonCreateMulticast = true;
+      EnableButtonJoinChannel = false;
+      EnableButtonSendMulticastMessage = false;
+      EnableButtonLeaveChannel = false;
+      EnableButtonRequestList = false;
+      EnableButtonLeaveAllChannels = false;
+  }
+
+  if (is_connected_session || is_connected_multicast) {
+    EnableTextboxServerIP = false;
+    EnableCheckboxProtobuf = false;
+    EnableCheckboxSessionReliability = false;
   }
 }
 
@@ -220,7 +285,7 @@ bool Afunapi_tester::CreateMulticast()
       }
       */
     });
-    multicast_->AddTransportEventCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
+    multicast_->AddTransportEventCallback([this](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
                                              const fun::TransportEventType type,
                                              const std::shared_ptr<fun::FunapiError> &error) {
       if (type == fun::TransportEventType::kStarted) {
@@ -231,9 +296,11 @@ bool Afunapi_tester::CreateMulticast()
       }
       else if (type == fun::TransportEventType::kConnectionFailed) {
         fun::DebugUtils::Log("Transport Connection Failed");
+        multicast_ = nullptr;
       }
       else if (type == fun::TransportEventType::kConnectionTimedOut) {
         fun::DebugUtils::Log("Transport Connection Timedout called");
+        multicast_ = nullptr;
       }
       else if (type == fun::TransportEventType::kDisconnected) {
         fun::DebugUtils::Log("Transport Disconnected called");
@@ -367,6 +434,89 @@ bool Afunapi_tester::LeaveMulticastAllChannels()
   return true;
 }
 
+FText Afunapi_tester::GetServerIP() {
+  return FText::FromString(FString(kServerIp.c_str()));
+}
+
+void Afunapi_tester::SetServerIP(FText server_ip) {
+  kServerIp = TCHAR_TO_UTF8(*(server_ip.ToString()));
+  // fun::DebugUtils::Log("SetServerIP - %s", kServerIp.c_str());
+}
+
+bool Afunapi_tester::GetIsProtobuf() {
+  return with_protobuf_;
+}
+
+void Afunapi_tester::SetIsProtobuf(bool check) {
+  with_protobuf_ = check;
+  // fun::DebugUtils::Log("SetIsProtobuf - %d", with_protobuf_);
+}
+
+bool Afunapi_tester::GetIsSessionReliability() {
+  return with_session_reliability_;
+}
+
+void Afunapi_tester::SetIsSessionReliability(bool check) {
+  with_session_reliability_ = check;
+  // fun::DebugUtils::Log("SetIsSessionReliability - %d", with_session_reliability_);
+}
+
+bool Afunapi_tester::GetIsEnableTextboxServerIP() {
+  return EnableTextboxServerIP;
+}
+
+bool Afunapi_tester::GetIsEnableCheckboxProtobuf() {
+  return EnableCheckboxProtobuf;
+}
+
+bool Afunapi_tester::GetIsEnableCheckboxSessionReliability() {
+  return EnableCheckboxSessionReliability;
+}
+
+bool Afunapi_tester::GetIsEnableButtonConnectTcp() {
+  return EnableButtonConnectTcp;
+}
+
+bool Afunapi_tester::GetIsEnableButtonConnectUdp() {
+  return EnableButtonConnectUdp;
+}
+
+bool Afunapi_tester::GetIsEnableButtonConnectHttp() {
+  return EnableButtonConnectHttp;
+}
+
+bool Afunapi_tester::GetIsEnableButtonSendEchoMessage() {
+  return EnableButtonSendEchoMessage;
+}
+
+bool Afunapi_tester::GetIsEnableButtonDisconnect() {
+  return EnableButtonDisconnect;
+}
+
+bool Afunapi_tester::GetIsEnableButtonCreateMulticast() {
+  return EnableButtonCreateMulticast;
+}
+
+bool Afunapi_tester::GetIsEnableButtonJoinChannel() {
+  return EnableButtonJoinChannel;
+}
+
+bool Afunapi_tester::GetIsEnableButtonSendMulticastMessage() {
+  return EnableButtonSendMulticastMessage;
+}
+
+bool Afunapi_tester::GetIsEnableButtonLeaveChannel() {
+  return EnableButtonLeaveChannel;
+}
+
+bool Afunapi_tester::GetIsEnableButtonRequestList() {
+  return EnableButtonRequestList;
+}
+
+bool Afunapi_tester::GetIsEnableButtonLeaveAllChannels() {
+  return EnableButtonLeaveAllChannels;
+}
+
 // FunapiSession 객체를 생성하고 연결을 시작합니다.
 void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
 {
@@ -390,7 +540,7 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
       }
     });
 
-    session_->AddTransportEventCallback([](const std::shared_ptr<fun::FunapiSession> &session,
+    session_->AddTransportEventCallback([this](const std::shared_ptr<fun::FunapiSession> &session,
                                            const fun::TransportProtocol transport_protocol,
                                            const fun::TransportEventType type,
                                            const std::shared_ptr<fun::FunapiError> &error) {
@@ -402,9 +552,11 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
       }
       else if (type == fun::TransportEventType::kConnectionFailed) {
         fun::DebugUtils::Log("Transport Connection Failed(%d)", (int)transport_protocol);
+        session_ = nullptr;
       }
       else if (type == fun::TransportEventType::kConnectionTimedOut) {
         fun::DebugUtils::Log("Transport Connection Timedout called");
+        session_ = nullptr;
       }
       else if (type == fun::TransportEventType::kDisconnected) {
         fun::DebugUtils::Log("Transport Disconnected called (%d)", (int)transport_protocol);

@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2015 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -58,9 +58,69 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
 
   UFUNCTION(BlueprintCallable, Category = "Funapi")
   bool RequestMulticastChannelList();
-  
+
   UFUNCTION(BlueprintCallable, Category = "Funapi")
   bool LeaveMulticastAllChannels();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  FText GetServerIP();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  void SetServerIP(FText server_ip);
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool GetIsEnableTextboxServerIP();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool GetIsProtobuf();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  void SetIsProtobuf(bool check);
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool GetIsEnableCheckboxProtobuf();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool GetIsSessionReliability();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  void SetIsSessionReliability(bool check);
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool GetIsEnableCheckboxSessionReliability();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool GetIsEnableButtonConnectTcp();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool GetIsEnableButtonConnectUdp();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool GetIsEnableButtonConnectHttp();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool GetIsEnableButtonSendEchoMessage();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool GetIsEnableButtonDisconnect();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool GetIsEnableButtonCreateMulticast();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool GetIsEnableButtonJoinChannel();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool GetIsEnableButtonSendMulticastMessage();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool GetIsEnableButtonLeaveChannel();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool GetIsEnableButtonRequestList();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool GetIsEnableButtonLeaveAllChannels();
 
   // callback
   void OnSessionInitiated(const std::string &session_id);
@@ -68,9 +128,10 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
 
  private:
   void Connect(const fun::TransportProtocol protocol);
+  void UpdateUI();
 
   // Please change this address for test.
-  const std::string kServerIp = "127.0.0.1";
+  std::string kServerIp = "127.0.0.1";
 
   // member variables.
   bool with_protobuf_ = false;
@@ -80,4 +141,19 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
 
   const std::string kMulticastTestChannel = "multicast";
   std::shared_ptr<fun::FunapiMulticast> multicast_ = nullptr;
+
+  bool EnableTextboxServerIP = true;
+  bool EnableCheckboxProtobuf = true;
+  bool EnableCheckboxSessionReliability = true;
+  bool EnableButtonConnectTcp = true;
+  bool EnableButtonConnectUdp = true;
+  bool EnableButtonConnectHttp = true;
+  bool EnableButtonSendEchoMessage = true;
+  bool EnableButtonDisconnect = true;
+  bool EnableButtonCreateMulticast = true;
+  bool EnableButtonJoinChannel = true;
+  bool EnableButtonSendMulticastMessage = true;
+  bool EnableButtonLeaveChannel = true;
+  bool EnableButtonRequestList = true;
+  bool EnableButtonLeaveAllChannels = true;
 };

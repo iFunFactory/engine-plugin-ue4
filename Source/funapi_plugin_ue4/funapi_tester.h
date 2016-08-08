@@ -12,6 +12,10 @@
 #include "funapi_multicasting.h"
 #include "funapi_tester.generated.h"
 
+namespace fun {
+  class FunapiAnnouncement;
+}
+
 UCLASS()
 class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
 {
@@ -61,6 +65,9 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
 
   UFUNCTION(BlueprintCallable, Category = "Funapi")
   bool LeaveMulticastAllChannels();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool RequestAnnouncements();
 
   UFUNCTION(BlueprintCallable, Category = "Funapi")
   FText GetServerIP();
@@ -141,6 +148,11 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
 
   const std::string kMulticastTestChannel = "multicast";
   std::shared_ptr<fun::FunapiMulticast> multicast_ = nullptr;
+
+  // Please change this address for test.
+  const std::string kAnnouncementServer = "127.0.0.1";
+  const int kAnnouncementPort = 8080;
+  std::shared_ptr<fun::FunapiAnnouncement> announcement_ = nullptr;
 
   bool EnableTextboxServerIP = true;
   bool EnableCheckboxProtobuf = true;

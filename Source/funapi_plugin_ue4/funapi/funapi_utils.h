@@ -109,7 +109,7 @@ public:
 #endif
 
 #ifdef FUNAPI_UE4
-    static std::string writablePath = "";
+    static std::string writablePath = TCHAR_TO_UTF8(*(FPaths::GameSavedDir()));;
 #endif
 
     return writablePath;

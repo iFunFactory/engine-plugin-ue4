@@ -15,6 +15,7 @@
 #include "funapi/management/maintenance_message.pb.h"
 #include "funapi/service/multicast_message.pb.h"
 #include "funapi/funapi_utils.h"
+#include "funapi/funapi_announcement.h"
 #include "funapi_tester.h"
 
 #if PLATFORM_WINDOWS
@@ -430,6 +431,36 @@ bool Afunapi_tester::LeaveMulticastAllChannels()
   if (multicast_) {
     multicast_->LeaveAllChannels();
   }
+
+  return true;
+}
+
+bool Afunapi_tester::RequestAnnouncements()
+{
+  UE_LOG(LogClass, Warning, TEXT("Request announcements button clicked."));
+
+  if (announcement_ == nullptr) {
+    std::stringstream ss_url;
+    ss_url << "http://" << kAnnouncementServer << ":" << kAnnouncementPort;
+
+    std::string path = fun::FunapiUtil::GetWritablePath();
+
+    fun::DebugUtils::Log("path = %s", path.c_str());
+
+    announcement_ = fun::FunapiAnnouncement::create(ss_url.str().c_str(), path.c_str());
+
+    announcement_->AddCompletionCallback([](const std::shared_ptr<fun::FunapiAnnouncement> &announcement,
+                                            const fun::AnnouncementResult result,
+                                            const std::vector<std::shared_ptr<fun::AnnouncementInfo>>&info){
+      if (result == fun::AnnouncementResult::kSuccess) {
+        for (auto i : info) {
+          fun::DebugUtils::Log("date=%s message=%s subject=%s file_path=%s", i->GetDate().c_str(), i->GetMessageText().c_str(), i->GetSubject().c_str(), i->GetFilePath().c_str());
+        }
+      }
+    });
+  }
+
+  announcement_->RequestList(5);
 
   return true;
 }

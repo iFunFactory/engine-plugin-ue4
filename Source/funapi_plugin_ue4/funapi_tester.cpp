@@ -579,26 +579,26 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
 
     session_->AddProtobufRecvCallback([](const std::shared_ptr<fun::FunapiSession> &session,
       const fun::TransportProtocol transport_protocol,
-      const FunMessage &message) {
-      if (message.msgtype().compare("pbuf_echo") == 0) {
-        fun::DebugUtils::Log("msg '%s' arrived.", message.msgtype().c_str());
+      const FunMessage &fun_message) {
+      if (fun_message.msgtype().compare("pbuf_echo") == 0) {
+        fun::DebugUtils::Log("msg '%s' arrived.", fun_message.msgtype().c_str());
 
-        PbufEchoMessage echo = message.GetExtension(pbuf_echo);
+        PbufEchoMessage echo = fun_message.GetExtension(pbuf_echo);
         fun::DebugUtils::Log("proto: %s", echo.msg().c_str());
       }
 
-      if (message.msgtype().compare("_maintenance") == 0) {
-        fun::DebugUtils::Log("msg '%s' arrived.", message.msgtype().c_str());
+      if (fun_message.msgtype().compare("_maintenance") == 0) {
+        fun::DebugUtils::Log("msg '%s' arrived.", fun_message.msgtype().c_str());
 
-        PbufEchoMessage echo = message.GetExtension(pbuf_echo);
+        PbufEchoMessage echo = fun_message.GetExtension(pbuf_echo);
         fun::DebugUtils::Log("proto: %s", echo.msg().c_str());
 
-        MaintenanceMessage maintenance = message.GetExtension(pbuf_maintenance);
+        MaintenanceMessage maintenance = fun_message.GetExtension(pbuf_maintenance);
         std::string date_start = maintenance.date_start();
         std::string date_end = maintenance.date_end();
-        std::string message = maintenance.messages();
+        std::string message_text = maintenance.messages();
 
-        fun::DebugUtils::Log("Maintenance message:\nstart: %s\nend: %s\nmessage: %s", date_start.c_str(), date_end.c_str(), message.c_str());
+        fun::DebugUtils::Log("Maintenance message:\nstart: %s\nend: %s\nmessage: %s", date_start.c_str(), date_end.c_str(), message_text.c_str());
       }
     });
   }

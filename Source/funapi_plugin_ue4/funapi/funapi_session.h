@@ -48,6 +48,9 @@ class FunapiSession : public std::enable_shared_from_this<FunapiSession> {
                              const TransportEventType,
                              const std::shared_ptr<FunapiError>&)> TransportEventHandler;
 
+  typedef std::function<void(const std::shared_ptr<FunapiSession>&,
+                             const std::string&)> RecvTimeoutHandler;
+
   FunapiSession() = delete;
   FunapiSession(const char* hostname_or_ip, bool reliability = false);
   ~FunapiSession();
@@ -77,6 +80,10 @@ class FunapiSession : public std::enable_shared_from_this<FunapiSession> {
 
   void AddProtobufRecvCallback(const ProtobufRecvHandler &handler);
   void AddJsonRecvCallback(const JsonRecvHandler &handler);
+
+  void AddRecvTimeoutCallback(const RecvTimeoutHandler &handler);
+  void SetRecvTimeout(const std::string &msg_type, const int seconds);
+  void EraseRecvTimeout(const std::string &msg_type);
 
  private:
   std::shared_ptr<FunapiSessionImpl> impl_;

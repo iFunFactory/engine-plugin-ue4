@@ -8,8 +8,8 @@
 #include "funapi_version.h"
 #include "funapi_utils.h"
 #include "funapi_transport.h"
-#include "funapi_network.h"
 #include "funapi_encryption.h"
+#include "funapi_tasks.h"
 #include "network/fun_message.pb.h"
 
 namespace fun {
@@ -99,6 +99,7 @@ class FunapiNetworkThread : public std::enable_shared_from_this<FunapiNetworkThr
   ~FunapiNetworkThread();
   void AddTransportHandlers (std::shared_ptr<FunapiTransportImpl> transport, std::shared_ptr<FunapiTransportHandlers> handlers);
   void RemoveTransportHandlers (std::shared_ptr<FunapiTransportImpl> transport);
+  void PushTask(const FunapiThread::TaskHandler &handler);
 
  private:
   void Initialize();
@@ -109,9 +110,7 @@ class FunapiNetworkThread : public std::enable_shared_from_this<FunapiNetworkThr
 
   std::map<std::shared_ptr<FunapiTransportImpl>, std::shared_ptr<FunapiTransportHandlers>> transport_handlers_;
   std::mutex mutex_;
-  std::condition_variable_any condition_;
-  std::thread thread_;
-  bool run_ = false;
+  std::shared_ptr<FunapiThread> thread_;
 };
 
 
@@ -126,8 +125,10 @@ FunapiNetworkThread::~FunapiNetworkThread() {
 
 
 void FunapiNetworkThread::Initialize() {
-  run_ = true;
-  thread_ = std::thread([this]{ Thread(); });
+  thread_ = FunapiThread::create("_socket", [this](){
+    Thread();
+    return true;
+  });
 }
 
 
@@ -137,24 +138,21 @@ void FunapiNetworkThread::Finalize() {
 
 
 void FunapiNetworkThread::JoinThread() {
-  run_ = false;
-  condition_.notify_all();
-  if (thread_.joinable())
-    thread_.join();
+  thread_->Set([](){ return true; });
+  thread_->Join();
 }
 
 
 void FunapiNetworkThread::Thread() {
-  while (run_) {
-    {
-      std::unique_lock<std::mutex> lock(mutex_);
-      if (transport_handlers_.empty()) {
-        condition_.wait(mutex_);
-      }
+  {
+    std::unique_lock<std::mutex> lock(mutex_);
+    if (transport_handlers_.empty()) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      return;
     }
-
-    Update();
   }
+
+  Update();
 }
 
 
@@ -192,7 +190,7 @@ void FunapiNetworkThread::Update() {
     iter->update_();
   }
 
-  struct timeval timeout = { 0, 0 };
+  struct timeval timeout = { 0, 1 };
 
   if (select(max_fd + 1, &rset, &wset, &eset, &timeout) > 0) {
     for (auto iter : handlers) {
@@ -206,8 +204,6 @@ void FunapiNetworkThread::AddTransportHandlers (std::shared_ptr<FunapiTransportI
                                           std::shared_ptr<FunapiTransportHandlers> handlers) {
   std::unique_lock<std::mutex> lock(mutex_);
   transport_handlers_[transport] = handlers;
-
-  condition_.notify_one();
 }
 
 
@@ -216,6 +212,11 @@ void FunapiNetworkThread::RemoveTransportHandlers (std::shared_ptr<FunapiTranspo
   auto iter = transport_handlers_.find(transport);
   if (iter != transport_handlers_.cend())
     transport_handlers_.erase(iter);
+}
+
+
+void FunapiNetworkThread::PushTask(const FunapiThread::TaskHandler &handler) {
+  thread_->Push(handler);
 }
 
 
@@ -592,8 +593,12 @@ class FunapiTransportImpl : public std::enable_shared_from_this<FunapiTransportI
   void SetEncryptionType(EncryptionType type);
   virtual void SetSequenceNumberValidation(const bool validation);
 
+  void SetState(TransportState state);
+  TransportState GetState();
+
  protected:
   std::shared_ptr<FunapiNetworkThread> GetNetworkThread();
+  void PushNetworkThreadTask(const FunapiThread::TaskHandler &handler);
 
   void OnReceived(const TransportProtocol protocol, const FunEncoding encoding, const HeaderFields &header, const std::vector<uint8_t> &body);
 
@@ -643,8 +648,6 @@ class FunapiTransportImpl : public std::enable_shared_from_this<FunapiTransportI
   time_t connect_timeout_seconds_ = 10;
   FunapiTimer connect_timeout_timer_;
 
-  TransportState state_ = TransportState::kDisconnected;
-
   uint32_t seq_ = 0;
   uint32_t seq_recvd_ = 0;
   bool seq_receiving_ = false;
@@ -655,6 +658,9 @@ class FunapiTransportImpl : public std::enable_shared_from_this<FunapiTransportI
   bool sequence_number_validation_ = false;
 
  private:
+  TransportState state_ = TransportState::kDisconnected;
+  std::mutex state_mutex_;
+
   // Message-related.
   bool first_sending_ = true;
 
@@ -1300,6 +1306,24 @@ std::shared_ptr<FunapiNetworkThread> FunapiTransportImpl::GetNetworkThread() {
 }
 
 
+void FunapiTransportImpl::PushNetworkThreadTask(const FunapiThread::TaskHandler &handler) {
+  auto self = shared_from_this();
+  GetNetworkThread()->PushTask([self, handler]()->bool { return handler(); });
+}
+
+
+void FunapiTransportImpl::SetState(TransportState state) {
+  std::unique_lock<std::mutex> lock(state_mutex_);
+  state_ = state;
+}
+
+
+TransportState FunapiTransportImpl::GetState() {
+  std::unique_lock<std::mutex> lock(state_mutex_);
+  return state_;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiSocketTransportImpl implementation.
 
@@ -1308,7 +1332,7 @@ class FunapiSocketTransportImpl : public FunapiTransportImpl {
   FunapiSocketTransportImpl(TransportProtocol protocol,
                       const std::string &hostname_or_ip, uint16_t port, FunEncoding encoding);
   virtual ~FunapiSocketTransportImpl();
-  void Stop();
+  virtual void Stop();
   int GetSocket();
 
  protected:
@@ -1436,15 +1460,23 @@ void FunapiSocketTransportImpl::ServerAddressStringFromAddrInfo(std::string &ser
 void FunapiSocketTransportImpl::Stop() {
   GetNetworkThread()->RemoveTransportHandlers(shared_from_this());
 
-  Send(true);
+  SetState(TransportState::kDisconnecting);
 
-  CloseSocket();
+  PushNetworkThreadTask([this]()->bool {
+    Send(true);
 
-  if (ack_receiving_) {
-    reconnect_first_ack_receiving_ = true;
-  }
+    CloseSocket();
 
-  OnTransportClosed(GetProtocol());
+    if (ack_receiving_) {
+      reconnect_first_ack_receiving_ = true;
+    }
+
+    SetState(TransportState::kDisconnected);
+
+    OnTransportClosed(GetProtocol());
+
+    return true;
+  });
 }
 
 
@@ -1474,7 +1506,7 @@ void FunapiSocketTransportImpl::SetSocket(int fd) {
 
 
 void FunapiSocketTransportImpl::OnSocketSelect(const fd_set rset, const fd_set wset, const fd_set eset) {
-  if (state_ != TransportState::kConnected) {
+  if (GetState() != TransportState::kConnected) {
     return;
   }
 
@@ -1510,6 +1542,7 @@ class FunapiTcpTransportImpl : public FunapiSocketTransportImpl {
   TransportProtocol GetProtocol();
 
   void Start();
+  void Stop();
   void SetDisableNagle(const bool disable_nagle);
   void SetAutoReconnect(const bool auto_reconnect);
   void SetEnablePing(const bool enable_ping);
@@ -1549,6 +1582,10 @@ class FunapiTcpTransportImpl : public FunapiSocketTransportImpl {
     kMax,
   };
   UpdateState update_state_ = UpdateState::kNone;
+  std::mutex update_state_mutex_;
+
+  void SetUpdateState(FunapiTcpTransportImpl::UpdateState state);
+  FunapiTcpTransportImpl::UpdateState GetUpdateState();
 
   void Ping();
   void CheckConnectTimeout();
@@ -1628,38 +1665,63 @@ TransportProtocol FunapiTcpTransportImpl::GetProtocol() {
 }
 
 
+void FunapiTcpTransportImpl::SetUpdateState(FunapiTcpTransportImpl::UpdateState state) {
+  std::unique_lock<std::mutex> lock(update_state_mutex_);
+  update_state_ = state;
+}
+
+
+FunapiTcpTransportImpl::UpdateState FunapiTcpTransportImpl::GetUpdateState() {
+  std::unique_lock<std::mutex> lock(update_state_mutex_);
+  return update_state_;
+}
+
+
 void FunapiTcpTransportImpl::Start() {
-  if (state_ != TransportState::kDisconnected)
+  if (GetState() != TransportState::kDisconnected)
     return;
 
-  state_ = TransportState::kConnecting;
-
-  if (!InitAddrInfo(SOCK_STREAM)) {
-    DebugUtils::Log("Failed - tcp connect");
-    OnTransportConnectFailed(TransportProtocol::kTcp);
-    return;
-  }
-
-  addrinfo_res_ = addrinfo_;
-
-  update_state_ = UpdateState::kNone;
+  SetState(TransportState::kConnecting);
+  SetUpdateState(UpdateState::kNone);
   socket_select_state_ = SocketSelectState::kNone;
 
-  reconnect_count_ = 0;
-  connect_addr_index_ = 0;
-  reconnect_wait_seconds_ = 1;
+  PushNetworkThreadTask([this]()->bool {
+    if (!InitAddrInfo(SOCK_STREAM)) {
+      DebugUtils::Log("Failed - tcp connect");
+      OnTransportConnectFailed(TransportProtocol::kTcp);
+      return true;
+    }
 
-  auto self = shared_from_this();
-  std::shared_ptr<FunapiTransportHandlers> handlers = std::make_shared<FunapiTransportHandlers>([this, self]() {
-    Update();
-  }, [this, self]()->int {
-   return GetSocket();
-  }, [this, self](const fd_set rset, const fd_set wset, const fd_set eset) {
-    OnTcpSocketSelect(rset, wset, eset);
+    addrinfo_res_ = addrinfo_;
+
+    reconnect_count_ = 0;
+    connect_addr_index_ = 0;
+    reconnect_wait_seconds_ = 1;
+
+    auto self = shared_from_this();
+    std::shared_ptr<FunapiTransportHandlers> handlers = std::make_shared<FunapiTransportHandlers>([this, self]() {
+      Update();
+    }, [this, self]()->int {
+      return GetSocket();
+    }, [this, self](const fd_set rset, const fd_set wset, const fd_set eset) {
+      OnTcpSocketSelect(rset, wset, eset);
+    });
+    GetNetworkThread()->AddTransportHandlers(shared_from_this(), handlers);
+
+    Connect();
+
+    return true;
   });
-  GetNetworkThread()->AddTransportHandlers(shared_from_this(), handlers);
+}
 
-  Connect();
+
+void FunapiTcpTransportImpl::Stop() {
+  SetUpdateState(UpdateState::kNone);
+  PushNetworkThreadTask([this]()->bool {
+    socket_select_state_ = SocketSelectState::kNone;
+    return true;
+  });
+  FunapiSocketTransportImpl::Stop();
 }
 
 
@@ -1699,7 +1761,7 @@ void FunapiTcpTransportImpl::CheckConnectTimeout() {
 
         DebugUtils::Log("Wait %d seconds for connect to TCP transport.", static_cast<int>(reconnect_wait_seconds_));
 
-        update_state_ = UpdateState::kWaitForAutoReconnect;
+        SetUpdateState(UpdateState::kWaitForAutoReconnect);
       }
     }
     else {
@@ -1812,7 +1874,7 @@ void FunapiTcpTransportImpl::InitTcpSocketOption() {
 
 
 void FunapiTcpTransportImpl::Connect() {
-  update_state_ = UpdateState::kNone;
+  SetUpdateState(UpdateState::kNone);
   socket_select_state_ = SocketSelectState::kNone;
 
   if (!InitSocket(addrinfo_res_)) {
@@ -1820,7 +1882,7 @@ void FunapiTcpTransportImpl::Connect() {
   }
   InitTcpSocketOption();
 
-  state_ = TransportState::kConnecting;
+  SetState(TransportState::kConnecting);
 
   // Tries to connect.
   std::string server_address;
@@ -1832,7 +1894,7 @@ void FunapiTcpTransportImpl::Connect() {
 
   if (!(rc == 0 || (rc < 0 && errno == EINPROGRESS))) {
     DebugUtils::Log("Failed - tcp connect");
-    update_state_ = UpdateState::kNone;
+    SetUpdateState(UpdateState::kNone);
     socket_select_state_ = SocketSelectState::kNone;
     GetNetworkThread()->RemoveTransportHandlers(shared_from_this());
     OnTransportConnectFailed(TransportProtocol::kTcp);
@@ -1841,7 +1903,7 @@ void FunapiTcpTransportImpl::Connect() {
 
   socket_select_state_ = SocketSelectState::kConnect;
   connect_timeout_timer_.SetTimer(connect_timeout_seconds_);
-  update_state_ = UpdateState::kCheckConnectTimeout;
+  SetUpdateState(UpdateState::kCheckConnectTimeout);
 }
 
 
@@ -1881,7 +1943,7 @@ void FunapiTcpTransportImpl::OnTcpSocketSelect(const fd_set rset, const fd_set w
 
 void FunapiTcpTransportImpl::CheckTcpSocketConnect(const fd_set rset, const fd_set wset, const fd_set eset)
 {
-  if (state_ != TransportState::kConnecting) return;
+  if (GetState() != TransportState::kConnecting) return;
 
   int fd = GetSocket();
   if (fd < 0) return;
@@ -1907,9 +1969,9 @@ void FunapiTcpTransportImpl::CheckTcpSocketConnect(const fd_set rset, const fd_s
       client_ping_timeout_timer_.SetTimer(kPingIntervalSecond + kPingTimeoutSeconds);
       ping_send_timer_.SetTimer(kPingIntervalSecond);
 
-      update_state_ = UpdateState::kPing;
+      SetUpdateState(UpdateState::kPing);
 
-      state_ = TransportState::kConnected;
+      SetState(TransportState::kConnected);
 
       if (seq_receiving_) {
         send_ack_handler_(TransportProtocol::kTcp, seq_recvd_ + 1);
@@ -1931,7 +1993,7 @@ void FunapiTcpTransportImpl::CheckTcpSocketConnect(const fd_set rset, const fd_s
 
 
 void FunapiTcpTransportImpl::Update() {
-  on_update_[static_cast<int>(update_state_)]();
+  on_update_[static_cast<int>(GetUpdateState())]();
 }
 
 
@@ -1982,39 +2044,43 @@ TransportProtocol FunapiUdpTransportImpl::GetProtocol() {
 
 
 void FunapiUdpTransportImpl::Start() {
-  if (state_ != TransportState::kDisconnected)
+  if (GetState() != TransportState::kDisconnected)
     return;
 
-  state_ = TransportState::kConnecting;
+  SetState(TransportState::kConnecting);
 
-  std::function<void()> on_connect_failed = [this]() {
-    DebugUtils::Log("Failed - udp connect");
-    OnTransportConnectFailed(TransportProtocol::kUdp);
-  };
+  PushNetworkThreadTask([this]()->bool {
+    std::function<void()> on_connect_failed = [this]() {
+      DebugUtils::Log("Failed - udp connect");
+      OnTransportConnectFailed(TransportProtocol::kUdp);
+    };
 
-  if (!InitAddrInfo(SOCK_DGRAM)) {
-    on_connect_failed();
-    return;
-  }
+    if (!InitAddrInfo(SOCK_DGRAM)) {
+      on_connect_failed();
+      return true;
+    }
 
-  if (!InitSocket(addrinfo_)) {
-    on_connect_failed();
-    return;
-  }
+    if (!InitSocket(addrinfo_)) {
+      on_connect_failed();
+      return true;
+    }
 
-  auto self = shared_from_this();
-  std::shared_ptr<FunapiTransportHandlers> handlers = std::make_shared<FunapiTransportHandlers>([this, self]() {
-    Update();
-  }, [this, self]()->int {
-    return GetSocket();
-  }, [this, self](const fd_set rset, const fd_set wset, const fd_set eset) {
-    OnSocketSelect(rset, wset, eset);
+    auto self = shared_from_this();
+    std::shared_ptr<FunapiTransportHandlers> handlers = std::make_shared<FunapiTransportHandlers>([this, self]() {
+      Update();
+    }, [this, self]()->int {
+      return GetSocket();
+    }, [this, self](const fd_set rset, const fd_set wset, const fd_set eset) {
+      OnSocketSelect(rset, wset, eset);
+    });
+    GetNetworkThread()->AddTransportHandlers(shared_from_this(), handlers);
+
+    SetState(TransportState::kConnected);
+
+    OnTransportStarted(TransportProtocol::kUdp);
+
+    return true;
   });
-  GetNetworkThread()->AddTransportHandlers(shared_from_this(), handlers);
-
-  state_ = TransportState::kConnected;
-
-  OnTransportStarted(TransportProtocol::kUdp);
 }
 
 
@@ -2137,41 +2203,47 @@ TransportProtocol FunapiHttpTransportImpl::GetProtocol() {
 
 
 void FunapiHttpTransportImpl::Start() {
-  if (state_ != TransportState::kDisconnected)
+  if (GetState() != TransportState::kDisconnected)
     return;
 
-  state_ = TransportState::kConnecting;
+  SetState(TransportState::kConnecting);
 
-  // log
-  // DebugUtils::Log("Started.");
-  // //
+  PushNetworkThreadTask([this]()->bool {
+    auto self = shared_from_this();
+    std::shared_ptr<FunapiTransportHandlers> handlers = std::make_shared<FunapiTransportHandlers>([this, self]() {
+      Update();
+    }, [this, self]()->int {
+      return -1;
+    }, [this, self](const fd_set rset, const fd_set wset, const fd_set eset) {
+    });
+    GetNetworkThread()->AddTransportHandlers(shared_from_this(), handlers);
 
-  auto self = shared_from_this();
-  std::shared_ptr<FunapiTransportHandlers> handlers = std::make_shared<FunapiTransportHandlers>([this, self]() {
-    Update();
-  }, [this, self]()->int {
-    return -1;
-  }, [this, self](const fd_set rset, const fd_set wset, const fd_set eset) {
+    SetState(TransportState::kConnected);
+
+    OnTransportStarted(TransportProtocol::kHttp);
+
+    return true;
   });
-  GetNetworkThread()->AddTransportHandlers(shared_from_this(), handlers);
-
-  state_ = TransportState::kConnected;
-
-  OnTransportStarted(TransportProtocol::kHttp);
 }
 
 
 void FunapiHttpTransportImpl::Stop() {
-  if (state_ == TransportState::kDisconnected)
+  if (GetState() == TransportState::kDisconnected)
     return;
+
+  SetState(TransportState::kDisconnecting);
 
   GetNetworkThread()->RemoveTransportHandlers(shared_from_this());
 
-  Send(true);
+  PushNetworkThreadTask([this]()->bool {
+    Send(true);
 
-  state_ = TransportState::kDisconnected;
+    SetState(TransportState::kDisconnected);
 
-  OnTransportClosed(TransportProtocol::kHttp);
+    OnTransportClosed(TransportProtocol::kHttp);
+
+    return true;
+  });
 
   // log
   // DebugUtils::Log("Stopped.");
@@ -2193,7 +2265,7 @@ void FunapiHttpTransportImpl::Send(bool send_all) {
 
 #ifdef FUNAPI_UE4
 bool FunapiHttpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
-  if (state_ != TransportState::kConnected) return false;
+  if (GetState() != TransportState::kConnected) return false;
 
   if (http_request_processing_)
     return false;
@@ -2285,7 +2357,7 @@ bool FunapiHttpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
 
 #ifdef FUNAPI_COCOS2D
 bool FunapiHttpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
-  if (state_ != TransportState::kConnected) return false;
+  if (GetState() != TransportState::kConnected) return false;
 
   HeaderFields header_fields_for_send;
   MakeHeaderFields(header_fields_for_send, body);
@@ -2433,29 +2505,13 @@ void FunapiHttpTransportImpl::SetSequenceNumberValidation(const bool validation)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// FunapiTcpTransport implementation.
-
-void FunapiTransport::SetDisableNagle(const bool disable_nagle) {
-}
-
-
-void FunapiTransport::SetAutoReconnect(const bool disable_nagle) {
-}
-
-
-void FunapiTransport::SetEnablePing(const bool disable_nagle) {
-}
-
+// FunapiTransport implementation.
 
 void FunapiTransport::SetSendClientPingMessageHandler(std::function<bool(const TransportProtocol protocol)> handler) {
 }
 
 
 void FunapiTransport::SetSendAckHandler(std::function<void(const TransportProtocol protocol, const uint32_t seq)> handler) {
-}
-
-
-void FunapiTransport::SetSequenceNumberValidation(const bool validation) {
 }
 
 

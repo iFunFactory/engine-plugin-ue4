@@ -7,6 +7,7 @@
 #include "network/ping_message.pb.h"
 #include "funapi_plugin.h"
 #include "funapi_utils.h"
+#include "funapi_tasks.h"
 #include "funapi_session.h"
 
 namespace fun {
@@ -27,6 +28,8 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
 
   typedef FunapiSession::ProtobufRecvHandler ProtobufRecvHandler;
   typedef FunapiSession::JsonRecvHandler JsonRecvHandler;
+
+  typedef FunapiSession::RecvTimeoutHandler RecvTimeoutHandler;
 
   FunapiSessionImpl() = delete;
   FunapiSessionImpl(const char* hostname_or_ip, bool reliability = false);
@@ -67,6 +70,10 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   void SetDefaultProtocol(const TransportProtocol protocol);
 
   FunEncoding GetEncoding(const TransportProtocol protocol) const;
+
+  void AddRecvTimeoutCallback(const RecvTimeoutHandler &handler);
+  void SetRecvTimeout(const std::string &msg_type, const int seconds);
+  void EraseRecvTimeout(const std::string &msg_type);
 
  private:
   void Start();
@@ -131,8 +138,7 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   time_t epoch_ = 0;
   const time_t funapi_session_timeout_ = 3600;
 
-  std::queue<std::function<bool()>> tasks_queue_;
-  std::mutex tasks_queue_mutex_;
+  std::shared_ptr<FunapiTasks> tasks_;
 
   std::vector<TransportProtocol> connect_protocols_;
 
@@ -151,10 +157,18 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   FunapiEvent<SessionEventHandler> on_session_event_;
   FunapiEvent<TransportEventHandler> on_transport_event_;
 
+  FunapiEvent<RecvTimeoutHandler> on_recv_timeout_;
+
   std::string hostname_or_ip_;
   std::weak_ptr<FunapiSession> session_;
 
   std::vector<TransportProtocol> v_protocols_ = { TransportProtocol::kTcp, TransportProtocol::kHttp, TransportProtocol::kUdp };
+
+  std::unordered_map<std::string, std::shared_ptr<FunapiTimer>> m_recv_timeout_;
+  std::mutex m_recv_timeout_mutex_;
+
+  void CheckRecvTimeout();
+  void OnRecvTimeout(const std::string &msg_type);
 };
 
 
@@ -190,6 +204,8 @@ void FunapiSessionImpl::Initialize() {
   message_handlers_[kClientPingMessageType] =
     [this](const TransportProtocol &p, const std::string&s, const std::vector<uint8_t>&v) { OnClientPingMessage(p, s, v); };
 
+  tasks_ = FunapiTasks::create();
+
   // Now ready.
   initialized_ = true;
 }
@@ -215,20 +231,21 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
     }
   }
   else {
-    std::shared_ptr<fun::FunapiTransport> transport = nullptr;
+    std::shared_ptr<FunapiTransport> transport = nullptr;
 
-    if (protocol == fun::TransportProtocol::kTcp) {
-      transport = fun::FunapiTcpTransport::create(hostname_or_ip_, static_cast<uint16_t>(port), encoding);
+    if (protocol == TransportProtocol::kTcp) {
+      transport = FunapiTcpTransport::create(hostname_or_ip_, static_cast<uint16_t>(port), encoding);
 
       if (option) {
         auto tcp_option = std::static_pointer_cast<FunapiTcpTransportOption>(option);
+        auto tcp_transport = std::static_pointer_cast<FunapiTcpTransport>(transport);
 
-        transport->SetAutoReconnect(tcp_option->GetAutoReconnect());
-        transport->SetEnablePing(tcp_option->GetEnablePing());
-        transport->SetDisableNagle(tcp_option->GetDisableNagle());
-        transport->SetConnectTimeout(tcp_option->GetConnectTimeout());
-        transport->SetSequenceNumberValidation(tcp_option->GetSequenceNumberValidation());
-        transport->SetEncryptionType(tcp_option->GetEncryptionType());
+        tcp_transport->SetAutoReconnect(tcp_option->GetAutoReconnect());
+        tcp_transport->SetEnablePing(tcp_option->GetEnablePing());
+        tcp_transport->SetDisableNagle(tcp_option->GetDisableNagle());
+        tcp_transport->SetConnectTimeout(tcp_option->GetConnectTimeout());
+        tcp_transport->SetSequenceNumberValidation(tcp_option->GetSequenceNumberValidation());
+        tcp_transport->SetEncryptionType(tcp_option->GetEncryptionType());
       }
     }
     else if (protocol == fun::TransportProtocol::kUdp) {
@@ -236,8 +253,9 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
 
       if (option) {
         auto udp_option = std::static_pointer_cast<FunapiUdpTransportOption>(option);
+        auto udp_transport = std::static_pointer_cast<FunapiUdpTransport>(transport);
 
-        transport->SetEncryptionType(udp_option->GetEncryptionType());
+        udp_transport->SetEncryptionType(udp_option->GetEncryptionType());
       }
     }
     else if (protocol == fun::TransportProtocol::kHttp) {
@@ -250,16 +268,18 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
 
       if (option) {
         auto http_option = std::static_pointer_cast<FunapiHttpTransportOption>(option);
-        transport->SetSequenceNumberValidation(http_option->GetSequenceNumberValidation());
-        transport->SetEncryptionType(http_option->GetEncryptionType());
+        auto http_transport = std::static_pointer_cast<FunapiHttpTransport>(transport);
+
+        http_transport->SetSequenceNumberValidation(http_option->GetSequenceNumberValidation());
+        http_transport->SetEncryptionType(http_option->GetEncryptionType());
       }
     }
 
     AttachTransport(transport);
 
-    PushTaskQueue([this](){
+    tasks_->Set([this]()->bool {
       Start();
-      return false;
+      return true;
     });
   }
 }
@@ -284,6 +304,8 @@ void FunapiSessionImpl::Start() {
   started_ = true;
   last_received_ = epoch_ = time(NULL);
 
+  tasks_->Set(nullptr);
+
   if (GetSessionId().empty()) {
     connect_protocols_.clear();
 
@@ -302,7 +324,9 @@ void FunapiSessionImpl::Start() {
   else {
     for (auto protocol : v_protocols_) {
       if (auto transport = GetTransport(protocol)) {
-        transport->Start();
+        if (!transport->IsStarted()) {
+          transport->Start();
+        }
       }
     }
   }
@@ -460,6 +484,8 @@ void FunapiSessionImpl::OnTransportReceived(const TransportProtocol protocol,
       return;
   }
 
+  EraseRecvTimeout(msg_type);
+
   MessageHandlerMap::iterator it = message_handlers_.find(msg_type);
   if (it != message_handlers_.end()) {
     it->second(protocol, msg_type, body);
@@ -560,23 +586,7 @@ void FunapiSessionImpl::OnClientPingMessage(
 
 
 void FunapiSessionImpl::Update() {
-  std::function<bool()> task = nullptr;
-  while (true) {
-    {
-      std::unique_lock<std::mutex> lock(tasks_queue_mutex_);
-      if (tasks_queue_.empty()) {
-        break;
-      }
-      else {
-        task = std::move(tasks_queue_.front());
-        tasks_queue_.pop();
-      }
-    }
-
-    if (task() == false) {
-      break;
-    }
-  }
+  tasks_->Update();
 }
 
 
@@ -587,31 +597,32 @@ void FunapiSessionImpl::AttachTransport(const std::shared_ptr<FunapiTransport> &
     // DebugUtils::Log(" You should call DetachTransport first.");
   }
   else {
-    transport->SetReceivedHandler([this](const TransportProtocol protocol, const FunEncoding encoding, const HeaderFields &header, const std::vector<uint8_t> &body){ OnTransportReceived(protocol, encoding, header, body);
+    auto self = shared_from_this();
+    transport->SetReceivedHandler([this, self](const TransportProtocol protocol, const FunEncoding encoding, const HeaderFields &header, const std::vector<uint8_t> &body){ OnTransportReceived(protocol, encoding, header, body);
     });
-    transport->SetIsReliableSessionHandler([this]() {
+    transport->SetIsReliableSessionHandler([this, self]() {
       return IsReliableSession();
     });
-    transport->SetSendAckHandler([this](const TransportProtocol protocol, const uint32_t seq) {
+    transport->SetSendAckHandler([this, self](const TransportProtocol protocol, const uint32_t seq) {
       SendAck(protocol, seq);
     });
 
-    transport->AddStartedCallback([this](const TransportProtocol protocol){
+    transport->AddStartedCallback([this, self](const TransportProtocol protocol){
       if (GetSessionId().empty()) {
         SendEmptyMessage(protocol);
       }
 
       OnTransportStarted(protocol);
     });
-    transport->AddClosedCallback([this](const TransportProtocol protocol){
+    transport->AddClosedCallback([this, self](const TransportProtocol protocol){
       OnTransportClosed(protocol);
     });
-    transport->AddConnectFailedCallback([this](const TransportProtocol protocol){ OnTransportConnectFailed(protocol); });
-    transport->AddConnectTimeoutCallback([this](const TransportProtocol protocol){ OnTransportConnectTimeout(protocol); });
-    transport->AddDisconnectedCallback([this](const TransportProtocol protocol){ OnTransportDisconnected(protocol); });
+    transport->AddConnectFailedCallback([this, self](const TransportProtocol protocol){ OnTransportConnectFailed(protocol); });
+    transport->AddConnectTimeoutCallback([this, self](const TransportProtocol protocol){ OnTransportConnectTimeout(protocol); });
+    transport->AddDisconnectedCallback([this, self](const TransportProtocol protocol){ OnTransportDisconnected(protocol); });
 
     if (transport->GetProtocol() == TransportProtocol::kTcp) {
-      transport->SetSendClientPingMessageHandler([this](const TransportProtocol protocol)->bool{ return SendClientPingMessage(protocol); });
+      transport->SetSendClientPingMessageHandler([this, self](const TransportProtocol protocol)->bool{ return SendClientPingMessage(protocol); });
     }
 
     {
@@ -658,8 +669,8 @@ void FunapiSessionImpl::SetSessionId(const std::string &session_id) {
 
 void FunapiSessionImpl::PushTaskQueue(const std::function<bool()> &task)
 {
-  std::unique_lock<std::mutex> lock(tasks_queue_mutex_);
-  tasks_queue_.push(task);
+  auto self = shared_from_this();
+  tasks_->Push([self, task]()->bool{ return task(); });
 }
 
 
@@ -790,10 +801,15 @@ void FunapiSessionImpl::OnTransportDisconnected(const TransportProtocol protocol
 
 void FunapiSessionImpl::OnTransportStarted(const TransportProtocol protocol) {
   OnTransportEvent(protocol, TransportEventType::kStarted);
+  tasks_->Set([this]()->bool{
+    CheckRecvTimeout();
+    return true;
+  });
 }
 
 
 void FunapiSessionImpl::OnTransportClosed(const TransportProtocol protocol) {
+  tasks_->Set(nullptr);
   OnTransportEvent(protocol, TransportEventType::kStopped);
 }
 
@@ -951,6 +967,56 @@ bool FunapiSessionImpl::IsReliableSession() const {
 }
 
 
+void FunapiSessionImpl::AddRecvTimeoutCallback(const RecvTimeoutHandler &handler) {
+  on_recv_timeout_ += handler;
+}
+
+
+void FunapiSessionImpl::SetRecvTimeout(const std::string &msg_type, const int seconds) {
+  std::unique_lock<std::mutex> lock(m_recv_timeout_mutex_);
+  m_recv_timeout_[msg_type] = std::make_shared<FunapiTimer>(seconds);
+}
+
+
+void FunapiSessionImpl::EraseRecvTimeout(const std::string &msg_type) {
+  std::unique_lock<std::mutex> lock(m_recv_timeout_mutex_);
+  m_recv_timeout_.erase(msg_type);
+}
+
+
+void FunapiSessionImpl::CheckRecvTimeout() {
+  std::vector<std::string> msg_types;
+
+  {
+    std::unique_lock<std::mutex> lock(m_recv_timeout_mutex_);
+    // m_recv_timeout_.erase(msg_type);
+    for (auto i : m_recv_timeout_) {
+      if (i.second->IsExpired()) {
+        msg_types.push_back(i.first);
+      }
+    }
+
+    for (auto t : msg_types) {
+      m_recv_timeout_.erase(t);
+    }
+  }
+
+  for (auto t : msg_types) {
+    OnRecvTimeout(t);
+  }
+}
+
+
+void FunapiSessionImpl::OnRecvTimeout(const std::string &msg_type) {
+  PushTaskQueue([this, msg_type]()->bool {
+    if (auto s = session_.lock()) {
+      on_recv_timeout_(s, msg_type);
+    }
+    return true;
+  });
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiSession implementation.
 
@@ -1005,7 +1071,6 @@ bool FunapiSession::IsConnected(const TransportProtocol protocol) const {
 
 
 void FunapiSession::Update() {
-  auto self = shared_from_this();
   impl_->Update();
 }
 
@@ -1052,6 +1117,21 @@ FunEncoding FunapiSession::GetEncoding(const TransportProtocol protocol) const {
 
 TransportProtocol FunapiSession::GetDefaultProtocol() const {
   return impl_->GetDefaultProtocol();
+}
+
+
+void FunapiSession::AddRecvTimeoutCallback(const RecvTimeoutHandler &handler) {
+  impl_->AddRecvTimeoutCallback(handler);
+}
+
+
+void FunapiSession::SetRecvTimeout(const std::string &msg_type, const int seconds) {
+  impl_->SetRecvTimeout(msg_type, seconds);
+}
+
+
+void FunapiSession::EraseRecvTimeout(const std::string &msg_type) {
+  impl_->EraseRecvTimeout(msg_type);
 }
 
 }  // namespace fun

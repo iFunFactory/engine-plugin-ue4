@@ -39,6 +39,7 @@ typedef std::function<void(void*, const int)> AsyncWebResponseCallback;
 
 enum class TransportState : int {
   kDisconnected = 0,
+  kDisconnecting,
   kConnecting,
   kConnected
 };
@@ -173,19 +174,11 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
   virtual TransportProtocol GetProtocol() const = 0;
   virtual FunEncoding GetEncoding() const = 0;
 
-  virtual void SetConnectTimeout(time_t timeout) = 0;
-
   virtual void AddStartedCallback(const TransportEventHandler &handler) = 0;
   virtual void AddClosedCallback(const TransportEventHandler &handler) = 0;
   virtual void AddConnectFailedCallback(const TransportEventHandler &handler) = 0;
   virtual void AddConnectTimeoutCallback(const TransportEventHandler &handler) = 0;
   virtual void AddDisconnectedCallback(const TransportEventHandler &handler) = 0;
-
-  virtual void SetDisableNagle(const bool disable_nagle);
-  virtual void SetAutoReconnect(const bool auto_reconnect);
-  virtual void SetEnablePing(const bool enable_ping);
-  virtual void SetSequenceNumberValidation(const bool validation);
-  virtual void SetEncryptionType(EncryptionType type) = 0;
 
   virtual void SetSendClientPingMessageHandler(std::function<bool(const TransportProtocol protocol)> handler);
   virtual void SetReceivedHandler(TransportReceivedHandler handler) = 0;
@@ -259,14 +252,13 @@ class FunapiUdpTransport : public FunapiTransport {
   FunEncoding GetEncoding() const;
 
   void SetConnectTimeout(time_t timeout);
+  void SetEncryptionType(EncryptionType type);
 
   void AddStartedCallback(const TransportEventHandler &handler);
   void AddClosedCallback(const TransportEventHandler &handler);
   void AddConnectFailedCallback(const TransportEventHandler &handler);
   void AddConnectTimeoutCallback(const TransportEventHandler &handler);
   void AddDisconnectedCallback(const TransportEventHandler &handler);
-
-  void SetEncryptionType(EncryptionType type);
 
   void SetReceivedHandler(TransportReceivedHandler handler);
   void SetIsReliableSessionHandler(std::function<bool()> handler);

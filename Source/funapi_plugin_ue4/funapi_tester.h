@@ -8,12 +8,13 @@
 
 #include <memory>
 #include "GameFramework/Actor.h"
-#include "funapi_session.h"
-#include "funapi_multicasting.h"
 #include "funapi_tester.generated.h"
 
 namespace fun {
   class FunapiAnnouncement;
+  class FunapiSession;
+  class FunapiMulticast;
+  enum class TransportProtocol : int;
 }
 
 UCLASS()

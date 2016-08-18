@@ -10,12 +10,14 @@
 #include "AllowWindowsPlatformTypes.h"
 #endif
 
-#include "funapi/funapi_network.h"
 #include "test_messages.pb.h"
 #include "funapi/management/maintenance_message.pb.h"
 #include "funapi/service/multicast_message.pb.h"
 #include "funapi/funapi_utils.h"
+#include "funapi/funapi_tasks.h"
 #include "funapi/funapi_announcement.h"
+#include "funapi_session.h"
+#include "funapi_multicasting.h"
 #include "funapi_tester.h"
 
 #if PLATFORM_WINDOWS
@@ -51,14 +53,7 @@ void Afunapi_tester::Tick(float DeltaTime)
 
   // LOG1("Tick - %f", DeltaTime);
 
-  if (session_)
-  {
-    session_->Update();
-  }
-
-  if (multicast_) {
-    multicast_->Update();
-  }
+  fun::FunapiTasks::UpdateAll();
 
   UpdateUI();
 }

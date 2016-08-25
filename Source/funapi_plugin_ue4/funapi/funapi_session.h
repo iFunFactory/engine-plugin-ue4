@@ -15,6 +15,9 @@ enum class SessionEventType : int {
   kOpened,
   kClosed,
   kChanged,
+  kRedirectStarted,
+  kRedirectSucceeded,
+  kRedirectFailed,
 };
 
 enum class TransportEventType : int {
@@ -41,7 +44,8 @@ class FunapiSession : public std::enable_shared_from_this<FunapiSession> {
   typedef std::function<void(const std::shared_ptr<FunapiSession>&,
                              const TransportProtocol,
                              const SessionEventType,
-                             const std::string&)> SessionEventHandler;
+                             const std::string&,
+                             const std::shared_ptr<FunapiError>&)> SessionEventHandler;
 
   typedef std::function<void(const std::shared_ptr<FunapiSession>&,
                              const TransportProtocol,
@@ -50,6 +54,9 @@ class FunapiSession : public std::enable_shared_from_this<FunapiSession> {
 
   typedef std::function<void(const std::shared_ptr<FunapiSession>&,
                              const std::string&)> RecvTimeoutHandler;
+
+  typedef std::function<std::shared_ptr<FunapiTransportOption>(const TransportProtocol,
+                                                               const std::string&)> TransportOptionHandler;
 
   FunapiSession() = delete;
   FunapiSession(const char* hostname_or_ip, bool reliability = false);
@@ -84,6 +91,8 @@ class FunapiSession : public std::enable_shared_from_this<FunapiSession> {
   void AddRecvTimeoutCallback(const RecvTimeoutHandler &handler);
   void SetRecvTimeout(const std::string &msg_type, const int seconds);
   void EraseRecvTimeout(const std::string &msg_type);
+
+  void SetTransportOptionCallback(const TransportOptionHandler &handler);
 
  private:
   std::shared_ptr<FunapiSessionImpl> impl_;

@@ -121,6 +121,59 @@ void Afunapi_tester::UpdateUI()
   }
 }
 
+void Afunapi_tester::SendRedirectTestMessage()
+{
+  if (session_ == nullptr)
+  {
+    fun::DebugUtils::Log("You should connect first.");
+  }
+  else {
+    fun::FunEncoding encoding = session_->GetEncoding(session_->GetDefaultProtocol());
+    if (encoding == fun::FunEncoding::kNone)
+    {
+      fun::DebugUtils::Log("You should attach transport first.");
+      return;
+    }
+
+    std::stringstream ss_temp;
+    std::random_device rd;
+    std::default_random_engine re(rd());
+    std::uniform_int_distribution<int> dist(1,0xffff);
+    ss_temp << "name" << dist(re);
+    std::string name = ss_temp.str();
+
+    if (encoding == fun::FunEncoding::kProtobuf)
+    {
+      /*
+       FunMessage msg;
+
+       msg.set_msgtype("cs_hello");
+       Hello *hello = msg.MutableExtension(cs_hello);
+       // hello->set_name("hello-name");
+       hello->set_name(name.c_str());
+
+       session_->SendMessage(msg);
+       */
+    }
+
+    if (encoding == fun::FunEncoding::kJson)
+    {
+      // json 메시지를 생성합니다.
+      TSharedRef<FJsonObject> json_object = MakeShareable(new FJsonObject);
+      json_object->SetStringField(FString("name"), FString(name.c_str()));
+
+      // Convert JSON document to string
+      FString ouput_fstring;
+      TSharedRef<TJsonWriter<TCHAR>> writer = TJsonWriterFactory<TCHAR>::Create(&ouput_fstring);
+      FJsonSerializer::Serialize(json_object, writer);
+      std::string json_stiring = TCHAR_TO_ANSI(*ouput_fstring);
+
+      // 메시지 전송
+      session_->SendMessage("hello", json_stiring);
+    }
+  }
+}
+
 // Tcp Transport로 서버에 연결합니다.
 bool Afunapi_tester::ConnectTcp()
 {
@@ -250,40 +303,42 @@ bool Afunapi_tester::CreateMulticast()
     });
     // 채널 퇴장 콜백 등록
     multicast_->AddLeftCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
-      const std::string &channel_id, const std::string &multicast_sender) {
+                                   const std::string &channel_id,
+                                   const std::string &multicast_sender) {
       fun::DebugUtils::Log("LeftCallback called. channel_id:%s player:%s", channel_id.c_str(), multicast_sender.c_str());
     });
     // 에러 콜백 등록
     multicast_->AddErrorCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
-      int error) {
+                                    int error) {
       // EC_ALREADY_JOINED = 1,
       // EC_ALREADY_LEFT,
       // EC_FULL_MEMBER
       // EC_CLOSED
     });
     multicast_->AddChannelListCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
-      const std::map<std::string, int> &cl) {
+                                          const std::map<std::string, int> &cl) {
       // fun::DebugUtils::Log("[channel list]");
       for (auto i : cl) {
         fun::DebugUtils::Log("%s - %d", i.first.c_str(), i.second);
       }
     });
     multicast_->AddSessionEventCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
-      const fun::SessionEventType type,
-      const std::string &session_id) {
-      /*
-      if (type == fun::SessionEventType::kOpened) {
-      }
-      else if (type == fun::SessionEventType::kChanged) {
-      // session id changed
-      }
-      else if (type == fun::SessionEventType::kClosed) {
-      }
-      */
+                                           const fun::SessionEventType type,
+                                           const std::string &session_id,
+                                           const std::shared_ptr<fun::FunapiError> &error) {
+     /*
+     if (type == fun::SessionEventType::kOpened) {
+     }
+     else if (type == fun::SessionEventType::kChanged) {
+     // session id changed
+     }
+     else if (type == fun::SessionEventType::kClosed) {
+     }
+     */
     });
     multicast_->AddTransportEventCallback([this](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
-                                             const fun::TransportEventType type,
-                                             const std::shared_ptr<fun::FunapiError> &error) {
+                                                 const fun::TransportEventType type,
+                                                 const std::shared_ptr<fun::FunapiError> &error) {
       if (type == fun::TransportEventType::kStarted) {
         fun::DebugUtils::Log("Transport Started called.");
       }
@@ -552,9 +607,10 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
 
     // add callback
     session_->AddSessionEventCallback([this](const std::shared_ptr<fun::FunapiSession> &session,
-      const fun::TransportProtocol transport_protocol,
-      const fun::SessionEventType type,
-      const std::string &session_id) {
+                                             const fun::TransportProtocol transport_protocol,
+                                             const fun::SessionEventType type,
+                                             const std::string &session_id,
+                                             const std::shared_ptr<fun::FunapiError> &error) {
       if (type == fun::SessionEventType::kOpened) {
         OnSessionInitiated(session_id);
       }
@@ -567,9 +623,9 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
     });
 
     session_->AddTransportEventCallback([this](const std::shared_ptr<fun::FunapiSession> &session,
-                                           const fun::TransportProtocol transport_protocol,
-                                           const fun::TransportEventType type,
-                                           const std::shared_ptr<fun::FunapiError> &error) {
+                                               const fun::TransportProtocol transport_protocol,
+                                               const fun::TransportEventType type,
+                                               const std::shared_ptr<fun::FunapiError> &error) {
       if (type == fun::TransportEventType::kStarted) {
         fun::DebugUtils::Log("Transport Started called.");
       }
@@ -590,9 +646,9 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
     });
 
     session_->AddJsonRecvCallback([](const std::shared_ptr<fun::FunapiSession> &session,
-      const fun::TransportProtocol transport_protocol,
-      const std::string &msg_type,
-      const std::string &json_string) {
+                                     const fun::TransportProtocol transport_protocol,
+                                     const std::string &msg_type,
+                                     const std::string &json_string) {
       if (msg_type.compare("echo") == 0) {
         fun::DebugUtils::Log("msg '%s' arrived.", msg_type.c_str());
         fun::DebugUtils::Log("json: %s", json_string.c_str());
@@ -604,8 +660,8 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
     });
 
     session_->AddProtobufRecvCallback([](const std::shared_ptr<fun::FunapiSession> &session,
-      const fun::TransportProtocol transport_protocol,
-      const FunMessage &fun_message) {
+                                         const fun::TransportProtocol transport_protocol,
+                                         const FunMessage &fun_message) {
       if (fun_message.msgtype().compare("pbuf_echo") == 0) {
         fun::DebugUtils::Log("msg '%s' arrived.", fun_message.msgtype().c_str());
 
@@ -627,6 +683,19 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
         fun::DebugUtils::Log("Maintenance message:\nstart: %s\nend: %s\nmessage: %s", date_start.c_str(), date_end.c_str(), message_text.c_str());
       }
     });
+
+    /*
+    session_->SetTransportOptionCallback([](const fun::TransportProtocol protocol,
+                                            const std::string &flavor) -> std::shared_ptr<fun::FunapiTransportOption> {
+      if (protocol == fun::TransportProtocol::kTcp) {
+        auto option = fun::FunapiTcpTransportOption::create();
+        option->SetDisableNagle(true);
+        return option;
+      }
+
+      return nullptr;
+    });
+    */
   }
 
   // connect

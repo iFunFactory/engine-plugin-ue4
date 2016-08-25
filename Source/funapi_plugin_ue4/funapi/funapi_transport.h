@@ -29,6 +29,8 @@ static const char* kSessionClosedMessageType = "_session_closed";
 static const char* kMaintenanceMessageType = "_maintenance";
 static const char* kServerPingMessageType = "_ping_s";
 static const char* kClientPingMessageType = "_ping_c";
+static const char* kRedirectMessageType = "_sc_redirect";
+static const char* kRedirectConnectMessageType = "_cs_redirect_connect";
 static const char* kPingTimestampField = "timestamp";
 
 // http header
@@ -63,10 +65,27 @@ enum class FunEncoding
 
 enum class EncryptionType : int;
 
+
+class FunapiErrorImpl;
 class FunapiError : public std::enable_shared_from_this<FunapiError> {
-public:
-  FunapiError() = default;
+ public:
+  enum class ErrorCode : int {
+    kNone,
+    kRedirectConnectInvalidToken,
+    kRedirectConnectExpired,
+    kRedirectConnectAuthFailed,
+  };
+
+  FunapiError() = delete;
+  FunapiError(ErrorCode code);
   ~FunapiError() = default;
+
+  static std::shared_ptr<FunapiError> create(ErrorCode error_code);
+
+  ErrorCode GetErrorCode();
+
+ private:
+  std::shared_ptr<FunapiErrorImpl> impl_;
 };
 
 

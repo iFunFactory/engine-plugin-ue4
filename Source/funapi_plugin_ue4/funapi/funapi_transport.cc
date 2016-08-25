@@ -221,6 +221,52 @@ void FunapiNetworkThread::PushTask(const FunapiThread::TaskHandler &handler) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// FunapiErrorImpl implementation.
+
+class FunapiErrorImpl : public std::enable_shared_from_this<FunapiErrorImpl> {
+ public:
+  typedef FunapiError::ErrorCode ErrorCode;
+
+  FunapiErrorImpl() = delete;
+  FunapiErrorImpl(ErrorCode error_code);
+  ~FunapiErrorImpl() = default;
+
+  ErrorCode GetErrorCode();
+
+ private:
+  ErrorCode error_code_;
+};
+
+
+FunapiErrorImpl::FunapiErrorImpl (ErrorCode error_code)
+: error_code_(error_code) {
+}
+
+
+FunapiError::ErrorCode FunapiErrorImpl::GetErrorCode() {
+  return error_code_;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FunapiError implementation.
+
+FunapiError::FunapiError (ErrorCode error_code)
+: impl_(std::make_shared<FunapiErrorImpl>(error_code)) {
+}
+
+
+std::shared_ptr<FunapiError> FunapiError::create(ErrorCode error_code) {
+  return std::make_shared<FunapiError>(error_code);
+}
+
+
+FunapiError::ErrorCode FunapiError::GetErrorCode() {
+  return impl_->GetErrorCode();
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 // FunapiTransportOptionImpl implementation.
 
 class FunapiTransportOptionImpl : public std::enable_shared_from_this<FunapiTransportOptionImpl> {
@@ -677,8 +723,8 @@ class FunapiTransportImpl : public std::enable_shared_from_this<FunapiTransportI
 
 
 FunapiTransportImpl::FunapiTransportImpl(TransportProtocol protocol, FunEncoding encoding)
-  : encoding_(encoding), state_(TransportState::kDisconnected),
-    encrytion_(std::make_shared<FunapiEncryption>()), protocol_(protocol) {
+  : encoding_(encoding), encrytion_(std::make_shared<FunapiEncryption>()),
+  state_(TransportState::kDisconnected), protocol_(protocol) {
   std::random_device rd;
   std::default_random_engine re(rd());
   std::uniform_int_distribution<uint32_t> dist(0,std::numeric_limits<uint32_t>::max());

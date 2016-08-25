@@ -36,7 +36,8 @@ public:
 
   typedef std::function<void(const std::shared_ptr<FunapiMulticast>&,
                              const SessionEventType,
-                             const std::string&)> SessionEventHandler;
+                             const std::string&,
+                             const std::shared_ptr<FunapiError> &error)> SessionEventHandler;
 
   typedef std::function<void(const std::shared_ptr<FunapiMulticast>&,
                              const TransportEventType,

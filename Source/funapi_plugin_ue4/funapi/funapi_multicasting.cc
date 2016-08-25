@@ -587,9 +587,10 @@ void FunapiMulticastImpl::AddSessionEventCallback(const FunapiMulticast::Session
     session_->AddSessionEventCallback([this, handler](const std::shared_ptr<fun::FunapiSession> &session,
                                                       const fun::TransportProtocol protocol,
                                                       const fun::SessionEventType type,
-                                                      const std::string &session_id) {
+                                                      const std::string &session_id,
+                                                      const std::shared_ptr<FunapiError> &error) {
       if (auto m = multicast_.lock()) {
-        handler(m, type, session_id);
+        handler(m, type, session_id, error);
       }
     });
   }

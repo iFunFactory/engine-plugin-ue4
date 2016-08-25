@@ -1,0 +1,55 @@
+// Copyright (C) 2016 iFunFactory Inc. All Rights Reserved.
+//
+// This work is confidential and proprietary to iFunFactory Inc. and
+// must not be used, disclosed, copied, or distributed without the prior
+// consent of iFunFactory Inc.
+
+import "funapi/network/fun_message.proto";
+
+message FunRedirectMessage {
+  enum Protocol {
+    // see funapi/network/session.h (enum TransportProtocol)
+    PROTO_TCP = 1;
+    PROTO_UDP = 2;
+    PROTO_HTTP = 3;
+  }
+
+  enum Encoding {
+    // see funapi/network/session.h (enum EncodingScheme)
+    ENCODING_JSON = 1;
+    ENCODING_PROTOBUF = 2;
+  }
+
+  message ServerPort {
+    required int32 port = 1;
+    required Protocol protocol = 2;
+    required Encoding encoding = 3;
+  }
+
+  required string host = 1;
+  repeated ServerPort ports = 2;
+  required string token = 3;
+  required string flavor = 4;
+}
+
+
+message FunRedirectConnectMessage {
+  enum Result {
+    OK = 0;
+    INVALID_TOKEN = 1;
+    EXPIRED = 2;
+    AUTH_FAILED = 3;
+  }
+
+  // Client -> Server
+  optional string token = 1;
+
+  // Server -> Client
+  optional Result result = 2;
+}
+
+
+extend FunMessage {
+  optional FunRedirectMessage _sc_redirect = 10;
+  optional FunRedirectConnectMessage _cs_redirect_connect = 11;
+}

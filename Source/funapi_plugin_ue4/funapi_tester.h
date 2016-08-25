@@ -137,6 +137,7 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
  private:
   void Connect(const fun::TransportProtocol protocol);
   void UpdateUI();
+  void SendRedirectTestMessage();
 
   // Please change this address for test.
   std::string kServerIp = "127.0.0.1";

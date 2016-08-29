@@ -231,7 +231,7 @@ void FunapiSessionImpl::Initialize() {
   message_handlers_[kRedirectConnectMessageType] =
     [this](const TransportProtocol &p, const std::string&s, const std::vector<uint8_t>&v) { OnRedirectConnectMessage(p, s, v); };
 
-  tasks_ = FunapiTasks::create();
+  tasks_ = FunapiTasks::Create();
 
   // Now ready.
   initialized_ = true;
@@ -265,7 +265,7 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
     }
 
     if (protocol == TransportProtocol::kTcp) {
-      transport = FunapiTcpTransport::create(hostname_or_ip_, static_cast<uint16_t>(port), encoding);
+      transport = FunapiTcpTransport::Create(hostname_or_ip_, static_cast<uint16_t>(port), encoding);
 
       if (option) {
         tcp_option_ = std::static_pointer_cast<FunapiTcpTransportOption>(option);
@@ -280,7 +280,7 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
       }
     }
     else if (protocol == fun::TransportProtocol::kUdp) {
-      transport = fun::FunapiUdpTransport::create(hostname_or_ip_, static_cast<uint16_t>(port), encoding);
+      transport = fun::FunapiUdpTransport::Create(hostname_or_ip_, static_cast<uint16_t>(port), encoding);
 
       if (option) {
         udp_option_ = std::static_pointer_cast<FunapiUdpTransportOption>(option);
@@ -295,7 +295,7 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
         https = std::static_pointer_cast<FunapiHttpTransportOption>(option)->GetUseHttps();
       }
 
-      transport = fun::FunapiHttpTransport::create(hostname_or_ip_, static_cast<uint16_t>(port), https, encoding);
+      transport = fun::FunapiHttpTransport::Create(hostname_or_ip_, static_cast<uint16_t>(port), https, encoding);
 
       if (option) {
         http_option_ = std::static_pointer_cast<FunapiHttpTransportOption>(option);
@@ -803,7 +803,7 @@ void FunapiSessionImpl::OnRedirectConnectMessage(const TransportProtocol protoco
      OnSessionEvent(protocol,
                     SessionEventType::kRedirectFailed,
                     GetSessionId(),
-                    fun::FunapiError::create(code));
+                    fun::FunapiError::Create(code));
    }
 }
 
@@ -1327,7 +1327,7 @@ FunapiSession::~FunapiSession() {
 }
 
 
-std::shared_ptr<FunapiSession> FunapiSession::create(const char* hostname_or_ip, bool reliability) {
+std::shared_ptr<FunapiSession> FunapiSession::Create(const char* hostname_or_ip, bool reliability) {
   return std::make_shared<FunapiSession>(hostname_or_ip, reliability);
 }
 

@@ -294,7 +294,7 @@ bool Afunapi_tester::CreateMulticast()
     uint16_t port = with_protobuf_ ? 8022 : 8012;
 
     // 멀티캐스팅 객체 생성
-    multicast_ = fun::FunapiMulticast::create(sender.c_str(), kServerIp.c_str(), port, encoding);
+    multicast_ = fun::FunapiMulticast::Create(sender.c_str(), kServerIp.c_str(), port, encoding);
 
     // 채널 입장 콜백 등록
     multicast_->AddJoinedCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
@@ -497,7 +497,7 @@ bool Afunapi_tester::RequestAnnouncements()
 
     fun::DebugUtils::Log("path = %s", path.c_str());
 
-    announcement_ = fun::FunapiAnnouncement::create(ss_url.str().c_str(), path.c_str());
+    announcement_ = fun::FunapiAnnouncement::Create(ss_url.str().c_str(), path.c_str());
 
     announcement_->AddCompletionCallback([](const std::shared_ptr<fun::FunapiAnnouncement> &announcement,
                                             const fun::AnnouncementResult result,
@@ -603,7 +603,7 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
 {
   if (!session_) {
     // create
-    session_ = fun::FunapiSession::create(kServerIp.c_str(), with_session_reliability_);
+    session_ = fun::FunapiSession::Create(kServerIp.c_str(), with_session_reliability_);
 
     // add callback
     session_->AddSessionEventCallback([this](const std::shared_ptr<fun::FunapiSession> &session,
@@ -688,7 +688,7 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
     session_->SetTransportOptionCallback([](const fun::TransportProtocol protocol,
                                             const std::string &flavor) -> std::shared_ptr<fun::FunapiTransportOption> {
       if (protocol == fun::TransportProtocol::kTcp) {
-        auto option = fun::FunapiTcpTransportOption::create();
+        auto option = fun::FunapiTcpTransportOption::Create();
         option->SetDisableNagle(true);
         return option;
       }
@@ -710,7 +710,7 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
       port = with_protobuf_ ? 8022 : 8012;
 
       /*
-      auto option = fun::FunapiTcpTransportOption::create();
+      auto option = fun::FunapiTcpTransportOption::Create();
       option->SetDisableNagle(true);
       option->SetEnablePing(true);
       session_->Connect(protocol, port, encoding, option);
@@ -720,7 +720,7 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
       port = with_protobuf_ ? 8023 : 8013;
 
       /*
-      auto option = fun::FunapiUdpTransportOption::create();
+      auto option = fun::FunapiUdpTransportOption::Create();
       session_->Connect(protocol, port, encoding, option);
       */
     }
@@ -728,7 +728,7 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
       port = with_protobuf_ ? 8028 : 8018;
 
       /*
-      auto option = fun::FunapiHttpTransportOption::create();
+      auto option = fun::FunapiHttpTransportOption::Create();
       option->SetSequenceNumberValidation(true);
       option->SetUseHttps(false);
       session_->Connect(protocol, port, encoding, option);

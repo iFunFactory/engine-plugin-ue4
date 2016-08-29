@@ -48,13 +48,13 @@ public:
   FunapiMulticast(const char* sender, const std::shared_ptr<FunapiSession> &session);
   ~FunapiMulticast();
 
-  static std::shared_ptr<FunapiMulticast> create(const char* sender,
+  static std::shared_ptr<FunapiMulticast> Create(const char* sender,
                                                  const char* hostname_or_ip,
                                                  const uint16_t port,
                                                  const FunEncoding encoding,
                                                  const bool reliability = false);
 
-  static std::shared_ptr<FunapiMulticast> create(const char* sender,
+  static std::shared_ptr<FunapiMulticast> Create(const char* sender,
                                                  const std::shared_ptr<FunapiSession> &session);
 
   void AddJoinedCallback(const ChannelNotify &handler);

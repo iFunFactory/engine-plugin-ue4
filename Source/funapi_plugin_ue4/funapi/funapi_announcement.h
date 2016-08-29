@@ -61,7 +61,7 @@ class FunapiAnnouncement : public std::enable_shared_from_this<FunapiAnnouncemen
   FunapiAnnouncement(const char* url, const char* path);
   ~FunapiAnnouncement();
 
-  static std::shared_ptr<FunapiAnnouncement> create(const char* url, const char* path);
+  static std::shared_ptr<FunapiAnnouncement> Create(const char* url, const char* path);
 
   void AddCompletionCallback(const CompletionHandler &handler);
   void RequestList(int max_count);

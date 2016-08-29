@@ -108,7 +108,7 @@ FunapiMulticastImpl::FunapiMulticastImpl(const char* sender,
                                          const FunEncoding encoding,
                                          const bool reliability)
 : encoding_(encoding), sender_(sender), port_(port) {
-  session_ = FunapiSession::create(hostname_or_ip, reliability);
+  session_ = FunapiSession::Create(hostname_or_ip, reliability);
   InitSessionCallback();
 }
 
@@ -656,12 +656,12 @@ FunapiMulticast::~FunapiMulticast() {
 }
 
 
-std::shared_ptr<FunapiMulticast> FunapiMulticast::create(const char* sender, const char* hostname_or_ip, const uint16_t port, const FunEncoding encoding, const bool reliability) {
+std::shared_ptr<FunapiMulticast> FunapiMulticast::Create(const char* sender, const char* hostname_or_ip, const uint16_t port, const FunEncoding encoding, const bool reliability) {
   return std::make_shared<FunapiMulticast>(sender, hostname_or_ip, port, encoding, reliability);
 }
 
 
-std::shared_ptr<FunapiMulticast> FunapiMulticast::create(const char* sender, const std::shared_ptr<FunapiSession> &session) {
+std::shared_ptr<FunapiMulticast> FunapiMulticast::Create(const char* sender, const std::shared_ptr<FunapiSession> &session) {
   if (session) {
     if (session->IsConnected(TransportProtocol::kTcp)) {
       return std::make_shared<FunapiMulticast>(sender, session);

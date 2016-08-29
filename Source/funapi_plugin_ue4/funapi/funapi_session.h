@@ -62,7 +62,7 @@ class FunapiSession : public std::enable_shared_from_this<FunapiSession> {
   FunapiSession(const char* hostname_or_ip, bool reliability = false);
   ~FunapiSession();
 
-  static std::shared_ptr<FunapiSession> create(const char* hostname_or_ip, bool reliability = false);
+  static std::shared_ptr<FunapiSession> Create(const char* hostname_or_ip, bool reliability = false);
 
   void Connect(const TransportProtocol protocol, int port, FunEncoding encoding, std::shared_ptr<FunapiTransportOption> option = nullptr);
   void Connect(const TransportProtocol protocol);

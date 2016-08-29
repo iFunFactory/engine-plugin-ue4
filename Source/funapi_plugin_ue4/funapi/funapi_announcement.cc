@@ -380,7 +380,7 @@ FunapiAnnouncement::~FunapiAnnouncement() {
 }
 
 
-std::shared_ptr<FunapiAnnouncement> FunapiAnnouncement::create(const char* url, const char *path) {
+std::shared_ptr<FunapiAnnouncement> FunapiAnnouncement::Create(const char* url, const char *path) {
   return std::make_shared<FunapiAnnouncement>(url, path);
 }
 

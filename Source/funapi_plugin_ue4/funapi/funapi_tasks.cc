@@ -136,7 +136,7 @@ FunapiTasks::~FunapiTasks() {
 }
 
 
-std::shared_ptr<FunapiTasks> FunapiTasks::create() {
+std::shared_ptr<FunapiTasks> FunapiTasks::Create() {
   return std::make_shared<FunapiTasks>();
 }
 
@@ -267,7 +267,7 @@ FunapiThread::~FunapiThread() {
 }
 
 
-std::shared_ptr<FunapiThread> FunapiThread::create(const std::string &thread_id_string, const TaskHandler &task) {
+std::shared_ptr<FunapiThread> FunapiThread::Create(const std::string &thread_id_string, const TaskHandler &task) {
   return std::make_shared<FunapiThread>(thread_id_string, task);
 }
 

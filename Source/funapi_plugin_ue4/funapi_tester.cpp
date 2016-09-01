@@ -158,7 +158,6 @@ void Afunapi_tester::SendRedirectTestMessage()
 
     if (encoding == fun::FunEncoding::kJson)
     {
-      // json 메시지를 생성합니다.
       TSharedRef<FJsonObject> json_object = MakeShareable(new FJsonObject);
       json_object->SetStringField(FString("name"), FString(name.c_str()));
 
@@ -168,34 +167,29 @@ void Afunapi_tester::SendRedirectTestMessage()
       FJsonSerializer::Serialize(json_object, writer);
       std::string json_stiring = TCHAR_TO_ANSI(*ouput_fstring);
 
-      // 메시지 전송
       session_->SendMessage("hello", json_stiring);
     }
   }
 }
 
-// Tcp Transport로 서버에 연결합니다.
 bool Afunapi_tester::ConnectTcp()
 {
   Connect(fun::TransportProtocol::kTcp);
   return true;
 }
 
-// Udp Transport로 서버에 연결합니다.
 bool Afunapi_tester::ConnectUdp()
 {
   Connect(fun::TransportProtocol::kUdp);
   return true;
 }
 
-// Http Transport로 서버에 연결합니다.
 bool Afunapi_tester::ConnectHttp()
 {
   Connect(fun::TransportProtocol::kHttp);
   return true;
 }
 
-// 서버와의 연결을 끊습니다.
 void Afunapi_tester::Disconnect()
 {
   if (session_) {
@@ -206,8 +200,6 @@ void Afunapi_tester::Disconnect()
   fun::DebugUtils::Log("You should connect first.");
 }
 
-// 테스트용 에코 메시지를 서버로 전송합니다.
-// 이 메시지를 받으면 서버에서는 같은 메시지를 응답으로 보내줍니다.
 bool Afunapi_tester::SendEchoMessage()
 {
   if (session_ == nullptr)
@@ -216,7 +208,6 @@ bool Afunapi_tester::SendEchoMessage()
   }
   else
   {
-    // 기본 프로토콜 타입을 가져옵니다.
     fun::FunEncoding encoding = session_->GetEncoding(session_->GetDefaultProtocol());
     if (encoding == fun::FunEncoding::kNone)
     {
@@ -224,38 +215,31 @@ bool Afunapi_tester::SendEchoMessage()
       return false;
     }
 
-    // encoding 타입이 protobuf일 경우 protobuf 메시지를 보냅니다.
     if (encoding == fun::FunEncoding::kProtobuf)
     {
-      // protobuf 메시지를 10개 보냅니다.
       for (int i = 0; i < 10; ++i) {
         // std::to_string is not supported on android, using std::stringstream instead.
         std::stringstream ss_temp;
         ss_temp << "hello proto - " << static_cast<int>(i);
         std::string temp_string = ss_temp.str();
 
-        // protobuf 메시지를 생성합니다.
         FunMessage msg;
         msg.set_msgtype("pbuf_echo");
         PbufEchoMessage *echo = msg.MutableExtension(pbuf_echo);
         echo->set_msg(temp_string.c_str());
 
-        // 메시지 전송
         session_->SendMessage(msg);
       }
     }
 
-    // encoding 타입이 json일 경우 json 메시지를 보냅니다.
     if (encoding == fun::FunEncoding::kJson)
     {
-      // json 메시지를 10개 보냅니다.
       for (int i = 0; i < 10; ++i) {
         // std::to_string is not supported on android, using std::stringstream instead.
         std::stringstream ss_temp;
         ss_temp <<  "hello world - " << static_cast<int>(i);
         std::string temp_string = ss_temp.str();
 
-        // json 메시지를 생성합니다.
         TSharedRef<FJsonObject> json_object = MakeShareable(new FJsonObject);
         json_object->SetStringField(FString("message"), FString(temp_string.c_str()));
 
@@ -265,7 +249,6 @@ bool Afunapi_tester::SendEchoMessage()
         FJsonSerializer::Serialize(json_object, writer);
         std::string json_stiring = TCHAR_TO_ANSI(*ouput_fstring);
 
-        // 메시지 전송
         session_->SendMessage("echo", json_stiring);
       }
     }
@@ -274,13 +257,12 @@ bool Afunapi_tester::SendEchoMessage()
   return true;
 }
 
-// 멀티캐스팅 객체를 생성합니다.
 bool Afunapi_tester::CreateMulticast()
 {
   UE_LOG(LogClass, Warning, TEXT("CreateMulticast button clicked."));
 
   if (!multicast_) {
-    // random sender id 만들기
+    // random sender id
     std::stringstream ss_temp;
     std::random_device rd;
     std::default_random_engine re(rd());
@@ -293,21 +275,17 @@ bool Afunapi_tester::CreateMulticast()
     fun::FunEncoding encoding = with_protobuf_ ? fun::FunEncoding::kProtobuf : fun::FunEncoding::kJson;
     uint16_t port = with_protobuf_ ? 8022 : 8012;
 
-    // 멀티캐스팅 객체 생성
     multicast_ = fun::FunapiMulticast::Create(sender.c_str(), kServerIp.c_str(), port, encoding);
 
-    // 채널 입장 콜백 등록
     multicast_->AddJoinedCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
       const std::string &channel_id, const std::string &multicast_sender) {
       fun::DebugUtils::Log("JoinedCallback called. channel_id:%s player:%s", channel_id.c_str(), multicast_sender.c_str());
     });
-    // 채널 퇴장 콜백 등록
     multicast_->AddLeftCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
                                    const std::string &channel_id,
                                    const std::string &multicast_sender) {
       fun::DebugUtils::Log("LeftCallback called. channel_id:%s player:%s", channel_id.c_str(), multicast_sender.c_str());
     });
-    // 에러 콜백 등록
     multicast_->AddErrorCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
                                     int error) {
       // EC_ALREADY_JOINED = 1,
@@ -364,7 +342,6 @@ bool Afunapi_tester::CreateMulticast()
   return true;
 }
 
-// 멀티캐스팅 채널에 입장합니다.
 bool Afunapi_tester::JoinMulticastChannel()
 {
   UE_LOG(LogClass, Warning, TEXT("JoinMulticastChannel button clicked."));
@@ -402,15 +379,12 @@ bool Afunapi_tester::JoinMulticastChannel()
   return true;
 }
 
-// 멀티캐스팅 채널에 메시지를 전송합니다.
 bool Afunapi_tester::SendMulticastMessage()
 {
   UE_LOG(LogClass, Warning, TEXT("SendMulticastMessage button clicked."));
 
   if (multicast_) {
-    // 채널에 입장된 상태인지 검사
     if (multicast_->IsConnected() && multicast_->IsInChannel(kMulticastTestChannel)) {
-      // encoding 타입이 json일 경우
       if (multicast_->GetEncoding() == fun::FunEncoding::kJson) {
         rapidjson::Document msg;
         msg.SetObject();
@@ -428,7 +402,6 @@ bool Afunapi_tester::SendMulticastMessage()
         multicast_->SendToChannel(kMulticastTestChannel, json_string);
       }
 
-      // encoding 타입이 protobuf일 경우
       if (multicast_->GetEncoding() == fun::FunEncoding::kProtobuf) {
         FunMessage msg;
 
@@ -447,7 +420,6 @@ bool Afunapi_tester::SendMulticastMessage()
   return true;
 }
 
-// 멀티캐스팅 채널에서 퇴장합니다.
 bool Afunapi_tester::LeaveMulticastChannel()
 {
   UE_LOG(LogClass, Warning, TEXT("LeaveMulticastChannel button clicked."));
@@ -598,7 +570,6 @@ bool Afunapi_tester::GetIsEnableButtonLeaveAllChannels() {
   return EnableButtonLeaveAllChannels;
 }
 
-// FunapiSession 객체를 생성하고 연결을 시작합니다.
 void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
 {
   if (!session_) {
@@ -741,13 +712,11 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
   session_->SetDefaultProtocol(protocol);
 }
 
-// 세션이 초기화되면 호출되는 콜백 함수입니다.
 void Afunapi_tester::OnSessionInitiated(const std::string &session_id)
 {
   fun::DebugUtils::Log("session initiated: %s", session_id.c_str());
 }
 
-// 세션 연결이 종료되면 호출되는 콜백 함수입니다.
 void Afunapi_tester::OnSessionClosed()
 {
   fun::DebugUtils::Log("session closed");

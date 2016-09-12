@@ -53,6 +53,8 @@
 #include <unordered_set>
 #include <unordered_map>
 
+#include "curl/curl.h"
+
 #ifdef FUNAPI_COCOS2D
 #include "json/stringbuffer.h"
 #include "json/writer.h"

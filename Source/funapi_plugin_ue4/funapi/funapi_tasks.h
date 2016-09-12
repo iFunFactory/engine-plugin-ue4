@@ -39,6 +39,7 @@ class FunapiThread : public std::enable_shared_from_this<FunapiThread> {
   ~FunapiThread();
 
   static std::shared_ptr<FunapiThread> Create(const std::string &thread_id_string, const TaskHandler &task);
+  static std::shared_ptr<FunapiThread> Get(const std::string &thread_id_string);
 
   static bool Set(const std::string &thread_id_string, const TaskHandler &task);
   static bool Push(const std::string &thread_id_string, const TaskHandler &task);

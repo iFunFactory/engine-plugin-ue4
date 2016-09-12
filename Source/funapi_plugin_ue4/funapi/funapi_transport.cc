@@ -10,6 +10,7 @@
 #include "funapi_transport.h"
 #include "funapi_encryption.h"
 #include "funapi_tasks.h"
+#include "funapi_http.h"
 #include "network/fun_message.pb.h"
 
 namespace fun {
@@ -418,10 +419,14 @@ class FunapiHttpTransportOptionImpl : public FunapiTransportOptionImpl {
   void SetEncryptionType(EncryptionType type);
   EncryptionType GetEncryptionType();
 
+  void SetCACertFilePath(const std::string &path);
+  const std::string& GetCACertFilePath();
+
  private:
   bool sequence_number_validation_ = false;
   bool use_https_ = false;
   EncryptionType encryption_type_ = static_cast<EncryptionType>(0);
+  std::string cert_file_path_;
 };
 
 
@@ -454,6 +459,15 @@ EncryptionType FunapiHttpTransportOptionImpl::GetEncryptionType() {
   return encryption_type_;
 }
 
+
+void FunapiHttpTransportOptionImpl::SetCACertFilePath(const std::string &path) {
+  cert_file_path_ = path;
+}
+
+
+const std::string& FunapiHttpTransportOptionImpl::GetCACertFilePath() {
+  return cert_file_path_;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiTcpTransportOption implementation.
@@ -595,6 +609,16 @@ EncryptionType FunapiHttpTransportOption::GetEncryptionType() {
 }
 
 
+void FunapiHttpTransportOption::SetCACertFilePath(const std::string &path) {
+  impl_->SetCACertFilePath(path);
+}
+
+
+const std::string& FunapiHttpTransportOption::GetCACertFilePath() {
+  return impl_->GetCACertFilePath();
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiTransportImpl implementation.
 
@@ -642,6 +666,8 @@ class FunapiTransportImpl : public std::enable_shared_from_this<FunapiTransportI
   void SetState(TransportState state);
   TransportState GetState();
 
+  virtual void Send(bool send_all = false);
+
  protected:
   std::shared_ptr<FunapiNetworkThread> GetNetworkThread();
   void PushNetworkThreadTask(const FunapiThread::TaskHandler &handler);
@@ -653,7 +679,6 @@ class FunapiTransportImpl : public std::enable_shared_from_this<FunapiTransportI
 
   virtual bool EncodeThenSendMessage(std::vector<uint8_t> body) = 0;
   void PushSendQueue(const std::string &body, bool use_sent_queue, uint32_t seq, bool priority);
-  virtual void Send(bool send_all = false);
 
   bool DecodeMessage(int nRead, std::vector<uint8_t> &receiving, int &next_decoding_offset, bool &header_decoded, HeaderFields &header_fields);
   bool TryToDecodeHeader(std::vector<uint8_t> &receiving, int &next_decoding_offset, bool &header_decoded, HeaderFields &header_fields);
@@ -2174,8 +2199,6 @@ void FunapiUdpTransportImpl::Recv() {
     (&addrinfo_res_->ai_addrlen)));
 #endif // FUNAPI_PLATFORM_WINDOWS
 
-  // FUNAPI_LOG("nRead = %d", nRead);
-
   if (nRead < 0) {
     DebugUtils::Log("receive failed: %s", strerror(errno));
     OnTransportDisconnected(TransportProtocol::kUdp);
@@ -2210,32 +2233,36 @@ class FunapiHttpTransportImpl : public FunapiTransportImpl {
   void Update();
 
   void SetSequenceNumberValidation(const bool validation);
+  void SetCACertFilePath(const std::string &path);
+
+  void Send(bool send_all = false);
 
  protected:
-  void Send(bool send_all = false);
   bool EncodeThenSendMessage(std::vector<uint8_t> body);
 
  private:
   void WebResponseHeaderCb(const void *data, int len, HeaderFields &header_fields);
   void WebResponseBodyCb(const void *data, int len, std::vector<uint8_t> &receiving);
 
-  bool http_request_processing_ = false;
-
   std::string host_url_;
   std::string cookie_;
+
+  std::shared_ptr<FunapiHttp> http_ = nullptr;
+  std::shared_ptr<FunapiThread> http_thread_ = nullptr;
+  std::string cert_file_path_;
 };
 
 
 FunapiHttpTransportImpl::FunapiHttpTransportImpl(const std::string &hostname_or_ip,
                                                  uint16_t port, bool https, FunEncoding encoding)
-  : FunapiTransportImpl(TransportProtocol::kHttp, encoding) {
+: FunapiTransportImpl(TransportProtocol::kHttp, encoding) {
   char url[1024];
   sprintf(url, "%s://%s:%d/v%d/",
       https ? "https" : "http", hostname_or_ip.c_str(), port,
       static_cast<int>(FunapiVersion::kProtocolVersion));
   host_url_ = url;
 
-  DebugUtils::Log("Host url : %s", host_url_.c_str());
+  // DebugUtils::Log("Host url : %s", host_url_.c_str());
 }
 
 
@@ -2255,6 +2282,9 @@ void FunapiHttpTransportImpl::Start() {
   SetState(TransportState::kConnecting);
 
   PushNetworkThreadTask([this]()->bool {
+    http_ = FunapiHttp::Create(cert_file_path_);
+    http_thread_ = FunapiThread::Get("_http");
+
     auto self = shared_from_this();
     std::shared_ptr<FunapiTransportHandlers> handlers = std::make_shared<FunapiTransportHandlers>([this, self]() {
       Update();
@@ -2284,6 +2314,9 @@ void FunapiHttpTransportImpl::Stop() {
   PushNetworkThreadTask([this]()->bool {
     Send(true);
 
+    http_ = nullptr;
+    http_thread_ = nullptr;
+
     SetState(TransportState::kDisconnected);
 
     OnTransportClosed(TransportProtocol::kHttp);
@@ -2298,110 +2331,13 @@ void FunapiHttpTransportImpl::Stop() {
 
 
 void FunapiHttpTransportImpl::Send(bool send_all) {
-  if (http_request_processing_) {
-    // log
-    // DebugUtils::Log("http_request_processing_ = true");
-    // //
-  }
-  else {
+  http_thread_->Push([this, send_all]()->bool {
     FunapiTransportImpl::Send(send_all);
-  }
+    return true;
+  });
 }
 
 
-#ifdef FUNAPI_UE4
-bool FunapiHttpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
-  if (GetState() != TransportState::kConnected) return false;
-
-  if (http_request_processing_)
-    return false;
-
-  HeaderFields header_fields_for_send;
-  MakeHeaderFields(header_fields_for_send, body);
-
-  encrytion_->Encrypt(header_fields_for_send, body);
-  encrytion_->SetHeaderFieldsForHttpSend(header_fields_for_send);
-
-  if (!cookie_.empty()) {
-    header_fields_for_send[kCookieRequestHeaderField] = cookie_;
-  }
-
-  auto http_request = FHttpModule::Get().CreateRequest();
-  http_request->SetURL(FString(host_url_.c_str()));
-  http_request->SetVerb(FString("POST"));
-  http_request->SetHeader(FString("Content-Type"), FString("application/json; charset=utf-8"));
-
-  for (auto it : header_fields_for_send) {
-    // debug
-    /*
-    std::stringstream ss;
-    ss << it.first << ": " << it.second;
-    DebugUtils::Log("ss.str() = %s", ss.str().c_str());
-    */
-    // //
-
-    http_request->SetHeader(FString(it.first.c_str()), FString(it.second.c_str()));
-  }
-
-  TArray<uint8> temp_array;
-  if (!body.empty()) {
-    temp_array.Append(body.data(), body.size());
-  }
-  http_request->SetContent(temp_array);
-
-  http_request->OnRequestProgress().BindLambda([this](FHttpRequestPtr request, int32 nSend, int32 nRecv) {
-    // DebugUtils::Log("OnRequestProgress - nSend = %d, nRecv = %d, status = %d", nSend, nRecv, request->GetStatus());
-    http_request_processing_ = false;
-  });
-
-  http_request->OnProcessRequestComplete().BindLambda(
-    [this](FHttpRequestPtr request, FHttpResponsePtr response, bool succeed) {
-    if (!succeed) {
-      DebugUtils::Log("Response was invalid!");
-    }
-    else {
-      HeaderFields header_fields;
-
-      for (FString header : response->GetAllHeaders()) {
-        WebResponseHeaderCb(TCHAR_TO_ANSI(*header), header.Len() + 2, header_fields);
-      }
-
-      std::vector<uint8_t> receiving;
-      WebResponseBodyCb(response->GetContent().GetData(), response->GetContent().Num(), receiving);
-
-      // std::to_string is not supported on android, using std::stringstream instead.
-      std::stringstream ss_protocol_version;
-      ss_protocol_version << static_cast<int>(FunapiVersion::kProtocolVersion);
-      header_fields[kVersionHeaderField] = ss_protocol_version.str();
-
-      std::stringstream ss_version_header_field;
-      ss_version_header_field << receiving.size();
-      header_fields[kLengthHeaderField] = ss_version_header_field.str();
-
-      // cookie
-      auto it = header_fields.find(kCookieResponseHeaderField);
-      if (it != header_fields.end()) {
-        cookie_ = it->second;
-      }
-
-      encrytion_->SetHeaderFieldsForHttpRecv(header_fields);
-
-      bool header_decoded = true;
-      int next_decoding_offset = 0;
-      if (TryToDecodeBody(receiving, next_decoding_offset, header_decoded, header_fields) == false) {
-        Stop();
-      }
-    }
-  });
-  http_request_processing_ = true;
-  http_request->ProcessRequest();
-
-  return true;
-}
-#endif // FUNAPI_UE4
-
-
-#ifdef FUNAPI_COCOS2D
 bool FunapiHttpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
   if (GetState() != TransportState::kConnected) return false;
 
@@ -2415,86 +2351,45 @@ bool FunapiHttpTransportImpl::EncodeThenSendMessage(std::vector<uint8_t> body) {
     header_fields_for_send[kCookieRequestHeaderField] = cookie_;
   }
 
-  cocos2d::network::HttpRequest* request = new (std::nothrow) cocos2d::network::HttpRequest();
-  request->setUrl(host_url_.c_str());
-  request->setRequestType(cocos2d::network::HttpRequest::Type::POST);
+  bool is_ok = true;
+  http_->PostRequest(host_url_, header_fields_for_send, body, [this, &is_ok](int code, const std::string error_string){
+    DebugUtils::Log("Error from cURL: %d, %s", code, error_string.c_str());
+    is_ok = false;
+  }, [this](const std::vector<std::string> &v_header, const std::vector<uint8_t> &v_body) {
+    HeaderFields header_fields;
+    auto temp_header = const_cast<std::vector<std::string>&>(v_header);
+    auto temp_body = const_cast<std::vector<uint8_t>&>(v_body);
 
-  std::vector<std::string> headers;
-
-  for (auto it : header_fields_for_send) {
-    std::stringstream ss;
-    ss << it.first << ": " << it.second;
-
-    headers.push_back(ss.str().c_str());
-  }
-
-  request->setHeaders(headers);
-  request->setRequestData(reinterpret_cast<char*>(body.data()), body.size());
-
-  request->setResponseCallback([this](cocos2d::network::HttpClient *sender, cocos2d::network::HttpResponse *response) {
-    if (!response->isSucceed()) {
-      DebugUtils::Log("Response was invalid!");
+    for (int i=1;i<temp_header.size();++i) {
+      WebResponseHeaderCb(temp_header[i].c_str(), static_cast<int>(temp_header[i].length()), header_fields);
     }
-    else {
-      HeaderFields header_fields;
 
-      char* start = response->getResponseHeader()->data();
-      int len = static_cast<int>(response->getResponseHeader()->size());
-      int count = 0;
-      ssize_t eol_offset;
+    // std::to_string is not supported on android, using std::stringstream instead.
+    std::stringstream ss_protocol_version;
+    ss_protocol_version << static_cast<int>(FunapiVersion::kProtocolVersion);
+    header_fields[kVersionHeaderField] = ss_protocol_version.str();
 
-      do {
-        char *end = std::search(start, start + len, kHeaderDelimeter,
-                                kHeaderDelimeter + strlen(kHeaderDelimeter));
-        eol_offset = end - start;
+    std::stringstream ss_version_header_field;
+    ss_version_header_field << temp_body.size();
+    header_fields[kLengthHeaderField] = ss_version_header_field.str();
 
-        if (count != 0) {
-          WebResponseHeaderCb(start, static_cast<int>(eol_offset + 2), header_fields);
-        }
+    // cookie
+    auto it = header_fields.find(kCookieResponseHeaderField);
+    if (it != header_fields.end()) {
+      cookie_ = it->second;
+    }
 
-        start = end + 1;
-        len -= eol_offset + 1;
+    encrytion_->SetHeaderFieldsForHttpRecv(header_fields);
 
-        ++count;
-
-        if (len <= 0) {
-          break;
-        }
-      } while (len > 0);
-
-      std::vector<uint8_t> receiving(response->getResponseData()->begin(), response->getResponseData()->end());
-
-      // std::to_string is not supported on android, using std::stringstream instead.
-      std::stringstream ss_protocol_version;
-      ss_protocol_version << static_cast<int>(FunapiVersion::kProtocolVersion);
-      header_fields[kVersionHeaderField] = ss_protocol_version.str();
-
-      std::stringstream ss_version_header_field;
-      ss_version_header_field << receiving.size();
-      header_fields[kLengthHeaderField] = ss_version_header_field.str();
-
-      // cookie
-      auto it = header_fields.find(kCookieResponseHeaderField);
-      if (it != header_fields.end()) {
-        cookie_ = it->second;
-      }
-
-      encrytion_->SetHeaderFieldsForHttpRecv(header_fields);
-
-      bool header_decoded = true;
-      int next_decoding_offset = 0;
-      if (TryToDecodeBody(receiving, next_decoding_offset, header_decoded, header_fields) == false) {
-        Stop();
-      }
+    bool header_decoded = true;
+    int next_decoding_offset = 0;
+    if (TryToDecodeBody(temp_body, next_decoding_offset, header_decoded, header_fields) == false) {
+      Stop();
     }
   });
 
-  cocos2d::network::HttpClient::getInstance()->send(request);
-  request->release();
-
-  return true;
+  return is_ok;
 }
-#endif // FUNAPI_COCOS2D
 
 
 void FunapiHttpTransportImpl::WebResponseHeaderCb(const void *data, int len, HeaderFields &header_fields) {
@@ -2541,12 +2436,20 @@ void FunapiHttpTransportImpl::WebResponseBodyCb(const void *data, int len, std::
 
 
 void FunapiHttpTransportImpl::Update() {
-  Send();
+  http_thread_->Push([this]()->bool {
+    Send();
+    return true;
+  });
 }
 
 
 void FunapiHttpTransportImpl::SetSequenceNumberValidation(const bool validation) {
   sequence_number_validation_ = validation;
+}
+
+
+void FunapiHttpTransportImpl::SetCACertFilePath(const std::string &path) {
+  cert_file_path_ = path;
 }
 
 
@@ -2894,6 +2797,11 @@ void FunapiHttpTransport::SetSendAckHandler(std::function<void(const TransportPr
 
 void FunapiHttpTransport::SetEncryptionType(EncryptionType type) {
   return impl_->SetEncryptionType(type);
+}
+
+
+void FunapiHttpTransport::SetCACertFilePath(const std::string &path) {
+  return impl_->SetCACertFilePath(path);
 }
 
 

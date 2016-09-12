@@ -16,6 +16,7 @@
 #include "funapi/funapi_utils.h"
 #include "funapi/funapi_tasks.h"
 #include "funapi/funapi_announcement.h"
+#include "funapi/funapi_downloader.h"
 #include "funapi_session.h"
 #include "funapi_multicasting.h"
 #include "funapi_tester.h"
@@ -457,28 +458,79 @@ bool Afunapi_tester::LeaveMulticastAllChannels()
   return true;
 }
 
+bool Afunapi_tester::DownloaderTest()
+{
+  UE_LOG(LogClass, Warning, TEXT("Download button clicked."));
+
+  if (!downloader_) {
+    std::stringstream ss_download_url;
+    ss_download_url << "http://" << kDownloadServerIp << ":" << kDownloadServerPort;
+
+    downloader_ = fun::FunapiHttpDownloader::Create(ss_download_url.str(),
+                                                    TCHAR_TO_UTF8(*(FPaths::GameSavedDir())));
+
+    downloader_->AddReadyCallback([](const std::shared_ptr<fun::FunapiHttpDownloader>&downloader,
+                                     const std::vector<std::shared_ptr<fun::FunapiDownloadFileInfo>>&info) {
+       // fun::DebugUtils::Log("ready download");
+       for (auto i : info) {
+         std::stringstream ss_temp;
+         ss_temp << i->GetUrl() << std::endl;
+         fun::DebugUtils::Log("%s", ss_temp.str().c_str());
+       }
+    });
+
+    downloader_->AddProgressCallback([](const std::shared_ptr<fun::FunapiHttpDownloader> &downloader,
+                                        const std::vector<std::shared_ptr<fun::FunapiDownloadFileInfo>>&info,
+                                        const int index,
+                                        const int max_index,
+                                        const uint64_t received_bytes,
+                                        const uint64_t expected_bytes) {
+      auto i = info[index];
+
+      std::stringstream ss_temp;
+      ss_temp << index << "/" << max_index << " " << received_bytes << "/" << expected_bytes << " " << i->GetUrl() << std::endl;
+      fun::DebugUtils::Log("%s", ss_temp.str().c_str());
+    });
+
+    downloader_->AddCompletionCallback([this](const std::shared_ptr<fun::FunapiHttpDownloader>&downloader,
+                                              const std::vector<std::shared_ptr<fun::FunapiDownloadFileInfo>>&info,
+                                              const fun::FunapiHttpDownloader::ResultCode result_code) {
+      if (result_code == fun::FunapiHttpDownloader::ResultCode::kSucceed) {
+        for (auto i : info) {
+          fun::DebugUtils::Log("file_path=%s", i->GetPath().c_str());
+        }
+      }
+
+      downloader_ = nullptr;
+    });
+
+    downloader_->Start();
+  }
+
+  return true;
+}
+
 bool Afunapi_tester::RequestAnnouncements()
 {
   UE_LOG(LogClass, Warning, TEXT("Request announcements button clicked."));
 
   if (announcement_ == nullptr) {
     std::stringstream ss_url;
-    ss_url << "http://" << kAnnouncementServer << ":" << kAnnouncementPort;
+    ss_url << "http://" << kAnnouncementServerIp << ":" << kAnnouncementServerPort;
 
-    std::string path = fun::FunapiUtil::GetWritablePath();
+    announcement_ = fun::FunapiAnnouncement::Create(ss_url.str(),
+                                                    TCHAR_TO_UTF8(*(FPaths::GameSavedDir())));
 
-    fun::DebugUtils::Log("path = %s", path.c_str());
-
-    announcement_ = fun::FunapiAnnouncement::Create(ss_url.str().c_str(), path.c_str());
-
-    announcement_->AddCompletionCallback([](const std::shared_ptr<fun::FunapiAnnouncement> &announcement,
-                                            const fun::AnnouncementResult result,
-                                            const std::vector<std::shared_ptr<fun::AnnouncementInfo>>&info){
-      if (result == fun::AnnouncementResult::kSuccess) {
+    announcement_->AddCompletionCallback([this](const std::shared_ptr<fun::FunapiAnnouncement> &announcement,
+                                                const std::vector<std::shared_ptr<fun::FunapiAnnouncementInfo>>&info,
+                                                const fun::FunapiAnnouncement::ResultCode result){
+      if (result == fun::FunapiAnnouncement::ResultCode::kSucceed) {
         for (auto i : info) {
           fun::DebugUtils::Log("date=%s message=%s subject=%s file_path=%s", i->GetDate().c_str(), i->GetMessageText().c_str(), i->GetSubject().c_str(), i->GetFilePath().c_str());
         }
       }
+
+      announcement_ = nullptr;
     });
   }
 
@@ -720,23 +772,4 @@ void Afunapi_tester::OnSessionInitiated(const std::string &session_id)
 void Afunapi_tester::OnSessionClosed()
 {
   fun::DebugUtils::Log("session closed");
-}
-
-bool Afunapi_tester::FileDownload()
-{
-  UE_LOG(LogClass, Warning, TEXT("FileDownload button clicked."));
-  /*
-  fun::FunapiHttpDownloader downloader;
-  downloader.ReadyCallback += [&downloader](int count, uint64 size) {
-    downloader.StartDownload();
-  };
-
-  downloader.GetDownloadList("http://127.0.0.1:8020", "C:\\download_test");
-
-  while (downloader.IsDownloading()) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
-  }
-  */
-
-  return true;
 }

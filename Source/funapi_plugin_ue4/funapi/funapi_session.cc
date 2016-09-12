@@ -10,6 +10,7 @@
 #include "funapi_utils.h"
 #include "funapi_tasks.h"
 #include "funapi_session.h"
+#include "funapi_http.h"
 
 namespace fun {
 
@@ -303,6 +304,7 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
 
         http_transport->SetSequenceNumberValidation(http_option_->GetSequenceNumberValidation());
         http_transport->SetEncryptionType(http_option_->GetEncryptionType());
+        http_transport->SetCACertFilePath(http_option_->GetCACertFilePath());
       }
     }
 

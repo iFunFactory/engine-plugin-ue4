@@ -95,7 +95,7 @@ class DebugUtils
 
 class FunapiUtil
 {
-public:
+ public:
   static bool SeqLess(const uint32_t x, const uint32_t y) {
     // 아래 참고
     //  - http://en.wikipedia.org/wiki/Serial_number_arithmetic
@@ -103,17 +103,31 @@ public:
     return (int32_t)(y - x) > 0;
   }
 
-  static std::string GetWritablePath() {
+  static bool IsFileExists(const std::string &file_name) {
 #ifdef FUNAPI_COCOS2D
-    static std::string writablePath = cocos2d::FileUtils::getInstance()->getWritablePath();
+    return cocos2d::FileUtils::getInstance()->isFileExist(file_name.c_str());
 #endif
 
 #ifdef FUNAPI_UE4
-    static std::string writablePath = TCHAR_TO_UTF8(*(FPaths::GameSavedDir()));;
+    return FPlatformFileManager::Get().GetPlatformFile().FileExists(ANSI_TO_TCHAR(file_name.c_str()));
 #endif
 
-    return writablePath;
+    return false;
   };
+
+  static long GetFileSize(const std::string &file_name) {
+#ifdef FUNAPI_COCOS2D
+    return cocos2d::FileUtils::getInstance()->getFileSize(file_name.c_str());
+#endif
+
+#ifdef FUNAPI_UE4
+    return FPlatformFileManager::Get().GetPlatformFile().FileSize(ANSI_TO_TCHAR(file_name.c_str()));
+#endif
+
+    return 0;
+  };
+
+  static std::string MD5String(const std::string &file_name, bool use_front);
 };
 
 }  // namespace fun

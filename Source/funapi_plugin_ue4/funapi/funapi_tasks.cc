@@ -24,16 +24,15 @@ class FunapiTasksImpl : public std::enable_shared_from_this<FunapiTasksImpl> {
   static void Add(std::weak_ptr<FunapiTasksImpl> t);
 
   void Update();
-  void Push(const TaskHandler &task);
-  void Set(const TaskHandler &task);
+  virtual void Push(const TaskHandler &task);
+  virtual void Set(const TaskHandler &task);
+
+ protected:
+  std::function<bool()> function_ = nullptr;
+  std::queue<std::function<bool()>> queue_;
+  std::mutex mutex_;
 
  private:
-  std::queue<std::function<bool()>> queue_;
-  std::mutex queue_mutex_;
-
-  std::function<bool()> function_ = nullptr;
-  std::mutex function_mutex_;
-
   static std::vector<std::weak_ptr<FunapiTasksImpl>> v_tasks_;
   static std::mutex v_mutex_;
 };
@@ -54,7 +53,7 @@ void FunapiTasksImpl::Update() {
   std::function<bool()> task = nullptr;
 
   {
-    std::unique_lock<std::mutex> lock(function_mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     task = function_;
   }
   if (task) {
@@ -63,7 +62,7 @@ void FunapiTasksImpl::Update() {
 
   while (true) {
     {
-      std::unique_lock<std::mutex> lock(queue_mutex_);
+      std::unique_lock<std::mutex> lock(mutex_);
       if (queue_.empty()) {
         break;
       }
@@ -82,14 +81,14 @@ void FunapiTasksImpl::Update() {
 
 void FunapiTasksImpl::Push(const TaskHandler &task)
 {
-  std::unique_lock<std::mutex> lock(queue_mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   queue_.push(task);
 }
 
 
 void FunapiTasksImpl::Set(const TaskHandler &task)
 {
-  std::unique_lock<std::mutex> lock(function_mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   function_ = task;
 }
 
@@ -169,8 +168,11 @@ public:
   FunapiThreadImpl();
   ~FunapiThreadImpl();
 
-  static void Add(const std::string &thread_id_string, std::weak_ptr<FunapiThreadImpl> t);
-  static std::shared_ptr<FunapiThreadImpl> Get(const std::string &thread_id_string);
+  static void Add(const std::string &thread_id_string, std::weak_ptr<FunapiThread> t);
+  static std::shared_ptr<FunapiThread> Get(const std::string &thread_id_string);
+
+  void Push(const TaskHandler &task);
+  void Set(const TaskHandler &task);
 
   void Join();
 
@@ -182,13 +184,14 @@ public:
 
   std::thread thread_;
   bool run_ = false;
+  std::condition_variable_any condition_;
 
-  static std::unordered_map<std::string, std::weak_ptr<FunapiThreadImpl>> m_tasks_;
+  static std::unordered_map<std::string, std::weak_ptr<FunapiThread>> m_threads_;
   static std::mutex m_mutex_;
 };
 
 
-std::unordered_map<std::string, std::weak_ptr<FunapiThreadImpl>> FunapiThreadImpl::m_tasks_;
+std::unordered_map<std::string, std::weak_ptr<FunapiThread>> FunapiThreadImpl::m_threads_;
 std::mutex FunapiThreadImpl::m_mutex_;
 
 
@@ -213,8 +216,23 @@ void FunapiThreadImpl::Finalize() {
 }
 
 
+void FunapiThreadImpl::Push(const TaskHandler &task)
+{
+  FunapiTasksImpl::Push(task);
+  condition_.notify_one();
+}
+
+
+void FunapiThreadImpl::Set(const TaskHandler &task)
+{
+  FunapiTasksImpl::Set(task);
+  condition_.notify_one();
+}
+
+
 void FunapiThreadImpl::JoinThread() {
   run_ = false;
+  condition_.notify_all();
   if (thread_.joinable())
     thread_.join();
 }
@@ -222,6 +240,13 @@ void FunapiThreadImpl::JoinThread() {
 
 void FunapiThreadImpl::Thread() {
   while (run_) {
+    {
+      std::unique_lock<std::mutex> lock(mutex_);
+      if (function_ == nullptr && queue_.empty()) {
+        condition_.wait(mutex_);
+      }
+    }
+
     Update();
   }
 }
@@ -232,21 +257,21 @@ void FunapiThreadImpl::Join() {
 }
 
 
-void FunapiThreadImpl::Add(const std::string &thread_id_string, std::weak_ptr<FunapiThreadImpl> t) {
+void FunapiThreadImpl::Add(const std::string &thread_id_string, std::weak_ptr<FunapiThread> t) {
   std::unique_lock<std::mutex> lock(m_mutex_);
-  m_tasks_[thread_id_string] = t;
+  m_threads_[thread_id_string] = t;
 }
 
 
-std::shared_ptr<FunapiThreadImpl> FunapiThreadImpl::Get(const std::string &thread_id_string) {
+std::shared_ptr<FunapiThread> FunapiThreadImpl::Get(const std::string &thread_id_string) {
   std::unique_lock<std::mutex> lock(m_mutex_);
-  auto it = m_tasks_.find(thread_id_string);
-  if (it != m_tasks_.end()) {
+  auto it = m_threads_.find(thread_id_string);
+  if (it != m_threads_.end()) {
     if (auto t = it->second.lock()) {
       return t;
     }
     else {
-      m_tasks_.erase(it);
+      m_threads_.erase(it);
     }
   }
 
@@ -259,7 +284,6 @@ std::shared_ptr<FunapiThreadImpl> FunapiThreadImpl::Get(const std::string &threa
 
 FunapiThread::FunapiThread(const std::string &thread_id_string, const TaskHandler &task) : impl_(std::make_shared<FunapiThreadImpl>()) {
   impl_->Set(task);
-  FunapiThreadImpl::Add(thread_id_string, impl_);
 }
 
 
@@ -268,7 +292,9 @@ FunapiThread::~FunapiThread() {
 
 
 std::shared_ptr<FunapiThread> FunapiThread::Create(const std::string &thread_id_string, const TaskHandler &task) {
-  return std::make_shared<FunapiThread>(thread_id_string, task);
+  auto t = std::make_shared<FunapiThread>(thread_id_string, task);
+  FunapiThreadImpl::Add(thread_id_string, t);
+  return t;
 }
 
 
@@ -314,6 +340,15 @@ void FunapiThread::Set(const TaskHandler &task) {
 
 void FunapiThread::Join() {
   impl_->Join();
+}
+
+
+std::shared_ptr<FunapiThread> FunapiThread::Get(const std::string &thread_id_string) {
+  if (auto t = FunapiThreadImpl::Get(thread_id_string)) {
+    return t;
+  }
+
+  return FunapiThread::Create(thread_id_string, nullptr);
 }
 
 }  // namespace fun

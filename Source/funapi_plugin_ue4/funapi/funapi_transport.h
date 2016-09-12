@@ -163,6 +163,9 @@ class FunapiHttpTransportOption : public FunapiTransportOption {
   void SetEncryptionType(EncryptionType type);
   EncryptionType GetEncryptionType();
 
+  void SetCACertFilePath(const std::string &path);
+  const std::string& GetCACertFilePath();
+
  private:
   std::shared_ptr<FunapiHttpTransportOptionImpl> impl_;
 };
@@ -311,6 +314,7 @@ class FunapiHttpTransport : public FunapiTransport {
   void SetConnectTimeout(time_t timeout);
   void SetSequenceNumberValidation(const bool validation);
   void SetEncryptionType(EncryptionType type);
+  void SetCACertFilePath(const std::string &path);
 
   void AddStartedCallback(const TransportEventHandler &handler);
   void AddClosedCallback(const TransportEventHandler &handler);

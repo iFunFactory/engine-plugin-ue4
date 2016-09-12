@@ -14,6 +14,7 @@ namespace fun {
   class FunapiAnnouncement;
   class FunapiSession;
   class FunapiMulticast;
+  class FunapiHttpDownloader;
   enum class TransportProtocol : int;
 }
 
@@ -46,9 +47,6 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
   UFUNCTION(BlueprintCallable, Category="Funapi")
   bool SendEchoMessage();
 
-  UFUNCTION(BlueprintCallable, Category="Funapi")
-  bool FileDownload();
-
   UFUNCTION(BlueprintCallable, Category = "Funapi")
   bool CreateMulticast();
 
@@ -66,6 +64,9 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
 
   UFUNCTION(BlueprintCallable, Category = "Funapi")
   bool LeaveMulticastAllChannels();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool DownloaderTest();
 
   UFUNCTION(BlueprintCallable, Category = "Funapi")
   bool RequestAnnouncements();
@@ -152,8 +153,13 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
   std::shared_ptr<fun::FunapiMulticast> multicast_ = nullptr;
 
   // Please change this address for test.
-  const std::string kAnnouncementServer = "127.0.0.1";
-  const int kAnnouncementPort = 8080;
+  const std::string kDownloadServerIp = "127.0.0.1";
+  const int kDownloadServerPort = 8020;
+  std::shared_ptr<fun::FunapiHttpDownloader> downloader_ = nullptr;
+
+  // Please change this address for test.
+  const std::string kAnnouncementServerIp = "127.0.0.1";
+  const int kAnnouncementServerPort = 8080;
   std::shared_ptr<fun::FunapiAnnouncement> announcement_ = nullptr;
 
   bool EnableTextboxServerIP = true;

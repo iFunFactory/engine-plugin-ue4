@@ -35,6 +35,8 @@ public class funapi_plugin_ue4 : ModuleRules
             LibPath += "lib/Mac";
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl.a"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcrypto.a"));
+            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libssl.a"));
+            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libz.a"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libprotobuf.a"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.a"));
         }
@@ -59,7 +61,6 @@ public class funapi_plugin_ue4 : ModuleRules
             PublicLibraryPaths.Add(LibPath);
 
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl_a.lib"));
-            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libeay32.lib"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libprotobuf.lib"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.lib"));
             Definitions.Add("CURL_STATICLIB=1");
@@ -83,6 +84,7 @@ public class funapi_plugin_ue4 : ModuleRules
 
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl.a"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcrypto.a"));
+            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libssl.a"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libprotobuf.a"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.a"));
         }

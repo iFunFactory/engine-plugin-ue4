@@ -133,6 +133,8 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   void SendAck(const TransportProtocol protocol, const uint32_t ack);
   void SendRedirectConenectMessage(const TransportProtocol protocol, const std::string &token);
 
+  bool UseSodium(const TransportProtocol protocol);
+
   bool started_;
   bool session_reliability_ = false;
 
@@ -277,7 +279,7 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
         tcp_transport->SetDisableNagle(tcp_option_->GetDisableNagle());
         tcp_transport->SetConnectTimeout(tcp_option_->GetConnectTimeout());
         tcp_transport->SetSequenceNumberValidation(tcp_option_->GetSequenceNumberValidation());
-        tcp_transport->SetEncryptionType(tcp_option_->GetEncryptionType());
+        tcp_transport->SetEncryptionType(tcp_option_->GetEncryptionType(), tcp_option_->GetPublicKey());
       }
     }
     else if (protocol == fun::TransportProtocol::kUdp) {
@@ -321,6 +323,17 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
 void FunapiSessionImpl::Connect(const TransportProtocol protocol) {
   if (auto transport = GetTransport(protocol)) {
     started_ = true;
+
+    if (protocol == TransportProtocol::kTcp) {
+      std::static_pointer_cast<FunapiTcpTransport>(transport)->SetEncryptionType(tcp_option_->GetEncryptionType(), tcp_option_->GetPublicKey());
+    }
+    else if (protocol == TransportProtocol::kUdp) {
+      std::static_pointer_cast<FunapiUdpTransport>(transport)->SetEncryptionType(udp_option_->GetEncryptionType());
+    }
+    else if (protocol == TransportProtocol::kHttp) {
+      std::static_pointer_cast<FunapiHttpTransport>(transport)->SetEncryptionType(http_option_->GetEncryptionType());
+    }
+
     transport->Start();
   }
 }
@@ -833,6 +846,10 @@ void FunapiSessionImpl::AttachTransport(const std::shared_ptr<FunapiTransport> &
     });
 
     transport->AddStartedCallback([this, self](const TransportProtocol protocol){
+      if (UseSodium(protocol)) {
+        SendEmptyMessage(protocol);
+      }
+
       if (GetSessionId().empty()) {
         SendEmptyMessage(protocol);
       }
@@ -1104,16 +1121,14 @@ void FunapiSessionImpl::SendEmptyMessage(const TransportProtocol protocol) {
   std::shared_ptr<FunapiTransport> transport = GetTransport(protocol);
   FunEncoding encoding = transport->GetEncoding();
 
-  if (GetSessionId().empty()) {
-    assert(encoding!=FunEncoding::kNone);
+  assert(encoding!=FunEncoding::kNone);
 
-    if (encoding == FunEncoding::kJson) {
-      SendMessage("{}");
-    }
-    else if (encoding == FunEncoding::kProtobuf) {
-      FunMessage msg;
-      SendMessage(msg.SerializeAsString());
-    }
+  if (encoding == FunEncoding::kJson) {
+    SendMessage("{}", protocol);
+  }
+  else if (encoding == FunEncoding::kProtobuf) {
+    FunMessage msg;
+    SendMessage(msg.SerializeAsString(), protocol);
   }
 }
 
@@ -1315,6 +1330,15 @@ void FunapiSessionImpl::SetTransportOptionCallback(const TransportOptionHandler 
   transport_option_handler_ = handler;
 }
 
+
+bool FunapiSessionImpl::UseSodium(const TransportProtocol protocol) {
+  if (protocol == TransportProtocol::kTcp) {
+    if (auto t = std::static_pointer_cast<FunapiTcpTransport>(GetTransport(TransportProtocol::kTcp))) {
+      return t->UseSodium();
+    }
+  }
+  return false;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiSession implementation.

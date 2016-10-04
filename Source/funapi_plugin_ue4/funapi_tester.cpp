@@ -19,6 +19,7 @@
 #include "funapi/funapi_downloader.h"
 #include "funapi_session.h"
 #include "funapi_multicasting.h"
+#include "funapi/funapi_encryption.h"
 #include "funapi_tester.h"
 
 #if PLATFORM_WINDOWS
@@ -736,6 +737,7 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
       auto option = fun::FunapiTcpTransportOption::Create();
       option->SetDisableNagle(true);
       option->SetEnablePing(true);
+      option->SetEncryptionType(fun::EncryptionType::kChacha20Encryption, "0b8504a9c1108584f4f0a631ead8dd548c0101287b91736566e13ead3f008f5d");
       session_->Connect(protocol, port, encoding, option);
       */
     }

@@ -12,7 +12,7 @@ public class funapi_plugin_ue4 : ModuleRules
     public funapi_plugin_ue4(TargetInfo Target)
     {
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
-        PublicDependencyModuleNames.AddRange(new string[] { "Json", "HTTP", "UMG" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Json", "UMG" });
         PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 
         // Third party library
@@ -36,6 +36,7 @@ public class funapi_plugin_ue4 : ModuleRules
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl.a"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcrypto.a"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libprotobuf.a"));
+            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.a"));
         }
         else if (Target.Platform == UnrealTargetPlatform.Win32)
         {
@@ -47,6 +48,7 @@ public class funapi_plugin_ue4 : ModuleRules
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl_a.lib"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libeay32.lib"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libprotobuf.lib"));
+            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.lib"));
             Definitions.Add("CURL_STATICLIB=1");
         }
         else if (Target.Platform == UnrealTargetPlatform.Win64)
@@ -59,6 +61,7 @@ public class funapi_plugin_ue4 : ModuleRules
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl_a.lib"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libeay32.lib"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libprotobuf.lib"));
+            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.lib"));
             Definitions.Add("CURL_STATICLIB=1");
         }
         else if (Target.Platform == UnrealTargetPlatform.Android)
@@ -81,7 +84,7 @@ public class funapi_plugin_ue4 : ModuleRules
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl.a"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcrypto.a"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libprotobuf.a"));
-
+            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.a"));
         }
         else if (Target.Platform == UnrealTargetPlatform.IOS)
         {
@@ -92,6 +95,7 @@ public class funapi_plugin_ue4 : ModuleRules
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcrypto.a"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libssl.a"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libprotobuf.a"));
+            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.a"));
         }
     }
 }

@@ -125,6 +125,9 @@ class FunapiTcpTransportOption : public FunapiTransportOption {
   void SetEncryptionType(EncryptionType type);
   EncryptionType GetEncryptionType();
 
+  void SetEncryptionType(EncryptionType type, const std::string &public_key);
+  const std::string& GetPublicKey();
+
  private:
   std::shared_ptr<FunapiTcpTransportOptionImpl> impl_;
 };
@@ -242,11 +245,14 @@ class FunapiTcpTransport : public FunapiTransport {
   void SetEnablePing(const bool enable_ping);
   void SetSequenceNumberValidation(const bool validation);
   void SetEncryptionType(EncryptionType type);
+  void SetEncryptionType(EncryptionType type, const std::string &public_key);
 
   void SetSendClientPingMessageHandler(std::function<bool(const TransportProtocol protocol)> handler);
   void SetReceivedHandler(TransportReceivedHandler handler);
   void SetIsReliableSessionHandler(std::function<bool()> handler);
   void SetSendAckHandler(std::function<void(const TransportProtocol protocol, const uint32_t seq)> handler);
+
+  bool UseSodium();
 
  private:
   std::shared_ptr<FunapiTcpTransportImpl> impl_;

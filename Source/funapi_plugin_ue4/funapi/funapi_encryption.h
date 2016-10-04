@@ -9,7 +9,15 @@
 
 namespace fun {
 
-enum class EncryptionType;
+enum class EncryptionType : int {
+  kNoneEncryption = 0,
+  kDefaultEncryption = 100,
+  kDummyEncryption,
+  kIFunEngine1Encryption,
+  kIFunEngine2Encryption,
+  kChacha20Encryption,
+  kAes128Encryption,
+};
 
 class FunapiEncryptionImpl;
 class FunapiEncryption : public std::enable_shared_from_this<FunapiEncryption> {
@@ -20,12 +28,15 @@ class FunapiEncryption : public std::enable_shared_from_this<FunapiEncryption> {
   ~FunapiEncryption();
 
   void SetEncryptionType(EncryptionType type);
+  void SetEncryptionType(EncryptionType type, const std::string &key);
 
   bool Encrypt(HeaderFields &header_fields, std::vector<uint8_t> &body);
   bool Decrypt(HeaderFields &header_fields, std::vector<uint8_t> &body);
 
   void SetHeaderFieldsForHttpSend (HeaderFields &header_fields);
   void SetHeaderFieldsForHttpRecv (HeaderFields &header_fields);
+
+  bool UseSodium();
 
  private:
   std::shared_ptr<FunapiEncryptionImpl> impl_;

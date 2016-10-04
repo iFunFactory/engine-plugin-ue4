@@ -304,7 +304,9 @@ public:
   int GetConnectTimeout();
 
   void SetEncryptionType(EncryptionType type);
+  void SetEncryptionType(EncryptionType type, const std::string &public_key);
   EncryptionType GetEncryptionType();
+  const std::string& GetPublicKey();
 
 private:
   bool disable_nagle_ = false;
@@ -313,6 +315,7 @@ private:
   bool sequence_number_validation_ = false;
   int timeout_seconds_ = 10;
   EncryptionType encryption_type_ = static_cast<EncryptionType>(0);
+  std::string public_key_;
 };
 
 
@@ -371,10 +374,20 @@ void FunapiTcpTransportOptionImpl::SetEncryptionType(EncryptionType type) {
 }
 
 
+void FunapiTcpTransportOptionImpl::SetEncryptionType(EncryptionType type, const std::string &public_key) {
+  encryption_type_ = type;
+  public_key_ = public_key;
+}
+
+
 EncryptionType FunapiTcpTransportOptionImpl::GetEncryptionType() {
   return encryption_type_;
 }
 
+
+const std::string& FunapiTcpTransportOptionImpl::GetPublicKey() {
+  return public_key_;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiUdpTransportOptionImpl implementation.
@@ -543,6 +556,16 @@ EncryptionType FunapiTcpTransportOption::GetEncryptionType() {
 }
 
 
+void FunapiTcpTransportOption::SetEncryptionType(EncryptionType type, const std::string &public_key) {
+  impl_->SetEncryptionType(type, public_key);
+}
+
+
+const std::string& FunapiTcpTransportOption::GetPublicKey() {
+  return impl_->GetPublicKey();
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiUdpTransportOption implementation.
 
@@ -661,6 +684,7 @@ class FunapiTransportImpl : public std::enable_shared_from_this<FunapiTransportI
   void SetSendAckHandler(std::function<void(const TransportProtocol protocol, const uint32_t seq)> handler);
 
   void SetEncryptionType(EncryptionType type);
+  void SetEncryptionType(EncryptionType type, const std::string &public_key);
   virtual void SetSequenceNumberValidation(const bool validation);
 
   void SetState(TransportState state);
@@ -1101,7 +1125,7 @@ void FunapiTransportImpl::Send(bool send_all) {
     if (!EncodeThenSendMessage(msg->GetBody())) {
       std::unique_lock<std::mutex> lock2(send_ack_queue_mutex_);
       send_ack_queue_.push_front(msg);
-      break;
+      return;
     }
   }
 
@@ -1216,6 +1240,16 @@ void FunapiTransportImpl::SetSendAckHandler(std::function<void(const TransportPr
 
 void FunapiTransportImpl::SetEncryptionType(EncryptionType type) {
   encrytion_->SetEncryptionType(type);
+}
+
+
+void FunapiTransportImpl::SetEncryptionType(EncryptionType type, const std::string &public_key) {
+  if (public_key.length() > 0) {
+    encrytion_->SetEncryptionType(type, public_key);
+  }
+  else {
+    SetEncryptionType(type);
+  }
 }
 
 
@@ -1621,6 +1655,8 @@ class FunapiTcpTransportImpl : public FunapiSocketTransportImpl {
 
   void SetSendClientPingMessageHandler(std::function<bool(const TransportProtocol protocol)> handler);
   void SetSequenceNumberValidation(const bool validation);
+
+  bool UseSodium();
 
  protected:
   void Update();
@@ -2075,6 +2111,11 @@ void FunapiTcpTransportImpl::SetSendClientPingMessageHandler(std::function<bool(
 
 void FunapiTcpTransportImpl::SetSequenceNumberValidation(const bool validation) {
   sequence_number_validation_ = validation;
+}
+
+
+bool FunapiTcpTransportImpl::UseSodium() {
+  return encrytion_->UseSodium();
 }
 
 
@@ -2587,10 +2628,19 @@ void FunapiTcpTransport::SetEncryptionType(EncryptionType type) {
 }
 
 
+void FunapiTcpTransport::SetEncryptionType(EncryptionType type, const std::string &public_key) {
+  return impl_->SetEncryptionType(type, public_key);
+}
+
+
 void FunapiTcpTransport::SetSequenceNumberValidation(const bool validation) {
   return impl_->SetSequenceNumberValidation(validation);
 }
 
+
+bool FunapiTcpTransport::UseSodium() {
+  return impl_->UseSodium();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiUdpTransport implementation.

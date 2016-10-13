@@ -325,13 +325,19 @@ void FunapiSessionImpl::Connect(const TransportProtocol protocol) {
     started_ = true;
 
     if (protocol == TransportProtocol::kTcp) {
-      std::static_pointer_cast<FunapiTcpTransport>(transport)->SetEncryptionType(tcp_option_->GetEncryptionType(), tcp_option_->GetPublicKey());
+      if (tcp_option_) {
+        std::static_pointer_cast<FunapiTcpTransport>(transport)->SetEncryptionType(tcp_option_->GetEncryptionType(), tcp_option_->GetPublicKey());
+      }
     }
     else if (protocol == TransportProtocol::kUdp) {
-      std::static_pointer_cast<FunapiUdpTransport>(transport)->SetEncryptionType(udp_option_->GetEncryptionType());
+      if (udp_option_) {
+        std::static_pointer_cast<FunapiUdpTransport>(transport)->SetEncryptionType(udp_option_->GetEncryptionType());
+      }
     }
     else if (protocol == TransportProtocol::kHttp) {
-      std::static_pointer_cast<FunapiHttpTransport>(transport)->SetEncryptionType(http_option_->GetEncryptionType());
+      if (http_option_) {
+        std::static_pointer_cast<FunapiHttpTransport>(transport)->SetEncryptionType(http_option_->GetEncryptionType());
+      }
     }
 
     transport->Start();

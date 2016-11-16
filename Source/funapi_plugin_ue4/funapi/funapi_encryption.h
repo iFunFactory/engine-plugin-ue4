@@ -22,10 +22,10 @@ enum class EncryptionType : int {
 class FunapiEncryptionImpl;
 class FunapiEncryption : public std::enable_shared_from_this<FunapiEncryption> {
  public:
-  typedef FunapiTransport::HeaderFields HeaderFields;
+  typedef std::map<std::string, std::string> HeaderFields;
 
   FunapiEncryption();
-  ~FunapiEncryption();
+  virtual ~FunapiEncryption();
 
   void SetEncryptionType(EncryptionType type);
   void SetEncryptionType(EncryptionType type, const std::string &key);

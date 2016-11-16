@@ -38,7 +38,7 @@ static const char* kDelim2 = ",";
 class Encryptor : public std::enable_shared_from_this<Encryptor> {
  public:
   Encryptor();
-  ~Encryptor();
+  virtual ~Encryptor();
 
   static std::shared_ptr<Encryptor> Create(EncryptionType type);
   static std::shared_ptr<Encryptor> Create(std::string name);
@@ -85,7 +85,7 @@ bool Encryptor::IsHandShakeCompleted() {
 class Encryptor0 : public Encryptor {
 public:
   Encryptor0();
-  ~Encryptor0();
+  virtual ~Encryptor0();
 
   EncryptionType GetEncryptionType();
   static std::string GetEncryptionName();
@@ -131,7 +131,7 @@ bool Encryptor0::Decrypt(std::vector<uint8_t> &body) {
 class EncryptorSodium : public Encryptor {
  public:
   EncryptorSodium() = default;
-  ~EncryptorSodium() = default;
+  virtual ~EncryptorSodium() = default;
 
   virtual const std::string& GetHandShakeString();
 
@@ -206,7 +206,7 @@ std::string EncryptorSodium::GenerateSharedSecret(std::array<uint8_t, 64> *secre
 class EncryptorChacha20 : public EncryptorSodium {
  public:
   EncryptorChacha20();
-  ~EncryptorChacha20();
+  virtual ~EncryptorChacha20();
 
   EncryptionType GetEncryptionType();
   static std::string GetEncryptionName();
@@ -312,7 +312,7 @@ void EncryptorChacha20::GenerateChacha20Secret(std::array<uint8_t, 32> *key,
 class EncryptorAes128 : public EncryptorSodium {
 public:
   EncryptorAes128();
-  ~EncryptorAes128();
+  virtual ~EncryptorAes128();
 
   EncryptionType GetEncryptionType();
   static std::string GetEncryptionName();
@@ -454,7 +454,7 @@ std::shared_ptr<Encryptor> Encryptor::Create(std::string name) {
 
 class FunapiEncryptionImpl : public std::enable_shared_from_this<FunapiEncryptionImpl> {
  public:
-  typedef FunapiTransport::HeaderFields HeaderFields;
+  typedef FunapiEncryption::HeaderFields HeaderFields;
 
   FunapiEncryptionImpl();
   ~FunapiEncryptionImpl();

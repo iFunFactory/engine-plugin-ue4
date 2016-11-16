@@ -15,7 +15,7 @@ class FunapiTasks : public std::enable_shared_from_this<FunapiTasks> {
   typedef std::function<bool()> TaskHandler;
 
   FunapiTasks();
-  ~FunapiTasks();
+  virtual ~FunapiTasks();
 
   static std::shared_ptr<FunapiTasks> Create();
   static void UpdateAll();
@@ -36,7 +36,7 @@ class FunapiThread : public std::enable_shared_from_this<FunapiThread> {
 
   FunapiThread() = delete;
   FunapiThread(const std::string &thread_id_string, const TaskHandler &task);
-  ~FunapiThread();
+  virtual ~FunapiThread();
 
   static std::shared_ptr<FunapiThread> Create(const std::string &thread_id_string, const TaskHandler &task);
   static std::shared_ptr<FunapiThread> Get(const std::string &thread_id_string);

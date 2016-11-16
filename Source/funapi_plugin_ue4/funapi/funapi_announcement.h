@@ -20,7 +20,7 @@ class FunapiAnnouncementInfo : public std::enable_shared_from_this<FunapiAnnounc
                    const std::string &image_url,
                    const std::string &link_url,
                    const std::string &file_path);
-  ~FunapiAnnouncementInfo();
+  virtual ~FunapiAnnouncementInfo();
 
   const std::string& GetDate();
   const std::string& GetMessageText();
@@ -52,7 +52,7 @@ class FunapiAnnouncement : public std::enable_shared_from_this<FunapiAnnouncemen
 
   FunapiAnnouncement() = delete;
   FunapiAnnouncement(const std::string &url, const std::string &path);
-  ~FunapiAnnouncement();
+  virtual ~FunapiAnnouncement();
 
   static std::shared_ptr<FunapiAnnouncement> Create(const std::string &url, const std::string &path);
 

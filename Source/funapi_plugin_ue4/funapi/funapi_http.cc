@@ -8,6 +8,7 @@
 #include "funapi_utils.h"
 #include "funapi_tasks.h"
 #include "funapi_http.h"
+#include "curl/curl.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -27,7 +28,7 @@ class FunapiHttpImpl : public std::enable_shared_from_this<FunapiHttpImpl> {
 
   FunapiHttpImpl();
   FunapiHttpImpl(const std::string &path);
-  ~FunapiHttpImpl();
+  virtual ~FunapiHttpImpl();
 
   void PostRequest(const std::string &url,
                    const HeaderFields &header,

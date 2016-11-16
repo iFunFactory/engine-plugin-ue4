@@ -7,9 +7,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Encryptor1 implementation.
 class Encryptor1 : public Encryptor {
-public:
+ public:
   Encryptor1();
-  ~Encryptor1();
+  virtual ~Encryptor1();
 
   EncryptionType GetEncryptionType();
   static std::string GetEncryptionName();
@@ -50,9 +50,9 @@ bool Encryptor1::Decrypt(std::vector<uint8_t> &body) {
 ////////////////////////////////////////////////////////////////////////////////
 // Encryptor2 implementation.
 class Encryptor2 : public Encryptor {
-public:
+ public:
   Encryptor2();
-  ~Encryptor2();
+  virtual ~Encryptor2();
 
   EncryptionType GetEncryptionType();
   static std::string GetEncryptionName();

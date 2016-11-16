@@ -9,6 +9,8 @@
 
 #include "funapi_session.h"
 
+class FunMessage;
+
 namespace fun {
 
 class FunapiMulticastImpl;
@@ -46,7 +48,7 @@ public:
   FunapiMulticast() = delete;
   FunapiMulticast(const char* sender, const char* hostname_or_ip, const uint16_t port, const FunEncoding encoding, const bool reliability);
   FunapiMulticast(const char* sender, const std::shared_ptr<FunapiSession> &session);
-  ~FunapiMulticast();
+  virtual ~FunapiMulticast();
 
   static std::shared_ptr<FunapiMulticast> Create(const char* sender,
                                                  const char* hostname_or_ip,

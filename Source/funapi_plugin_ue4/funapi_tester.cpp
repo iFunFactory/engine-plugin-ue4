@@ -277,7 +277,7 @@ bool Afunapi_tester::CreateMulticast()
     fun::FunEncoding encoding = with_protobuf_ ? fun::FunEncoding::kProtobuf : fun::FunEncoding::kJson;
     uint16_t port = with_protobuf_ ? 8022 : 8012;
 
-    multicast_ = fun::FunapiMulticast::Create(sender.c_str(), kServerIp.c_str(), port, encoding);
+    multicast_ = fun::FunapiMulticast::Create(sender.c_str(), kServer.c_str(), port, encoding, with_session_reliability_);
 
     multicast_->AddJoinedCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
       const std::string &channel_id, const std::string &multicast_sender) {
@@ -465,7 +465,7 @@ bool Afunapi_tester::DownloaderTest()
 
   if (!downloader_) {
     std::stringstream ss_download_url;
-    ss_download_url << "http://" << kDownloadServerIp << ":" << kDownloadServerPort;
+    ss_download_url << "http://" << kDownloadServer << ":" << kDownloadServerPort;
 
     downloader_ = fun::FunapiHttpDownloader::Create(ss_download_url.str(),
                                                     TCHAR_TO_UTF8(*(FPaths::GameSavedDir())));
@@ -517,7 +517,7 @@ bool Afunapi_tester::RequestAnnouncements()
 
   if (announcement_ == nullptr) {
     std::stringstream ss_url;
-    ss_url << "http://" << kAnnouncementServerIp << ":" << kAnnouncementServerPort;
+    ss_url << "http://" << kAnnouncementServer << ":" << kAnnouncementServerPort;
 
     announcement_ = fun::FunapiAnnouncement::Create(ss_url.str(),
                                                     TCHAR_TO_UTF8(*(FPaths::GameSavedDir())));
@@ -541,11 +541,11 @@ bool Afunapi_tester::RequestAnnouncements()
 }
 
 FText Afunapi_tester::GetServerIP() {
-  return FText::FromString(FString(kServerIp.c_str()));
+  return FText::FromString(FString(kServer.c_str()));
 }
 
 void Afunapi_tester::SetServerIP(FText server_ip) {
-  kServerIp = TCHAR_TO_UTF8(*(server_ip.ToString()));
+  kServer = TCHAR_TO_UTF8(*(server_ip.ToString()));
   // fun::DebugUtils::Log("SetServerIP - %s", kServerIp.c_str());
 }
 
@@ -627,7 +627,7 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
 {
   if (!session_) {
     // create
-    session_ = fun::FunapiSession::Create(kServerIp.c_str(), with_session_reliability_);
+    session_ = fun::FunapiSession::Create(kServer.c_str(), with_session_reliability_);
 
     // add callback
     session_->AddSessionEventCallback([this](const std::shared_ptr<fun::FunapiSession> &session,
@@ -657,7 +657,7 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
         fun::DebugUtils::Log("Transport Stopped called.");
       }
       else if (type == fun::TransportEventType::kConnectionFailed) {
-        fun::DebugUtils::Log("Transport Connection Failed(%d)", (int)transport_protocol);
+        fun::DebugUtils::Log("Transport Connection Failed (%s)", fun::TransportProtocolToString(transport_protocol).c_str());
         session_ = nullptr;
       }
       else if (type == fun::TransportEventType::kConnectionTimedOut) {
@@ -665,7 +665,7 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
         session_ = nullptr;
       }
       else if (type == fun::TransportEventType::kDisconnected) {
-        fun::DebugUtils::Log("Transport Disconnected called (%d)", (int)transport_protocol);
+        fun::DebugUtils::Log("Transport Disconnected called (%s)", fun::TransportProtocolToString(transport_protocol).c_str());
       }
     });
 

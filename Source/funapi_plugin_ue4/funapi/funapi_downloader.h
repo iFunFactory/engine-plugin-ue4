@@ -35,7 +35,7 @@ class FunapiHttpDownloader : public std::enable_shared_from_this<FunapiHttpDownl
 
   FunapiHttpDownloader() = delete;
   FunapiHttpDownloader(const std::string &url, const std::string &path);
-  ~FunapiHttpDownloader();
+  virtual ~FunapiHttpDownloader();
 
   static std::shared_ptr<FunapiHttpDownloader> Create(const std::string &url, const std::string &path);
 
@@ -60,7 +60,7 @@ class FunapiDownloadFileInfo : public std::enable_shared_from_this<FunapiDownloa
                          const uint64_t size,
                          const std::string &hash,
                          const std::string &hash_front);
-  ~FunapiDownloadFileInfo();
+  virtual ~FunapiDownloadFileInfo();
 
   const std::string& GetUrl();
   const std::string& GetPath();

@@ -25,7 +25,7 @@ class FunapiAnnouncementInfoImpl : public std::enable_shared_from_this<FunapiAnn
                    const std::string &image_url,
                    const std::string &link_url,
                    const std::string &file_path);
-  ~FunapiAnnouncementInfoImpl();
+  virtual ~FunapiAnnouncementInfoImpl();
 
   const std::string& GetDate();
   const std::string& GetMessageText();
@@ -165,7 +165,7 @@ class FunapiAnnouncementImpl : public std::enable_shared_from_this<FunapiAnnounc
 
   FunapiAnnouncementImpl() = delete;
   FunapiAnnouncementImpl(const std::string &url, const std::string &path);
-  ~FunapiAnnouncementImpl();
+  virtual ~FunapiAnnouncementImpl();
 
   void AddCompletionCallback(const CompletionHandler &handler);
   void RequestList(std::weak_ptr<FunapiAnnouncement> a, int max_count);

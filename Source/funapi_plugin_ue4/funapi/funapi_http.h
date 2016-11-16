@@ -30,7 +30,7 @@ class FunapiHttp : public std::enable_shared_from_this<FunapiHttp> {
 
   FunapiHttp();
   FunapiHttp(const std::string &path);
-  ~FunapiHttp();
+  virtual ~FunapiHttp();
 
   static std::shared_ptr<FunapiHttp> Create();
   static std::shared_ptr<FunapiHttp> Create(const std::string &path);

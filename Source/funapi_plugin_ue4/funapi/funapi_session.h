@@ -9,6 +9,8 @@
 
 #include "funapi_transport.h"
 
+class FunMessage;
+
 namespace fun {
 
 enum class SessionEventType : int {
@@ -60,19 +62,29 @@ class FunapiSession : public std::enable_shared_from_this<FunapiSession> {
 
   FunapiSession() = delete;
   FunapiSession(const char* hostname_or_ip, bool reliability = false);
-  ~FunapiSession();
+  virtual ~FunapiSession();
 
-  static std::shared_ptr<FunapiSession> Create(const char* hostname_or_ip, bool reliability = false);
+  static std::shared_ptr<FunapiSession> Create(const char* hostname_or_ip,
+                                               bool reliability = false);
 
-  void Connect(const TransportProtocol protocol, int port, FunEncoding encoding, std::shared_ptr<FunapiTransportOption> option = nullptr);
+  void Connect(const TransportProtocol protocol,
+               int port,
+               FunEncoding encoding,
+               std::shared_ptr<FunapiTransportOption> option = nullptr);
   void Connect(const TransportProtocol protocol);
-  void Close();
+
   void Close(const TransportProtocol protocol);
+  void Close();
 
-  void SendMessage(const std::string &msg_type, std::string &json_string, TransportProtocol protocol = TransportProtocol::kDefault);
-  void SendMessage(FunMessage &message, TransportProtocol protocol = TransportProtocol::kDefault);
+  void SendMessage(const std::string &msg_type,
+                   const std::string &json_string,
+                   const TransportProtocol protocol = TransportProtocol::kDefault);
 
-  bool IsConnected(const TransportProtocol protocol = TransportProtocol::kDefault) const;
+  void SendMessage(const FunMessage &message,
+                   const TransportProtocol protocol = TransportProtocol::kDefault);
+
+  bool IsConnected(const TransportProtocol protocol) const;
+  bool IsConnected() const;
   bool IsReliableSession() const;
 
   FunEncoding GetEncoding(const TransportProtocol protocol) const;

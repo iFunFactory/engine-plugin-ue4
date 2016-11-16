@@ -18,7 +18,7 @@ class FunapiTasksImpl : public std::enable_shared_from_this<FunapiTasksImpl> {
   typedef FunapiTasks::TaskHandler TaskHandler;
 
   FunapiTasksImpl();
-  ~FunapiTasksImpl();
+  virtual ~FunapiTasksImpl();
 
   static void UpdateAll();
   static void Add(std::weak_ptr<FunapiTasksImpl> t);
@@ -166,7 +166,7 @@ void FunapiTasks::Update() {
 class FunapiThreadImpl : public FunapiTasksImpl {
 public:
   FunapiThreadImpl();
-  ~FunapiThreadImpl();
+  virtual ~FunapiThreadImpl();
 
   static void Add(const std::string &thread_id_string, std::weak_ptr<FunapiThread> t);
   static std::shared_ptr<FunapiThread> Get(const std::string &thread_id_string);
@@ -267,11 +267,13 @@ std::shared_ptr<FunapiThread> FunapiThreadImpl::Get(const std::string &thread_id
   std::unique_lock<std::mutex> lock(m_mutex_);
   auto it = m_threads_.find(thread_id_string);
   if (it != m_threads_.end()) {
-    if (auto t = it->second.lock()) {
-      return t;
-    }
-    else {
-      m_threads_.erase(it);
+    if (!it->second.expired()) {
+      if (auto t = it->second.lock()) {
+        return t;
+      }
+      else {
+        m_threads_.erase(it);
+      }
     }
   }
 

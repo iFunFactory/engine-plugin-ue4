@@ -141,7 +141,7 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
   void SendRedirectTestMessage();
 
   // Please change this address for test.
-  std::string kServerIp = "127.0.0.1";
+  std::string kServer = "127.0.0.1";
 
   // member variables.
   bool with_protobuf_ = false;
@@ -153,12 +153,12 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
   std::shared_ptr<fun::FunapiMulticast> multicast_ = nullptr;
 
   // Please change this address for test.
-  const std::string kDownloadServerIp = "127.0.0.1";
+  const std::string kDownloadServer = "127.0.0.1";
   const int kDownloadServerPort = 8020;
   std::shared_ptr<fun::FunapiHttpDownloader> downloader_ = nullptr;
 
   // Please change this address for test.
-  const std::string kAnnouncementServerIp = "127.0.0.1";
+  const std::string kAnnouncementServer = "127.0.0.1";
   const int kAnnouncementServerPort = 8080;
   std::shared_ptr<fun::FunapiAnnouncement> announcement_ = nullptr;
 

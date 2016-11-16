@@ -19,7 +19,7 @@ class FunapiDownloadFileInfoImpl : public std::enable_shared_from_this<FunapiDow
  public:
   FunapiDownloadFileInfoImpl() = delete;
   FunapiDownloadFileInfoImpl(const std::string &url, const std::string &path, const uint64_t size, const std::string &hash, const std::string &hash_front);
-  ~FunapiDownloadFileInfoImpl();
+  virtual ~FunapiDownloadFileInfoImpl();
 
   const std::string& GetUrl();
   const std::string& GetPath();
@@ -145,7 +145,7 @@ class FunapiHttpDownloaderImpl : public std::enable_shared_from_this<FunapiHttpD
 
   FunapiHttpDownloaderImpl() = delete;
   FunapiHttpDownloaderImpl(const std::string &url, const std::string &path);
-  ~FunapiHttpDownloaderImpl();
+  virtual ~FunapiHttpDownloaderImpl();
 
   void AddReadyCallback(const ReadyHandler &handler);
   void AddProgressCallback(const ProgressHandler &handler);

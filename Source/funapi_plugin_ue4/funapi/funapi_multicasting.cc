@@ -8,6 +8,7 @@
 #include "funapi_utils.h"
 #include "funapi_session.h"
 #include "funapi_multicasting.h"
+#include "network/fun_message.pb.h"
 #include "service/multicast_message.pb.h"
 
 namespace fun {
@@ -35,7 +36,7 @@ class FunapiMulticastImpl : public std::enable_shared_from_this<FunapiMulticastI
   FunapiMulticastImpl() = delete;
   FunapiMulticastImpl(const char* sender, const char* hostname_or_ip, const uint16_t port, const FunEncoding encoding, const bool reliability);
   FunapiMulticastImpl(const char* sender, const std::shared_ptr<FunapiSession> &session);
-  ~FunapiMulticastImpl();
+  virtual ~FunapiMulticastImpl();
 
   bool IsConnected() const;
   bool IsInChannel(const std::string &channel_id) const;

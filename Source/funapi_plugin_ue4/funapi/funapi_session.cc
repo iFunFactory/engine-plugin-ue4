@@ -2091,7 +2091,9 @@ void FunapiSessionImpl::UpdateTransportsAll() {
   }
 
   for (auto s : v_sessions) {
-    s->UpdateTransports();
+    if (s) {
+      s->UpdateTransports();
+    }
   }
 }
 

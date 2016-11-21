@@ -111,7 +111,9 @@ void FunapiTasksImpl::UpdateAll() {
   }
 
   for (auto task : v_tasks) {
-    task->Update();
+    if (task) {
+      task->Update();
+    }
   }
 }
 

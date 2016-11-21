@@ -99,16 +99,18 @@ void FunapiSocketImpl::Select() {
 
   std::vector<std::shared_ptr<FunapiSocketImpl>> v_selects;
   for (auto s : v_sockets) {
-    if (s->IsReadySelect()) {
-      int fd = s->GetSocket();
-      if (fd > 0) {
-        if (fd > max_fd) max_fd = fd;
+    if (s) {
+      if (s->IsReadySelect()) {
+        int fd = s->GetSocket();
+        if (fd > 0) {
+          if (fd > max_fd) max_fd = fd;
 
-        FD_SET(fd, &rset);
-        FD_SET(fd, &wset);
-        FD_SET(fd, &eset);
+          FD_SET(fd, &rset);
+          FD_SET(fd, &wset);
+          FD_SET(fd, &eset);
 
-        v_selects.push_back(s);
+          v_selects.push_back(s);
+        }
       }
     }
   }
@@ -117,7 +119,9 @@ void FunapiSocketImpl::Select() {
     struct timeval timeout = { 0, 1 };
     if (select(max_fd + 1, &rset, &wset, &eset, &timeout) > 0) {
       for (auto s : v_selects) {
-        s->OnSelect(rset, wset, eset);
+        if (s) {
+          s->OnSelect(rset, wset, eset);
+        }
       }
     }
   }
@@ -125,19 +129,23 @@ void FunapiSocketImpl::Select() {
 
 
 std::string FunapiSocketImpl::GetStringFromAddrInfo(struct addrinfo *info) {
-  char addrStr[INET6_ADDRSTRLEN];
-  if (info->ai_family == AF_INET)
-  {
-    struct sockaddr_in *sin = (struct sockaddr_in*) info->ai_addr;
-    inet_ntop(info->ai_family, (void*)&sin->sin_addr, addrStr, sizeof(addrStr));
-  }
-  else if (info->ai_family == AF_INET6)
-  {
-    struct sockaddr_in6 *sin = (struct sockaddr_in6*) info->ai_addr;
-    inet_ntop(info->ai_family, (void*)&sin->sin6_addr, addrStr, sizeof(addrStr));
+  if (info) {
+    char addrStr[INET6_ADDRSTRLEN];
+    if (info->ai_family == AF_INET)
+    {
+      struct sockaddr_in *sin = (struct sockaddr_in*) info->ai_addr;
+      inet_ntop(info->ai_family, (void*)&sin->sin_addr, addrStr, sizeof(addrStr));
+    }
+    else if (info->ai_family == AF_INET6)
+    {
+      struct sockaddr_in6 *sin = (struct sockaddr_in6*) info->ai_addr;
+      inet_ntop(info->ai_family, (void*)&sin->sin6_addr, addrStr, sizeof(addrStr));
+    }
+
+    return std::string(addrStr);
   }
 
-  return std::string(addrStr);
+  return "NULL";
 }
 
 

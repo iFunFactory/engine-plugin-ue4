@@ -224,7 +224,7 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
   void SetReceivedHandler(const TransportReceivedHandler &handler);
   void SetIsReliableSessionHandler(const std::function<bool()> &handler);
   void SetSendAckHandler(const std::function<void(const TransportProtocol protocol, const uint32_t seq)> &handler);
-  void SetSessionIdHandler(const std::function<std::string()> &handler);
+  void SetSessionIdHandler(const std::function<std::string(const FunEncoding encoding)> &handler);
 
   void SetEncryptionType(EncryptionType type);
   void SetEncryptionType(EncryptionType type, const std::string &public_key);
@@ -278,7 +278,7 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
   TransportReceivedHandler transport_received_handler_;
   std::function<bool()> is_reliable_session_handler_;
   std::function<void(const TransportProtocol protocol, const uint32_t seq)> send_ack_handler_;
-  std::function<std::string(void)> get_session_id_handler_;
+  std::function<std::string(const FunEncoding)> get_session_id_handler_;
 
   std::deque<std::shared_ptr<FunapiMessage>> send_queue_;
   std::deque<std::shared_ptr<FunapiMessage>> send_ack_queue_;
@@ -496,7 +496,7 @@ void FunapiTransport::SetSessionId(std::shared_ptr<FunapiMessage> message) {
     }
     else if (encoding == FunEncoding::kProtobuf) {
       auto &msg = message->GetProtobufMessage();
-      msg.set_sid(session_id.c_str());
+      msg.set_sid(session_id);
     }
   }
 }
@@ -772,14 +772,14 @@ void FunapiTransport::SetSendAckHandler(const std::function<void(const Transport
 }
 
 
-void FunapiTransport::SetSessionIdHandler(const std::function<std::string(void)> &handler) {
+void FunapiTransport::SetSessionIdHandler(const std::function<std::string(const FunEncoding encoding)> &handler) {
   get_session_id_handler_ = handler;
 }
 
 
 std::string FunapiTransport::GetSessionId() {
   if (!session_impl_.expired()) {
-    return get_session_id_handler_();
+    return get_session_id_handler_(GetEncoding());
   }
 
   return "";
@@ -960,7 +960,11 @@ void FunapiTransport::PushNetworkThreadTask(const FunapiThread::TaskHandler &han
       auto self = shared_from_this();
       if (auto session = session_impl_.lock()) {
         nt->Push([self, session, handler]()->bool {
-          return handler();
+          if (handler) {
+            return handler();
+          }
+
+          return true;
         });
       }
     }
@@ -1945,8 +1949,8 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
 
   void RegisterHandler(const std::string &msg_type, const MessageEventHandler &handler);
 
-  std::string GetSessionId();
-  void SetSessionId(const std::string &session_id);
+  std::string GetSessionId(const FunEncoding encoding);
+  void SetSessionId(const std::string &session_id, const FunEncoding encoding);
 
   void AttachTransport(const std::shared_ptr<FunapiTransport> &transport);
 
@@ -2009,7 +2013,8 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   mutable std::mutex transports_mutex_;
   TransportProtocol default_protocol_ = TransportProtocol::kDefault;
 
-  std::string session_id_;
+  std::string session_id_json_;
+  std::string session_id_protobuf_;
   std::mutex session_id_mutex_;
 
   typedef std::unordered_map<std::string, MessageEventHandler> MessageHandlerMap;
@@ -2106,7 +2111,7 @@ void FunapiSessionImpl::AddSessionImpl(std::weak_ptr<FunapiSessionImpl> s) {
 
 FunapiSessionImpl::FunapiSessionImpl(const char* hostname_or_ip,
                                      const bool reliability)
-  : session_reliability_(reliability), session_id_(""), hostname_or_ip_(hostname_or_ip), token_("") {
+  : session_reliability_(reliability), session_id_json_(""), session_id_protobuf_(""), hostname_or_ip_(hostname_or_ip), token_("") {
   Initialize();
 }
 
@@ -2313,7 +2318,7 @@ void FunapiSessionImpl::Start() {
 
   tasks_->Set(nullptr);
 
-  if (GetSessionId().empty()) {
+  if (GetSessionId(FunEncoding::kJson).empty()) {
     connect_protocols_.clear();
 
     for (auto protocol : v_protocols_) {
@@ -2478,15 +2483,24 @@ void FunapiSessionImpl::OnTransportReceived(const TransportProtocol protocol,
     session_id = proto.sid();
   }
 
-  std::string session_id_old = GetSessionId();
+  std::string session_id_old = GetSessionId(encoding);
   if (session_id_old.empty()) {
-    SetSessionId(session_id);
-    DebugUtils::Log("New session id: %s", session_id.c_str());
+    SetSessionId(session_id, encoding);
+    DebugUtils::Log("New session id: %s", GetSessionId(FunEncoding::kJson).c_str());
   }
   else if (session_id_old.compare(session_id) != 0) {
-    DebugUtils::Log("Session id changed: %s => %s", session_id_old.c_str(), session_id.c_str());
-    SetSessionId(session_id);
-    OnSessionEvent(protocol, SessionEventType::kChanged, session_id, nullptr);
+    if (session_id_old.length() != session_id.length() && encoding == FunEncoding::kProtobuf) {
+      SetSessionId(session_id, encoding);
+    }
+    else {
+      std::string old_string = GetSessionId(FunEncoding::kJson);
+      SetSessionId(session_id, encoding);
+
+      std::string new_string = GetSessionId(FunEncoding::kJson);
+      DebugUtils::Log("Session id changed: %s => %s", old_string.c_str(), new_string.c_str());
+
+      OnSessionEvent(protocol, SessionEventType::kChanged, new_string, nullptr);
+    }
   }
 
   if (session_reliability_) {
@@ -2515,7 +2529,7 @@ void FunapiSessionImpl::OnSessionOpen(const TransportProtocol protocol,
                                       const std::string &msg_type,
                                       const std::vector<uint8_t>&v_body,
                                       const std::shared_ptr<FunapiMessage> message) {
-  OnSessionEvent(protocol, SessionEventType::kOpened, GetSessionId(), nullptr);
+  OnSessionEvent(protocol, SessionEventType::kOpened, GetSessionId(FunEncoding::kJson), nullptr);
 
   for (int i=1;i<connect_protocols_.size();++i) {
     if (auto transport = GetTransport(connect_protocols_[i])) {
@@ -2531,8 +2545,8 @@ void FunapiSessionImpl::OnSessionClose(const TransportProtocol protocol,
                                        const std::shared_ptr<FunapiMessage> message) {
   DebugUtils::Log("Session timed out. Resetting my session id. The server will send me another one next time.");
 
-  OnSessionEvent(protocol, SessionEventType::kClosed, GetSessionId(), nullptr);
-  SetSessionId("");
+  OnSessionEvent(protocol, SessionEventType::kClosed, GetSessionId(FunEncoding::kJson), nullptr);
+  SetSessionId("", FunEncoding::kJson);
 
   Close();
 }
@@ -2659,7 +2673,7 @@ void FunapiSessionImpl::OnRedirectMessage(const TransportProtocol protocol,
     }
   }
 
-  SetSessionId("");
+  SetSessionId("", FunEncoding::kJson);
   hostname_or_ip_ = redirect_message->host();
   std::string flavor = redirect_message->flavor();
 
@@ -2711,7 +2725,7 @@ void FunapiSessionImpl::OnRedirectMessage(const TransportProtocol protocol,
     Connect(session_, connect_protocol, port, connect_encoding, option);
   }
 
-  OnSessionEvent(protocol, SessionEventType::kRedirectStarted, GetSessionId(), nullptr);
+  OnSessionEvent(protocol, SessionEventType::kRedirectStarted, GetSessionId(FunEncoding::kJson), nullptr);
 }
 
 
@@ -2749,7 +2763,7 @@ void FunapiSessionImpl::OnRedirectConnectMessage(const TransportProtocol protoco
 
   if (result == FunRedirectConnectMessage_Result_OK) {
      token_ = "";
-     OnSessionEvent(protocol, SessionEventType::kRedirectSucceeded, GetSessionId(), nullptr);
+    OnSessionEvent(protocol, SessionEventType::kRedirectSucceeded, GetSessionId(FunEncoding::kJson), nullptr);
   }
   else {
     token_ = "";
@@ -2766,9 +2780,9 @@ void FunapiSessionImpl::OnRedirectConnectMessage(const TransportProtocol protoco
     }
 
     OnSessionEvent(protocol,
-                  SessionEventType::kRedirectFailed,
-                  GetSessionId(),
-                  fun::FunapiError::Create(code));
+                   SessionEventType::kRedirectFailed,
+                   GetSessionId(FunEncoding::kJson),
+                   fun::FunapiError::Create(code));
   }
 }
 
@@ -2799,8 +2813,8 @@ void FunapiSessionImpl::AttachTransport(const std::shared_ptr<FunapiTransport> &
     transport->SetSendAckHandler([this](const TransportProtocol protocol, const uint32_t seq) {
       SendAck(protocol, seq);
     });
-    transport->SetSessionIdHandler([this]()->std::string {
-      return GetSessionId();
+    transport->SetSessionIdHandler([this](const FunEncoding encoding)->std::string {
+      return GetSessionId(encoding);
     });
 
     transport->AddStartedCallback([this](const TransportProtocol protocol){
@@ -2808,7 +2822,7 @@ void FunapiSessionImpl::AttachTransport(const std::shared_ptr<FunapiTransport> &
         SendEmptyMessage(protocol);
       }
 
-      if (GetSessionId().empty()) {
+      if (GetSessionId(FunEncoding::kJson).empty()) {
         SendEmptyMessage(protocol);
       }
 
@@ -2860,15 +2874,28 @@ std::shared_ptr<FunapiTransport> FunapiSessionImpl::GetTransport(const Transport
 }
 
 
-std::string FunapiSessionImpl::GetSessionId() {
+std::string FunapiSessionImpl::GetSessionId(const FunEncoding encoding) {
   std::unique_lock<std::mutex> lock(session_id_mutex_);
-  return session_id_;
+
+  if (encoding == FunEncoding::kProtobuf) {
+    return session_id_protobuf_;
+  }
+
+  return session_id_json_;
 }
 
 
-void FunapiSessionImpl::SetSessionId(const std::string &session_id) {
+void FunapiSessionImpl::SetSessionId(const std::string &session_id, const FunEncoding encoding) {
   std::unique_lock<std::mutex> lock(session_id_mutex_);
-  session_id_ = session_id;
+
+  if (encoding == FunEncoding::kJson) {
+    session_id_json_ = session_id;
+    session_id_protobuf_ = session_id_json_;
+  }
+  else if (encoding == FunEncoding::kProtobuf) {
+    session_id_json_ = FunapiUtil::StringFromBytes(session_id);
+    session_id_protobuf_ = session_id;
+  }
 }
 
 
@@ -3101,7 +3128,7 @@ void FunapiSessionImpl::SendEmptyMessage(const TransportProtocol protocol) {
 bool FunapiSessionImpl::SendClientPingMessage(const TransportProtocol protocol) {
   assert(protocol==TransportProtocol::kTcp);
 
-  if (GetSessionId().empty())
+  if (GetSessionId(FunEncoding::kJson).empty())
     return false;
 
   FunEncoding encoding = GetEncoding(protocol);

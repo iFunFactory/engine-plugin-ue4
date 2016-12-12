@@ -81,7 +81,7 @@ void protobuf_AddDesc_funapi_2fnetwork_2ffun_5fmessage_2eproto() {
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n funapi/network/fun_message.proto\"^\n\nFu"
-    "nMessage\022\013\n\003sid\030\001 \001(\t\022\017\n\007msgtype\030\002 \001(\t\022\013"
+    "nMessage\022\013\n\003sid\030\001 \001(\014\022\017\n\007msgtype\030\002 \001(\t\022\013"
     "\n\003seq\030\003 \001(\r\022\013\n\003ack\030\004 \001(\r\022\016\n\006urgent\030\005 \001(\010"
     "*\010\010\010\020\200\200\200\200\002", 130);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
@@ -215,15 +215,11 @@ bool FunMessage::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional string sid = 1;
+      // optional bytes sid = 1;
       case 1: {
         if (tag == 10) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
                 input, this->mutable_sid()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-            this->sid().data(), this->sid().length(),
-            ::google::protobuf::internal::WireFormat::PARSE,
-            "sid");
         } else {
           goto handle_unusual;
         }
@@ -323,13 +319,9 @@ failure:
 void FunMessage::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:FunMessage)
-  // optional string sid = 1;
+  // optional bytes sid = 1;
   if (has_sid()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-      this->sid().data(), this->sid().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
-      "sid");
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
       1, this->sid(), output);
   }
 
@@ -372,14 +364,10 @@ void FunMessage::SerializeWithCachedSizes(
 ::google::protobuf::uint8* FunMessage::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:FunMessage)
-  // optional string sid = 1;
+  // optional bytes sid = 1;
   if (has_sid()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-      this->sid().data(), this->sid().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
-      "sid");
     target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         1, this->sid(), target);
   }
 
@@ -425,10 +413,10 @@ int FunMessage::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional string sid = 1;
+    // optional bytes sid = 1;
     if (has_sid()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::StringSize(
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
           this->sid());
     }
 

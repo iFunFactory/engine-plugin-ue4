@@ -72,7 +72,12 @@ void FunapiTasksImpl::Update() {
       }
     }
 
-    if (task() == false) {
+    if (task) {
+      if (task() == false) {
+        break;
+      }
+    }
+    else {
       break;
     }
   }

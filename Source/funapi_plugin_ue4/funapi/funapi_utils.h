@@ -128,6 +128,9 @@ class FunapiUtil
   };
 
   static std::string MD5String(const std::string &file_name, bool use_front);
+
+  static std::string StringFromBytes(const std::string &uuid_str);
+  static std::string BytesFromString(const std::string &uuid);
 };
 
 }  // namespace fun

@@ -101,14 +101,14 @@ class FunMessage : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional string sid = 1;
+  // optional bytes sid = 1;
   inline bool has_sid() const;
   inline void clear_sid();
   static const int kSidFieldNumber = 1;
   inline const ::std::string& sid() const;
   inline void set_sid(const ::std::string& value);
   inline void set_sid(const char* value);
-  inline void set_sid(const char* value, size_t size);
+  inline void set_sid(const void* value, size_t size);
   inline ::std::string* mutable_sid();
   inline ::std::string* release_sid();
   inline void set_allocated_sid(::std::string* sid);
@@ -185,7 +185,7 @@ class FunMessage : public ::google::protobuf::Message {
 
 // FunMessage
 
-// optional string sid = 1;
+// optional bytes sid = 1;
 inline bool FunMessage::has_sid() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -221,7 +221,7 @@ inline void FunMessage::set_sid(const char* value) {
   sid_->assign(value);
   // @@protoc_insertion_point(field_set_char:FunMessage.sid)
 }
-inline void FunMessage::set_sid(const char* value, size_t size) {
+inline void FunMessage::set_sid(const void* value, size_t size) {
   set_has_sid();
   if (sid_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     sid_ = new ::std::string;

@@ -16,7 +16,7 @@
 //     optional MyMessage mymessage = 16;
 //   }
 message FunMessage {
-  optional string sid = 1;
+  optional bytes sid = 1;
   optional string msgtype = 2;
   optional uint32 seq = 3;
   optional uint32 ack = 4;

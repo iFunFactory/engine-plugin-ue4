@@ -1,13 +1,5 @@
 Saved
 Intermediate
-*.app
-*.log
-*.so
-*.apk
-*.obb
-*.command
-*.exe
-*.sln
 Binaries
 funapi_plugin_ue4.xcodeproj
 Build

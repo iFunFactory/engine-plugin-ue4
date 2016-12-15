@@ -6,25 +6,13 @@
 
 #include "funapi_plugin_ue4.h"
 
-#if PLATFORM_WINDOWS
-#include "AllowWindowsPlatformTypes.h"
-#endif
+#include <sstream>
+#include <random>
 
-#include "test_messages.pb.h"
-#include "funapi/management/maintenance_message.pb.h"
-#include "funapi/service/multicast_message.pb.h"
-#include "funapi/funapi_utils.h"
-#include "funapi/funapi_tasks.h"
-#include "funapi/funapi_announcement.h"
-#include "funapi/funapi_downloader.h"
-#include "funapi_session.h"
-#include "funapi_multicasting.h"
-#include "funapi/funapi_encryption.h"
 #include "funapi_tester.h"
-
-#if PLATFORM_WINDOWS
-#include "HideWindowsPlatformTypes.h"
-#endif
+#include "test_messages.pb.h"
+#include "funapi_tasks.h"
+#include "funapi_encryption.h"
 
 
 // Sets default values
@@ -52,8 +40,6 @@ void Afunapi_tester::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void Afunapi_tester::Tick(float DeltaTime)
 {
   Super::Tick(DeltaTime);
-
-  // LOG1("Tick - %f", DeltaTime);
 
   fun::FunapiTasks::UpdateAll();
 
@@ -127,13 +113,13 @@ void Afunapi_tester::SendRedirectTestMessage()
 {
   if (session_ == nullptr)
   {
-    fun::DebugUtils::Log("You should connect first.");
+    UE_LOG(LogFunapiExample, Log, TEXT("You should connect first."));
   }
   else {
     fun::FunEncoding encoding = session_->GetEncoding(session_->GetDefaultProtocol());
     if (encoding == fun::FunEncoding::kNone)
     {
-      fun::DebugUtils::Log("You should attach transport first.");
+      UE_LOG(LogFunapiExample, Log, TEXT("You should attach transport first."));
       return;
     }
 
@@ -167,9 +153,9 @@ void Afunapi_tester::SendRedirectTestMessage()
       FString ouput_fstring;
       TSharedRef<TJsonWriter<TCHAR>> writer = TJsonWriterFactory<TCHAR>::Create(&ouput_fstring);
       FJsonSerializer::Serialize(json_object, writer);
-      std::string json_stiring = TCHAR_TO_ANSI(*ouput_fstring);
+      std::string json_string = TCHAR_TO_ANSI(*ouput_fstring);
 
-      session_->SendMessage("hello", json_stiring);
+      session_->SendMessage("hello", json_string);
     }
   }
 }
@@ -199,21 +185,21 @@ void Afunapi_tester::Disconnect()
     return;
   }
 
-  fun::DebugUtils::Log("You should connect first.");
+  UE_LOG(LogFunapiExample, Log, TEXT("You should connect first."));
 }
 
 bool Afunapi_tester::SendEchoMessage()
 {
   if (session_ == nullptr)
   {
-    fun::DebugUtils::Log("You should connect first.");
+    UE_LOG(LogFunapiExample, Log, TEXT("You should connect first."));
   }
   else
   {
     fun::FunEncoding encoding = session_->GetEncoding(session_->GetDefaultProtocol());
     if (encoding == fun::FunEncoding::kNone)
     {
-      fun::DebugUtils::Log("You should attach transport first.");
+      UE_LOG(LogFunapiExample, Log, TEXT("You should attach transport first."));
       return false;
     }
 
@@ -261,7 +247,7 @@ bool Afunapi_tester::SendEchoMessage()
 
 bool Afunapi_tester::CreateMulticast()
 {
-  UE_LOG(LogClass, Warning, TEXT("CreateMulticast button clicked."));
+  UE_LOG(LogFunapiExample, Warning, TEXT("CreateMulticast button clicked."));
 
   if (!multicast_) {
     // random sender id
@@ -272,7 +258,7 @@ bool Afunapi_tester::CreateMulticast()
     ss_temp << "player" << dist(re);
     std::string sender = ss_temp.str();
 
-    fun::DebugUtils::Log("sender = %s", sender.c_str());
+    UE_LOG(LogFunapiExample, Log, TEXT("sender = %s"), *FString(sender.c_str()));
 
     fun::FunEncoding encoding = with_protobuf_ ? fun::FunEncoding::kProtobuf : fun::FunEncoding::kJson;
     uint16_t port = with_protobuf_ ? 8022 : 8012;
@@ -281,12 +267,12 @@ bool Afunapi_tester::CreateMulticast()
 
     multicast_->AddJoinedCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
       const std::string &channel_id, const std::string &multicast_sender) {
-      fun::DebugUtils::Log("JoinedCallback called. channel_id:%s player:%s", channel_id.c_str(), multicast_sender.c_str());
+      UE_LOG(LogFunapiExample, Log, TEXT("JoinedCallback called. channel_id:%s player:%s"), *FString(channel_id.c_str()), *FString(multicast_sender.c_str()));
     });
     multicast_->AddLeftCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
                                    const std::string &channel_id,
                                    const std::string &multicast_sender) {
-      fun::DebugUtils::Log("LeftCallback called. channel_id:%s player:%s", channel_id.c_str(), multicast_sender.c_str());
+      UE_LOG(LogFunapiExample, Log, TEXT("LeftCallback called. channel_id:%s player:%s"), *FString(channel_id.c_str()), *FString(multicast_sender.c_str()));
     });
     multicast_->AddErrorCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
                                     int error) {
@@ -297,9 +283,8 @@ bool Afunapi_tester::CreateMulticast()
     });
     multicast_->AddChannelListCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
                                           const std::map<std::string, int> &cl) {
-      // fun::DebugUtils::Log("[channel list]");
       for (auto i : cl) {
-        fun::DebugUtils::Log("%s - %d", i.first.c_str(), i.second);
+        UE_LOG(LogFunapiExample, Log, TEXT("%s - %d"), *FString(i.first.c_str()), i.second);
       }
     });
     multicast_->AddSessionEventCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
@@ -320,21 +305,21 @@ bool Afunapi_tester::CreateMulticast()
                                                  const fun::TransportEventType type,
                                                  const std::shared_ptr<fun::FunapiError> &error) {
       if (type == fun::TransportEventType::kStarted) {
-        fun::DebugUtils::Log("Transport Started called.");
+        UE_LOG(LogFunapiExample, Log, TEXT("Transport Started called."));
       }
       else if (type == fun::TransportEventType::kStopped) {
-        fun::DebugUtils::Log("Transport Stopped called.");
+        UE_LOG(LogFunapiExample, Log, TEXT("Transport Stopped called."));
       }
       else if (type == fun::TransportEventType::kConnectionFailed) {
-        fun::DebugUtils::Log("Transport Connection Failed");
+        UE_LOG(LogFunapiExample, Log, TEXT("Transport Connection Failed"));
         multicast_ = nullptr;
       }
       else if (type == fun::TransportEventType::kConnectionTimedOut) {
-        fun::DebugUtils::Log("Transport Connection Timedout called");
+        UE_LOG(LogFunapiExample, Log, TEXT("Transport Connection Timedout called"));
         multicast_ = nullptr;
       }
       else if (type == fun::TransportEventType::kDisconnected) {
-        fun::DebugUtils::Log("Transport Disconnected called");
+        UE_LOG(LogFunapiExample, Log, TEXT("Transport Disconnected called"));
       }
     });
 
@@ -346,7 +331,7 @@ bool Afunapi_tester::CreateMulticast()
 
 bool Afunapi_tester::JoinMulticastChannel()
 {
-  UE_LOG(LogClass, Warning, TEXT("JoinMulticastChannel button clicked."));
+  UE_LOG(LogFunapiExample, Log, TEXT("JoinMulticastChannel button clicked."));
 
   if (multicast_) {
     if (!multicast_->IsInChannel(kMulticastTestChannel)) {
@@ -357,7 +342,7 @@ bool Afunapi_tester::JoinMulticastChannel()
           const std::string &sender,
           const std::string &json_string)
       {
-        fun::DebugUtils::Log("channel_id=%s, sender=%s, body=%s", channel_id.c_str(), sender.c_str(), json_string.c_str());
+        UE_LOG(LogFunapiExample, Log, TEXT("channel_id = %s, sender = %s, body = %s"), *FString(channel_id.c_str()), *FString(sender.c_str()), *FString(json_string.c_str()));
       });
 
       multicast_->AddProtobufChannelMessageCallback(kMulticastTestChannel,
@@ -370,7 +355,7 @@ bool Afunapi_tester::JoinMulticastChannel()
         FunChatMessage chat_msg = mcast_msg.GetExtension(chat);
         std::string text = chat_msg.text();
 
-        fun::DebugUtils::Log("channel_id=%s, sender=%s, message=%s", channel_id.c_str(), sender.c_str(), text.c_str());
+        UE_LOG(LogFunapiExample, Log, TEXT("channel_id = %s, sender = %s, message = %s"), *FString(channel_id.c_str()), *FString(sender.c_str()), *FString(text.c_str()));
       });
 
       // join
@@ -383,23 +368,21 @@ bool Afunapi_tester::JoinMulticastChannel()
 
 bool Afunapi_tester::SendMulticastMessage()
 {
-  UE_LOG(LogClass, Warning, TEXT("SendMulticastMessage button clicked."));
+  UE_LOG(LogFunapiExample, Log, TEXT("SendMulticastMessage button clicked."));
 
   if (multicast_) {
     if (multicast_->IsConnected() && multicast_->IsInChannel(kMulticastTestChannel)) {
       if (multicast_->GetEncoding() == fun::FunEncoding::kJson) {
-        rapidjson::Document msg;
-        msg.SetObject();
-
         std::string temp_messsage = "multicast test message";
-        rapidjson::Value message_node(temp_messsage.c_str(), msg.GetAllocator());
-        msg.AddMember(rapidjson::StringRef("message"), message_node, msg.GetAllocator());
+
+        TSharedRef<FJsonObject> json_object = MakeShareable(new FJsonObject);
+        json_object->SetStringField(FString("message"), FString(temp_messsage.c_str()));
 
         // Convert JSON document to string
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        msg.Accept(writer);
-        std::string json_string = buffer.GetString();
+        FString ouput_fstring;
+        TSharedRef<TJsonWriter<TCHAR>> writer = TJsonWriterFactory<TCHAR>::Create(&ouput_fstring);
+        FJsonSerializer::Serialize(json_object, writer);
+        std::string json_string = TCHAR_TO_ANSI(*ouput_fstring);
 
         multicast_->SendToChannel(kMulticastTestChannel, json_string);
       }
@@ -424,7 +407,7 @@ bool Afunapi_tester::SendMulticastMessage()
 
 bool Afunapi_tester::LeaveMulticastChannel()
 {
-  UE_LOG(LogClass, Warning, TEXT("LeaveMulticastChannel button clicked."));
+  UE_LOG(LogFunapiExample, Log, TEXT("LeaveMulticastChannel button clicked."));
 
   if (multicast_) {
     if (multicast_->IsConnected() && multicast_->IsInChannel(kMulticastTestChannel)) {
@@ -437,7 +420,7 @@ bool Afunapi_tester::LeaveMulticastChannel()
 
 bool Afunapi_tester::RequestMulticastChannelList()
 {
-  UE_LOG(LogClass, Warning, TEXT("RequestMulticastChannelList button clicked."));
+  UE_LOG(LogFunapiExample, Log, TEXT("RequestMulticastChannelList button clicked."));
 
   if (multicast_) {
     if (multicast_->IsConnected()) {
@@ -450,7 +433,7 @@ bool Afunapi_tester::RequestMulticastChannelList()
 
 bool Afunapi_tester::LeaveMulticastAllChannels()
 {
-  UE_LOG(LogClass, Warning, TEXT("Leave all channels button clicked."));
+  UE_LOG(LogFunapiExample, Log, TEXT("Leave all channels button clicked."));
 
   if (multicast_) {
     multicast_->LeaveAllChannels();
@@ -461,7 +444,7 @@ bool Afunapi_tester::LeaveMulticastAllChannels()
 
 bool Afunapi_tester::DownloaderTest()
 {
-  UE_LOG(LogClass, Warning, TEXT("Download button clicked."));
+  UE_LOG(LogFunapiExample, Log, TEXT("Download button clicked."));
 
   if (!downloader_) {
     std::stringstream ss_download_url;
@@ -472,11 +455,10 @@ bool Afunapi_tester::DownloaderTest()
 
     downloader_->AddReadyCallback([](const std::shared_ptr<fun::FunapiHttpDownloader>&downloader,
                                      const std::vector<std::shared_ptr<fun::FunapiDownloadFileInfo>>&info) {
-       // fun::DebugUtils::Log("ready download");
        for (auto i : info) {
          std::stringstream ss_temp;
          ss_temp << i->GetUrl() << std::endl;
-         fun::DebugUtils::Log("%s", ss_temp.str().c_str());
+         UE_LOG(LogFunapiExample, Log, TEXT("%s"), *FString(ss_temp.str().c_str()));
        }
     });
 
@@ -490,7 +472,7 @@ bool Afunapi_tester::DownloaderTest()
 
       std::stringstream ss_temp;
       ss_temp << index << "/" << max_index << " " << received_bytes << "/" << expected_bytes << " " << i->GetUrl() << std::endl;
-      fun::DebugUtils::Log("%s", ss_temp.str().c_str());
+      UE_LOG(LogFunapiExample, Log, TEXT("%s"), *FString(ss_temp.str().c_str()));
     });
 
     downloader_->AddCompletionCallback([this](const std::shared_ptr<fun::FunapiHttpDownloader>&downloader,
@@ -498,7 +480,7 @@ bool Afunapi_tester::DownloaderTest()
                                               const fun::FunapiHttpDownloader::ResultCode result_code) {
       if (result_code == fun::FunapiHttpDownloader::ResultCode::kSucceed) {
         for (auto i : info) {
-          fun::DebugUtils::Log("file_path=%s", i->GetPath().c_str());
+          UE_LOG(LogFunapiExample, Log, TEXT("file_path=%s"), *FString(i->GetPath().c_str()));
         }
       }
 
@@ -513,7 +495,7 @@ bool Afunapi_tester::DownloaderTest()
 
 bool Afunapi_tester::RequestAnnouncements()
 {
-  UE_LOG(LogClass, Warning, TEXT("Request announcements button clicked."));
+  UE_LOG(LogFunapiExample, Log, TEXT("Request announcements button clicked."));
 
   if (announcement_ == nullptr) {
     std::stringstream ss_url;
@@ -527,7 +509,7 @@ bool Afunapi_tester::RequestAnnouncements()
                                                 const fun::FunapiAnnouncement::ResultCode result){
       if (result == fun::FunapiAnnouncement::ResultCode::kSucceed) {
         for (auto i : info) {
-          fun::DebugUtils::Log("date=%s message=%s subject=%s file_path=%s", i->GetDate().c_str(), i->GetMessageText().c_str(), i->GetSubject().c_str(), i->GetFilePath().c_str());
+          UE_LOG(LogFunapiExample, Log, TEXT("date=%s message=%s subject=%s file_path=%s"), *FString(i->GetDate().c_str()), *FString(i->GetMessageText().c_str()), *FString(i->GetSubject().c_str()), *FString(i->GetFilePath().c_str()));
         }
       }
 
@@ -546,7 +528,6 @@ FText Afunapi_tester::GetServerIP() {
 
 void Afunapi_tester::SetServerIP(FText server_ip) {
   kServer = TCHAR_TO_UTF8(*(server_ip.ToString()));
-  // fun::DebugUtils::Log("SetServerIP - %s", kServerIp.c_str());
 }
 
 bool Afunapi_tester::GetIsProtobuf() {
@@ -555,7 +536,6 @@ bool Afunapi_tester::GetIsProtobuf() {
 
 void Afunapi_tester::SetIsProtobuf(bool check) {
   with_protobuf_ = check;
-  // fun::DebugUtils::Log("SetIsProtobuf - %d", with_protobuf_);
 }
 
 bool Afunapi_tester::GetIsSessionReliability() {
@@ -564,7 +544,6 @@ bool Afunapi_tester::GetIsSessionReliability() {
 
 void Afunapi_tester::SetIsSessionReliability(bool check) {
   with_session_reliability_ = check;
-  // fun::DebugUtils::Log("SetIsSessionReliability - %d", with_session_reliability_);
 }
 
 bool Afunapi_tester::GetIsEnableTextboxServerIP() {
@@ -651,21 +630,21 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
                                                const fun::TransportEventType type,
                                                const std::shared_ptr<fun::FunapiError> &error) {
       if (type == fun::TransportEventType::kStarted) {
-        fun::DebugUtils::Log("Transport Started called.");
+        UE_LOG(LogFunapiExample, Log, TEXT("Transport Started called."));
       }
       else if (type == fun::TransportEventType::kStopped) {
-        fun::DebugUtils::Log("Transport Stopped called.");
+        UE_LOG(LogFunapiExample, Log, TEXT("Transport Stopped called."));
       }
       else if (type == fun::TransportEventType::kConnectionFailed) {
-        fun::DebugUtils::Log("Transport Connection Failed (%s)", fun::TransportProtocolToString(transport_protocol).c_str());
+        UE_LOG(LogFunapiExample, Log, TEXT("Transport Connection Failed (%s)"), *FString(fun::TransportProtocolToString(transport_protocol).c_str()));
         session_ = nullptr;
       }
       else if (type == fun::TransportEventType::kConnectionTimedOut) {
-        fun::DebugUtils::Log("Transport Connection Timedout called");
+        UE_LOG(LogFunapiExample, Log, TEXT("Transport Connection Timedout called"));
         session_ = nullptr;
       }
       else if (type == fun::TransportEventType::kDisconnected) {
-        fun::DebugUtils::Log("Transport Disconnected called (%s)", fun::TransportProtocolToString(transport_protocol).c_str());
+        UE_LOG(LogFunapiExample, Log, TEXT("Transport Disconnected called (%s)"), *FString(fun::TransportProtocolToString(transport_protocol).c_str()));
       }
     });
 
@@ -674,12 +653,12 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
                                      const std::string &msg_type,
                                      const std::string &json_string) {
       if (msg_type.compare("echo") == 0) {
-        fun::DebugUtils::Log("msg '%s' arrived.", msg_type.c_str());
-        fun::DebugUtils::Log("json: %s", json_string.c_str());
+        UE_LOG(LogFunapiExample, Log, TEXT("msg '%s' arrived."), *FString(msg_type.c_str()));
+        UE_LOG(LogFunapiExample, Log, TEXT("json: %s"), *FString(json_string.c_str()));
       }
 
       if (msg_type.compare("_maintenance") == 0) {
-        fun::DebugUtils::Log("Maintenance message : %s", json_string.c_str());
+        UE_LOG(LogFunapiExample, Log, TEXT("Maintenance message : %s"), *FString(json_string.c_str()));
       }
     });
 
@@ -687,24 +666,24 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
                                          const fun::TransportProtocol transport_protocol,
                                          const FunMessage &fun_message) {
       if (fun_message.msgtype().compare("pbuf_echo") == 0) {
-        fun::DebugUtils::Log("msg '%s' arrived.", fun_message.msgtype().c_str());
+        UE_LOG(LogFunapiExample, Log, TEXT("msg '%s' arrived."), *FString(fun_message.msgtype().c_str()));
 
         PbufEchoMessage echo = fun_message.GetExtension(pbuf_echo);
-        fun::DebugUtils::Log("proto: %s", echo.msg().c_str());
+        UE_LOG(LogFunapiExample, Log, TEXT("proto: %s"), *FString(echo.msg().c_str()));
       }
 
       if (fun_message.msgtype().compare("_maintenance") == 0) {
-        fun::DebugUtils::Log("msg '%s' arrived.", fun_message.msgtype().c_str());
+        UE_LOG(LogFunapiExample, Log, TEXT("msg '%s' arrived."), *FString(fun_message.msgtype().c_str()));
 
         PbufEchoMessage echo = fun_message.GetExtension(pbuf_echo);
-        fun::DebugUtils::Log("proto: %s", echo.msg().c_str());
+        UE_LOG(LogFunapiExample, Log, TEXT("proto: %s"), *FString(echo.msg().c_str()));
 
         MaintenanceMessage maintenance = fun_message.GetExtension(pbuf_maintenance);
         std::string date_start = maintenance.date_start();
         std::string date_end = maintenance.date_end();
         std::string message_text = maintenance.messages();
 
-        fun::DebugUtils::Log("Maintenance message:\nstart: %s\nend: %s\nmessage: %s", date_start.c_str(), date_end.c_str(), message_text.c_str());
+        UE_LOG(LogFunapiExample, Log, TEXT("Maintenance message:\nstart: %s\nend: %s\nmessage: %s"), *FString(date_start.c_str()), *FString(date_end.c_str()), *FString(message_text.c_str()));
       }
     });
 
@@ -768,10 +747,10 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
 
 void Afunapi_tester::OnSessionInitiated(const std::string &session_id)
 {
-  fun::DebugUtils::Log("session initiated: %s", session_id.c_str());
+  UE_LOG(LogFunapiExample, Log, TEXT("Session initiated: %s"), *FString(session_id.c_str()));
 }
 
 void Afunapi_tester::OnSessionClosed()
 {
-  fun::DebugUtils::Log("session closed");
+  UE_LOG(LogFunapiExample, Log, TEXT("Session closed"));
 }

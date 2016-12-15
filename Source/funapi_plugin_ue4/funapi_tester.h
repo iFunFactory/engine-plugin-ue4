@@ -6,17 +6,12 @@
 
 #pragma once
 
-#include <memory>
 #include "GameFramework/Actor.h"
+#include "funapi_announcement.h"
+#include "funapi_downloader.h"
+#include "funapi_session.h"
+#include "funapi_multicasting.h"
 #include "funapi_tester.generated.h"
-
-namespace fun {
-  class FunapiAnnouncement;
-  class FunapiSession;
-  class FunapiMulticast;
-  class FunapiHttpDownloader;
-  enum class TransportProtocol : int;
-}
 
 UCLASS()
 class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor

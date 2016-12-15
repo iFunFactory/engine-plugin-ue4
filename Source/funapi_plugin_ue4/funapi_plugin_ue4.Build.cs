@@ -13,8 +13,9 @@ public class funapi_plugin_ue4 : ModuleRules
     {
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
         PublicDependencyModuleNames.AddRange(new string[] { "Json", "UMG" });
-        PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
+        PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "Funapi" });
 
+        /*
         // Third party library
         var ThirdPartyPath = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "ThirdParty/"));
 
@@ -99,5 +100,6 @@ public class funapi_plugin_ue4 : ModuleRules
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libprotobuf.a"));
             PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.a"));
         }
+        */
     }
 }

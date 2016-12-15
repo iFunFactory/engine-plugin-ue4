@@ -1,0 +1,26 @@
+{
+	"FileVersion" : 3,
+	"Version" : 1,
+	"VersionName" : "1.36",
+	"FriendlyName" : "Funapi Plugin",
+	"Description" : "Funapi Plugin UE4",
+	"Category" : "iFunFactory",
+	"CreatedBy" : "iFunFactory, Inc.",
+	"CreatedByURL" : "http://iFunFactory.com",
+	"DocsURL" : "http://www.ifunfactory.com/engine/documents/reference/en/index.html",
+	"MarketplaceURL" : "",
+	"SupportURL" : "http://www.ifunfactory.com/engine/#contact",
+	"EnabledByDefault" : false,
+	"CanContainContent" : false,
+	"IsBetaVersion" : false,
+	"Installed" : false,
+	"Modules" :
+	[
+		{
+			"Name" : "Funapi",
+			"Type" : "Runtime",
+			"LoadingPhase" : "Default",
+			"WhitelistPlatforms" : [ "IOS", "Android", "Mac", "Win32", "Win64" ]
+		}
+	]
+}

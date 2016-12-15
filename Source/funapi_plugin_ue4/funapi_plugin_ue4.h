@@ -6,4 +6,7 @@
 
 #pragma once
 
-#include "funapi/funapi_plugin.h"
+// #include "funapi/funapi_plugin.h"
+#include "Engine.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogFunapiExample, Log, All);

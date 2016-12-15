@@ -8,4 +8,4 @@
 
 IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, funapi_plugin_ue4, "funapi_plugin_ue4" );
 
-DEFINE_LOG_CATEGORY(LogFunapi);
+DEFINE_LOG_CATEGORY(LogFunapiExample);

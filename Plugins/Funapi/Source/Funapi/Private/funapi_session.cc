@@ -516,7 +516,7 @@ bool FunapiTransport::TryToDecodeHeader(std::vector<uint8_t> &receiving,
                 kHeaderDelimeter,
                 kHeaderDelimeter + strlen(kHeaderDelimeter));
 
-    ssize_t eol_offset = ptr - base;
+    int eol_offset = static_cast<int>(ptr - base);
     if (eol_offset >= received_size) {
       // Not enough bytes. Wait for more bytes to come.
       DebugUtils::Log("We need more bytes for a header field. Waiting.");
@@ -1764,7 +1764,7 @@ bool FunapiHttpTransport::EncodeThenSendMessage(std::vector<uint8_t> &body) {
     auto temp_header = const_cast<std::vector<std::string>&>(v_header);
     auto temp_body = const_cast<std::vector<uint8_t>&>(v_body);
 
-    for (int i=1;i<temp_header.size();++i) {
+    for (size_t i=1;i<temp_header.size();++i) {
       WebResponseHeaderCb(temp_header[i].c_str(), static_cast<int>(temp_header[i].length()), header_fields);
     }
 
@@ -1806,7 +1806,7 @@ void FunapiHttpTransport::WebResponseHeaderCb(const void *data, int len, HeaderF
   char *ptr = std::search(buf, buf + len, kHeaderFieldDelimeter,
                           kHeaderFieldDelimeter + strlen(kHeaderFieldDelimeter));
   ssize_t eol_offset = ptr - buf;
-  if (eol_offset >= len)
+  if (eol_offset >= (size_t)len)
     return;
 
   // Generates null-terminated string by replacing the delimeter with \0.
@@ -2531,7 +2531,7 @@ void FunapiSessionImpl::OnSessionOpen(const TransportProtocol protocol,
                                       const std::shared_ptr<FunapiMessage> message) {
   OnSessionEvent(protocol, SessionEventType::kOpened, GetSessionId(FunEncoding::kJson), nullptr);
 
-  for (int i=1;i<connect_protocols_.size();++i) {
+  for (size_t i=1;i<connect_protocols_.size();++i) {
     if (auto transport = GetTransport(connect_protocols_[i])) {
       transport->Start();
     }

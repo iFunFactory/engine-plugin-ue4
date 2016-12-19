@@ -326,7 +326,7 @@ void FunapiAnnouncementImpl::DownloadFiles() {
     return;
   }
 
-  for (int i=0;i<info_list_.size();++i) {
+  for (size_t i=0;i<info_list_.size();++i) {
     auto &info = info_list_[i];
     std::string url;
     if (info->GetLinkUrl().length() > 0) {

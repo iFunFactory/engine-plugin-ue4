@@ -238,7 +238,7 @@ void FunapiHttpDownloaderImpl::DownloadFiles() {
 
   OnReady();
 
-  for (int i=0;i<info_list_.size();++i) {
+  for (size_t i=0;i<info_list_.size();++i) {
     auto &info = info_list_[i];
     if (IsDownloadFile(info)) {
       if (DownloadFile(i, info) == false) {

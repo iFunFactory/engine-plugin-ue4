@@ -49,7 +49,20 @@ message FunRedirectConnectMessage {
 }
 
 
+message FunDedicatedServerRedirectMessage {
+  required string host = 1;
+  required int32 port = 2;
+  required string token = 3;
+}
+
+
+message FunDedicatedServerMesseage {
+  optional FunDedicatedServerRedirectMessage redirect = 1;
+}
+
+
 extend FunMessage {
   optional FunRedirectMessage _sc_redirect = 10;
   optional FunRedirectConnectMessage _cs_redirect_connect = 11;
+  optional FunDedicatedServerMesseage _sc_dedicated_server = 12;
 }

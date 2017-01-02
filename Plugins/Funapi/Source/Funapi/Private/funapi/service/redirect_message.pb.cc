@@ -30,6 +30,12 @@ const ::google::protobuf::Descriptor* FunRedirectConnectMessage_descriptor_ = NU
 const ::google::protobuf::internal::GeneratedMessageReflection*
   FunRedirectConnectMessage_reflection_ = NULL;
 const ::google::protobuf::EnumDescriptor* FunRedirectConnectMessage_Result_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* FunDedicatedServerRedirectMessage_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  FunDedicatedServerRedirectMessage_reflection_ = NULL;
+const ::google::protobuf::Descriptor* FunDedicatedServerMesseage_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  FunDedicatedServerMesseage_reflection_ = NULL;
 
 }  // namespace
 
@@ -94,6 +100,38 @@ void protobuf_AssignDesc_funapi_2fservice_2fredirect_5fmessage_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(FunRedirectConnectMessage));
   FunRedirectConnectMessage_Result_descriptor_ = FunRedirectConnectMessage_descriptor_->enum_type(0);
+  FunDedicatedServerRedirectMessage_descriptor_ = file->message_type(2);
+  static const int FunDedicatedServerRedirectMessage_offsets_[3] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunDedicatedServerRedirectMessage, host_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunDedicatedServerRedirectMessage, port_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunDedicatedServerRedirectMessage, token_),
+  };
+  FunDedicatedServerRedirectMessage_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      FunDedicatedServerRedirectMessage_descriptor_,
+      FunDedicatedServerRedirectMessage::default_instance_,
+      FunDedicatedServerRedirectMessage_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunDedicatedServerRedirectMessage, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunDedicatedServerRedirectMessage, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(FunDedicatedServerRedirectMessage));
+  FunDedicatedServerMesseage_descriptor_ = file->message_type(3);
+  static const int FunDedicatedServerMesseage_offsets_[1] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunDedicatedServerMesseage, redirect_),
+  };
+  FunDedicatedServerMesseage_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      FunDedicatedServerMesseage_descriptor_,
+      FunDedicatedServerMesseage::default_instance_,
+      FunDedicatedServerMesseage_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunDedicatedServerMesseage, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunDedicatedServerMesseage, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(FunDedicatedServerMesseage));
 }
 
 namespace {
@@ -112,6 +150,10 @@ void protobuf_RegisterTypes(const ::std::string&) {
     FunRedirectMessage_ServerPort_descriptor_, &FunRedirectMessage_ServerPort::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     FunRedirectConnectMessage_descriptor_, &FunRedirectConnectMessage::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    FunDedicatedServerRedirectMessage_descriptor_, &FunDedicatedServerRedirectMessage::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    FunDedicatedServerMesseage_descriptor_, &FunDedicatedServerMesseage::default_instance());
 }
 
 }  // namespace
@@ -123,6 +165,10 @@ void protobuf_ShutdownFile_funapi_2fservice_2fredirect_5fmessage_2eproto() {
   delete FunRedirectMessage_ServerPort_reflection_;
   delete FunRedirectConnectMessage::default_instance_;
   delete FunRedirectConnectMessage_reflection_;
+  delete FunDedicatedServerRedirectMessage::default_instance_;
+  delete FunDedicatedServerRedirectMessage_reflection_;
+  delete FunDedicatedServerMesseage::default_instance_;
+  delete FunDedicatedServerMesseage_reflection_;
 }
 
 void protobuf_AddDesc_funapi_2fservice_2fredirect_5fmessage_2eproto() {
@@ -147,15 +193,23 @@ void protobuf_AddDesc_funapi_2fservice_2fredirect_5fmessage_2eproto() {
     "ConnectMessage\022\r\n\005token\030\001 \001(\t\0221\n\006result\030"
     "\002 \001(\0162!.FunRedirectConnectMessage.Result"
     "\"A\n\006Result\022\006\n\002OK\020\000\022\021\n\rINVALID_TOKEN\020\001\022\013\n"
-    "\007EXPIRED\020\002\022\017\n\013AUTH_FAILED\020\003:6\n\014_sc_redir"
-    "ect\022\013.FunMessage\030\n \001(\0132\023.FunRedirectMess"
-    "age:E\n\024_cs_redirect_connect\022\013.FunMessage"
-    "\030\013 \001(\0132\032.FunRedirectConnectMessage", 714);
+    "\007EXPIRED\020\002\022\017\n\013AUTH_FAILED\020\003\"N\n!FunDedica"
+    "tedServerRedirectMessage\022\014\n\004host\030\001 \002(\t\022\014"
+    "\n\004port\030\002 \002(\005\022\r\n\005token\030\003 \002(\t\"R\n\032FunDedica"
+    "tedServerMesseage\0224\n\010redirect\030\001 \001(\0132\".Fu"
+    "nDedicatedServerRedirectMessage:6\n\014_sc_r"
+    "edirect\022\013.FunMessage\030\n \001(\0132\023.FunRedirect"
+    "Message:E\n\024_cs_redirect_connect\022\013.FunMes"
+    "sage\030\013 \001(\0132\032.FunRedirectConnectMessage:F"
+    "\n\024_sc_dedicated_server\022\013.FunMessage\030\014 \001("
+    "\0132\033.FunDedicatedServerMesseage", 950);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "funapi/service/redirect_message.proto", &protobuf_RegisterTypes);
   FunRedirectMessage::default_instance_ = new FunRedirectMessage();
   FunRedirectMessage_ServerPort::default_instance_ = new FunRedirectMessage_ServerPort();
   FunRedirectConnectMessage::default_instance_ = new FunRedirectConnectMessage();
+  FunDedicatedServerRedirectMessage::default_instance_ = new FunDedicatedServerRedirectMessage();
+  FunDedicatedServerMesseage::default_instance_ = new FunDedicatedServerMesseage();
   ::google::protobuf::internal::ExtensionSet::RegisterMessageExtension(
     &::FunMessage::default_instance(),
     10, 11, false, false,
@@ -164,9 +218,15 @@ void protobuf_AddDesc_funapi_2fservice_2fredirect_5fmessage_2eproto() {
     &::FunMessage::default_instance(),
     11, 11, false, false,
     &::FunRedirectConnectMessage::default_instance());
+  ::google::protobuf::internal::ExtensionSet::RegisterMessageExtension(
+    &::FunMessage::default_instance(),
+    12, 11, false, false,
+    &::FunDedicatedServerMesseage::default_instance());
   FunRedirectMessage::default_instance_->InitAsDefaultInstance();
   FunRedirectMessage_ServerPort::default_instance_->InitAsDefaultInstance();
   FunRedirectConnectMessage::default_instance_->InitAsDefaultInstance();
+  FunDedicatedServerRedirectMessage::default_instance_->InitAsDefaultInstance();
+  FunDedicatedServerMesseage::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_funapi_2fservice_2fredirect_5fmessage_2eproto);
 }
 
@@ -1254,12 +1314,589 @@ void FunRedirectConnectMessage::Swap(FunRedirectConnectMessage* other) {
   return metadata;
 }
 
+
+// ===================================================================
+
+#ifndef _MSC_VER
+const int FunDedicatedServerRedirectMessage::kHostFieldNumber;
+const int FunDedicatedServerRedirectMessage::kPortFieldNumber;
+const int FunDedicatedServerRedirectMessage::kTokenFieldNumber;
+#endif  // !_MSC_VER
+
+FunDedicatedServerRedirectMessage::FunDedicatedServerRedirectMessage()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:FunDedicatedServerRedirectMessage)
+}
+
+void FunDedicatedServerRedirectMessage::InitAsDefaultInstance() {
+}
+
+FunDedicatedServerRedirectMessage::FunDedicatedServerRedirectMessage(const FunDedicatedServerRedirectMessage& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+  // @@protoc_insertion_point(copy_constructor:FunDedicatedServerRedirectMessage)
+}
+
+void FunDedicatedServerRedirectMessage::SharedCtor() {
+  ::google::protobuf::internal::GetEmptyString();
+  _cached_size_ = 0;
+  host_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  port_ = 0;
+  token_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+FunDedicatedServerRedirectMessage::~FunDedicatedServerRedirectMessage() {
+  // @@protoc_insertion_point(destructor:FunDedicatedServerRedirectMessage)
+  SharedDtor();
+}
+
+void FunDedicatedServerRedirectMessage::SharedDtor() {
+  if (host_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    delete host_;
+  }
+  if (token_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    delete token_;
+  }
+  if (this != default_instance_) {
+  }
+}
+
+void FunDedicatedServerRedirectMessage::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* FunDedicatedServerRedirectMessage::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return FunDedicatedServerRedirectMessage_descriptor_;
+}
+
+const FunDedicatedServerRedirectMessage& FunDedicatedServerRedirectMessage::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_funapi_2fservice_2fredirect_5fmessage_2eproto();
+  return *default_instance_;
+}
+
+FunDedicatedServerRedirectMessage* FunDedicatedServerRedirectMessage::default_instance_ = NULL;
+
+FunDedicatedServerRedirectMessage* FunDedicatedServerRedirectMessage::New() const {
+  return new FunDedicatedServerRedirectMessage;
+}
+
+void FunDedicatedServerRedirectMessage::Clear() {
+  if (_has_bits_[0 / 32] & 7) {
+    if (has_host()) {
+      if (host_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+        host_->clear();
+      }
+    }
+    port_ = 0;
+    if (has_token()) {
+      if (token_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+        token_->clear();
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool FunDedicatedServerRedirectMessage::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:FunDedicatedServerRedirectMessage)
+  for (;;) {
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // required string host = 1;
+      case 1: {
+        if (tag == 10) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_host()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+            this->host().data(), this->host().length(),
+            ::google::protobuf::internal::WireFormat::PARSE,
+            "host");
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(16)) goto parse_port;
+        break;
+      }
+
+      // required int32 port = 2;
+      case 2: {
+        if (tag == 16) {
+         parse_port:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &port_)));
+          set_has_port();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(26)) goto parse_token;
+        break;
+      }
+
+      // required string token = 3;
+      case 3: {
+        if (tag == 26) {
+         parse_token:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_token()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+            this->token().data(), this->token().length(),
+            ::google::protobuf::internal::WireFormat::PARSE,
+            "token");
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectAtEnd()) goto success;
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0 ||
+            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:FunDedicatedServerRedirectMessage)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:FunDedicatedServerRedirectMessage)
+  return false;
+#undef DO_
+}
+
+void FunDedicatedServerRedirectMessage::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:FunDedicatedServerRedirectMessage)
+  // required string host = 1;
+  if (has_host()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->host().data(), this->host().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "host");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      1, this->host(), output);
+  }
+
+  // required int32 port = 2;
+  if (has_port()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->port(), output);
+  }
+
+  // required string token = 3;
+  if (has_token()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->token().data(), this->token().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "token");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      3, this->token(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:FunDedicatedServerRedirectMessage)
+}
+
+::google::protobuf::uint8* FunDedicatedServerRedirectMessage::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // @@protoc_insertion_point(serialize_to_array_start:FunDedicatedServerRedirectMessage)
+  // required string host = 1;
+  if (has_host()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->host().data(), this->host().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "host");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->host(), target);
+  }
+
+  // required int32 port = 2;
+  if (has_port()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->port(), target);
+  }
+
+  // required string token = 3;
+  if (has_token()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->token().data(), this->token().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "token");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        3, this->token(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:FunDedicatedServerRedirectMessage)
+  return target;
+}
+
+int FunDedicatedServerRedirectMessage::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // required string host = 1;
+    if (has_host()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->host());
+    }
+
+    // required int32 port = 2;
+    if (has_port()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->port());
+    }
+
+    // required string token = 3;
+    if (has_token()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->token());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void FunDedicatedServerRedirectMessage::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const FunDedicatedServerRedirectMessage* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const FunDedicatedServerRedirectMessage*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void FunDedicatedServerRedirectMessage::MergeFrom(const FunDedicatedServerRedirectMessage& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_host()) {
+      set_host(from.host());
+    }
+    if (from.has_port()) {
+      set_port(from.port());
+    }
+    if (from.has_token()) {
+      set_token(from.token());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void FunDedicatedServerRedirectMessage::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void FunDedicatedServerRedirectMessage::CopyFrom(const FunDedicatedServerRedirectMessage& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool FunDedicatedServerRedirectMessage::IsInitialized() const {
+  if ((_has_bits_[0] & 0x00000007) != 0x00000007) return false;
+
+  return true;
+}
+
+void FunDedicatedServerRedirectMessage::Swap(FunDedicatedServerRedirectMessage* other) {
+  if (other != this) {
+    std::swap(host_, other->host_);
+    std::swap(port_, other->port_);
+    std::swap(token_, other->token_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata FunDedicatedServerRedirectMessage::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = FunDedicatedServerRedirectMessage_descriptor_;
+  metadata.reflection = FunDedicatedServerRedirectMessage_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+#ifndef _MSC_VER
+const int FunDedicatedServerMesseage::kRedirectFieldNumber;
+#endif  // !_MSC_VER
+
+FunDedicatedServerMesseage::FunDedicatedServerMesseage()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:FunDedicatedServerMesseage)
+}
+
+void FunDedicatedServerMesseage::InitAsDefaultInstance() {
+  redirect_ = const_cast< ::FunDedicatedServerRedirectMessage*>(&::FunDedicatedServerRedirectMessage::default_instance());
+}
+
+FunDedicatedServerMesseage::FunDedicatedServerMesseage(const FunDedicatedServerMesseage& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+  // @@protoc_insertion_point(copy_constructor:FunDedicatedServerMesseage)
+}
+
+void FunDedicatedServerMesseage::SharedCtor() {
+  _cached_size_ = 0;
+  redirect_ = NULL;
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+FunDedicatedServerMesseage::~FunDedicatedServerMesseage() {
+  // @@protoc_insertion_point(destructor:FunDedicatedServerMesseage)
+  SharedDtor();
+}
+
+void FunDedicatedServerMesseage::SharedDtor() {
+  if (this != default_instance_) {
+    delete redirect_;
+  }
+}
+
+void FunDedicatedServerMesseage::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* FunDedicatedServerMesseage::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return FunDedicatedServerMesseage_descriptor_;
+}
+
+const FunDedicatedServerMesseage& FunDedicatedServerMesseage::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_funapi_2fservice_2fredirect_5fmessage_2eproto();
+  return *default_instance_;
+}
+
+FunDedicatedServerMesseage* FunDedicatedServerMesseage::default_instance_ = NULL;
+
+FunDedicatedServerMesseage* FunDedicatedServerMesseage::New() const {
+  return new FunDedicatedServerMesseage;
+}
+
+void FunDedicatedServerMesseage::Clear() {
+  if (has_redirect()) {
+    if (redirect_ != NULL) redirect_->::FunDedicatedServerRedirectMessage::Clear();
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool FunDedicatedServerMesseage::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:FunDedicatedServerMesseage)
+  for (;;) {
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional .FunDedicatedServerRedirectMessage redirect = 1;
+      case 1: {
+        if (tag == 10) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_redirect()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectAtEnd()) goto success;
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0 ||
+            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:FunDedicatedServerMesseage)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:FunDedicatedServerMesseage)
+  return false;
+#undef DO_
+}
+
+void FunDedicatedServerMesseage::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:FunDedicatedServerMesseage)
+  // optional .FunDedicatedServerRedirectMessage redirect = 1;
+  if (has_redirect()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      1, this->redirect(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:FunDedicatedServerMesseage)
+}
+
+::google::protobuf::uint8* FunDedicatedServerMesseage::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // @@protoc_insertion_point(serialize_to_array_start:FunDedicatedServerMesseage)
+  // optional .FunDedicatedServerRedirectMessage redirect = 1;
+  if (has_redirect()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        1, this->redirect(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:FunDedicatedServerMesseage)
+  return target;
+}
+
+int FunDedicatedServerMesseage::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional .FunDedicatedServerRedirectMessage redirect = 1;
+    if (has_redirect()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->redirect());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void FunDedicatedServerMesseage::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const FunDedicatedServerMesseage* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const FunDedicatedServerMesseage*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void FunDedicatedServerMesseage::MergeFrom(const FunDedicatedServerMesseage& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_redirect()) {
+      mutable_redirect()->::FunDedicatedServerRedirectMessage::MergeFrom(from.redirect());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void FunDedicatedServerMesseage::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void FunDedicatedServerMesseage::CopyFrom(const FunDedicatedServerMesseage& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool FunDedicatedServerMesseage::IsInitialized() const {
+
+  if (has_redirect()) {
+    if (!this->redirect().IsInitialized()) return false;
+  }
+  return true;
+}
+
+void FunDedicatedServerMesseage::Swap(FunDedicatedServerMesseage* other) {
+  if (other != this) {
+    std::swap(redirect_, other->redirect_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata FunDedicatedServerMesseage::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = FunDedicatedServerMesseage_descriptor_;
+  metadata.reflection = FunDedicatedServerMesseage_reflection_;
+  return metadata;
+}
+
 ::google::protobuf::internal::ExtensionIdentifier< ::FunMessage,
     ::google::protobuf::internal::MessageTypeTraits< ::FunRedirectMessage >, 11, false >
   _sc_redirect(kScRedirectFieldNumber, ::FunRedirectMessage::default_instance());
 ::google::protobuf::internal::ExtensionIdentifier< ::FunMessage,
     ::google::protobuf::internal::MessageTypeTraits< ::FunRedirectConnectMessage >, 11, false >
   _cs_redirect_connect(kCsRedirectConnectFieldNumber, ::FunRedirectConnectMessage::default_instance());
+::google::protobuf::internal::ExtensionIdentifier< ::FunMessage,
+    ::google::protobuf::internal::MessageTypeTraits< ::FunDedicatedServerMesseage >, 11, false >
+  _sc_dedicated_server(kScDedicatedServerFieldNumber, ::FunDedicatedServerMesseage::default_instance());
 
 // @@protoc_insertion_point(namespace_scope)
 

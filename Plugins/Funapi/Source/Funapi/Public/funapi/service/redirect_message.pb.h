@@ -49,6 +49,8 @@ void protobuf_ShutdownFile_funapi_2fservice_2fredirect_5fmessage_2eproto();
 class FunRedirectMessage;
 class FunRedirectMessage_ServerPort;
 class FunRedirectConnectMessage;
+class FunDedicatedServerRedirectMessage;
+class FunDedicatedServerMesseage;
 
 enum FunRedirectMessage_Protocol {
   FunRedirectMessage_Protocol_PROTO_TCP = 1,
@@ -507,6 +509,196 @@ class FUNAPI_API FunRedirectConnectMessage : public ::google::protobuf::Message 
   void InitAsDefaultInstance();
   static FunRedirectConnectMessage* default_instance_;
 };
+// -------------------------------------------------------------------
+
+class FUNAPI_API FunDedicatedServerRedirectMessage : public ::google::protobuf::Message {
+ public:
+  FunDedicatedServerRedirectMessage();
+  virtual ~FunDedicatedServerRedirectMessage();
+
+  FunDedicatedServerRedirectMessage(const FunDedicatedServerRedirectMessage& from);
+
+  inline FunDedicatedServerRedirectMessage& operator=(const FunDedicatedServerRedirectMessage& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const FunDedicatedServerRedirectMessage& default_instance();
+
+  void Swap(FunDedicatedServerRedirectMessage* other);
+
+  // implements Message ----------------------------------------------
+
+  FunDedicatedServerRedirectMessage* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const FunDedicatedServerRedirectMessage& from);
+  void MergeFrom(const FunDedicatedServerRedirectMessage& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // required string host = 1;
+  inline bool has_host() const;
+  inline void clear_host();
+  static const int kHostFieldNumber = 1;
+  inline const ::std::string& host() const;
+  inline void set_host(const ::std::string& value);
+  inline void set_host(const char* value);
+  inline void set_host(const char* value, size_t size);
+  inline ::std::string* mutable_host();
+  inline ::std::string* release_host();
+  inline void set_allocated_host(::std::string* host);
+
+  // required int32 port = 2;
+  inline bool has_port() const;
+  inline void clear_port();
+  static const int kPortFieldNumber = 2;
+  inline ::google::protobuf::int32 port() const;
+  inline void set_port(::google::protobuf::int32 value);
+
+  // required string token = 3;
+  inline bool has_token() const;
+  inline void clear_token();
+  static const int kTokenFieldNumber = 3;
+  inline const ::std::string& token() const;
+  inline void set_token(const ::std::string& value);
+  inline void set_token(const char* value);
+  inline void set_token(const char* value, size_t size);
+  inline ::std::string* mutable_token();
+  inline ::std::string* release_token();
+  inline void set_allocated_token(::std::string* token);
+
+  // @@protoc_insertion_point(class_scope:FunDedicatedServerRedirectMessage)
+ private:
+  inline void set_has_host();
+  inline void clear_has_host();
+  inline void set_has_port();
+  inline void clear_has_port();
+  inline void set_has_token();
+  inline void clear_has_token();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::uint32 _has_bits_[1];
+  mutable int _cached_size_;
+  ::std::string* host_;
+  ::std::string* token_;
+  ::google::protobuf::int32 port_;
+  friend void FUNAPI_API protobuf_AddDesc_funapi_2fservice_2fredirect_5fmessage_2eproto();
+  friend void protobuf_AssignDesc_funapi_2fservice_2fredirect_5fmessage_2eproto();
+  friend void protobuf_ShutdownFile_funapi_2fservice_2fredirect_5fmessage_2eproto();
+
+  void InitAsDefaultInstance();
+  static FunDedicatedServerRedirectMessage* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class FUNAPI_API FunDedicatedServerMesseage : public ::google::protobuf::Message {
+ public:
+  FunDedicatedServerMesseage();
+  virtual ~FunDedicatedServerMesseage();
+
+  FunDedicatedServerMesseage(const FunDedicatedServerMesseage& from);
+
+  inline FunDedicatedServerMesseage& operator=(const FunDedicatedServerMesseage& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const FunDedicatedServerMesseage& default_instance();
+
+  void Swap(FunDedicatedServerMesseage* other);
+
+  // implements Message ----------------------------------------------
+
+  FunDedicatedServerMesseage* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const FunDedicatedServerMesseage& from);
+  void MergeFrom(const FunDedicatedServerMesseage& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional .FunDedicatedServerRedirectMessage redirect = 1;
+  inline bool has_redirect() const;
+  inline void clear_redirect();
+  static const int kRedirectFieldNumber = 1;
+  inline const ::FunDedicatedServerRedirectMessage& redirect() const;
+  inline ::FunDedicatedServerRedirectMessage* mutable_redirect();
+  inline ::FunDedicatedServerRedirectMessage* release_redirect();
+  inline void set_allocated_redirect(::FunDedicatedServerRedirectMessage* redirect);
+
+  // @@protoc_insertion_point(class_scope:FunDedicatedServerMesseage)
+ private:
+  inline void set_has_redirect();
+  inline void clear_has_redirect();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::uint32 _has_bits_[1];
+  mutable int _cached_size_;
+  ::FunDedicatedServerRedirectMessage* redirect_;
+  friend void FUNAPI_API protobuf_AddDesc_funapi_2fservice_2fredirect_5fmessage_2eproto();
+  friend void protobuf_AssignDesc_funapi_2fservice_2fredirect_5fmessage_2eproto();
+  friend void protobuf_ShutdownFile_funapi_2fservice_2fredirect_5fmessage_2eproto();
+
+  void InitAsDefaultInstance();
+  static FunDedicatedServerMesseage* default_instance_;
+};
 // ===================================================================
 
 static const int kScRedirectFieldNumber = 10;
@@ -517,6 +709,10 @@ static const int kCsRedirectConnectFieldNumber = 11;
 FUNAPI_API extern ::google::protobuf::internal::ExtensionIdentifier< ::FunMessage,
     ::google::protobuf::internal::MessageTypeTraits< ::FunRedirectConnectMessage >, 11, false >
   _cs_redirect_connect;
+static const int kScDedicatedServerFieldNumber = 12;
+FUNAPI_API extern ::google::protobuf::internal::ExtensionIdentifier< ::FunMessage,
+    ::google::protobuf::internal::MessageTypeTraits< ::FunDedicatedServerMesseage >, 11, false >
+  _sc_dedicated_server;
 
 // ===================================================================
 
@@ -961,6 +1157,231 @@ inline void FunRedirectConnectMessage::set_result(::FunRedirectConnectMessage_Re
   set_has_result();
   result_ = value;
   // @@protoc_insertion_point(field_set:FunRedirectConnectMessage.result)
+}
+
+// -------------------------------------------------------------------
+
+// FunDedicatedServerRedirectMessage
+
+// required string host = 1;
+inline bool FunDedicatedServerRedirectMessage::has_host() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void FunDedicatedServerRedirectMessage::set_has_host() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void FunDedicatedServerRedirectMessage::clear_has_host() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void FunDedicatedServerRedirectMessage::clear_host() {
+  if (host_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    host_->clear();
+  }
+  clear_has_host();
+}
+inline const ::std::string& FunDedicatedServerRedirectMessage::host() const {
+  // @@protoc_insertion_point(field_get:FunDedicatedServerRedirectMessage.host)
+  return *host_;
+}
+inline void FunDedicatedServerRedirectMessage::set_host(const ::std::string& value) {
+  set_has_host();
+  if (host_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    host_ = new ::std::string;
+  }
+  host_->assign(value);
+  // @@protoc_insertion_point(field_set:FunDedicatedServerRedirectMessage.host)
+}
+inline void FunDedicatedServerRedirectMessage::set_host(const char* value) {
+  set_has_host();
+  if (host_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    host_ = new ::std::string;
+  }
+  host_->assign(value);
+  // @@protoc_insertion_point(field_set_char:FunDedicatedServerRedirectMessage.host)
+}
+inline void FunDedicatedServerRedirectMessage::set_host(const char* value, size_t size) {
+  set_has_host();
+  if (host_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    host_ = new ::std::string;
+  }
+  host_->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:FunDedicatedServerRedirectMessage.host)
+}
+inline ::std::string* FunDedicatedServerRedirectMessage::mutable_host() {
+  set_has_host();
+  if (host_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    host_ = new ::std::string;
+  }
+  // @@protoc_insertion_point(field_mutable:FunDedicatedServerRedirectMessage.host)
+  return host_;
+}
+inline ::std::string* FunDedicatedServerRedirectMessage::release_host() {
+  clear_has_host();
+  if (host_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    return NULL;
+  } else {
+    ::std::string* temp = host_;
+    host_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    return temp;
+  }
+}
+inline void FunDedicatedServerRedirectMessage::set_allocated_host(::std::string* host) {
+  if (host_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    delete host_;
+  }
+  if (host) {
+    set_has_host();
+    host_ = host;
+  } else {
+    clear_has_host();
+    host_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  // @@protoc_insertion_point(field_set_allocated:FunDedicatedServerRedirectMessage.host)
+}
+
+// required int32 port = 2;
+inline bool FunDedicatedServerRedirectMessage::has_port() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void FunDedicatedServerRedirectMessage::set_has_port() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void FunDedicatedServerRedirectMessage::clear_has_port() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void FunDedicatedServerRedirectMessage::clear_port() {
+  port_ = 0;
+  clear_has_port();
+}
+inline ::google::protobuf::int32 FunDedicatedServerRedirectMessage::port() const {
+  // @@protoc_insertion_point(field_get:FunDedicatedServerRedirectMessage.port)
+  return port_;
+}
+inline void FunDedicatedServerRedirectMessage::set_port(::google::protobuf::int32 value) {
+  set_has_port();
+  port_ = value;
+  // @@protoc_insertion_point(field_set:FunDedicatedServerRedirectMessage.port)
+}
+
+// required string token = 3;
+inline bool FunDedicatedServerRedirectMessage::has_token() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void FunDedicatedServerRedirectMessage::set_has_token() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void FunDedicatedServerRedirectMessage::clear_has_token() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void FunDedicatedServerRedirectMessage::clear_token() {
+  if (token_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    token_->clear();
+  }
+  clear_has_token();
+}
+inline const ::std::string& FunDedicatedServerRedirectMessage::token() const {
+  // @@protoc_insertion_point(field_get:FunDedicatedServerRedirectMessage.token)
+  return *token_;
+}
+inline void FunDedicatedServerRedirectMessage::set_token(const ::std::string& value) {
+  set_has_token();
+  if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    token_ = new ::std::string;
+  }
+  token_->assign(value);
+  // @@protoc_insertion_point(field_set:FunDedicatedServerRedirectMessage.token)
+}
+inline void FunDedicatedServerRedirectMessage::set_token(const char* value) {
+  set_has_token();
+  if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    token_ = new ::std::string;
+  }
+  token_->assign(value);
+  // @@protoc_insertion_point(field_set_char:FunDedicatedServerRedirectMessage.token)
+}
+inline void FunDedicatedServerRedirectMessage::set_token(const char* value, size_t size) {
+  set_has_token();
+  if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    token_ = new ::std::string;
+  }
+  token_->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:FunDedicatedServerRedirectMessage.token)
+}
+inline ::std::string* FunDedicatedServerRedirectMessage::mutable_token() {
+  set_has_token();
+  if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    token_ = new ::std::string;
+  }
+  // @@protoc_insertion_point(field_mutable:FunDedicatedServerRedirectMessage.token)
+  return token_;
+}
+inline ::std::string* FunDedicatedServerRedirectMessage::release_token() {
+  clear_has_token();
+  if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    return NULL;
+  } else {
+    ::std::string* temp = token_;
+    token_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    return temp;
+  }
+}
+inline void FunDedicatedServerRedirectMessage::set_allocated_token(::std::string* token) {
+  if (token_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    delete token_;
+  }
+  if (token) {
+    set_has_token();
+    token_ = token;
+  } else {
+    clear_has_token();
+    token_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  // @@protoc_insertion_point(field_set_allocated:FunDedicatedServerRedirectMessage.token)
+}
+
+// -------------------------------------------------------------------
+
+// FunDedicatedServerMesseage
+
+// optional .FunDedicatedServerRedirectMessage redirect = 1;
+inline bool FunDedicatedServerMesseage::has_redirect() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void FunDedicatedServerMesseage::set_has_redirect() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void FunDedicatedServerMesseage::clear_has_redirect() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void FunDedicatedServerMesseage::clear_redirect() {
+  if (redirect_ != NULL) redirect_->::FunDedicatedServerRedirectMessage::Clear();
+  clear_has_redirect();
+}
+inline const ::FunDedicatedServerRedirectMessage& FunDedicatedServerMesseage::redirect() const {
+  // @@protoc_insertion_point(field_get:FunDedicatedServerMesseage.redirect)
+  return redirect_ != NULL ? *redirect_ : *default_instance_->redirect_;
+}
+inline ::FunDedicatedServerRedirectMessage* FunDedicatedServerMesseage::mutable_redirect() {
+  set_has_redirect();
+  if (redirect_ == NULL) redirect_ = new ::FunDedicatedServerRedirectMessage;
+  // @@protoc_insertion_point(field_mutable:FunDedicatedServerMesseage.redirect)
+  return redirect_;
+}
+inline ::FunDedicatedServerRedirectMessage* FunDedicatedServerMesseage::release_redirect() {
+  clear_has_redirect();
+  ::FunDedicatedServerRedirectMessage* temp = redirect_;
+  redirect_ = NULL;
+  return temp;
+}
+inline void FunDedicatedServerMesseage::set_allocated_redirect(::FunDedicatedServerRedirectMessage* redirect) {
+  delete redirect_;
+  redirect_ = redirect;
+  if (redirect) {
+    set_has_redirect();
+  } else {
+    clear_has_redirect();
+  }
+  // @@protoc_insertion_point(field_set_allocated:FunDedicatedServerMesseage.redirect)
 }
 
 

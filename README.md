@@ -51,10 +51,10 @@ Funapi plugin unreal engine 4
 
 ## 도움말
 
-클라이언트 플러그인의 도움말은 [여기](http://www.ifunfactory.com/engine/documents/reference/ko/client-plugin.html)를 참고해 주세요.
+클라이언트 플러그인의 도움말은 <https://www.ifunfactory.com/engine/documents/reference/ko/client-plugin.html> 를 참고해 주세요.
 
-플러그인에 대한 궁금한 점은 [Q&A](http://answers.ifunfactory.com)에 질문을 올려주세요.
+플러그인에 대한 궁금한 점은 <https://answers.ifunfactory.com> 에 질문을 올려주세요.
 가능한 빠르게 답변해 드립니다.
 
-그 외에 플러그인에 대한 문의 사항이나 버그 신고는 *funapi-support@ifunfactory.com* 으로 메일을
+그 외에 플러그인에 대한 문의 사항이나 버그 신고는 <funapi-support@ifunfactory.com> 으로 메일을
 보내주세요.

@@ -181,6 +181,16 @@ bool FunapiSocketImpl::InitAddrInfo(int socktype,
                                     const int port,
                                     int &error_code,
                                     std::string &error_string) {
+#ifdef FUNAPI_COCOS2D_PLATFORM_WINDOWS
+  static bool bFirst = true;
+  if (bFirst) {
+    bFirst = false;
+
+    WSADATA wsaData;
+    WSAStartup(MAKEWORD(2, 2), &wsaData);
+  }
+#endif
+
   struct addrinfo hints;
 
   std::stringstream ss_port;

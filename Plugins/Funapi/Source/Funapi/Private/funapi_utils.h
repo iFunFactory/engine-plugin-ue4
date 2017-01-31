@@ -85,7 +85,7 @@ class DebugUtils
 #endif
 
 #ifdef FUNAPI_UE4
-    UE_LOG(LogFunapi, Warning, TEXT("%s"), *FString(buffer));
+    UE_LOG(LogFunapi, Log, TEXT("%s"), *FString(buffer));
 #endif
 
 #endif // DEBUG_LOG

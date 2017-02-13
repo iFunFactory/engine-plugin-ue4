@@ -31,7 +31,7 @@ class FUNAPI_API FunapiTasks : public std::enable_shared_from_this<FunapiTasks> 
   void Update();
 
  private:
-  std::shared_ptr<FunapiTasksImpl> impl_;
+  std::weak_ptr<FunapiTasksImpl> impl_;
 };
 
 
@@ -55,8 +55,8 @@ class FUNAPI_API FunapiThread : public std::enable_shared_from_this<FunapiThread
   void Push(const TaskHandler &task);
   void Join();
 
-private:
-  std::shared_ptr<FunapiThreadImpl> impl_;
+ private:
+  std::weak_ptr<FunapiThreadImpl> impl_;
 };
 
 }  // namespace fun

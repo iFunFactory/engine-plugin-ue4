@@ -1275,20 +1275,21 @@ void FunapiTcpTransport::Connect() {
   DebugUtils::Log("Try to tcp connect to server - %s %d", hostname_or_ip_.c_str(), port_);
 
   tcp_ = FunapiTcp::Create();
+  auto self = shared_from_this();
   tcp_->Connect(hostname_or_ip_.c_str(),
                 port_,
                 connect_timeout_seconds_,
                 disable_nagle_,
-                [this](const bool is_failed,
-                       const bool is_timed_out,
-                       const int error_code,
-                       const std::string &error_string,
-                       struct addrinfo *addrinfo_res)
+                [self, this](const bool is_failed,
+                             const bool is_timed_out,
+                             const int error_code,
+                             const std::string &error_string,
+                             struct addrinfo *addrinfo_res)
   {
     OnConnectCompletion(is_failed, is_timed_out, error_code, error_string, addrinfo_res);
-  }, [this]() {
+  }, [self, this]() {
     Send();
-  }, [this](const bool is_failed,
+  }, [self, this](const bool is_failed,
             const int error_code,
             const std::string &error_string,
             const int read_length, std::vector<uint8_t> &receiving) {
@@ -1307,12 +1308,13 @@ void FunapiTcpTransport::Connect() {
 
 void FunapiTcpTransport::Connect(struct addrinfo *addrinfo_res) {
   if (addrinfo_res && tcp_) {
+    auto self = shared_from_this();
     tcp_->Connect(addrinfo_res,
-                  [this](const bool is_failed,
-                         const bool is_timed_out,
-                         const int error_code,
-                         const std::string &error_string,
-                         struct addrinfo *ai_res)
+                  [self, this](const bool is_failed,
+                               const bool is_timed_out,
+                               const int error_code,
+                               const std::string &error_string,
+                               struct addrinfo *ai_res)
     {
       OnConnectCompletion(is_failed, is_timed_out, error_code, error_string, ai_res);
     });
@@ -1412,11 +1414,12 @@ void FunapiTcpTransport::Send(bool send_all) {
   }
 
   if (!send_buffer_.empty()) {
+    auto self = shared_from_this();
     tcp_->Send(send_buffer_,
-               [this](const bool is_failed,
-                      const int error_code,
-                      const std::string &error_string,
-                      const int sent_length)
+               [self, this](const bool is_failed,
+                            const int error_code,
+                            const std::string &error_string,
+                            const int sent_length)
     {
       if (is_failed) {
         DebugUtils::Log("Tcp send error : (%d) %s", error_code, error_string.c_str());

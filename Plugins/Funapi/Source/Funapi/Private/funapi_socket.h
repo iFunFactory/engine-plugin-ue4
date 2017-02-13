@@ -58,7 +58,7 @@ class FunapiTcp : public std::enable_shared_from_this<FunapiTcp> {
             SendCompletionHandler send_completion_handler);
 
  private:
-  std::shared_ptr<FunapiTcpImpl> impl_;
+  std::weak_ptr<FunapiTcpImpl> impl_;
 };
 
 
@@ -99,7 +99,7 @@ class FunapiUdp : public std::enable_shared_from_this<FunapiUdp> {
   bool Send(const std::vector<uint8_t> &body, SendCompletionHandler send_completion_handler);
 
  private:
-  std::shared_ptr<FunapiUdpImpl> impl_;
+  std::weak_ptr<FunapiUdpImpl> impl_;
 };
 
 }  // namespace fun

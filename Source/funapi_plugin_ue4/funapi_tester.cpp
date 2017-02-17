@@ -391,11 +391,7 @@ bool Afunapi_tester::SendMulticastMessage()
 
       if (multicast_->GetEncoding() == fun::FunEncoding::kProtobuf) {
         FunMessage msg;
-
         FunMulticastMessage* mcast_msg = msg.MutableExtension(multicast);
-        mcast_msg->set_channel(kMulticastTestChannel.c_str());
-        mcast_msg->set_bounce(true);
-
         FunChatMessage *chat_msg = mcast_msg->MutableExtension(chat);
         chat_msg->set_text("multicast test message");
 

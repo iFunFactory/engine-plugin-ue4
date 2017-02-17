@@ -22,7 +22,12 @@ RUN test-source/setup_build_environment --type=makefile
 WORKDIR /home/test/test-build/debug
 RUN make
 
+RUN apt-get install -y zookeeperd
+
 #ADD account.ilf /etc/ifunfactory/account.ilf
 ADD MANIFEST.json /home/test/test-source/src/
 
-CMD /home/test/test-build/debug/test-local
+ADD entrypoint.sh /home/
+RUN chmod +x /home/entrypoint.sh
+
+ENTRYPOINT /home/entrypoint.sh

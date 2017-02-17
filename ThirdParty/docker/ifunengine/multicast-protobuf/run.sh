@@ -1,0 +1,1 @@
+docker run -t --name test-multicast-protobuf -p 8122:8122 ifunengine-multicast-protobuf

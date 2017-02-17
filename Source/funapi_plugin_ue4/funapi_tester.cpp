@@ -261,7 +261,7 @@ bool Afunapi_tester::CreateMulticast()
     UE_LOG(LogFunapiExample, Log, TEXT("sender = %s"), *FString(sender.c_str()));
 
     fun::FunEncoding encoding = with_protobuf_ ? fun::FunEncoding::kProtobuf : fun::FunEncoding::kJson;
-    uint16_t port = with_protobuf_ ? 8022 : 8012;
+    uint16_t port = with_protobuf_ ? 8122 : 8112;
 
     multicast_ = fun::FunapiMulticast::Create(sender.c_str(), kServer.c_str(), port, encoding, with_session_reliability_);
 
@@ -309,6 +309,7 @@ bool Afunapi_tester::CreateMulticast()
       }
       else if (type == fun::TransportEventType::kStopped) {
         UE_LOG(LogFunapiExample, Log, TEXT("Transport Stopped called."));
+        multicast_ = nullptr;
       }
       else if (type == fun::TransportEventType::kConnectionFailed) {
         UE_LOG(LogFunapiExample, Log, TEXT("Transport Connection Failed"));
@@ -320,7 +321,32 @@ bool Afunapi_tester::CreateMulticast()
       }
       else if (type == fun::TransportEventType::kDisconnected) {
         UE_LOG(LogFunapiExample, Log, TEXT("Transport Disconnected called"));
+        multicast_ = nullptr;
       }
+    });
+
+    multicast_->AddJsonChannelMessageCallback(kMulticastTestChannel,
+      [this](
+        const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
+        const std::string &channel_id,
+        const std::string &sender,
+        const std::string &json_string)
+    {
+      UE_LOG(LogFunapiExample, Log, TEXT("channel_id = %s, sender = %s, body = %s"), *FString(channel_id.c_str()), *FString(sender.c_str()), *FString(json_string.c_str()));
+    });
+
+    multicast_->AddProtobufChannelMessageCallback(kMulticastTestChannel,
+      [this](
+        const std::shared_ptr<fun::FunapiMulticast> &funapi_multicast,
+        const std::string &channel_id,
+        const std::string &sender,
+        const FunMessage& message)
+    {
+      FunMulticastMessage mcast_msg = message.GetExtension(multicast);
+      FunChatMessage chat_msg = mcast_msg.GetExtension(chat);
+      std::string text = chat_msg.text();
+
+      UE_LOG(LogFunapiExample, Log, TEXT("channel_id = %s, sender = %s, message = %s"), *FString(channel_id.c_str()), *FString(sender.c_str()), *FString(text.c_str()));
     });
 
     multicast_->Connect();
@@ -335,30 +361,6 @@ bool Afunapi_tester::JoinMulticastChannel()
 
   if (multicast_) {
     if (!multicast_->IsInChannel(kMulticastTestChannel)) {
-      // add callback
-      multicast_->AddJsonChannelMessageCallback(kMulticastTestChannel,
-        [this](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
-          const std::string &channel_id,
-          const std::string &sender,
-          const std::string &json_string)
-      {
-        UE_LOG(LogFunapiExample, Log, TEXT("channel_id = %s, sender = %s, body = %s"), *FString(channel_id.c_str()), *FString(sender.c_str()), *FString(json_string.c_str()));
-      });
-
-      multicast_->AddProtobufChannelMessageCallback(kMulticastTestChannel,
-        [this](const std::shared_ptr<fun::FunapiMulticast> &funapi_multicast,
-          const std::string &channel_id,
-          const std::string &sender,
-          const FunMessage& message)
-      {
-        FunMulticastMessage mcast_msg = message.GetExtension(multicast);
-        FunChatMessage chat_msg = mcast_msg.GetExtension(chat);
-        std::string text = chat_msg.text();
-
-        UE_LOG(LogFunapiExample, Log, TEXT("channel_id = %s, sender = %s, message = %s"), *FString(channel_id.c_str()), *FString(sender.c_str()), *FString(text.c_str()));
-      });
-
-      // join
       multicast_->JoinChannel(kMulticastTestChannel);
     }
   }

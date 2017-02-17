@@ -712,12 +712,12 @@ bool FunapiMulticast::LeaveAllChannels() {
 
 
 bool FunapiMulticast::SendToChannel(const std::string &channel_id, FunMessage &msg, const bool bounce) {
-  return impl_->SendToChannel(channel_id, msg);
+  return impl_->SendToChannel(channel_id, msg, bounce);
 }
 
 
 bool FunapiMulticast::SendToChannel(const std::string &channel_id, std::string &json_string, const bool bounce) {
-  return impl_->SendToChannel(channel_id, json_string);
+  return impl_->SendToChannel(channel_id, json_string, bounce);
 }
 
 

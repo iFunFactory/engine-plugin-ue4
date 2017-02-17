@@ -1,0 +1,205 @@
+{
+  "version": 1,
+  "components": [
+    {
+      "name": "TestServer",
+      "arguments": {
+        "example_arg1": "val1",
+        "example_arg2": 100
+      },
+      "dependency": {
+          "AppInfo": {
+            "app_id": "Test",
+            "client_current_version": "0.0.3",
+            "client_compatible_versions": ["0.0.1", "0.0.2"],
+            "client_update_info": "",
+            "client_update_uri": ""
+          },
+          "EventDispatcher": {
+            "event_threads_size": 4,
+            "enable_event_profiler": true,
+            "enable_outstanding_event_profilier": true,
+            "slow_event_log_threshold_in_ms": 300,
+            "event_timeout_in_ms": 30000,
+            "enable_inheriting_event_tag": true,
+            "enable_random_event_tag": true,
+            "enable_event_thread_checker": true
+          },
+          "Logging": {
+            "activity_log_output": "json://activity/activity_log.json",
+            "activity_log_rotation_interval": 60,
+            "glog_flush_interval": 1
+          },
+          "IoService": {
+            "io_service_threads_size": 4
+          },
+          "SessionService": {
+            "tcp_json_port": 0,
+            "udp_json_port": 0,
+            "http_json_port": 0,
+            "tcp_protobuf_port": 8122,
+            "udp_protobuf_port": 0,
+            "http_protobuf_port": 0,
+            "session_timeout_in_second" : 300,
+            "use_session_reliability": false,
+            "use_sequence_number_validation": false,
+            "use_encryption": false,
+            "tcp_encryptions": ["ife1", "ife2"],
+            "udp_encryptions": ["ife2"],
+            "http_encryptions": [],
+            "encryption_ecdh_key": "02d87cf9965f27cec9dd399b00cde2fb1c39af4711df5a1cb96a79f597c2e1b8",
+            "disable_tcp_nagle": false,
+            "enable_http_message_list": true,
+            "session_message_logging_level": 0,
+            "enable_per_message_metering_in_counter": false,
+            "json_protocol_schema_dir": "json_protocols",
+            "ping_sampling_interval_in_second": 0,
+            "ping_message_size_in_byte": 0,
+            "ping_timeout_in_second": 0,
+            "close_transport_when_session_close": true
+          },
+          "Timer": {},
+          "Object": {
+            "enable_database" : false,
+            "cache_expiration_in_ms": 300000,
+            "copy_cache_expiration_in_ms": 700,
+            "enable_delayed_db_update" : false,
+            "db_update_delay_in_second" : 10,
+            "db_mysql_server_address" : "tcp://127.0.0.1:3306",
+            "db_mysql_id" : "funapi",
+            "db_mysql_pw" : "funapi",
+            "db_mysql_database" : "funapi",
+            "db_read_connection_count" : 8,
+            "db_write_connection_count" : 16,
+            "db_key_shard_read_connection_count" : 8,
+            "db_key_shard_write_connection_count" : 16,
+            "db_string_length": 4096,
+            "db_key_string_length": 12,
+            "db_character_set": "utf8",
+            "use_db_stored_procedure": true,
+            "export_db_schema": false,
+            "use_db_char_type_for_object_id": false,
+            "enable_assert_no_rollback" : true
+          },
+          "AccountManager": {
+          },
+          "CounterService": {
+            "counter_flush_interval_in_sec": 0,
+            "counter_monitoring_interval_in_sec": 30,
+            "warning_threshold_event_queue_length": 3000,
+            "warning_threshold_outstanding_fetch_query": 5000,
+            "warning_threshold_outstanding_update_query": 5000
+          },
+          "RuntimeConfiguration": {
+            "enable_runtime_configuration": true,
+            "additional_configurations": []
+          },
+          "ApiService": {
+            "api_service_port": 8014,
+            "api_service_event_tags_size": 1,
+            "api_service_logging_level": 2
+          },
+          "AuthenticationClient": {
+            "use_authenticator" : false,
+            "remote_authenticator_ip_address" : "127.0.0.1",
+            "remote_authenticator_port" : 12800
+          },
+          "BillingClient": {
+            "use_biller" : false,
+            "remote_biller_ip_address" : "127.0.0.1",
+            "remote_biller_port" : 12810,
+            "googleplay_refresh_token" : "",
+            "googleplay_client_id" : "",
+            "googleplay_client_secret" : ""
+          },
+          "LeaderboardClient": {
+            "use_leaderboard" : false,
+            "leaderboard_agents": {
+              "" : {
+                "address": "127.0.0.1:12820",
+                "fallback_servers": []
+              }
+            }
+          },
+          "ClientResourceService": {
+            "use_client_resource_service" : false,
+            "client_resource_service_port" : 0,
+            "client_resource_dir" : "client_data",
+            "client_resource_url_base": "",
+            "client_resource_list_url": "",
+            "client_resource_service_threads_size": 2,
+            "client_resource_max_file_size": 10485760
+          },
+          "MapLoader": {
+            "use_map_loader": false,
+            "map_export_path": "",
+            "map_server_url": ""
+          },
+          "SystemInfo": {
+            "systeminfo_refresh_interval_in_sec": 5
+          },
+          "ResourceManager": {
+            "game_json_data_dir": "game_data",
+            "enable_game_data_mysql": false,
+            "game_data_mysql_server": "tcp://localhost:3306",
+            "game_data_mysql_username": "funapi",
+            "game_data_mysql_password": "funapi",
+            "game_data_mysql_database": "game_data",
+            "game_data_mysql_character_set": "utf8",
+            "game_data_mysql_tables": "game_data_table1,game_data_table2"
+          },
+          "Redis": {
+            "enable_redis": false,
+            "redis_mode": "redis",
+            "redis_servers": {
+              "": {
+                "address": "127.0.0.1:6379",
+                "auth_pass": ""
+              }
+            },
+            "redis_sentinel_servers": {
+              "": {
+                "master_name": "mymaster",
+                "addresses": ["127.0.0.1:26379"],
+                "auth_pass": ""
+              }
+            },
+            "redis_async_threads_size": 4
+          },
+          "MaintenanceService": {
+            "under_maintenance": false,
+            "maintenance_data_path": ""
+          },
+          "MulticastServer": {
+            "max_member_count_per_channel": 0
+          },          
+          "RpcService": {
+            "rpc_enabled": true,
+            "rpc_threads_size": 4,
+            "rpc_port": 8015,
+            "rpc_nic_name": "",  // if not specified, uses first NIC appeared in predictable network interface names.
+            "rpc_tags": [],
+            "rpc_message_logging_level": 0,
+            "rpc_disable_tcp_nagle": true,
+            "enable_rpc_reply_checker": true
+          },
+          "ZookeeperClient": {
+            "zookeeper_nodes": "localhost:2181",
+            "zookeeper_client_count": 4,
+            "zookeeper_session_timeout_in_second": 60
+          },
+          "HardwareInfo": {
+            "external_ip_resolvers": "aws,nic:eth0,nat:192.0.2.113:tcp+pbuf=8012:http+json=8018"
+          },
+          "Curl": {
+            "curl_threads_size": 1
+          },
+          "CrossServerStorage": {
+            "enable_cross_server_storage": false,
+            "redis_tag_for_cross_server_storage": ""
+          }
+      },
+      "library": "libtest.so"
+    }
+  ]
+}

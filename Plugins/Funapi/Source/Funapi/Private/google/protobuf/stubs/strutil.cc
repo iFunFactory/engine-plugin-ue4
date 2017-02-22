@@ -52,6 +52,15 @@
 #define snprintf _snprintf
 #endif
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#endif
+
+#ifdef ERROR
+#undef ERROR
+#endif 
+
 namespace google {
 namespace protobuf {
 
@@ -1277,3 +1286,7 @@ string ToHex(uint64 num) {
 
 }  // namespace protobuf
 }  // namespace google
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif

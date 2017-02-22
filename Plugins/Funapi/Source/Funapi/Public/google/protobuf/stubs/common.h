@@ -94,7 +94,7 @@ inline BOOL GetMessage(
 #include "HideWindowsPlatformTypes.h"
 #endif
 
-#if PLATFORM_WINDOWS
+#if defined(_WIN32)
 #pragma warning(disable : 4251)
 #pragma warning(disable : 4389)
 #pragma warning(disable : 4456)
@@ -104,15 +104,20 @@ inline BOOL GetMessage(
 #pragma warning(disable : 4715)
 #pragma warning(disable : 4800)
 #pragma warning(disable : 4996)
-#include "AllowWindowsPlatformTypes.h"
-#endif
-
+#pragma warning(disable : 4668)
 #include "Platform.h"
-// #include "Windows/WIndowsPlatform.h"
-
-#if PLATFORM_WINDOWS
-#include "HideWindowsPlatformTypes.h"
-#endif
+#else // defined(_WIN32)
+#ifndef DLLEXPORT
+#define DLLEXPORT
+#endif 
+#ifndef DLLIMPORT
+#define DLLIMPORT
+#endif 
+#ifndef FUNAPI_API
+#define FUNAPI_API
+#endif 
+#define GOOGLE_PROTOBUF_NO_RTTI 1
+#endif // defined(_WIN32)
 
 #define LIBPROTOBUF_EXPORT FUNAPI_API
 #define LIBPROTOC_EXPORT FUNAPI_API

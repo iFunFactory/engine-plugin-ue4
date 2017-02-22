@@ -63,7 +63,6 @@ namespace UnrealBuildTool.Rules
             // definitions
             Definitions.Add("GOOGLE_PROTOBUF_NO_RTTI=1");
             Definitions.Add("PROTOBUF_USE_EXCEPTIONS=0");
-            // Definitions.Add("LIBPROTOBUF_EXPORT=FUNAPI_API");
 
             // library
             var LibPath = ThirdPartyPath;

@@ -11,7 +11,7 @@
 #define FUNAPI_UE4
 
 #ifdef FUNAPI_UE4
-  #if PLATFORM_WINDOWS
+  #if defined(_WIN32)
   #define FUNAPI_PLATFORM_WINDOWS
   #define FUNAPI_UE4_PLATFORM_WINDOWS
   #endif

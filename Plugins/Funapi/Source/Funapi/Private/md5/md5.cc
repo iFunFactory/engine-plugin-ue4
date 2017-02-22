@@ -37,7 +37,8 @@
 
 #ifndef HAVE_OPENSSL
 
-#if _MSC_VER
+#ifdef _MSC_VER
+#pragma warning(push)
 #pragma warning(disable : 4244)
 #endif
 
@@ -295,5 +296,9 @@ void MD5_Final(unsigned char *result, MD5_CTX *ctx)
 
 	memset(ctx, 0, sizeof(*ctx));
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #endif

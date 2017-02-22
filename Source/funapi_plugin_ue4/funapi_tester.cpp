@@ -329,24 +329,24 @@ bool Afunapi_tester::CreateMulticast()
       [this](
         const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
         const std::string &channel_id,
-        const std::string &sender,
+        const std::string &sender_string,
         const std::string &json_string)
     {
-      UE_LOG(LogFunapiExample, Log, TEXT("channel_id = %s, sender = %s, body = %s"), *FString(channel_id.c_str()), *FString(sender.c_str()), *FString(json_string.c_str()));
+      UE_LOG(LogFunapiExample, Log, TEXT("channel_id = %s, sender = %s, body = %s"), *FString(channel_id.c_str()), *FString(sender_string.c_str()), *FString(json_string.c_str()));
     });
 
     multicast_->AddProtobufChannelMessageCallback(kMulticastTestChannel,
       [this](
         const std::shared_ptr<fun::FunapiMulticast> &funapi_multicast,
         const std::string &channel_id,
-        const std::string &sender,
+        const std::string &sender_string,
         const FunMessage& message)
     {
       FunMulticastMessage mcast_msg = message.GetExtension(multicast);
       FunChatMessage chat_msg = mcast_msg.GetExtension(chat);
       std::string text = chat_msg.text();
 
-      UE_LOG(LogFunapiExample, Log, TEXT("channel_id = %s, sender = %s, message = %s"), *FString(channel_id.c_str()), *FString(sender.c_str()), *FString(text.c_str()));
+      UE_LOG(LogFunapiExample, Log, TEXT("channel_id = %s, sender = %s, message = %s"), *FString(channel_id.c_str()), *FString(sender_string.c_str()), *FString(text.c_str()));
     });
 
     multicast_->Connect();

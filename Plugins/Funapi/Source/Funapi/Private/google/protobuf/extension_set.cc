@@ -42,6 +42,10 @@
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/stubs/map_util.h>
 
+#ifdef OPTIONAL
+#undef OPTIONAL
+#endif 
+
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -71,6 +75,8 @@ inline bool is_packable(WireFormatLite::WireType type) {
     // Do not add a default statement. Let the compiler complain when someone
     // adds a new wire type.
   }
+
+  return false;
 }
 
 // Registry stuff.

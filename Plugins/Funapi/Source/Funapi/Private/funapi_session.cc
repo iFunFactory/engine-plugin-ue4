@@ -1699,16 +1699,6 @@ void FunapiHttpTransport::Start() {
 
     SetState(TransportState::kConnected);
 
-    std::weak_ptr<FunapiTransport> weak = shared_from_this();
-    FunapiHttpTransport::GetHttpThread()->Set([weak, this]()->bool {
-      if (!weak.expired()) {
-        Send();
-        return true;
-      }
-
-      return false;
-    });
-
     OnTransportStarted(TransportProtocol::kHttp);
 
     return true;
@@ -1861,6 +1851,19 @@ void FunapiHttpTransport::WebResponseBodyCb(const void *data, int len, std::vect
 
 
 void FunapiHttpTransport::Update() {
+  std::weak_ptr<FunapiTransport> weak = shared_from_this();
+  FunapiHttpTransport::GetHttpThread()->Push([weak, this]()->bool {
+    if (GetState() != TransportState::kConnected) {
+      return true;
+    }
+
+    if (!weak.expired()) {
+      Send();
+      return true;
+    }
+
+    return false;
+  });
 }
 
 

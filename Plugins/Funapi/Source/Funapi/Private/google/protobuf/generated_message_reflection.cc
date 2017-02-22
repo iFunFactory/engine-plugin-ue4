@@ -423,11 +423,11 @@ void GeneratedMessageReflection::SwapOneofField(
   double temp_double;
   bool temp_bool;
   int temp_int;
-  Message* temp_message;
+  Message* temp_message = nullptr;
   string temp_string;
 
   // Stores message1's oneof field to a temp variable.
-  const FieldDescriptor* field1;
+  const FieldDescriptor* field1 = nullptr;
   if (oneof_case1 > 0) {
     field1 = descriptor_->FindFieldByNumber(oneof_case1);
     //oneof_descriptor->field(oneof_case1);
@@ -1528,8 +1528,8 @@ inline ExtensionSet* GeneratedMessageReflection::MutableExtensionSet(
 // Simple accessors for manipulating has_bits_.
 inline bool GeneratedMessageReflection::HasBit(
     const Message& message, const FieldDescriptor* field) const {
-  return GetHasBits(message)[field->index() / 32] &
-    (1 << (field->index() % 32));
+  return (GetHasBits(message)[field->index() / 32] &
+    (1 << (field->index() % 32))) != 0;
 }
 
 inline void GeneratedMessageReflection::SetBit(

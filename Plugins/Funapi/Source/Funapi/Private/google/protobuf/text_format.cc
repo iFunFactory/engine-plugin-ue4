@@ -656,7 +656,7 @@ class TextFormat::Parser::ParserImpl {
         if (LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
           uint64 value;
           DO(ConsumeUnsignedInteger(&value, 1));
-          SET_FIELD(Bool, value);
+          SET_FIELD(Bool, value != 0);
         } else {
           string value;
           DO(ConsumeIdentifier(&value));

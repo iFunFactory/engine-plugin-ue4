@@ -956,18 +956,10 @@ void FunapiTransport::ResetClientPingTimeout() {
 
 void FunapiTransport::PushNetworkThreadTask(const FunapiThread::TaskHandler &handler) {
   if (auto nt = FunapiThread::Get("_network")) {
-    if (!session_impl_.expired()) {
-      auto self = shared_from_this();
-      if (auto session = session_impl_.lock()) {
-        nt->Push([self, session, handler]()->bool {
-          if (handler) {
-            return handler();
-          }
-
-          return true;
-        });
-      }
-    }
+    auto self = shared_from_this();
+    nt->Push([self, handler]()->bool {
+      return handler();
+    });
   }
 }
 

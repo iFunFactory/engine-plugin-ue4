@@ -1,7 +1,7 @@
 {
 	"FileVersion" : 3,
 	"Version" : 1,
-	"VersionName" : "1.45",
+	"VersionName" : "1.46",
 	"FriendlyName" : "Funapi Plugin",
 	"Description" : "Funapi Plugin UE4",
 	"Category" : "iFunFactory",

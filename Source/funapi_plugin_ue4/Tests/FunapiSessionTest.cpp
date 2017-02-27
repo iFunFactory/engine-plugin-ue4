@@ -162,7 +162,7 @@ bool FFunapiSessionTestEchoProtobuf::RunTest(const FString& Parameters)
 
   session->AddProtobufRecvCallback(
     [&is_working, &is_ok, &send_string](
-      const std::shared_ptr<fun::FunapiSession> &session,
+      const std::shared_ptr<fun::FunapiSession> &funapi_session,
       const fun::TransportProtocol transport_protocol,
       const FunMessage &fun_message)
   {

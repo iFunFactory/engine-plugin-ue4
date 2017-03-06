@@ -260,6 +260,8 @@ void FunapiHttpImpl::PostRequest(const std::string &url,
 
   curl_easy_setopt(curl_handle_, CURLOPT_URL, url.c_str());
 
+  curl_easy_setopt(curl_handle_, CURLOPT_TIMEOUT, 10L);
+
   /* enable TCP keep-alive for this transfer */
   curl_easy_setopt(curl_handle_, CURLOPT_TCP_KEEPALIVE, 1L);
   /* keep-alive idle time to 120 seconds */

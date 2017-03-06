@@ -1842,17 +1842,6 @@ void FunapiHttpTransport::Start() {
 
     SetState(TransportState::kConnected);
 
-    std::weak_ptr<FunapiTransport> weak = shared_from_this();
-    FunapiHttpTransport::GetHttpThread()->Set([weak, this]()->bool {
-      if (!weak.expired()) {
-        Send();
-        std::this_thread::yield();
-        return true;
-      }
-
-      return false;
-    });
-
     OnTransportStarted(TransportProtocol::kHttp);
 
     return true;
@@ -1863,8 +1852,6 @@ void FunapiHttpTransport::Start() {
 void FunapiHttpTransport::Stop() {
   if (GetState() == TransportState::kDisconnected)
     return;
-
-  FunapiHttpTransport::GetHttpThread()->Set(nullptr);
 
   SetState(TransportState::kDisconnecting);
 
@@ -1887,6 +1874,7 @@ void FunapiHttpTransport::Send(bool send_all) {
     }
     else {
       msg = send_queue_.front();
+      send_queue_.pop_front();
     }
   }
 
@@ -1911,18 +1899,16 @@ bool FunapiHttpTransport::EncodeThenSendMessage(std::vector<uint8_t> &body) {
   http_->PostRequest(host_url_, header_fields_for_send, body, [this, &is_ok](int code, const std::string error_string){
     DebugUtils::Log("Error from cURL: %d, %s", code, error_string.c_str());
     is_ok = false;
-    Stop();
 
     if (GetSessionId().empty()) {
-      std::unique_lock<std::mutex> lock(send_queue_mutex_);
-      send_queue_.clear();
+      Stop();
+
+      {
+        std::unique_lock<std::mutex> lock(send_queue_mutex_);
+        send_queue_.clear();
+      }
     }
   }, [this](const std::vector<std::string> &v_header, const std::vector<uint8_t> &v_body) {
-    {
-      std::unique_lock<std::mutex> lock3(send_queue_mutex_);
-      send_queue_.pop_front();
-    }
-
     HeaderFields header_fields;
     auto temp_header = const_cast<std::vector<std::string>&>(v_header);
     auto temp_body = const_cast<std::vector<uint8_t>&>(v_body);
@@ -2005,6 +1991,23 @@ void FunapiHttpTransport::WebResponseBodyCb(const void *data, int len, std::vect
 
 
 void FunapiHttpTransport::Update() {
+  std::weak_ptr<FunapiTransport> weak = shared_from_this();
+  std::weak_ptr<FunapiHttp> weak_http = http_;
+  FunapiHttpTransport::GetHttpThread()->Push([weak, weak_http, this]()->bool {
+    if (!weak.expired() && !weak_http.expired()) {
+      if (auto t = weak.lock()) {
+        if (GetState() != TransportState::kConnected) {
+          return true;
+        }
+
+        if (auto h = weak.lock()) {
+          Send();
+        }
+      }
+    }
+
+    return true;
+  });
 }
 
 

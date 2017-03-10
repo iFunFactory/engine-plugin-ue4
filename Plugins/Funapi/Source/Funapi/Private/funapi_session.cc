@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -414,7 +414,7 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
   virtual TransportProtocol GetProtocol() { return TransportProtocol::kDefault; };
   FunEncoding GetEncoding() { return encoding_; };
 
-  void SetConnectTimeout(time_t timeout);
+  void SetConnectTimeout(const time_t timeout);
 
   virtual void ResetClientPingTimeout();
 
@@ -866,7 +866,7 @@ void FunapiTransport::Send(bool send_all) {
 }
 
 
-void FunapiTransport::SetConnectTimeout(time_t timeout) {
+void FunapiTransport::SetConnectTimeout(const time_t timeout) {
   connect_timeout_seconds_ = timeout;
 }
 
@@ -1839,6 +1839,7 @@ void FunapiHttpTransport::Start() {
 
   PushNetworkThreadTask([this]()->bool {
     http_ = FunapiHttp::Create(cert_file_path_);
+    http_->SetConnectTimeout(static_cast<long>(connect_timeout_seconds_));
 
     SetState(TransportState::kConnected);
 
@@ -2217,6 +2218,7 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
         http_transport->SetSequenceNumberValidation(http_option_->GetSequenceNumberValidation());
         http_transport->SetEncryptionType(http_option_->GetEncryptionType());
         http_transport->SetCACertFilePath(http_option_->GetCACertFilePath());
+        http_transport->SetConnectTimeout(http_option_->GetConnectTimeout());
       }
     }
 

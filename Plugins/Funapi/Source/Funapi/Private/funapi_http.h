@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -52,6 +52,8 @@ class FunapiHttp : public std::enable_shared_from_this<FunapiHttp> {
                        const ErrorHandler &error_handler,
                        const ProgressHandler &progress_handler,
                        const DownloadCompletionHandler &download_completion_handler);
+
+  void SetConnectTimeout(const long seconds);
 
  private:
   std::shared_ptr<FunapiHttpImpl> impl_;

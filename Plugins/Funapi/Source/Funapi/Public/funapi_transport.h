@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -189,6 +189,9 @@ class FUNAPI_API FunapiHttpTransportOption : public FunapiTransportOption {
 
   void SetSequenceNumberValidation(const bool validation);
   bool GetSequenceNumberValidation();
+
+  void SetConnectTimeout(const time_t seconds);
+  time_t GetConnectTimeout();
 
   void SetUseHttps(const bool https);
   bool GetUseHttps();

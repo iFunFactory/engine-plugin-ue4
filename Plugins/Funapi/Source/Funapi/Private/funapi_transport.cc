@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -78,7 +78,7 @@ class FunapiTransportOptionImpl : public std::enable_shared_from_this<FunapiTran
 // FunapiTcpTransportOptionImpl implementation.
 
 class FunapiTcpTransportOptionImpl : public FunapiTransportOptionImpl {
-public:
+ public:
   FunapiTcpTransportOptionImpl() = default;
   virtual ~FunapiTcpTransportOptionImpl() = default;
 
@@ -102,7 +102,7 @@ public:
   EncryptionType GetEncryptionType();
   const std::string& GetPublicKey();
 
-private:
+ private:
   bool disable_nagle_ = false;
   bool auto_reconnect_ = false;
   bool enable_ping_ = false;
@@ -187,14 +187,14 @@ const std::string& FunapiTcpTransportOptionImpl::GetPublicKey() {
 // FunapiUdpTransportOptionImpl implementation.
 
 class FunapiUdpTransportOptionImpl : public FunapiTransportOptionImpl {
-public:
+ public:
   FunapiUdpTransportOptionImpl() = default;
   virtual ~FunapiUdpTransportOptionImpl() = default;
 
   void SetEncryptionType(EncryptionType type);
   EncryptionType GetEncryptionType();
 
-private:
+ private:
   EncryptionType encryption_type_ = static_cast<EncryptionType>(0);
 };
 
@@ -220,6 +220,9 @@ class FunapiHttpTransportOptionImpl : public FunapiTransportOptionImpl {
   void SetSequenceNumberValidation(const bool validation);
   bool GetSequenceNumberValidation();
 
+  void SetConnectTimeout(const time_t seconds);
+  time_t GetConnectTimeout();
+
   void SetUseHttps(const bool https);
   bool GetUseHttps();
 
@@ -234,6 +237,7 @@ class FunapiHttpTransportOptionImpl : public FunapiTransportOptionImpl {
   bool use_https_ = false;
   EncryptionType encryption_type_ = static_cast<EncryptionType>(0);
   std::string cert_file_path_;
+  time_t timeout_seconds_ = 5;
 };
 
 
@@ -244,6 +248,16 @@ void FunapiHttpTransportOptionImpl::SetSequenceNumberValidation(const bool valid
 
 bool FunapiHttpTransportOptionImpl::GetSequenceNumberValidation() {
   return sequence_number_validation_;
+}
+
+
+void FunapiHttpTransportOptionImpl::SetConnectTimeout(const time_t seconds) {
+  timeout_seconds_ = seconds;
+}
+
+
+time_t FunapiHttpTransportOptionImpl::GetConnectTimeout() {
+  return timeout_seconds_;
 }
 
 
@@ -433,6 +447,16 @@ void FunapiHttpTransportOption::SetCACertFilePath(const std::string &path) {
 
 const std::string& FunapiHttpTransportOption::GetCACertFilePath() {
   return impl_->GetCACertFilePath();
+}
+
+
+void FunapiHttpTransportOption::SetConnectTimeout(const time_t seconds) {
+  impl_->SetConnectTimeout(seconds);
+}
+
+
+time_t FunapiHttpTransportOption::GetConnectTimeout() {
+  return impl_->GetConnectTimeout();
 }
 
 }  // namespace fun

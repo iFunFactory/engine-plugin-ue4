@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -48,6 +48,8 @@ class FunapiHttpImpl : public std::enable_shared_from_this<FunapiHttpImpl> {
                        const ProgressHandler &progress_handler,
                        const DownloadCompletionHandler &download_completion_handler);
 
+  void SetConnectTimeout(const long seconds);
+
  private:
   void Init();
   void Cleanup();
@@ -62,6 +64,8 @@ class FunapiHttpImpl : public std::enable_shared_from_this<FunapiHttpImpl> {
   void OnResponseHeader(void *data, const size_t len, std::vector<std::string> &headers);
   void OnResponseBody(void *data, const size_t len, std::vector<uint8_t> &receiving);
   void OnResponseFile(void *data, const size_t len, FILE *fp);
+
+  long connect_timeout_seconds_ = 5;
 };
 
 
@@ -134,6 +138,8 @@ void FunapiHttpImpl::DownloadRequest(const std::string &url,
 
   curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, connect_timeout_seconds_);
+
 #ifdef DEBUG_LOG
   /* Switch on full protocol/debug output while testing */
   curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
@@ -200,6 +206,8 @@ void FunapiHttpImpl::GetRequest(const std::string &url,
 
   curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, connect_timeout_seconds_);
+
   curl_easy_setopt(curl, CURLOPT_HEADERDATA, &receive_header_cb);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &receive_body_cb);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &FunapiHttpImpl::OnResponse);
@@ -260,7 +268,7 @@ void FunapiHttpImpl::PostRequest(const std::string &url,
 
   curl_easy_setopt(curl_handle_, CURLOPT_URL, url.c_str());
 
-  curl_easy_setopt(curl_handle_, CURLOPT_TIMEOUT, 10L);
+  curl_easy_setopt(curl_handle_, CURLOPT_TIMEOUT, connect_timeout_seconds_);
 
   /* enable TCP keep-alive for this transfer */
   curl_easy_setopt(curl_handle_, CURLOPT_TCP_KEEPALIVE, 1L);
@@ -325,6 +333,11 @@ size_t FunapiHttpImpl::OnResponse(void *data, size_t size, size_t count, void *c
   return len;
 }
 
+
+void FunapiHttpImpl::SetConnectTimeout(const long seconds) {
+  connect_timeout_seconds_ = seconds;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiHttp implementation.
 
@@ -375,6 +388,11 @@ void FunapiHttp::DownloadRequest(const std::string &url,
                                  const ProgressHandler &progress_handler,
                                  const DownloadCompletionHandler &download_completion_handler) {
   impl_->DownloadRequest(url, path, header, error_handler, progress_handler, download_completion_handler);
+}
+
+
+void FunapiHttp::SetConnectTimeout(const long seconds) {
+  impl_->SetConnectTimeout(seconds);
 }
 
 }  // namespace fun

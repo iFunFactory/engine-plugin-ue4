@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -125,24 +125,31 @@ FunapiMulticastImpl::~FunapiMulticastImpl() {
 
 
 void FunapiMulticastImpl::InitSessionCallback() {
-  session_->AddJsonRecvCallback([this](const std::shared_ptr<fun::FunapiSession> &session,
-                                       const fun::TransportProtocol protocol,
-                                       const std::string &msg_type,
-                                       const std::string &json_string) {
+  session_->
+  AddJsonRecvCallback([this](const std::shared_ptr<fun::FunapiSession> &session,
+                             const fun::TransportProtocol protocol,
+                             const std::string &msg_type,
+                             const std::string &json_string)
+  {
     if (msg_type.compare(kMulticastMsgType) == 0) {
       OnReceived(json_string);
     }
   });
-  session_->AddProtobufRecvCallback([this](const std::shared_ptr<fun::FunapiSession> &session,
-                                           const fun::TransportProtocol protocol,
-                                           const FunMessage &message) {
+
+  session_->
+  AddProtobufRecvCallback([this](const std::shared_ptr<fun::FunapiSession> &session,
+                                 const fun::TransportProtocol protocol,
+                                 const FunMessage &message)
+  {
     if (message.msgtype().compare(kMulticastMsgType) == 0) {
       OnReceived(message);
     }
   });
 
   AddJoinedCallback([this](const std::shared_ptr<fun::FunapiMulticast>& multicast,
-                           const std::string &channel_id, const std::string &multicast_sender) {
+                           const std::string &channel_id,
+                           const std::string &multicast_sender)
+  {
     // fun::DebugUtils::Log("JoinedCallback called. channel_id:%s player:%s", channel_id.c_str(), sender.c_str());
     if (sender_.compare(multicast_sender) == 0) {
       std::unique_lock<std::mutex> lock(channels_mutex_);
@@ -173,29 +180,37 @@ void FunapiMulticastImpl::AddChannelListCallback(const ChannelListNotify &handle
 
 
 void FunapiMulticastImpl::OnJoined(const std::string &channel_id, const std::string &sender) {
-  if (auto m = multicast_.lock()) {
-    on_joined_(m, channel_id, sender);
+  if (!multicast_.expired()) {
+    if (auto m = multicast_.lock()) {
+      on_joined_(m, channel_id, sender);
+    }
   }
 }
 
 
 void FunapiMulticastImpl::OnLeft(const std::string &channel_id, const std::string &sender) {
-  if (auto m = multicast_.lock()) {
-    on_left_(m, channel_id, sender);
+  if (!multicast_.expired()) {
+    if (auto m = multicast_.lock()) {
+      on_left_(m, channel_id, sender);
+    }
   }
 }
 
 
 void FunapiMulticastImpl::OnError(const int error) {
-  if (auto m = multicast_.lock()) {
-    on_error_(m, error);
+  if (!multicast_.expired()) {
+    if (auto m = multicast_.lock()) {
+      on_error_(m, error);
+    }
   }
 }
 
 
 void FunapiMulticastImpl::OnChannelList(const std::map<std::string, int> &cl) {
-  if (auto m = multicast_.lock()) {
-    on_channel_list_(m, cl);
+  if (!multicast_.expired()) {
+    if (auto m = multicast_.lock()) {
+      on_channel_list_(m, cl);
+    }
   }
 }
 
@@ -467,8 +482,10 @@ void FunapiMulticastImpl::OnReceived(const std::string &json_string) {
 
   if (OnReceived(channel_id, sender, join, leave, error_code) == false) {
     if (json_channel_handlers_.find(channel_id) != json_channel_handlers_.end()) {
-      if (auto m = multicast_.lock()) {
-        json_channel_handlers_[channel_id](m, channel_id, sender, json_string);
+      if (!multicast_.expired()) {
+        if (auto m = multicast_.lock()) {
+          json_channel_handlers_[channel_id](m, channel_id, sender, json_string);
+        }
       }
     }
   }
@@ -509,8 +526,10 @@ void FunapiMulticastImpl::OnReceived(const FunMessage &message) {
 
   if (OnReceived(channel_id, sender, join, leave, error_code) == false) {
     if (protobuf_channel_handlers_.find(channel_id) != protobuf_channel_handlers_.end()) {
-      if (auto m = multicast_.lock()) {
-        protobuf_channel_handlers_[channel_id](m, channel_id, sender, message);
+      if (!multicast_.expired()) {
+        if (auto m = multicast_.lock()) {
+          protobuf_channel_handlers_[channel_id](m, channel_id, sender, message);
+        }
       }
     }
   }
@@ -588,8 +607,10 @@ void FunapiMulticastImpl::AddSessionEventCallback(const FunapiMulticast::Session
                                                       const fun::SessionEventType type,
                                                       const std::string &session_id,
                                                       const std::shared_ptr<FunapiError> &error) {
-      if (auto m = multicast_.lock()) {
-        handler(m, type, session_id, error);
+      if (!multicast_.expired()) {
+        if (auto m = multicast_.lock()) {
+          handler(m, type, session_id, error);
+        }
       }
     });
   }
@@ -602,8 +623,10 @@ void FunapiMulticastImpl::AddTransportEventCallback(const FunapiMulticast::Trans
                                                         const fun::TransportProtocol protocol,
                                                         const fun::TransportEventType type,
                                                         const std::shared_ptr<FunapiError> &error) {
-      if (auto m = multicast_.lock()) {
-        handler(m, type, error);
+      if (!multicast_.expired()) {
+        if (auto m = multicast_.lock()) {
+          handler(m, type, error);
+        }
       }
     });
   }

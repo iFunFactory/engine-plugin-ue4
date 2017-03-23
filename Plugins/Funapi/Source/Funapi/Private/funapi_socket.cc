@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -18,9 +18,6 @@ class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
   FunapiSocketImpl();
   virtual ~FunapiSocketImpl();
 
-  static void Select();
-  static void Insert(std::shared_ptr<FunapiSocketImpl> s);
-  static void Erase(std::shared_ptr<FunapiSocketImpl> s);
   static std::string GetStringFromAddrInfo(struct addrinfo *info);
 
   static const int kBufferSize = 65536;
@@ -54,68 +51,7 @@ class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
   int socket_ = -1;
   struct addrinfo *addrinfo_ = nullptr;
   struct addrinfo *addrinfo_res_ = nullptr;
-
- private:
-  static std::unordered_set<std::shared_ptr<FunapiSocketImpl>> set_sockets_;
-  static std::mutex set_mutex_;
 };
-
-
-std::unordered_set<std::shared_ptr<FunapiSocketImpl>> FunapiSocketImpl::set_sockets_;
-std::mutex FunapiSocketImpl::set_mutex_;
-
-
-void FunapiSocketImpl::Insert(std::shared_ptr<FunapiSocketImpl> s) {
-  std::unique_lock<std::mutex> lock(set_mutex_);
-  set_sockets_.insert(s);
-}
-
-
-void FunapiSocketImpl::Erase(std::shared_ptr<FunapiSocketImpl> s) {
-  std::unique_lock<std::mutex> lock(set_mutex_);
-  set_sockets_.erase(s);
-}
-
-
-void FunapiSocketImpl::Select() {
-  int max_fd = -1;
-
-  fd_set rset;
-  fd_set wset;
-  fd_set eset;
-
-  FD_ZERO(&rset);
-  FD_ZERO(&wset);
-  FD_ZERO(&eset);
-
-  std::vector<std::shared_ptr<FunapiSocketImpl>> v_selects;
-  {
-    std::unique_lock<std::mutex> lock(set_mutex_);
-    for (auto s : set_sockets_) {
-      if (s->IsReadySelect()) {
-        int fd = s->GetSocket();
-        if (fd > 0) {
-          if (fd > max_fd) max_fd = fd;
-
-          FD_SET(fd, &rset);
-          FD_SET(fd, &wset);
-          FD_SET(fd, &eset);
-
-          v_selects.push_back(s);
-        }
-      }
-    }
-  }
-
-  if (!v_selects.empty()) {
-    struct timeval timeout = { 0, 1 };
-    if (select(max_fd + 1, &rset, &wset, &eset, &timeout) > 0) {
-      for (auto s : v_selects) {
-        s->OnSelect(rset, wset, eset);
-      }
-    }
-  }
-}
 
 
 std::string FunapiSocketImpl::GetStringFromAddrInfo(struct addrinfo *info) {
@@ -146,6 +82,7 @@ FunapiSocketImpl::FunapiSocketImpl() {
 FunapiSocketImpl::~FunapiSocketImpl() {
   CloseSocket();
   FreeAddrInfo();
+  // DebugUtils::Log("%s", __FUNCTION__);
 }
 
 
@@ -345,6 +282,7 @@ FunapiTcpImpl::FunapiTcpImpl() {
 
 
 FunapiTcpImpl::~FunapiTcpImpl() {
+  // DebugUtils::Log("%s", __FUNCTION__);
 }
 
 
@@ -734,11 +672,6 @@ bool FunapiUdpImpl::Send(const std::vector<uint8_t> &body, SendCompletionHandler
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiSocket implementation.
 
-void FunapiSocket::Select() {
-  FunapiSocketImpl::Select();
-}
-
-
 std::string FunapiSocket::GetStringFromAddrInfo(struct addrinfo *info) {
   return FunapiSocketImpl::GetStringFromAddrInfo(info);
 }
@@ -747,17 +680,13 @@ std::string FunapiSocket::GetStringFromAddrInfo(struct addrinfo *info) {
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiTcp implementation.
 
-FunapiTcp::FunapiTcp() {
-  auto impl = std::make_shared<FunapiTcpImpl>();
-  FunapiSocketImpl::Insert(impl);
-  impl_ = impl;
+FunapiTcp::FunapiTcp()
+: impl_(std::make_shared<FunapiTcpImpl>()) {
 }
 
 
 FunapiTcp::~FunapiTcp() {
-  if (auto impl = impl_.lock()) {
-    FunapiSocketImpl::Erase(impl);
-  }
+  // DebugUtils::Log("%s", __FUNCTION__);
 }
 
 
@@ -773,34 +702,35 @@ void FunapiTcp::Connect(const char* hostname_or_ip,
                         ConnectCompletionHandler connect_completion_handler,
                         SendHandler send_handler,
                         RecvHandler recv_handler) {
-  if (auto impl = impl_.lock()) {
-    impl->Connect(hostname_or_ip,
-                  port,
-                  connect_timeout_seconds,
-                  disable_nagle,
-                  connect_completion_handler,
-                  send_handler,
-                  recv_handler);
-  }
+  impl_->Connect(hostname_or_ip,
+                port,
+                connect_timeout_seconds,
+                disable_nagle,
+                connect_completion_handler,
+                send_handler,
+                recv_handler);
 }
 
 
 void FunapiTcp::Connect(struct addrinfo *addrinfo_res,
                         ConnectCompletionHandler connect_completion_handler) {
-  if (auto impl = impl_.lock()) {
-    impl->Connect(addrinfo_res, connect_completion_handler);
-  }
+  impl_->Connect(addrinfo_res, connect_completion_handler);
 }
 
 
 bool FunapiTcp::Send(const std::vector<uint8_t> &body, SendCompletionHandler send_handler) {
-  if (auto impl = impl_.lock()) {
-    return impl->Send(body, send_handler);
-  }
-
-  return false;
+  return impl_->Send(body, send_handler);
 }
 
+
+int FunapiTcp::GetSocket() {
+  return impl_->GetSocket();
+}
+
+
+void FunapiTcp::OnSelect(const fd_set rset, const fd_set wset, const fd_set eset) {
+  impl_->OnSelect(rset, wset, eset);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiUdp implementation.
@@ -809,17 +739,16 @@ FunapiUdp::FunapiUdp(const char* hostname_or_ip,
                      const int port,
                      InitHandler init_handler,
                      SendHandler send_handler,
-                     RecvHandler recv_handler) {
-  auto impl = std::make_shared<FunapiUdpImpl>(hostname_or_ip, port, init_handler, send_handler, recv_handler);
-  FunapiSocketImpl::Insert(impl);
-  impl_ = impl;
+                     RecvHandler recv_handler)
+: impl_(std::make_shared<FunapiUdpImpl>(hostname_or_ip,
+                                        port,
+                                        init_handler,
+                                        send_handler,
+                                        recv_handler)) {
 }
 
 
 FunapiUdp::~FunapiUdp() {
-  if (auto impl = impl_.lock()) {
-    FunapiSocketImpl::Erase(impl);
-  }
 }
 
 
@@ -837,11 +766,17 @@ std::shared_ptr<FunapiUdp> FunapiUdp::Create(const char* hostname_or_ip,
 
 
 bool FunapiUdp::Send(const std::vector<uint8_t> &body, SendCompletionHandler send_handler) {
-  if (auto impl = impl_.lock()) {
-    return impl->Send(body, send_handler);
-  }
+  return impl_->Send(body, send_handler);
+}
 
-  return false;
+
+int FunapiUdp::GetSocket() {
+  return impl_->GetSocket();
+}
+
+
+void FunapiUdp::OnSelect(const fd_set rset, const fd_set wset, const fd_set eset) {
+  impl_->OnSelect(rset, wset, eset);
 }
 
 }  // namespace fun

@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -154,6 +154,8 @@ class FunapiHttpDownloaderImpl : public std::enable_shared_from_this<FunapiHttpD
   void Start(std::weak_ptr<FunapiHttpDownloader> d);
   void Update();
 
+  static std::shared_ptr<FunapiTasks> GetFunapiTasks();
+
  private:
   void GetDownloadList(const std::string &download_url, const std::string &target_path);
   void OnDownloadInfoList(const std::string &json_string);
@@ -190,7 +192,7 @@ class FunapiHttpDownloaderImpl : public std::enable_shared_from_this<FunapiHttpD
 
 FunapiHttpDownloaderImpl::FunapiHttpDownloaderImpl(const std::string &url, const std::string &path)
 : url_(url), path_(path) {
-  tasks_ = FunapiTasks::Create();
+  tasks_ = FunapiHttpDownloaderImpl::GetFunapiTasks();
   thread_ = FunapiThread::Get("_file");
 }
 
@@ -202,8 +204,14 @@ FunapiHttpDownloaderImpl::~FunapiHttpDownloaderImpl() {
 void FunapiHttpDownloaderImpl::Start(std::weak_ptr<FunapiHttpDownloader> d) {
   downloader_ = d;
 
-  thread_->Push([this]()->bool {
-    GetDownloadList(url_, path_);
+  std::weak_ptr<FunapiHttpDownloaderImpl> weak = shared_from_this();
+  thread_->Push([weak, this]()->bool {
+    if (!weak.expired()) {
+      if (auto impl = weak.lock()) {
+        GetDownloadList(url_, path_);
+      }
+    }
+
     return true;
   });
 }
@@ -241,7 +249,7 @@ void FunapiHttpDownloaderImpl::DownloadFiles() {
   for (size_t i=0;i<info_list_.size();++i) {
     auto &info = info_list_[i];
     if (IsDownloadFile(info)) {
-      if (DownloadFile(i, info) == false) {
+      if (DownloadFile(static_cast<int>(i), info) == false) {
         OnCompletion(FunapiHttpDownloader::ResultCode::kFailed);
         return;
       }
@@ -371,10 +379,18 @@ void FunapiHttpDownloaderImpl::AddCompletionCallback(const CompletionHandler &ha
 
 
 void FunapiHttpDownloaderImpl::OnReady() {
-  PushTaskQueue([this]()->bool {
-    if (auto d = downloader_.lock()) {
-      on_ready_(d, info_list_);
+  std::weak_ptr<FunapiHttpDownloaderImpl> weak = shared_from_this();
+  PushTaskQueue([weak, this]()->bool {
+    if (!weak.expired()) {
+      if (auto impl = weak.lock()) {
+        if (!downloader_.expired()) {
+          if (auto d = downloader_.lock()) {
+            on_ready_(d, info_list_);
+          }
+        }
+      }
     }
+
     return true;
   });
 }
@@ -382,9 +398,11 @@ void FunapiHttpDownloaderImpl::OnReady() {
 
 void FunapiHttpDownloaderImpl::OnProgress(const int index, const uint64_t bytes) {
   PushTaskQueue([this, index, bytes]()->bool {
-    if (auto d = downloader_.lock()) {
-      auto info = info_list_[index];
-      on_progress_(d, info_list_, index, max_index_, bytes, info->GetSize());
+    if (!downloader_.expired()) {
+      if (auto d = downloader_.lock()) {
+        auto info = info_list_[index];
+        on_progress_(d, info_list_, index, max_index_, bytes, info->GetSize());
+      }
     }
     return true;
   });
@@ -393,8 +411,10 @@ void FunapiHttpDownloaderImpl::OnProgress(const int index, const uint64_t bytes)
 
 void FunapiHttpDownloaderImpl::OnCompletion(const ResultCode result) {
   PushTaskQueue([this, result]()->bool {
-    if (auto d = downloader_.lock()) {
-      on_completion_(d, info_list_, result);
+    if (!downloader_.expired()) {
+      if (auto d = downloader_.lock()) {
+        on_completion_(d, info_list_, result);
+      }
     }
     return true;
   });
@@ -409,6 +429,12 @@ void FunapiHttpDownloaderImpl::Update() {
 void FunapiHttpDownloaderImpl::PushTaskQueue(const std::function<void()> &task)
 {
   tasks_->Push([task]() { task(); return true; });
+}
+
+
+std::shared_ptr<FunapiTasks> FunapiHttpDownloaderImpl::GetFunapiTasks() {
+  static std::shared_ptr<FunapiTasks> tasks = FunapiTasks::Create();
+  return tasks;
 }
 
 
@@ -453,5 +479,11 @@ void FunapiHttpDownloader::Update() {
   return impl_->Update();
 }
 
+
+void FunapiHttpDownloader::UpdateAll() {
+  if (auto t = FunapiHttpDownloaderImpl::GetFunapiTasks()) {
+    t->Update();
+  }
+}
 
 }  // namespace fun

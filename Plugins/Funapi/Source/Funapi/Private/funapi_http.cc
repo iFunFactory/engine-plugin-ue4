@@ -81,6 +81,7 @@ FunapiHttpImpl::FunapiHttpImpl(const std::string &path) : cert_file_path_(path) 
 
 FunapiHttpImpl::~FunapiHttpImpl() {
   Cleanup();
+  // DebugUtils::Log("%s", __FUNCTION__);
 }
 
 
@@ -351,6 +352,7 @@ FunapiHttp::FunapiHttp(const std::string &path) : impl_(std::make_shared<FunapiH
 
 
 FunapiHttp::~FunapiHttp() {
+  // DebugUtils::Log("%s", __FUNCTION__);
 }
 
 

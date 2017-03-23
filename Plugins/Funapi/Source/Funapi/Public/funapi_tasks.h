@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -28,10 +28,11 @@ class FUNAPI_API FunapiTasks : public std::enable_shared_from_this<FunapiTasks> 
 
   void Set(const TaskHandler &task);
   void Push(const TaskHandler &task);
+  int Size();
   void Update();
 
  private:
-  std::weak_ptr<FunapiTasksImpl> impl_;
+  std::shared_ptr<FunapiTasksImpl> impl_;
 };
 
 
@@ -41,22 +42,19 @@ class FUNAPI_API FunapiThread : public std::enable_shared_from_this<FunapiThread
   typedef FunapiTasks::TaskHandler TaskHandler;
 
   FunapiThread() = delete;
-  FunapiThread(const std::string &thread_id_string, const TaskHandler &task);
+  FunapiThread(const std::string &thread_id);
   virtual ~FunapiThread();
 
-  static std::shared_ptr<FunapiThread> Create(const std::string &thread_id_string, const TaskHandler &task);
-  static std::shared_ptr<FunapiThread> Get(const std::string &thread_id_string);
-
-  static bool Set(const std::string &thread_id_string, const TaskHandler &task);
-  static bool Push(const std::string &thread_id_string, const TaskHandler &task);
-  static bool Join(const std::string &thread_id_string);
+  static std::shared_ptr<FunapiThread> Create(const std::string &thread_id);
+  static std::shared_ptr<FunapiThread> Get(const std::string &thread_id);
 
   void Set(const TaskHandler &task);
   void Push(const TaskHandler &task);
+  int Size();
   void Join();
 
  private:
-  std::weak_ptr<FunapiThreadImpl> impl_;
+  std::shared_ptr<FunapiThreadImpl> impl_;
 };
 
 }  // namespace fun

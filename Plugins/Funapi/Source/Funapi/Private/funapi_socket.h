@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -11,7 +11,6 @@ namespace fun {
 
 class FunapiSocket {
  public:
-  static void Select();
   static std::string GetStringFromAddrInfo(struct addrinfo *info);
 };
 
@@ -57,8 +56,11 @@ class FunapiTcp : public std::enable_shared_from_this<FunapiTcp> {
   bool Send(const std::vector<uint8_t> &body,
             SendCompletionHandler send_completion_handler);
 
+  int GetSocket();
+  void OnSelect(const fd_set rset, const fd_set wset, const fd_set eset);
+
  private:
-  std::weak_ptr<FunapiTcpImpl> impl_;
+  std::shared_ptr<FunapiTcpImpl> impl_;
 };
 
 
@@ -98,8 +100,11 @@ class FunapiUdp : public std::enable_shared_from_this<FunapiUdp> {
 
   bool Send(const std::vector<uint8_t> &body, SendCompletionHandler send_completion_handler);
 
+  int GetSocket();
+  void OnSelect(const fd_set rset, const fd_set wset, const fd_set eset);
+
  private:
-  std::weak_ptr<FunapiUdpImpl> impl_;
+  std::shared_ptr<FunapiUdpImpl> impl_;
 };
 
 }  // namespace fun

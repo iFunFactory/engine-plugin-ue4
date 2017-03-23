@@ -19,6 +19,64 @@ namespace fun {
 
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiMessage implementation.
+class FunapiSessionId : public std::enable_shared_from_this<FunapiSessionId> {
+ public:
+  FunapiSessionId();
+  virtual ~FunapiSessionId();
+
+  static std::shared_ptr<FunapiSessionId> Create();
+
+  std::string Get(const FunEncoding encoding);
+  void Set(const std::string &session_id, const FunEncoding encoding);
+
+ private:
+  std::string json_;
+  std::string protobuf_;
+  std::mutex mutex_;
+};
+
+
+FunapiSessionId::FunapiSessionId() {
+}
+
+
+FunapiSessionId::~FunapiSessionId() {
+  // DebugUtils::Log("%s", __FUNCTION__);
+}
+
+
+std::shared_ptr<FunapiSessionId> FunapiSessionId::Create() {
+  return std::make_shared<FunapiSessionId>();
+}
+
+
+std::string FunapiSessionId::Get(const FunEncoding encoding) {
+  std::unique_lock<std::mutex> lock(mutex_);
+
+  if (encoding == FunEncoding::kProtobuf) {
+    return protobuf_;
+  }
+
+  return json_;
+}
+
+
+void FunapiSessionId::Set(const std::string &session_id, const FunEncoding encoding) {
+  std::unique_lock<std::mutex> lock(mutex_);
+
+  if (encoding == FunEncoding::kJson) {
+    json_ = session_id;
+    protobuf_ = json_;
+  }
+  else if (encoding == FunEncoding::kProtobuf) {
+    json_ = FunapiUtil::StringFromBytes(session_id);
+    protobuf_ = session_id;
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FunapiMessage implementation.
 
 class FunapiMessage : public std::enable_shared_from_this<FunapiMessage> {
  public:
@@ -218,13 +276,14 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   void Close(const TransportProtocol protocol);
 
   void Update();
+  static void UpdateAll();
 
   void SendMessage(const std::string &msg_type,
-    const std::string &json_string,
-    const TransportProtocol protocol);
+                   const std::string &json_string,
+                   const TransportProtocol protocol);
 
   void SendMessage(const FunMessage& message,
-    const TransportProtocol protocol);
+                   const TransportProtocol protocol);
 
   void AddSessionEventCallback(const SessionEventHandler &handler);
   void AddTransportEventCallback(const TransportEventHandler &handler);
@@ -253,20 +312,20 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
 
   void SetTransportOptionCallback(const TransportOptionHandler &handler);
 
-  static void AddSessionImpl(std::weak_ptr<FunapiSessionImpl> s);
-  static void UpdateTransportsAll();
-
-  void UpdateTransports();
+  static void Add(std::shared_ptr<FunapiSessionImpl> s);
+  static std::vector<std::shared_ptr<FunapiSessionImpl>> GetSessionImpls();
+  static bool NetworkThreadUpdateAll();
 
   void OnTransportReceived(const TransportProtocol protocol,
-    const FunEncoding encoding,
-    const HeaderFields &header,
-    const std::vector<uint8_t> &body,
-    const std::shared_ptr<FunapiMessage> message);
+                           const FunEncoding encoding,
+                           const HeaderFields &header,
+                           const std::vector<uint8_t> &body,
+                           const std::shared_ptr<FunapiMessage> message);
 
   void SendAck(const TransportProtocol protocol, const uint32_t ack);
 
   std::string GetSessionId(const FunEncoding encoding);
+  std::shared_ptr<FunapiSessionId> GetSessionIdSharedPtr();
 
   void OnTransportConnectFailed(const TransportProtocol protocol);
   void OnTransportDisconnected(const TransportProtocol protocol);
@@ -277,6 +336,8 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   bool UseSodium(const TransportProtocol protocol);
   void SendEmptyMessage(const TransportProtocol protocol);
   bool SendClientPingMessage(const TransportProtocol protocol);
+
+  void PushNetworkThreadTask(const FunapiThread::TaskHandler &handler);
 
  private:
   void Start();
@@ -338,10 +399,6 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   mutable std::mutex transports_mutex_;
   TransportProtocol default_protocol_ = TransportProtocol::kDefault;
 
-  std::string session_id_json_;
-  std::string session_id_protobuf_;
-  std::mutex session_id_mutex_;
-
   typedef std::unordered_map<std::string, MessageEventHandler> MessageHandlerMap;
   MessageHandlerMap message_handlers_;
 
@@ -378,10 +435,12 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
 
   TransportOptionHandler transport_option_handler_ = nullptr;
 
-  static std::vector<std::weak_ptr<FunapiSessionImpl>> v_sessions_;
-  static std::mutex v_sessions_mutex_;
+  std::shared_ptr<FunapiSessionId> session_id_ = nullptr;
 
-  static std::shared_ptr<FunapiThread> GetNetworkThread();
+  static std::vector<std::weak_ptr<FunapiSessionImpl>> vec_sessions_;
+  static std::mutex vec_sessions_mutex_;
+
+  std::shared_ptr<FunapiThread> network_thread_ = nullptr;
 };
 
 
@@ -426,6 +485,9 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
 
   virtual void Send(bool send_all = false);
   virtual void Update();
+
+  virtual int GetSocket();
+  virtual void OnSelect(const fd_set rset, const fd_set wset, const fd_set eset);
 
  protected:
   void PushNetworkThreadTask(const FunapiThread::TaskHandler &handler);
@@ -513,6 +575,8 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
 
   // Message-related.
   bool first_sending_ = true;
+
+  std::shared_ptr<FunapiSessionId> session_id_ = nullptr;
 };
 
 
@@ -526,16 +590,23 @@ FunapiTransport::FunapiTransport(std::weak_ptr<FunapiSessionImpl> session,
   protocol_(protocol),
   hostname_or_ip_(hostname_or_ip),
   port_(port),
-  state_(TransportState::kDisconnected) {
-
+  state_(TransportState::kDisconnected)
+{
   std::random_device rd;
   std::default_random_engine re(rd());
   std::uniform_int_distribution<uint32_t> dist(0,std::numeric_limits<uint32_t>::max());
   seq_ = dist(re);
+
+  if (!session_impl_.expired()) {
+    if (auto s = session_impl_.lock()) {
+      session_id_ = s->GetSessionIdSharedPtr();
+    }
+  }
 }
 
 
 FunapiTransport::~FunapiTransport() {
+  // DebugUtils::Log("%s", __FUNCTION__);
 }
 
 
@@ -758,7 +829,7 @@ bool FunapiTransport::TryToDecodeBody(std::vector<uint8_t> &receiving,
   }
 
   if (body_length > 0) {
-    if (state_ != TransportState::kConnected) {
+    if (GetState() != TransportState::kConnected) {
       DebugUtils::Log("Unexpected message");
       return false;
     }
@@ -837,7 +908,7 @@ void FunapiTransport::MakeHeaderString(std::string &header_string,
 
 
 bool FunapiTransport::IsStarted() {
-  return (state_ == TransportState::kConnected);
+  return (GetState() == TransportState::kConnected);
 }
 
 
@@ -887,7 +958,7 @@ void FunapiTransport::OnTransportClosed(const TransportProtocol protocol) {
     }
   }
 
-  state_ = TransportState::kDisconnected;
+  SetState(TransportState::kDisconnected);
 }
 
 
@@ -898,7 +969,7 @@ void FunapiTransport::OnTransportConnectFailed(const TransportProtocol protocol)
     }
   }
 
-  state_ = TransportState::kDisconnected;
+  SetState(TransportState::kDisconnected);
 }
 
 
@@ -909,7 +980,7 @@ void FunapiTransport::OnTransportConnectTimeout(const TransportProtocol protocol
     }
   }
 
-  state_ = TransportState::kDisconnected;
+  SetState(TransportState::kDisconnected);
 }
 
 
@@ -920,18 +991,12 @@ void FunapiTransport::OnTransportDisconnected(const TransportProtocol protocol) 
     }
   }
 
-  state_ = TransportState::kDisconnected;
+  SetState(TransportState::kDisconnected);
 }
 
 
 std::string FunapiTransport::GetSessionId() {
-  if (!session_impl_.expired()) {
-    if (auto s = session_impl_.lock()) {
-      return s->GetSessionId(GetEncoding());
-    }
-  }
-
-  return "";
+  return session_id_->Get(GetEncoding());
 }
 
 
@@ -1030,7 +1095,6 @@ void FunapiTransport::OnTransportReceived(const TransportProtocol protocol,
                                           const HeaderFields &header,
                                           const std::vector<uint8_t> &body,
                                           const std::shared_ptr<FunapiMessage> message) {
-
   if (!session_impl_.expired()) {
     if (auto s = session_impl_.lock()) {
       s->OnTransportReceived(protocol, encoding, header, body, message);
@@ -1108,11 +1172,10 @@ void FunapiTransport::ResetClientPingTimeout() {
 
 
 void FunapiTransport::PushNetworkThreadTask(const FunapiThread::TaskHandler &handler) {
-  if (auto nt = FunapiThread::Get("_network")) {
-    auto self = shared_from_this();
-    nt->Push([self, handler]()->bool {
-      return handler();
-    });
+  if (!session_impl_.expired()) {
+    if (auto s = session_impl_.lock()) {
+      s->PushNetworkThreadTask(handler);
+    }
   }
 }
 
@@ -1136,6 +1199,14 @@ void FunapiTransport::Stop() {
 void FunapiTransport::Update() {
 }
 
+
+int FunapiTransport::GetSocket() {
+  return 0;
+}
+
+
+void FunapiTransport::OnSelect(const fd_set rset, const fd_set wset, const fd_set eset) {
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiTcpTransport implementation.
@@ -1166,11 +1237,13 @@ class FunapiTcpTransport : public FunapiTransport {
   void Update();
   void Send(bool send_all = false);
 
+  int GetSocket();
+  virtual void OnSelect(const fd_set rset, const fd_set wset, const fd_set eset);
+
  protected:
   bool EncodeThenSendMessage(std::vector<uint8_t> &body);
   void Connect();
   void Connect(struct addrinfo *addrinfo_res);
-  void Recv();
   void OnConnectCompletion(const bool isFailed, const bool isTimedOut, const int error_code, const std::string &error_string, struct addrinfo *addrinfo_res);
 
  private:
@@ -1230,6 +1303,7 @@ FunapiTcpTransport::FunapiTcpTransport(std::weak_ptr<FunapiSessionImpl> session,
 
 
 FunapiTcpTransport::~FunapiTcpTransport() {
+  // DebugUtils::Log("%s", __FUNCTION__);
 }
 
 
@@ -1263,11 +1337,16 @@ void FunapiTcpTransport::Start() {
   SetState(TransportState::kConnecting);
   SetUpdateState(UpdateState::kNone);
 
-  PushNetworkThreadTask([this]()->bool {
-    reconnect_count_ = 0;
-    reconnect_wait_seconds_ = 1;
+  std::weak_ptr<FunapiTransport> weak = shared_from_this();
+  PushNetworkThreadTask([weak, this]()->bool {
+    if (!weak.expired()) {
+      if (auto t = weak.lock()) {
+        reconnect_count_ = 0;
+        reconnect_wait_seconds_ = 1;
 
-    Connect();
+        Connect();
+      }
+    }
 
     return true;
   });
@@ -1278,18 +1357,23 @@ void FunapiTcpTransport::Stop() {
   SetUpdateState(UpdateState::kNone);
   SetState(TransportState::kDisconnecting);
 
-  PushNetworkThreadTask([this]()->bool {
-    Send(true);
+  std::weak_ptr<FunapiTransport> weak = shared_from_this();
+  PushNetworkThreadTask([weak, this]()->bool {
+    if (!weak.expired()) {
+      if (auto t = weak.lock()) {
+        Send(true);
 
-    tcp_ = nullptr;
+        tcp_ = nullptr;
 
-    if (ack_receiving_) {
-      reconnect_first_ack_receiving_ = true;
+        if (ack_receiving_) {
+          reconnect_first_ack_receiving_ = true;
+        }
+
+        SetState(TransportState::kDisconnected);
+
+        OnTransportClosed(GetProtocol());
+      }
     }
-
-    SetState(TransportState::kDisconnected);
-
-    OnTransportClosed(GetProtocol());
 
     return true;
   });
@@ -1423,32 +1507,45 @@ void FunapiTcpTransport::Connect() {
   DebugUtils::Log("Try to tcp connect to server - %s %d", hostname_or_ip_.c_str(), port_);
 
   tcp_ = FunapiTcp::Create();
-  auto self = shared_from_this();
+  std::weak_ptr<FunapiTransport> weak = shared_from_this();
   tcp_->Connect(hostname_or_ip_.c_str(),
                 port_,
                 connect_timeout_seconds_,
                 disable_nagle_,
-                [self, this](const bool is_failed,
+                [weak, this](const bool is_failed,
                              const bool is_timed_out,
                              const int error_code,
                              const std::string &error_string,
                              struct addrinfo *addrinfo_res)
   {
-    OnConnectCompletion(is_failed, is_timed_out, error_code, error_string, addrinfo_res);
-  }, [self, this]() {
-    Send();
-  }, [self, this](const bool is_failed,
-            const int error_code,
-            const std::string &error_string,
-            const int read_length, std::vector<uint8_t> &receiving) {
-    if (is_failed) {
-      DebugUtils::Log("Tcp recv error : (%d) %s", error_code, error_string.c_str());
-      OnTransportDisconnected(TransportProtocol::kTcp);
-      Stop();
+    if (!weak.expired()) {
+      if (auto t = weak.lock()) {
+        OnConnectCompletion(is_failed, is_timed_out, error_code, error_string, addrinfo_res);
+      }
     }
-    else {
-      receiving_vector_.insert(receiving_vector_.end(), receiving.cbegin(), receiving.cbegin() + read_length);
-      DecodeMessage(read_length, receiving_vector_, next_decoding_offset_, header_decoded_, header_fields_);
+  }, [weak, this]() {
+    if (!weak.expired()) {
+      if (auto t = weak.lock()) {
+        Send();
+      }
+    }
+  }, [weak, this](const bool is_failed,
+                  const int error_code,
+                  const std::string &error_string,
+                  const int read_length, std::vector<uint8_t> &receiving)
+  {
+    if (!weak.expired()) {
+      if (auto t = weak.lock()) {
+        if (is_failed) {
+          DebugUtils::Log("Tcp recv error : (%d) %s", error_code, error_string.c_str());
+          OnTransportDisconnected(TransportProtocol::kTcp);
+          Stop();
+        }
+        else {
+          receiving_vector_.insert(receiving_vector_.end(), receiving.cbegin(), receiving.cbegin() + read_length);
+          DecodeMessage(read_length, receiving_vector_, next_decoding_offset_, header_decoded_, header_fields_);
+        }
+      }
     }
   });
 }
@@ -1456,21 +1553,21 @@ void FunapiTcpTransport::Connect() {
 
 void FunapiTcpTransport::Connect(struct addrinfo *addrinfo_res) {
   if (addrinfo_res && tcp_) {
-    auto self = shared_from_this();
+    std::weak_ptr<FunapiTransport> weak = shared_from_this();
     tcp_->Connect(addrinfo_res,
-                  [self, this](const bool is_failed,
+                  [weak, this](const bool is_failed,
                                const bool is_timed_out,
                                const int error_code,
                                const std::string &error_string,
                                struct addrinfo *ai_res)
     {
-      OnConnectCompletion(is_failed, is_timed_out, error_code, error_string, ai_res);
+      if (!weak.expired()) {
+        if (auto t = weak.lock()) {
+          OnConnectCompletion(is_failed, is_timed_out, error_code, error_string, ai_res);
+        }
+      }
     });
   }
-}
-
-
-void FunapiTcpTransport::Recv() {
 }
 
 
@@ -1557,21 +1654,41 @@ void FunapiTcpTransport::Send(bool send_all) {
   }
 
   if (!send_buffer_.empty()) {
-    auto self = shared_from_this();
+    std::weak_ptr<FunapiTransport> weak = shared_from_this();
     tcp_->Send(send_buffer_,
-               [self, this](const bool is_failed,
+               [weak, this](const bool is_failed,
                             const int error_code,
                             const std::string &error_string,
                             const int sent_length)
     {
-      if (is_failed) {
-        DebugUtils::Log("Tcp send error : (%d) %s", error_code, error_string.c_str());
-        Stop();
-      }
-      else {
-        DebugUtils::Log("Sent %d bytes", sent_length);
+      if (!weak.expired()) {
+        if (auto t = weak.lock()) {
+          if (is_failed) {
+            DebugUtils::Log("Tcp send error : (%d) %s", error_code, error_string.c_str());
+            Stop();
+          }
+          else {
+            DebugUtils::Log("Sent %d bytes", sent_length);
+          }
+        }
       }
     });
+  }
+}
+
+
+int FunapiTcpTransport::GetSocket() {
+  if (tcp_) {
+    return tcp_->GetSocket();
+  }
+
+  return 0;
+}
+
+
+void FunapiTcpTransport::OnSelect(const fd_set rset, const fd_set wset, const fd_set eset) {
+  if (tcp_) {
+    tcp_->OnSelect(rset, wset, eset);
   }
 }
 
@@ -1596,6 +1713,8 @@ class FunapiUdpTransport : public FunapiTransport {
   void Start();
   void Stop();
   void Send(bool send_all = false);
+  int GetSocket();
+  void OnSelect(const fd_set rset, const fd_set wset, const fd_set eset);
 
  protected:
   bool EncodeThenSendMessage(std::vector<uint8_t> &body);
@@ -1641,36 +1760,58 @@ void FunapiUdpTransport::Start() {
 
   SetState(TransportState::kConnecting);
 
-  PushNetworkThreadTask([this]()->bool {
-    udp_ = FunapiUdp::Create(hostname_or_ip_.c_str(),
-                             port_,
-                             [this](const bool isFailed,
-                                    const int error_code,
-                                    const std::string &error_string)
-    {
-      if (isFailed) {
-        DebugUtils::Log("Udp socket failed : (%d) %s", error_code, error_string.c_str());
-        OnTransportConnectFailed(TransportProtocol::kUdp);
+  std::weak_ptr<FunapiTransport> weak = shared_from_this();
+  PushNetworkThreadTask([weak, this]()->bool {
+    if (!weak.expired()) {
+      if (auto t = weak.lock()) {
+        udp_ = FunapiUdp::Create
+        (hostname_or_ip_.c_str(),
+         port_,
+         [weak, this]
+         (const bool isFailed,
+          const int error_code,
+          const std::string &error_string)
+         {
+           if (!weak.expired()) {
+             if (auto t2 = weak.lock()) {
+               if (isFailed) {
+                 DebugUtils::Log("Udp socket failed : (%d) %s", error_code, error_string.c_str());
+                 OnTransportConnectFailed(TransportProtocol::kUdp);
+               }
+               else {
+                 SetState(TransportState::kConnected);
+                 OnTransportStarted(TransportProtocol::kUdp);
+               }
+             }
+           }
+         }, [weak, this]()
+         {
+           if (!weak.expired()) {
+             if (auto t2 = weak.lock()) {
+               Send();
+             }
+           }
+         },[weak, this]
+         (const bool isFailed,
+          const int error_code,
+          const std::string &error_string,
+          const int read_length, std::vector<uint8_t> &receiving)
+         {
+           if (!weak.expired()) {
+             if (auto t2 = weak.lock()) {
+               if (isFailed) {
+                 DebugUtils::Log("Udp recvfrom error : (%d) %s", error_code, error_string.c_str());
+                 OnTransportDisconnected(TransportProtocol::kUdp);
+                 Stop();
+               }
+               else {
+                 DecodeMessage(read_length, receiving);
+               }
+             }
+           }
+         });
       }
-      else {
-        SetState(TransportState::kConnected);
-        OnTransportStarted(TransportProtocol::kUdp);
-      }
-    }, [this]() {
-      Send();
-    }, [this](const bool isFailed,
-              const int error_code,
-              const std::string &error_string,
-              const int read_length, std::vector<uint8_t> &receiving) {
-      if (isFailed) {
-        DebugUtils::Log("Udp recvfrom error : (%d) %s", error_code, error_string.c_str());
-        OnTransportDisconnected(TransportProtocol::kUdp);
-        Stop();
-      }
-      else {
-        DecodeMessage(read_length, receiving);
-      }
-    });
+    }
 
     return true;
   });
@@ -1680,14 +1821,19 @@ void FunapiUdpTransport::Start() {
 void FunapiUdpTransport::Stop() {
   SetState(TransportState::kDisconnecting);
 
-  PushNetworkThreadTask([this]()->bool {
-    Send(true);
+  std::weak_ptr<FunapiTransport> weak = shared_from_this();
+  PushNetworkThreadTask([weak, this]()->bool {
+    if (!weak.expired()) {
+      if (auto t = weak.lock()) {
+        Send(true);
 
-    udp_ = nullptr;
+        udp_ = nullptr;
 
-    SetState(TransportState::kDisconnected);
+        SetState(TransportState::kDisconnected);
 
-    OnTransportClosed(GetProtocol());
+        OnTransportClosed(GetProtocol());
+      }
+    }
 
     return true;
   });
@@ -1701,19 +1847,24 @@ bool FunapiUdpTransport::EncodeThenSendMessage(std::vector<uint8_t> &body) {
 
   bool bRet = false;
 
+  std::weak_ptr<FunapiTransport> weak = shared_from_this();
   udp_->Send(body,
-             [this, &bRet](const bool is_failed,
-                           const int error_code,
-                           const std::string &error_string,
-                           const int sent_length)
+             [weak, this, &bRet](const bool is_failed,
+                                 const int error_code,
+                                 const std::string &error_string,
+                                 const int sent_length)
   {
-    if (is_failed) {
-      Stop();
-    }
-    else {
-      bRet = true;
+    if (!weak.expired()) {
+      if (auto t = weak.lock()) {
+        if (is_failed) {
+          Stop();
+        }
+        else {
+          bRet = true;
 
-      DebugUtils::Log("Sent %d bytes", sent_length);
+          DebugUtils::Log("Sent %d bytes", sent_length);
+        }
+      }
     }
   });
 
@@ -1756,11 +1907,27 @@ void FunapiUdpTransport::Send(bool send_all) {
 }
 
 
+int FunapiUdpTransport::GetSocket() {
+  if (udp_) {
+    return udp_->GetSocket();
+  }
+
+  return 0;
+}
+
+
+void FunapiUdpTransport::OnSelect(const fd_set rset, const fd_set wset, const fd_set eset) {
+  if (udp_) {
+    udp_->OnSelect(rset, wset, eset);
+  }
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiHttpTransport implementation.
 
 class FunapiHttpTransport : public FunapiTransport {
-public:
+ public:
   FunapiHttpTransport(std::weak_ptr<FunapiSessionImpl> session,
                       const std::string &hostname_or_ip, uint16_t port, bool https, FunEncoding encoding);
   virtual ~FunapiHttpTransport();
@@ -1780,12 +1947,10 @@ public:
 
   void Send(bool send_all = false);
 
-  static std::shared_ptr<FunapiThread> GetHttpThread();
-
-protected:
+ protected:
   bool EncodeThenSendMessage(std::vector<uint8_t> &body);
 
-private:
+ private:
   void WebResponseHeaderCb(const void *data, int len, HeaderFields &header_fields);
   void WebResponseBodyCb(const void *data, int len, std::vector<uint8_t> &receiving);
 
@@ -1794,6 +1959,8 @@ private:
 
   std::shared_ptr<FunapiHttp> http_ = nullptr;
   std::string cert_file_path_;
+
+  std::shared_ptr<FunapiThread> http_thread_ = nullptr;
 };
 
 
@@ -1806,16 +1973,13 @@ FunapiHttpTransport::FunapiHttpTransport(std::weak_ptr<FunapiSessionImpl> sessio
   host_url_ = ss_url.str();
 
   DebugUtils::Log("Host url : %s", host_url_.c_str());
+
+  http_thread_ = FunapiThread::Get("_http");
 }
 
 
 FunapiHttpTransport::~FunapiHttpTransport() {
-}
-
-
-std::shared_ptr<FunapiThread> FunapiHttpTransport::GetHttpThread() {
-  static std::shared_ptr<FunapiThread> http_thread = FunapiThread::Get("_http");
-  return http_thread;
+  // DebugUtils::Log("%s", __FUNCTION__);
 }
 
 
@@ -1837,13 +2001,18 @@ void FunapiHttpTransport::Start() {
 
   SetState(TransportState::kConnecting);
 
-  PushNetworkThreadTask([this]()->bool {
-    http_ = FunapiHttp::Create(cert_file_path_);
-    http_->SetConnectTimeout(static_cast<long>(connect_timeout_seconds_));
+  std::weak_ptr<FunapiTransport> weak = shared_from_this();
+  PushNetworkThreadTask([weak, this]()->bool {
+    if (!weak.expired()) {
+      if (auto t = weak.lock()) {
+        http_ = FunapiHttp::Create(cert_file_path_);
+        http_->SetConnectTimeout(static_cast<long>(connect_timeout_seconds_));
 
-    SetState(TransportState::kConnected);
+        SetState(TransportState::kConnected);
 
-    OnTransportStarted(TransportProtocol::kHttp);
+        OnTransportStarted(TransportProtocol::kHttp);
+      }
+    }
 
     return true;
   });
@@ -1856,10 +2025,15 @@ void FunapiHttpTransport::Stop() {
 
   SetState(TransportState::kDisconnecting);
 
-  PushNetworkThreadTask([this]()->bool {
-    SetState(TransportState::kDisconnected);
+  std::weak_ptr<FunapiTransport> weak = shared_from_this();
+  PushNetworkThreadTask([weak, this]()->bool {
+    if (!weak.expired()) {
+      if (auto t = weak.lock()) {
+        SetState(TransportState::kDisconnected);
 
-    OnTransportClosed(TransportProtocol::kHttp);
+        OnTransportClosed(TransportProtocol::kHttp);
+      }
+    }
 
     return true;
   });
@@ -1897,48 +2071,64 @@ bool FunapiHttpTransport::EncodeThenSendMessage(std::vector<uint8_t> &body) {
   }
 
   bool is_ok = true;
-  http_->PostRequest(host_url_, header_fields_for_send, body, [this, &is_ok](int code, const std::string error_string){
-    DebugUtils::Log("Error from cURL: %d, %s", code, error_string.c_str());
-    is_ok = false;
+  std::weak_ptr<FunapiTransport> weak = shared_from_this();
+  http_->PostRequest(host_url_,
+                     header_fields_for_send,
+                     body,
+                     [weak, this, &is_ok](int code,
+                                          const std::string error_string)
+  {
+    if (!weak.expired()) {
+      if (auto t = weak.lock()) {
+        DebugUtils::Log("Error from cURL: %d, %s", code, error_string.c_str());
+        is_ok = false;
 
-    if (GetSessionId().empty()) {
-      Stop();
+        if (GetSessionId().empty()) {
+          Stop();
 
-      {
-        std::unique_lock<std::mutex> lock(send_queue_mutex_);
-        send_queue_.clear();
+          {
+            std::unique_lock<std::mutex> lock(send_queue_mutex_);
+            send_queue_.clear();
+          }
+        }
       }
     }
-  }, [this](const std::vector<std::string> &v_header, const std::vector<uint8_t> &v_body) {
-    HeaderFields header_fields;
-    auto temp_header = const_cast<std::vector<std::string>&>(v_header);
-    auto temp_body = const_cast<std::vector<uint8_t>&>(v_body);
+  }, [weak, this](const std::vector<std::string> &v_header,
+                  const std::vector<uint8_t> &v_body)
+  {
+    if (!weak.expired()) {
+      if (auto t = weak.lock()) {
+        HeaderFields header_fields;
+        auto temp_header = const_cast<std::vector<std::string>&>(v_header);
+        auto temp_body = const_cast<std::vector<uint8_t>&>(v_body);
 
-    for (size_t i=1;i<temp_header.size();++i) {
-      WebResponseHeaderCb(temp_header[i].c_str(), static_cast<int>(temp_header[i].length()), header_fields);
-    }
+        for (size_t i=1;i<temp_header.size();++i) {
+          WebResponseHeaderCb(temp_header[i].c_str(), static_cast<int>(temp_header[i].length()), header_fields);
+        }
 
-    // std::to_string is not supported on android, using std::stringstream instead.
-    std::stringstream ss_protocol_version;
-    ss_protocol_version << static_cast<int>(FunapiVersion::kProtocolVersion);
-    header_fields[kVersionHeaderField] = ss_protocol_version.str();
+        // std::to_string is not supported on android, using std::stringstream instead.
+        std::stringstream ss_protocol_version;
+        ss_protocol_version << static_cast<int>(FunapiVersion::kProtocolVersion);
+        header_fields[kVersionHeaderField] = ss_protocol_version.str();
 
-    std::stringstream ss_version_header_field;
-    ss_version_header_field << temp_body.size();
-    header_fields[kLengthHeaderField] = ss_version_header_field.str();
+        std::stringstream ss_version_header_field;
+        ss_version_header_field << temp_body.size();
+        header_fields[kLengthHeaderField] = ss_version_header_field.str();
 
-    // cookie
-    auto it = header_fields.find(kCookieResponseHeaderField);
-    if (it != header_fields.end()) {
-      cookie_ = it->second;
-    }
+        // cookie
+        auto it = header_fields.find(kCookieResponseHeaderField);
+        if (it != header_fields.end()) {
+          cookie_ = it->second;
+        }
 
-    encrytion_->SetHeaderFieldsForHttpRecv(header_fields);
+        encrytion_->SetHeaderFieldsForHttpRecv(header_fields);
 
-    bool header_decoded = true;
-    int next_decoding_offset = 0;
-    if (TryToDecodeBody(temp_body, next_decoding_offset, header_decoded, header_fields) == false) {
-      Stop();
+        bool header_decoded = true;
+        int next_decoding_offset = 0;
+        if (TryToDecodeBody(temp_body, next_decoding_offset, header_decoded, header_fields) == false) {
+          Stop();
+        }
+      }
     }
   });
 
@@ -1992,23 +2182,22 @@ void FunapiHttpTransport::WebResponseBodyCb(const void *data, int len, std::vect
 
 
 void FunapiHttpTransport::Update() {
-  std::weak_ptr<FunapiTransport> weak = shared_from_this();
-  std::weak_ptr<FunapiHttp> weak_http = http_;
-  FunapiHttpTransport::GetHttpThread()->Push([weak, weak_http, this]()->bool {
-    if (!weak.expired() && !weak_http.expired()) {
-      if (auto t = weak.lock()) {
-        if (GetState() != TransportState::kConnected) {
-          return true;
-        }
+  if (http_thread_)
+  {
+    std::weak_ptr<FunapiTransport> weak = shared_from_this();
+    http_thread_->Push([weak, this]()->bool {
+      if (!weak.expired()) {
+        if (auto t = weak.lock()) {
+          if (GetState() != TransportState::kConnected) {
+            return true;
+          }
 
-        if (auto h = weak.lock()) {
           Send();
         }
       }
-    }
-
-    return true;
-  });
+      return true;
+    });
+  }
 }
 
 
@@ -2024,58 +2213,104 @@ void FunapiHttpTransport::SetCACertFilePath(const std::string &path) {
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiSessionImpl implementation.
 
-std::vector<std::weak_ptr<FunapiSessionImpl>> FunapiSessionImpl::v_sessions_;
-std::mutex FunapiSessionImpl::v_sessions_mutex_;
+std::vector<std::weak_ptr<FunapiSessionImpl>> FunapiSessionImpl::vec_sessions_;
+std::mutex FunapiSessionImpl::vec_sessions_mutex_;
 
 
-std::shared_ptr<FunapiThread> FunapiSessionImpl::GetNetworkThread() {
-  static std::shared_ptr<FunapiThread> network_thread = FunapiThread::Get("_network");
-  return network_thread;
-}
-
-
-void FunapiSessionImpl::UpdateTransportsAll() {
+std::vector<std::shared_ptr<FunapiSessionImpl>> FunapiSessionImpl::GetSessionImpls() {
   std::vector<std::shared_ptr<FunapiSessionImpl>> v_sessions;
+  std::vector<std::weak_ptr<FunapiSessionImpl>> v_weak_sessions;
   {
-    std::unique_lock<std::mutex> lock(v_sessions_mutex_);
-    if(!v_sessions_.empty()) {
-      std::vector<std::weak_ptr<FunapiSessionImpl>> weak_sessions;
-      for (auto s : v_sessions_) {
-        if (!s.expired()) {
-          weak_sessions.push_back(s);
-          v_sessions.push_back(s.lock());
+    std::unique_lock<std::mutex> lock(vec_sessions_mutex_);
+    if (!vec_sessions_.empty()) {
+      for (auto i : vec_sessions_) {
+        if (!i.expired()) {
+          if (auto s = i.lock()) {
+            v_sessions.push_back(s);
+            v_weak_sessions.push_back(i);
+          }
         }
       }
 
-      v_sessions_.swap(weak_sessions);
+      vec_sessions_.swap(v_weak_sessions);
     }
   }
 
-  for (auto s : v_sessions) {
-    if (s) {
-      s->UpdateTransports();
-    }
-  }
+  return v_sessions;
 }
 
 
-void FunapiSessionImpl::AddSessionImpl(std::weak_ptr<FunapiSessionImpl> s) {
-  std::unique_lock<std::mutex> lock(v_sessions_mutex_);
-  v_sessions_.push_back(s);
+bool FunapiSessionImpl::NetworkThreadUpdateAll() {
+  auto v_sessions = FunapiSessionImpl::GetSessionImpls();
+
+  if (!v_sessions.empty()) {
+    int max_fd = -1;
+
+    fd_set rset;
+    fd_set wset;
+    fd_set eset;
+
+    FD_ZERO(&rset);
+    FD_ZERO(&wset);
+    FD_ZERO(&eset);
+
+
+    for (auto s : v_sessions) {
+      for (auto p : {TransportProtocol::kTcp, TransportProtocol::kUdp} ) {
+        int fd = 0;
+        if (auto t = s->GetTransport(p)) {
+          t->Update();
+
+          fd = t->GetSocket();
+          if (fd > 0) {
+            if (fd > max_fd) max_fd = fd;
+
+            FD_SET(fd, &rset);
+            FD_SET(fd, &wset);
+            FD_SET(fd, &eset);
+          }
+        }
+      }
+
+      if (auto t = s->GetTransport(TransportProtocol::kHttp)) {
+        t->Update();
+      }
+    }
+
+    struct timeval timeout = { 0, 1 };
+    if (select(max_fd + 1, &rset, &wset, &eset, &timeout) > 0) {
+      for (auto s : v_sessions) {
+        for (auto p : {TransportProtocol::kTcp, TransportProtocol::kUdp} ) {
+          if (auto t = s->GetTransport(p)) {
+            t->OnSelect(rset, wset, eset);
+          }
+        }
+      }
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+
+void FunapiSessionImpl::Add(std::shared_ptr<FunapiSessionImpl> s) {
+  std::unique_lock<std::mutex> lock(vec_sessions_mutex_);
+  vec_sessions_.push_back(s);
 }
 
 
 FunapiSessionImpl::FunapiSessionImpl(const char* hostname_or_ip,
                                      const bool reliability)
-  : session_reliability_(reliability), session_id_json_(""), session_id_protobuf_(""), hostname_or_ip_(hostname_or_ip), token_("") {
+  : session_reliability_(reliability), hostname_or_ip_(hostname_or_ip), token_("") {
   Initialize();
 }
 
 
 FunapiSessionImpl::~FunapiSessionImpl() {
   Finalize();
-  Close();
-  Update();
+  // DebugUtils::Log("%s", __FUNCTION__);
 }
 
 
@@ -2141,6 +2376,10 @@ void FunapiSessionImpl::Initialize() {
 
   tasks_ = FunapiTasks::Create();
 
+  session_id_ = FunapiSessionId::Create();
+
+  network_thread_ = FunapiThread::Get("_network");
+
   // Now ready.
   initialized_ = true;
 }
@@ -2151,16 +2390,11 @@ void FunapiSessionImpl::Finalize() {
 
   // All set.
   initialized_ = false;
+
+  Close();
+  Update();
 }
 
-
-void FunapiSessionImpl::UpdateTransports() {
-  for (auto protocol : v_protocols_) {
-    auto transport = GetTransport(protocol);
-    if (transport)
-      transport->Update();
-  }
-}
 
 void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, const TransportProtocol protocol, int port, FunEncoding encoding, std::shared_ptr<FunapiTransportOption> option) {
   session_ = session;
@@ -2266,12 +2500,6 @@ void FunapiSessionImpl::RegisterHandler(
 
 void FunapiSessionImpl::Start() {
   started_ = true;
-
-  FunapiSessionImpl::GetNetworkThread()->Set([]()->bool{
-    FunapiSocket::Select();
-    FunapiSessionImpl::UpdateTransportsAll();
-    return true;
-  });
 
   tasks_->Set(nullptr);
 
@@ -2745,7 +2973,19 @@ void FunapiSessionImpl::OnRedirectConnectMessage(const TransportProtocol protoco
 
 
 void FunapiSessionImpl::Update() {
-  tasks_->Update();
+  if (tasks_) {
+    tasks_->Update();
+  }
+
+  if (started_) {
+    if (network_thread_) {
+      if (network_thread_->Size() == 0) {
+        network_thread_->Push([]()->bool{
+          return FunapiSessionImpl::NetworkThreadUpdateAll();
+        });
+      }
+    }
+  }
 }
 
 
@@ -2787,41 +3027,35 @@ std::shared_ptr<FunapiTransport> FunapiSessionImpl::GetTransport(const Transport
 }
 
 
+std::shared_ptr<FunapiSessionId> FunapiSessionImpl::GetSessionIdSharedPtr() {
+  return session_id_;
+}
+
+
 std::string FunapiSessionImpl::GetSessionId(const FunEncoding encoding) {
-  std::unique_lock<std::mutex> lock(session_id_mutex_);
-
-  if (encoding == FunEncoding::kProtobuf) {
-    return session_id_protobuf_;
-  }
-
-  return session_id_json_;
+  return session_id_->Get(encoding);
 }
 
 
 void FunapiSessionImpl::SetSessionId(const std::string &session_id, const FunEncoding encoding) {
-  std::unique_lock<std::mutex> lock(session_id_mutex_);
-
-  if (encoding == FunEncoding::kJson) {
-    session_id_json_ = session_id;
-    session_id_protobuf_ = session_id_json_;
-  }
-  else if (encoding == FunEncoding::kProtobuf) {
-    session_id_json_ = FunapiUtil::StringFromBytes(session_id);
-    session_id_protobuf_ = session_id;
-  }
+  session_id_->Set(session_id, encoding);
 }
 
 
 void FunapiSessionImpl::PushTaskQueue(const std::function<bool()> &task)
 {
-  std::weak_ptr<FunapiSessionImpl> weak = shared_from_this();
-  tasks_->Push([weak, task]()->bool{
-    if (!weak.expired()) {
-      return task();
-    }
+  if (tasks_) {
+    std::weak_ptr<FunapiSessionImpl> weak = shared_from_this();
+    tasks_->Push([weak, task]()->bool{
+      if (!weak.expired()) {
+        if (auto s = weak.lock()) {
+          return task();
+        }
+      }
 
-    return true;
-  });
+      return true;
+    });
+  }
 }
 
 
@@ -3190,17 +3424,36 @@ bool FunapiSessionImpl::UseSodium(const TransportProtocol protocol) {
   return false;
 }
 
+
+void FunapiSessionImpl::UpdateAll() {
+  auto v_sessions = FunapiSessionImpl::GetSessionImpls();
+
+  if (!v_sessions.empty()) {
+    for (auto s : v_sessions) {
+      s->Update();
+    }
+  }
+}
+
+
+void FunapiSessionImpl::PushNetworkThreadTask(const FunapiThread::TaskHandler &handler) {
+  if (network_thread_) {
+    network_thread_->Push(handler);
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiSession implementation.
 
 
 FunapiSession::FunapiSession(const char* hostname_or_ip, bool reliability)
 : impl_(std::make_shared<FunapiSessionImpl>(hostname_or_ip, reliability)) {
-  FunapiSessionImpl::AddSessionImpl(impl_);
+  FunapiSessionImpl::Add(impl_);
 }
 
 
 FunapiSession::~FunapiSession() {
+  // DebugUtils::Log("%s", __FUNCTION__);
 }
 
 
@@ -3323,6 +3576,11 @@ void FunapiSession::EraseRecvTimeout(const std::string &msg_type) {
 
 void FunapiSession::SetTransportOptionCallback(const TransportOptionHandler &handler) {
   impl_->SetTransportOptionCallback(handler);
+}
+
+
+void FunapiSession::UpdateAll() {
+  FunapiSessionImpl::UpdateAll();
 }
 
 }  // namespace fun

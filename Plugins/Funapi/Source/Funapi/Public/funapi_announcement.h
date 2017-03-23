@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -65,6 +65,7 @@ class FUNAPI_API FunapiAnnouncement : public std::enable_shared_from_this<Funapi
   void AddCompletionCallback(const CompletionHandler &handler);
   void RequestList(int max_count);
   void Update();
+  static void UpdateAll();
 
  private:
   std::shared_ptr<FunapiAnnouncementImpl> impl_;

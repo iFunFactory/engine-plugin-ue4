@@ -182,7 +182,6 @@ class FunapiAnnouncementImpl : public std::enable_shared_from_this<FunapiAnnounc
   bool MD5Compare(std::shared_ptr<FunapiAnnouncementInfo> info);
 
   void OnCompletion(const FunapiAnnouncement::ResultCode result);
-  void PushTaskQueue(const FunapiTasks::TaskHandler &task);
 
   std::string url_;
   std::string path_;
@@ -214,10 +213,15 @@ void FunapiAnnouncementImpl::AddCompletionCallback(const CompletionHandler &hand
 
 
 void FunapiAnnouncementImpl::OnCompletion(const FunapiAnnouncement::ResultCode result) {
-  PushTaskQueue([this, result]()->bool {
-    if (!announcement_.expired()) {
-      if (auto a = announcement_.lock()) {
-        on_completion_(a, info_list_, result);
+  std::weak_ptr<FunapiAnnouncementImpl> weak = shared_from_this();
+  tasks_->Push([weak, this, result]()->bool {
+    if (!weak.expired()) {
+      if (auto impl = weak.lock()) {
+        if (!announcement_.expired()) {
+          if (auto a = announcement_.lock()) {
+            on_completion_(a, info_list_, result);
+          }
+        }
       }
     }
 
@@ -316,14 +320,14 @@ void FunapiAnnouncementImpl::RequestList(std::weak_ptr<FunapiAnnouncement> a, in
         {
           std::stringstream ss_temp;
           ss_temp << error_code << " " << error_string;
-          printf ("%s\n", ss_temp.str().c_str());
+          DebugUtils::Log ("%s\n", ss_temp.str().c_str());
 
           OnCompletion(FunapiAnnouncement::ResultCode::kInvalidUrl);
         }, [this](const std::vector<std::string> &headers,
                   const std::vector<uint8_t> &v_recv)
         {
           std::string temp(v_recv.begin(), v_recv.end());
-          printf ("%s\n", temp.c_str());
+          DebugUtils::Log ("%s\n", temp.c_str());
 
           OnAnnouncementInfoList(std::string(v_recv.begin(), v_recv.end()));
         });
@@ -356,9 +360,11 @@ void FunapiAnnouncementImpl::DownloadFiles() {
       }
     }
 
-    if (!DownloadFile(url, info->GetFilePath())) {
-      OnCompletion(fun::FunapiAnnouncement::ResultCode::kExceptionError);
-      return;
+    if (url.length() > 0 && info->GetFilePath().length() > 0) {
+      if (!DownloadFile(url, info->GetFilePath())) {
+        OnCompletion(fun::FunapiAnnouncement::ResultCode::kExceptionError);
+        return;
+      }
     }
   }
 
@@ -410,11 +416,6 @@ bool FunapiAnnouncementImpl::MD5Compare(std::shared_ptr<FunapiAnnouncementInfo> 
 
 void FunapiAnnouncementImpl::Update() {
   tasks_->Update();
-}
-
-
-void FunapiAnnouncementImpl::PushTaskQueue(const FunapiTasks::TaskHandler &task) {
-  tasks_->Push(task);
 }
 
 

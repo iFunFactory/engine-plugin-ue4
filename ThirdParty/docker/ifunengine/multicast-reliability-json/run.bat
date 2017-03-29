@@ -1,0 +1,1 @@
+docker run -t --name test-multicast-reliability-json -p 8312:8312 ifunengine-multicast-reliability-json

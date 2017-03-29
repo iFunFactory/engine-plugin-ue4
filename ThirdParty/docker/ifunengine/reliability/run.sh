@@ -1,0 +1,1 @@
+docker run -t --name test-echo-reliability -p 8212:8212 -p 8213:8213/udp -p 8218:8218 -p 8222:8222 -p 8223:8223/udp -p 8228:8228 ifunengine-echo-reliability

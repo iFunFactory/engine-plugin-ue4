@@ -1,4 +1,3 @@
 #!/bin/sh
-
-service zookeeper restart
-/home/test/test-build/debug/test-local
+service zookeeper start
+/home/test/test-build/debug/test-local -session_message_logging_level=2

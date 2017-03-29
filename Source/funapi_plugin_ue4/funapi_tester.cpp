@@ -263,6 +263,10 @@ bool Afunapi_tester::CreateMulticast()
     fun::FunEncoding encoding = with_protobuf_ ? fun::FunEncoding::kProtobuf : fun::FunEncoding::kJson;
     uint16_t port = with_protobuf_ ? 8122 : 8112;
 
+    if (with_session_reliability_) {
+      port += 200;
+    }
+
     multicast_ = fun::FunapiMulticast::Create(sender.c_str(), kServer.c_str(), port, encoding, with_session_reliability_);
 
     multicast_->AddJoinedCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
@@ -735,6 +739,10 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
       option->SetUseHttps(false);
       session_->Connect(protocol, port, encoding, option);
       */
+    }
+
+    if (with_session_reliability_) {
+      port += 200;
     }
 
     session_->Connect(protocol, port, encoding);

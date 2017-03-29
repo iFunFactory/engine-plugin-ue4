@@ -34,14 +34,14 @@
             "io_service_threads_size": 4
           },
           "SessionService": {
-            "tcp_json_port": 8112,
+            "tcp_json_port": 8312,
             "udp_json_port": 0,
             "http_json_port": 0,
             "tcp_protobuf_port": 0,
             "udp_protobuf_port": 0,
             "http_protobuf_port": 0,
             "session_timeout_in_second" : 300,
-            "use_session_reliability": false,
+            "use_session_reliability": true,
             "use_sequence_number_validation": false,
             "use_encryption": false,
             "tcp_encryptions": ["ife1", "ife2"],
@@ -172,7 +172,7 @@
           },
           "MulticastServer": {
             "max_member_count_per_channel": 0
-          },          
+          },
           "RpcService": {
             "rpc_enabled": true,
             "rpc_threads_size": 4,

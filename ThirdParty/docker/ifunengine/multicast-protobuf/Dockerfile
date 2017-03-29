@@ -2,7 +2,7 @@ FROM ubuntu:16.04
 MAINTAINER JunHyun Park <junhyunpark@ifunfactory.com>
 
 RUN apt-get update
-RUN apt-get install -y wget apt-transport-https net-tools gettext
+RUN apt-get install -y wget apt-transport-https net-tools gettext dos2unix
 
 ADD ifunfactory.gpg.key /root/
 RUN apt-key add /root/ifunfactory.gpg.key
@@ -29,5 +29,6 @@ ADD MANIFEST.json /home/test/test-source/src/
 
 ADD entrypoint.sh /home/
 RUN chmod +x /home/entrypoint.sh
+RUN dos2unix /home/entrypoint.sh
 
 ENTRYPOINT /home/entrypoint.sh

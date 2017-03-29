@@ -34,14 +34,14 @@
             "io_service_threads_size": 4
           },
           "SessionService": {
-            "tcp_json_port": 8112,
-            "udp_json_port": 0,
-            "http_json_port": 0,
-            "tcp_protobuf_port": 0,
-            "udp_protobuf_port": 0,
-            "http_protobuf_port": 0,
+            "tcp_json_port": 8212,
+            "udp_json_port": 8213,
+            "http_json_port": 8218,
+            "tcp_protobuf_port": 8222,
+            "udp_protobuf_port": 8223,
+            "http_protobuf_port": 8228,
             "session_timeout_in_second" : 300,
-            "use_session_reliability": false,
+            "use_session_reliability": true,
             "use_sequence_number_validation": false,
             "use_encryption": false,
             "tcp_encryptions": ["ife1", "ife2"],
@@ -170,11 +170,8 @@
             "under_maintenance": false,
             "maintenance_data_path": ""
           },
-          "MulticastServer": {
-            "max_member_count_per_channel": 0
-          },          
           "RpcService": {
-            "rpc_enabled": true,
+            "rpc_enabled": false,
             "rpc_threads_size": 4,
             "rpc_port": 8015,
             "rpc_nic_name": "",  // if not specified, uses first NIC appeared in predictable network interface names.

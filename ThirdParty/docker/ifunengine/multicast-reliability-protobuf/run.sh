@@ -1,0 +1,1 @@
+docker run -t --name test-multicast-reliability-protobuf -p 8322:8322 ifunengine-multicast-reliability-protobuf

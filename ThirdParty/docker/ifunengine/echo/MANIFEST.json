@@ -48,7 +48,7 @@
             "udp_encryptions": ["ife2"],
             "http_encryptions": [],
             "encryption_ecdh_key": "02d87cf9965f27cec9dd399b00cde2fb1c39af4711df5a1cb96a79f597c2e1b8",
-            "disable_tcp_nagle": false,
+            "disable_tcp_nagle": true,
             "enable_http_message_list": true,
             "session_message_logging_level": 0,
             "enable_per_message_metering_in_counter": false,

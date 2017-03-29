@@ -24,7 +24,7 @@
 
 const std::string g_server_ip = "127.0.0.1";
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEchoJson, "Funapi.Echo.Json", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEchoJson, "Funapi.Echo.E_Json", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
 bool FFunapiSessionTestEchoJson::RunTest(const FString& Parameters)
 {
@@ -105,6 +105,7 @@ bool FFunapiSessionTestEchoJson::RunTest(const FString& Parameters)
 
   while (is_working) {
     session->Update();
+    std::this_thread::sleep_for(std::chrono::milliseconds(16)); // 60fps
   }
 
   session->Close();
@@ -112,7 +113,7 @@ bool FFunapiSessionTestEchoJson::RunTest(const FString& Parameters)
   return is_ok;
 }
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEchoProtobuf, "Funapi.Echo.Protobuf", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEchoProtobuf, "Funapi.Echo.E_Protobuf", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
 bool FFunapiSessionTestEchoProtobuf::RunTest(const FString& Parameters)
 {
@@ -187,6 +188,7 @@ bool FFunapiSessionTestEchoProtobuf::RunTest(const FString& Parameters)
 
   while (is_working) {
     session->Update();
+    std::this_thread::sleep_for(std::chrono::milliseconds(16)); // 60fps
   }
 
   session->Close();
@@ -194,7 +196,7 @@ bool FFunapiSessionTestEchoProtobuf::RunTest(const FString& Parameters)
   return is_ok;
 }
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiMulticastTestJson, "Funapi.Multicast.Json", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiMulticastTestJson, "Funapi.Multicast.MC_Json", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
 bool FFunapiMulticastTestJson::RunTest(const FString& Parameters)
 {
@@ -210,10 +212,10 @@ bool FFunapiMulticastTestJson::RunTest(const FString& Parameters)
   bool is_ok = false;
   bool is_working = true;
 
-  auto send_function =
-    [](const std::shared_ptr<fun::FunapiMulticast>& m,
-      const std::string &channel_id,
-      int number)
+  auto send_function = [](
+    const std::shared_ptr<fun::FunapiMulticast>& m,
+    const std::string &channel_id,
+    int number)
   {
     rapidjson::Document msg;
     msg.SetObject();
@@ -240,17 +242,18 @@ bool FFunapiMulticastTestJson::RunTest(const FString& Parameters)
     std::string user_name = ss_sender.str();
 
     auto funapi_multicast =
-      fun::FunapiMulticast::Create(user_name.c_str(),
+      fun::FunapiMulticast::Create(
+        user_name.c_str(),
         server_ip.c_str(),
         port,
         encoding,
         with_session_reliability);
 
-    funapi_multicast->AddJoinedCallback
-    ([user_name, multicast_test_channel, &send_function]
-    (const std::shared_ptr<fun::FunapiMulticast>& m,
-      const std::string &channel_id,
-      const std::string &sender)
+    funapi_multicast->AddJoinedCallback(
+      [user_name, multicast_test_channel, &send_function](
+        const std::shared_ptr<fun::FunapiMulticast>& m,
+        const std::string &channel_id,
+        const std::string &sender)
     {
       // send
       if (channel_id == multicast_test_channel) {
@@ -260,17 +263,18 @@ bool FFunapiMulticastTestJson::RunTest(const FString& Parameters)
       }
     });
 
-    funapi_multicast->AddLeftCallback
-    ([](const std::shared_ptr<fun::FunapiMulticast>& m,
-      const std::string &channel_id,
-      const std::string &sender)
+    funapi_multicast->AddLeftCallback(
+      [](
+        const std::shared_ptr<fun::FunapiMulticast>& m,
+        const std::string &channel_id,
+        const std::string &sender)
     {
     });
 
-    funapi_multicast->AddErrorCallback
-    ([&is_working, &is_ok]
-    (const std::shared_ptr<fun::FunapiMulticast>& m,
-      int error)
+    funapi_multicast->AddErrorCallback(
+      [&is_working, &is_ok](
+        const std::shared_ptr<fun::FunapiMulticast>& m,
+        int error)
     {
       // EC_ALREADY_JOINED = 1,
       // EC_ALREADY_LEFT,
@@ -283,23 +287,23 @@ bool FFunapiMulticastTestJson::RunTest(const FString& Parameters)
       verify(is_ok);
     });
 
-    funapi_multicast->AddSessionEventCallback
-    ([&is_ok, &is_working, multicast_test_channel]
-    (const std::shared_ptr<fun::FunapiMulticast>& m,
-      const fun::SessionEventType type,
-      const std::string &session_id,
-      const std::shared_ptr<fun::FunapiError> &error)
+    funapi_multicast->AddSessionEventCallback(
+      [&is_ok, &is_working, multicast_test_channel](
+        const std::shared_ptr<fun::FunapiMulticast>& m,
+        const fun::SessionEventType type,
+        const std::string &session_id,
+        const std::shared_ptr<fun::FunapiError> &error)
     {
       if (type == fun::SessionEventType::kOpened) {
         m->JoinChannel(multicast_test_channel);
       }
     });
 
-    funapi_multicast->AddTransportEventCallback
-    ([&is_ok, &is_working]
-    (const std::shared_ptr<fun::FunapiMulticast>& m,
-      const fun::TransportEventType type,
-      const std::shared_ptr<fun::FunapiError> &error)
+    funapi_multicast->AddTransportEventCallback(
+      [&is_ok, &is_working](
+        const std::shared_ptr<fun::FunapiMulticast>& m,
+        const fun::TransportEventType type,
+        const std::shared_ptr<fun::FunapiError> &error)
     {
       if (type == fun::TransportEventType::kStarted) {
       }
@@ -322,13 +326,13 @@ bool FFunapiMulticastTestJson::RunTest(const FString& Parameters)
       }
     });
 
-    funapi_multicast->AddJsonChannelMessageCallback
-    (multicast_test_channel,
-      [&is_ok, &is_working, multicast_test_channel, user_name, &send_function, &send_count]
-    (const std::shared_ptr<fun::FunapiMulticast>& m,
-      const std::string &channel_id,
-      const std::string &sender,
-      const std::string &json_string)
+    funapi_multicast->AddJsonChannelMessageCallback(
+      multicast_test_channel,
+      [&is_ok, &is_working, multicast_test_channel, user_name, &send_function, &send_count](
+        const std::shared_ptr<fun::FunapiMulticast>& m,
+        const std::string &channel_id,
+        const std::string &sender,
+        const std::string &json_string)
     {
       if (sender == user_name) {
         rapidjson::Document msg_recv;
@@ -362,7 +366,7 @@ bool FFunapiMulticastTestJson::RunTest(const FString& Parameters)
   return is_ok;
 }
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiMulticastTestProtobuf, "Funapi.Multicast.Protobuf", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiMulticastTestProtobuf, "Funapi.Multicast.MC_Protobuf", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
 bool FFunapiMulticastTestProtobuf::RunTest(const FString& Parameters)
 {
@@ -378,10 +382,10 @@ bool FFunapiMulticastTestProtobuf::RunTest(const FString& Parameters)
   bool is_ok = false;
   bool is_working = true;
 
-  auto send_function =
-    [](const std::shared_ptr<fun::FunapiMulticast>& m,
-      const std::string &channel_id,
-      int number)
+  auto send_function = [](
+    const std::shared_ptr<fun::FunapiMulticast>& m,
+    const std::string &channel_id,
+    int number)
   {
     std::stringstream ss;
     ss << number;
@@ -400,17 +404,18 @@ bool FFunapiMulticastTestProtobuf::RunTest(const FString& Parameters)
     std::string user_name = ss_sender.str();
 
     auto funapi_multicast =
-      fun::FunapiMulticast::Create(user_name.c_str(),
+      fun::FunapiMulticast::Create(
+        user_name.c_str(),
         server_ip.c_str(),
         port,
         encoding,
         with_session_reliability);
 
-    funapi_multicast->AddJoinedCallback
-    ([user_name, &multicast_test_channel, &send_function]
-    (const std::shared_ptr<fun::FunapiMulticast>& m,
-      const std::string &channel_id,
-      const std::string &sender)
+    funapi_multicast->AddJoinedCallback(
+      [user_name, &multicast_test_channel, &send_function](
+        const std::shared_ptr<fun::FunapiMulticast>& m,
+        const std::string &channel_id,
+        const std::string &sender)
     {
       // send
       if (channel_id == multicast_test_channel) {
@@ -420,16 +425,17 @@ bool FFunapiMulticastTestProtobuf::RunTest(const FString& Parameters)
       }
     });
 
-    funapi_multicast->AddLeftCallback
-    ([](const std::shared_ptr<fun::FunapiMulticast>& m,
-      const std::string &channel_id, const std::string &sender)
+    funapi_multicast->AddLeftCallback(
+      [](
+        const std::shared_ptr<fun::FunapiMulticast>& m,
+        const std::string &channel_id, const std::string &sender)
     {
     });
 
-    funapi_multicast->AddErrorCallback
-    ([&is_working, &is_ok]
-    (const std::shared_ptr<fun::FunapiMulticast>& m,
-      int error)
+    funapi_multicast->AddErrorCallback(
+      [&is_working, &is_ok](
+        const std::shared_ptr<fun::FunapiMulticast>& m,
+        int error)
     {
       // EC_ALREADY_JOINED = 1,
       // EC_ALREADY_LEFT,
@@ -442,23 +448,23 @@ bool FFunapiMulticastTestProtobuf::RunTest(const FString& Parameters)
       verify(is_ok);
     });
 
-    funapi_multicast->AddSessionEventCallback
-    ([&is_ok, &is_working, &multicast_test_channel]
-    (const std::shared_ptr<fun::FunapiMulticast>& m,
-      const fun::SessionEventType type,
-      const std::string &session_id,
-      const std::shared_ptr<fun::FunapiError> &error)
+    funapi_multicast->AddSessionEventCallback(
+      [&is_ok, &is_working, &multicast_test_channel](
+        const std::shared_ptr<fun::FunapiMulticast>& m,
+        const fun::SessionEventType type,
+        const std::string &session_id,
+        const std::shared_ptr<fun::FunapiError> &error)
     {
       if (type == fun::SessionEventType::kOpened) {
         m->JoinChannel(multicast_test_channel);
       }
     });
 
-    funapi_multicast->AddTransportEventCallback
-    ([&is_ok, &is_working]
-    (const std::shared_ptr<fun::FunapiMulticast>& m,
-      const fun::TransportEventType type,
-      const std::shared_ptr<fun::FunapiError> &error)
+    funapi_multicast->AddTransportEventCallback(
+      [&is_ok, &is_working](
+        const std::shared_ptr<fun::FunapiMulticast>& m,
+        const fun::TransportEventType type,
+        const std::shared_ptr<fun::FunapiError> &error)
     {
       if (type == fun::TransportEventType::kStarted) {
       }
@@ -481,13 +487,13 @@ bool FFunapiMulticastTestProtobuf::RunTest(const FString& Parameters)
       }
     });
 
-    funapi_multicast->AddProtobufChannelMessageCallback
-    (multicast_test_channel,
-      [&is_ok, &is_working, &multicast_test_channel, user_name, &send_function, &send_count]
-    (const std::shared_ptr<fun::FunapiMulticast> &m,
-      const std::string &channel_id,
-      const std::string &sender,
-      const FunMessage& message)
+    funapi_multicast->AddProtobufChannelMessageCallback(
+      multicast_test_channel,
+      [&is_ok, &is_working, &multicast_test_channel, user_name, &send_function, &send_count](
+        const std::shared_ptr<fun::FunapiMulticast> &m,
+        const std::string &channel_id,
+        const std::string &sender,
+        const FunMessage& message)
     {
       if (sender == user_name) {
         FunMulticastMessage mcast_msg = message.GetExtension(multicast);
@@ -575,9 +581,539 @@ bool FFunapiSessionTestRecvTimeout::RunTest(const FString& Parameters)
 
   while (is_working) {
     session->Update();
+    std::this_thread::sleep_for(std::chrono::milliseconds(16)); // 60fps
   }
 
   session->Close();
+
+  return is_ok;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestReliabilityJson, "Funapi.SessionReliability.SR_Json", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
+
+bool FFunapiSessionTestReliabilityJson::RunTest(const FString& Parameters)
+{
+  int send_count = 100;
+  std::string server_ip = g_server_ip;
+  fun::FunEncoding encoding = fun::FunEncoding::kJson;
+  uint16_t port = 8212;
+  bool with_session_reliability = true;
+
+  auto send_function =[](
+    const std::shared_ptr<fun::FunapiSession>& s,
+    int number)
+  {
+    rapidjson::Document msg;
+    msg.SetObject();
+
+    std::stringstream ss;
+    ss << number;
+
+    std::string temp_messsage = ss.str();
+    rapidjson::Value message_node(temp_messsage.c_str(), msg.GetAllocator());
+    msg.AddMember(rapidjson::StringRef("message"), message_node, msg.GetAllocator());
+
+    // Convert JSON document to string
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    msg.Accept(writer);
+    std::string json_string = buffer.GetString();
+
+    s->SendMessage("echo", json_string);
+  };
+
+  auto session = fun::FunapiSession::Create(server_ip.c_str(), with_session_reliability);
+  bool is_ok = true;
+  bool is_working = true;
+
+  session->AddSessionEventCallback(
+    [&send_function](
+      const std::shared_ptr<fun::FunapiSession> &s,
+      const fun::TransportProtocol protocol,
+      const fun::SessionEventType type,
+      const std::string &session_id,
+      const std::shared_ptr<fun::FunapiError> &error)
+  {
+    if (type == fun::SessionEventType::kOpened) {
+      send_function(s, 0);
+    }
+  });
+
+  session->AddTransportEventCallback(
+    [&is_ok, &is_working](
+      const std::shared_ptr<fun::FunapiSession> &s,
+      const fun::TransportProtocol protocol,
+      const fun::TransportEventType type,
+      const std::shared_ptr<fun::FunapiError> &error)
+  {
+    if (type == fun::TransportEventType::kConnectionFailed) {
+      is_ok = false;
+      is_working = false;
+    }
+    else if (type == fun::TransportEventType::kConnectionTimedOut) {
+      is_ok = false;
+      is_working = false;
+    }
+
+    verify(type != fun::TransportEventType::kConnectionFailed);
+    verify(type != fun::TransportEventType::kConnectionTimedOut);
+  });
+
+  session->AddJsonRecvCallback(
+    [&is_working, &is_ok, &send_function, &send_count](
+      const std::shared_ptr<fun::FunapiSession> &s,
+      const fun::TransportProtocol protocol,
+      const std::string &msg_type, const std::string &json_string)
+  {
+    if (msg_type.compare("echo") == 0) {
+      rapidjson::Document msg_recv;
+      msg_recv.Parse<0>(json_string.c_str());
+
+      verify(msg_recv.HasMember("message"));
+
+      std::string recv_string = msg_recv["message"].GetString();
+      int number = atoi(recv_string.c_str());
+
+      if (number >= send_count) {
+        is_ok = true;
+        is_working = false;
+      }
+      else {
+        send_function(s, number + 1);
+      }
+    }
+  });
+
+  session->Connect(fun::TransportProtocol::kTcp, port, encoding);
+
+  while (is_working) {
+    session->Update();
+    std::this_thread::sleep_for(std::chrono::milliseconds(16)); // 60fps
+  }
+
+  session->Close();
+
+  return is_ok;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestReliabilityProtobuf, "Funapi.SessionReliability.SR_Protobuf", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
+
+bool FFunapiSessionTestReliabilityProtobuf::RunTest(const FString& Parameters)
+{
+  int send_count = 100;
+  std::string server_ip = g_server_ip;
+  fun::FunEncoding encoding = fun::FunEncoding::kProtobuf;
+  uint16_t port = 8222;
+  bool with_session_reliability = true;
+
+  auto send_function = [](
+    const std::shared_ptr<fun::FunapiSession>& s,
+    int number)
+  {
+    std::stringstream ss;
+    ss << number;
+
+    // send
+    FunMessage msg;
+    msg.set_msgtype("pbuf_echo");
+    PbufEchoMessage *echo = msg.MutableExtension(pbuf_echo);
+    echo->set_msg(ss.str().c_str());
+    s->SendMessage(msg);
+  };
+
+  auto session = fun::FunapiSession::Create(server_ip.c_str(), with_session_reliability);
+  bool is_ok = true;
+  bool is_working = true;
+
+  session->AddSessionEventCallback(
+    [&send_function](
+      const std::shared_ptr<fun::FunapiSession> &s,
+      const fun::TransportProtocol protocol,
+      const fun::SessionEventType type,
+      const std::string &session_id,
+      const std::shared_ptr<fun::FunapiError> &error)
+  {
+    if (type == fun::SessionEventType::kOpened) {
+      send_function(s, 0);
+    }
+  });
+
+  session->AddTransportEventCallback(
+    [&is_ok, &is_working](
+      const std::shared_ptr<fun::FunapiSession> &s,
+      const fun::TransportProtocol protocol,
+      const fun::TransportEventType type,
+      const std::shared_ptr<fun::FunapiError> &error)
+  {
+    if (type == fun::TransportEventType::kConnectionFailed) {
+      is_ok = false;
+      is_working = false;
+    }
+    else if (type == fun::TransportEventType::kConnectionTimedOut) {
+      is_ok = false;
+      is_working = false;
+    }
+
+    verify(type != fun::TransportEventType::kConnectionFailed);
+    verify(type != fun::TransportEventType::kConnectionTimedOut);
+  });
+
+  session->AddProtobufRecvCallback(
+    [&is_working, &is_ok, &send_function, &send_count](
+      const std::shared_ptr<fun::FunapiSession> &s,
+      const fun::TransportProtocol transport_protocol,
+      const FunMessage &fun_message)
+  {
+    if (fun_message.msgtype().compare("pbuf_echo") == 0) {
+      PbufEchoMessage echo = fun_message.GetExtension(pbuf_echo);
+
+      int number = atoi(echo.msg().c_str());
+      if (number >= send_count) {
+        is_ok = true;
+        is_working = false;
+      }
+      else {
+        send_function(s, number + 1);
+      }
+    }
+    else {
+      is_ok = false;
+      is_working = false;
+      verify(is_ok);
+    }
+  });
+
+  session->Connect(fun::TransportProtocol::kTcp, port, encoding);
+
+  while (is_working) {
+    session->Update();
+    std::this_thread::sleep_for(std::chrono::milliseconds(16)); // 60fps
+  }
+
+  session->Close();
+
+  return is_ok;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMulticastReliabilityJson, "Funapi.Multicast.MC_SR_Json", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
+
+bool FFunapiSessionTestMulticastReliabilityJson::RunTest(const FString& Parameters) {
+  int user_count = 10;
+  int send_count = 100;
+  std::string server_ip = g_server_ip;
+  fun::FunEncoding encoding = fun::FunEncoding::kJson;
+  uint16_t port = 8312;
+  bool with_session_reliability = true;
+  std::string multicast_test_channel = "MulticastReliability";
+
+  std::vector<std::shared_ptr<fun::FunapiMulticast>> v_multicast;
+  bool is_ok = false;
+  bool is_working = true;
+
+  auto send_function =[](
+    const std::shared_ptr<fun::FunapiMulticast>& m,
+    const std::string &channel_id,
+    int number)
+  {
+    rapidjson::Document msg;
+    msg.SetObject();
+
+    std::stringstream ss;
+    ss << number;
+
+    std::string temp_messsage = ss.str();
+    rapidjson::Value message_node(temp_messsage.c_str(), msg.GetAllocator());
+    msg.AddMember(rapidjson::StringRef("message"), message_node, msg.GetAllocator());
+
+    // Convert JSON document to string
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    msg.Accept(writer);
+    std::string json_string = buffer.GetString();
+
+    m->SendToChannel(channel_id, json_string);
+  };
+
+  for (int i = 0; i<user_count; ++i) {
+    std::stringstream ss_sender;
+    ss_sender << "user" << i;
+    std::string user_name = ss_sender.str();
+
+    auto funapi_multicast = fun::FunapiMulticast::Create(
+      user_name.c_str(),
+      server_ip.c_str(),
+      port,
+      encoding,
+      with_session_reliability);
+
+    funapi_multicast->AddJoinedCallback(
+      [user_name, multicast_test_channel, &send_function](
+        const std::shared_ptr<fun::FunapiMulticast>& m,
+        const std::string &channel_id,
+        const std::string &sender)
+    {
+      // send
+      if (channel_id == multicast_test_channel) {
+        if (sender == user_name) {
+          send_function(m, channel_id, 0);
+        }
+      }
+    });
+
+    funapi_multicast->AddLeftCallback([](
+      const std::shared_ptr<fun::FunapiMulticast>& m,
+      const std::string &channel_id,
+      const std::string &sender)
+    {
+    });
+
+    funapi_multicast->AddErrorCallback(
+      [&is_working, &is_ok](
+        const std::shared_ptr<fun::FunapiMulticast>& m,
+        int error)
+    {
+      // EC_ALREADY_JOINED = 1,
+      // EC_ALREADY_LEFT,
+      // EC_FULL_MEMBER
+      // EC_CLOSED
+
+      is_ok = false;
+      is_working = false;
+
+      verify(is_ok);
+    });
+
+    funapi_multicast->AddSessionEventCallback(
+      [&is_ok, &is_working, multicast_test_channel](
+        const std::shared_ptr<fun::FunapiMulticast>& m,
+        const fun::SessionEventType type,
+        const std::string &session_id,
+        const std::shared_ptr<fun::FunapiError> &error)
+    {
+      if (type == fun::SessionEventType::kOpened) {
+        m->JoinChannel(multicast_test_channel);
+      }
+    });
+
+    funapi_multicast->AddTransportEventCallback
+    ([&is_ok, &is_working](
+      const std::shared_ptr<fun::FunapiMulticast>& m,
+      const fun::TransportEventType type,
+      const std::shared_ptr<fun::FunapiError> &error)
+    {
+      if (type == fun::TransportEventType::kStarted) {
+      }
+      else if (type == fun::TransportEventType::kStopped) {
+      }
+      else if (type == fun::TransportEventType::kConnectionFailed) {
+        is_ok = false;
+        is_working = false;
+        verify(is_ok);
+      }
+      else if (type == fun::TransportEventType::kConnectionTimedOut) {
+        is_ok = false;
+        is_working = false;
+        verify(is_ok);
+      }
+      else if (type == fun::TransportEventType::kDisconnected) {
+        is_ok = false;
+        is_working = false;
+        verify(is_ok);
+      }
+    });
+
+    funapi_multicast->AddJsonChannelMessageCallback(
+      multicast_test_channel,
+      [&is_ok, &is_working, multicast_test_channel, user_name, &send_function, &send_count](
+        const std::shared_ptr<fun::FunapiMulticast>& m,
+        const std::string &channel_id,
+        const std::string &sender,
+        const std::string &json_string)
+    {
+      if (sender == user_name) {
+        rapidjson::Document msg_recv;
+        msg_recv.Parse<0>(json_string.c_str());
+
+        verify(msg_recv.HasMember("message"));
+
+        std::string recv_string = msg_recv["message"].GetString();
+        int number = atoi(recv_string.c_str());
+
+        if (number >= send_count) {
+          is_ok = true;
+          is_working = false;
+        }
+        else {
+          send_function(m, channel_id, number + 1);
+        }
+      }
+    });
+
+    funapi_multicast->Connect();
+
+    v_multicast.push_back(funapi_multicast);
+  }
+
+  while (is_working) {
+    fun::FunapiTasks::UpdateAll();
+    std::this_thread::sleep_for(std::chrono::milliseconds(16)); // 60fps
+  }
+
+  return is_ok;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMulticastReliabilityProtobuf, "Funapi.Multicast.MC_SR_Protobuf", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
+
+bool FFunapiSessionTestMulticastReliabilityProtobuf::RunTest(const FString& Parameters) {
+  int user_count = 10;
+  int send_count = 100;
+  std::string server_ip = g_server_ip;
+  fun::FunEncoding encoding = fun::FunEncoding::kProtobuf;
+  uint16_t port = 8322;
+  bool with_session_reliability = true;
+  std::string multicast_test_channel = "MulticastReliability";
+
+  std::vector<std::shared_ptr<fun::FunapiMulticast>> v_multicast;
+  bool is_ok = false;
+  bool is_working = true;
+
+  auto send_function =[](
+    const std::shared_ptr<fun::FunapiMulticast>& m,
+    const std::string &channel_id,
+    int number)
+  {
+    std::stringstream ss;
+    ss << number;
+
+    FunMessage msg;
+    FunMulticastMessage* mcast_msg = msg.MutableExtension(multicast);
+    FunChatMessage *chat_msg = mcast_msg->MutableExtension(chat);
+    chat_msg->set_text(ss.str());
+
+    m->SendToChannel(channel_id, msg, true);
+  };
+
+  for (int i = 0; i<user_count; ++i) {
+    std::stringstream ss_sender;
+    ss_sender << "user" << i;
+    std::string user_name = ss_sender.str();
+
+    auto funapi_multicast = fun::FunapiMulticast::Create(
+      user_name.c_str(),
+      server_ip.c_str(),
+      port,
+      encoding,
+      with_session_reliability);
+
+    funapi_multicast->AddJoinedCallback(
+      [user_name, &multicast_test_channel, &send_function](
+        const std::shared_ptr<fun::FunapiMulticast>& m,
+        const std::string &channel_id,
+        const std::string &sender)
+    {
+      // send
+      if (channel_id == multicast_test_channel) {
+        if (sender == user_name) {
+          send_function(m, channel_id, 0);
+        }
+      }
+    });
+
+    funapi_multicast->AddLeftCallback(
+      [](
+        const std::shared_ptr<fun::FunapiMulticast>& m,
+        const std::string &channel_id, const std::string &sender)
+    {
+    });
+
+    funapi_multicast->AddErrorCallback(
+      [&is_working, &is_ok](
+        const std::shared_ptr<fun::FunapiMulticast>& m,
+        int error)
+    {
+      // EC_ALREADY_JOINED = 1,
+      // EC_ALREADY_LEFT,
+      // EC_FULL_MEMBER
+      // EC_CLOSED
+
+      is_ok = false;
+      is_working = false;
+
+      verify(is_ok);
+    });
+
+    funapi_multicast->AddSessionEventCallback(
+      [&is_ok, &is_working, &multicast_test_channel](
+        const std::shared_ptr<fun::FunapiMulticast>& m,
+        const fun::SessionEventType type,
+        const std::string &session_id,
+        const std::shared_ptr<fun::FunapiError> &error)
+    {
+      if (type == fun::SessionEventType::kOpened) {
+        m->JoinChannel(multicast_test_channel);
+      }
+    });
+
+    funapi_multicast->AddTransportEventCallback(
+      [&is_ok, &is_working](
+        const std::shared_ptr<fun::FunapiMulticast>& m,
+        const fun::TransportEventType type,
+        const std::shared_ptr<fun::FunapiError> &error)
+    {
+      if (type == fun::TransportEventType::kStarted) {
+      }
+      else if (type == fun::TransportEventType::kStopped) {
+      }
+      else if (type == fun::TransportEventType::kConnectionFailed) {
+        is_ok = false;
+        is_working = false;
+        verify(is_ok);
+      }
+      else if (type == fun::TransportEventType::kConnectionTimedOut) {
+        is_ok = false;
+        is_working = false;
+        verify(is_ok);
+      }
+      else if (type == fun::TransportEventType::kDisconnected) {
+        is_ok = false;
+        is_working = false;
+        verify(is_ok);
+      }
+    });
+
+    funapi_multicast->AddProtobufChannelMessageCallback(
+      multicast_test_channel,
+      [&is_ok, &is_working, &multicast_test_channel, user_name, &send_function, &send_count](
+        const std::shared_ptr<fun::FunapiMulticast> &m,
+        const std::string &channel_id,
+        const std::string &sender,
+        const FunMessage& message)
+    {
+      if (sender == user_name) {
+        FunMulticastMessage mcast_msg = message.GetExtension(multicast);
+        FunChatMessage chat_msg = mcast_msg.GetExtension(chat);
+
+        int number = atoi(chat_msg.text().c_str());
+
+        if (number >= send_count) {
+          is_ok = true;
+          is_working = false;
+        }
+        else {
+          send_function(m, channel_id, number + 1);
+        }
+      }
+    });
+
+    funapi_multicast->Connect();
+
+    v_multicast.push_back(funapi_multicast);
+  }
+
+  while (is_working) {
+    fun::FunapiTasks::UpdateAll();
+    std::this_thread::sleep_for(std::chrono::milliseconds(16)); // 60fps
+  }
 
   return is_ok;
 }

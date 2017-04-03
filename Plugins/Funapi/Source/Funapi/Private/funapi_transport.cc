@@ -103,7 +103,7 @@ class FunapiTcpTransportOptionImpl : public FunapiTransportOptionImpl {
   const std::string& GetPublicKey();
 
  private:
-  bool disable_nagle_ = false;
+  bool disable_nagle_ = true;
   bool auto_reconnect_ = false;
   bool enable_ping_ = false;
   bool sequence_number_validation_ = false;

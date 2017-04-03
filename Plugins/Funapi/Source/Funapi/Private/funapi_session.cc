@@ -1278,7 +1278,7 @@ class FunapiTcpTransport : public FunapiTransport {
   bool header_decoded_ = false;
   HeaderFields header_fields_;
 
-  bool disable_nagle_ = false;
+  bool disable_nagle_ = true;
   bool auto_reconnect_ = false;
   bool enable_ping_ = false;
 

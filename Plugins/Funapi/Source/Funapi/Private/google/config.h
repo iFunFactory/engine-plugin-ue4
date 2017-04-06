@@ -34,7 +34,7 @@
 
 /* define if you want to use zlib.  See readme.txt for additional
  * requirements. */
-// #define HAVE_ZLIB 1
+#define HAVE_ZLIB 0
 
 
 #else
@@ -121,7 +121,7 @@
 #define HAVE_UNISTD_H 1
 
 /* Enable classes using zlib compression. */
-#define HAVE_ZLIB 1
+#define HAVE_ZLIB 0
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
  */

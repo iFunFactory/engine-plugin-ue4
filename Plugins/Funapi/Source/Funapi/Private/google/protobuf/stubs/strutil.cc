@@ -1206,11 +1206,11 @@ char* DoubleToBuffer(double value, char* buffer) {
   // truncated to a double.
   volatile double parsed_value = strtod(buffer, NULL);
   if (parsed_value != value) {
-    int snprintf_result =
+    int snprintf_result2 =
       snprintf(buffer, kDoubleToBufferSize, "%.*g", DBL_DIG+2, value);
 
     // Should never overflow; see above.
-    GOOGLE_DCHECK(snprintf_result > 0 && snprintf_result < kDoubleToBufferSize);
+    GOOGLE_DCHECK(snprintf_result2 > 0 && snprintf_result2 < kDoubleToBufferSize);
   }
 
   DelocalizeRadix(buffer);
@@ -1255,11 +1255,11 @@ char* FloatToBuffer(float value, char* buffer) {
 
   float parsed_value;
   if (!safe_strtof(buffer, &parsed_value) || parsed_value != value) {
-    int snprintf_result =
+    int snprintf_result2 =
       snprintf(buffer, kFloatToBufferSize, "%.*g", FLT_DIG+2, value);
 
     // Should never overflow; see above.
-    GOOGLE_DCHECK(snprintf_result > 0 && snprintf_result < kFloatToBufferSize);
+    GOOGLE_DCHECK(snprintf_result2 > 0 && snprintf_result2 < kFloatToBufferSize);
   }
 
   DelocalizeRadix(buffer);

@@ -32,7 +32,7 @@
 //
 // Contains basic types and utilities used by the rest of the library.
 
-#if _MSC_VER >= 1300
+#if defined(_MSC_VER) && _MSC_VER >= 1300
 #ifndef _PS3
 #pragma warning(push)
 #pragma warning(disable : 4530)	// warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc (disabled due to std headers having exception syntax)
@@ -61,6 +61,7 @@
 #include <stdint.h>
 #endif
 
+/*
 #ifndef PROTOBUF_USE_EXCEPTIONS
 #if defined(_MSC_VER) && defined(_CPPUNWIND)
   #define PROTOBUF_USE_EXCEPTIONS 1
@@ -70,6 +71,8 @@
   #define PROTOBUF_USE_EXCEPTIONS 0
 #endif
 #endif
+*/
+#define PROTOBUF_USE_EXCEPTIONS 0
 
 #if PROTOBUF_USE_EXCEPTIONS
 #include <exception>
@@ -109,15 +112,16 @@ inline BOOL GetMessage(
 #else // defined(_WIN32)
 #ifndef DLLEXPORT
 #define DLLEXPORT
-#endif 
+#endif
 #ifndef DLLIMPORT
 #define DLLIMPORT
-#endif 
+#endif
 #ifndef FUNAPI_API
 #define FUNAPI_API
-#endif 
-#define GOOGLE_PROTOBUF_NO_RTTI 1
+#endif
 #endif // defined(_WIN32)
+
+#define GOOGLE_PROTOBUF_NO_RTTI 1
 
 #define LIBPROTOBUF_EXPORT FUNAPI_API
 #define LIBPROTOC_EXPORT FUNAPI_API

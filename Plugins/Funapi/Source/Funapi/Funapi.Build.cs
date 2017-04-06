@@ -38,10 +38,6 @@ namespace UnrealBuildTool.Rules
 			PrivateDependencyModuleNames.AddRange(
 				new string[]
 				{
-                    "Core",
-                    "Engine",
-                    // "Json"
-                    // "Http"
 					// ... add private dependencies that you statically link with here ...
 				}
             );
@@ -53,16 +49,15 @@ namespace UnrealBuildTool.Rules
 				}
             );
 
+            // definitions
+            Definitions.Add("RAPIDJSON_HAS_STDSTRING=0");
+
             // Third party library
             var ThirdPartyPath = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "ThirdParty/"));
 
             // include path
             PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include"));
             // PublicIncludePaths.Add(Path.GetFullPath(Path.Combine(ModuleDirectory, "funapi")));
-
-            // definitions
-            Definitions.Add("GOOGLE_PROTOBUF_NO_RTTI=1");
-            Definitions.Add("PROTOBUF_USE_EXCEPTIONS=0");
 
             // library
             var LibPath = ThirdPartyPath;

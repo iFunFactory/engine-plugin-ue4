@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -6,10 +6,18 @@
 
 #include "funapi_plugin.h"
 #include "funapi_utils.h"
+
+#ifdef FUNAPI_COCOS2D
 #include "md5/md5.h"
+#endif
+
+#ifdef FUNAPI_UE4
+#include "SecureHash.h"
+#endif
 
 namespace fun {
 
+#ifdef FUNAPI_COCOS2D
 std::string FunapiUtil::MD5String(const std::string &file_name, bool use_front) {
   const size_t read_buffer_size = 1048576; // 1024*1024
   const size_t md5_buffer_size = 16;
@@ -45,6 +53,47 @@ std::string FunapiUtil::MD5String(const std::string &file_name, bool use_front) 
 
   return ret;
 }
+#endif // FUNAPI_COCOS2D
+
+
+#ifdef FUNAPI_UE4
+std::string FunapiUtil::MD5String(const std::string &file_name, bool use_front) {
+  const size_t read_buffer_size = 1048576; // 1024*1024
+  const size_t md5_buffer_size = 16;
+  std::vector<unsigned char> buffer(read_buffer_size);
+  std::vector<unsigned char> md5_buffer(read_buffer_size);
+  std::string ret;
+  size_t length;
+  FMD5 md5;
+
+  FILE *fp = fopen(file_name.c_str(), "rb");
+  if (!fp) {
+    return std::string("");
+  }
+
+  if (use_front) {
+    length = fread(buffer.data(), 1, read_buffer_size, fp);
+    md5.Update(buffer.data(), length);
+  }
+  else {
+    while ((length = fread(buffer.data(), 1, read_buffer_size, fp)) != 0) {
+      md5.Update(buffer.data(), length);
+    }
+  }
+
+  md5.Final(md5_buffer.data());
+
+  fclose(fp);
+
+  char c[3];
+  for (int i = 0; i<md5_buffer_size; ++i) {
+    sprintf(c, "%02x", md5_buffer[i]);
+    ret.append(c);
+  }
+
+  return ret;
+}
+#endif // FUNAPI_UE4
 
 
 std::string FunapiUtil::StringFromBytes(const std::string &uuid_str) {

@@ -8,6 +8,8 @@ namespace UnrealBuildTool.Rules
 	{
 		public Funapi(TargetInfo Target)
 		{
+            Definitions.Add("WITH_FUNAPI=1");
+
             PublicIncludePaths.AddRange(
 				new string[] {
 					// ... add public include paths required here ...

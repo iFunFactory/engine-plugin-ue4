@@ -41,6 +41,25 @@ enum class FUNAPI_API TransportEventType : int {
 };
 
 
+class FunapiSessionOptionImpl;
+class FUNAPI_API FunapiSessionOption : public std::enable_shared_from_this<FunapiSessionOption> {
+ public:
+  FunapiSessionOption();
+  virtual ~FunapiSessionOption() = default;
+
+  static std::shared_ptr<FunapiSessionOption> Create();
+
+  void SetSessionReliability(const bool reliability);
+  bool GetSessionReliability();
+
+  void SetSendSessionIdOnlyOnce(const bool once);
+  bool GetSendSessionIdOnlyOnce();
+
+ private:
+  std::shared_ptr<FunapiSessionOptionImpl> impl_;
+};
+
+
 class FunapiSessionImpl;
 class FUNAPI_API FunapiSession : public std::enable_shared_from_this<FunapiSession> {
  public:
@@ -71,11 +90,13 @@ class FUNAPI_API FunapiSession : public std::enable_shared_from_this<FunapiSessi
                                                                const std::string&)> TransportOptionHandler;
 
   FunapiSession() = delete;
-  FunapiSession(const char* hostname_or_ip, bool reliability = false);
+  FunapiSession(const char* hostname_or_ip, std::shared_ptr<FunapiSessionOption> option);
   virtual ~FunapiSession();
 
   static std::shared_ptr<FunapiSession> Create(const char* hostname_or_ip,
                                                bool reliability = false);
+  static std::shared_ptr<FunapiSession> Create(const char* hostname_or_ip,
+                                               std::shared_ptr<FunapiSessionOption> option);
 
   void Connect(const TransportProtocol protocol,
                int port,

@@ -267,7 +267,7 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   typedef FunapiSession::TransportOptionHandler TransportOptionHandler;
 
   FunapiSessionImpl() = delete;
-  FunapiSessionImpl(const char* hostname_or_ip, bool reliability = false);
+  FunapiSessionImpl(const char* hostname_or_ip, std::shared_ptr<FunapiSessionOption> option);
   virtual ~FunapiSessionImpl();
 
   void Connect(const std::weak_ptr<FunapiSession>& session, const TransportProtocol protocol, int port, FunEncoding encoding, std::shared_ptr<FunapiTransportOption> option = nullptr);
@@ -393,7 +393,6 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
     bool priority = false);
 
   bool started_;
-  bool session_reliability_ = false;
 
   std::vector<std::shared_ptr<FunapiTransport>> transports_;
   mutable std::mutex transports_mutex_;
@@ -441,6 +440,8 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   static std::mutex vec_sessions_mutex_;
 
   std::shared_ptr<FunapiThread> network_thread_ = nullptr;
+
+  std::shared_ptr<FunapiSessionOption> session_option_ = nullptr;
 };
 
 
@@ -488,6 +489,8 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
 
   virtual int GetSocket();
   virtual void OnSelect(const fd_set rset, const fd_set wset, const fd_set eset);
+
+  void SetSendSessionIdOnlyOnce(const bool once);
 
  protected:
   void PushNetworkThreadTask(const FunapiThread::TaskHandler &handler);
@@ -569,6 +572,9 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
   void SetSeq(std::shared_ptr<FunapiMessage> message);
   void SetSessionId(std::shared_ptr<FunapiMessage> message);
 
+  bool UseSendSessionIdOnlyOnce();
+  bool first_set_session_id_ = true;
+
  private:
   TransportState state_ = TransportState::kDisconnected;
   std::mutex state_mutex_;
@@ -577,6 +583,8 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
   bool first_sending_ = true;
 
   std::shared_ptr<FunapiSessionId> session_id_ = nullptr;
+
+  bool use_send_session_id_only_once_ = false;
 };
 
 
@@ -734,7 +742,21 @@ void FunapiTransport::SetSeq(std::shared_ptr<FunapiMessage> message) {
 }
 
 
+void FunapiTransport::SetSendSessionIdOnlyOnce(const bool once) {
+  use_send_session_id_only_once_ = once;
+}
+
+
+bool FunapiTransport::UseSendSessionIdOnlyOnce() {
+  return use_send_session_id_only_once_;
+}
+
+
 void FunapiTransport::SetSessionId(std::shared_ptr<FunapiMessage> message) {
+  if (UseSendSessionIdOnlyOnce() && false == first_set_session_id_) {
+    return;
+  }
+
   std::string session_id = GetSessionId();
 
   if (!session_id.empty()) {
@@ -750,6 +772,10 @@ void FunapiTransport::SetSessionId(std::shared_ptr<FunapiMessage> message) {
     else if (encoding == FunEncoding::kProtobuf) {
       auto &msg = message->GetProtobufMessage();
       msg.set_sid(session_id);
+    }
+
+    if (first_set_session_id_) {
+      first_set_session_id_ = false;
     }
   }
 }
@@ -1506,6 +1532,13 @@ void FunapiTcpTransport::Connect() {
   // Tries to connect.
   DebugUtils::Log("Try to tcp connect to server - %s %d", hostname_or_ip_.c_str(), port_);
 
+  if (GetSessionId().empty()) {
+    first_set_session_id_ = false;
+  }
+  else {
+    first_set_session_id_ = true;
+  }
+
   tcp_ = FunapiTcp::Create();
   std::weak_ptr<FunapiTransport> weak = shared_from_this();
   tcp_->Connect(hostname_or_ip_.c_str(),
@@ -1764,6 +1797,7 @@ void FunapiUdpTransport::Start() {
   PushNetworkThreadTask([weak, this]()->bool {
     if (!weak.expired()) {
       if (auto t = weak.lock()) {
+        first_set_session_id_ = true;
         udp_ = FunapiUdp::Create
         (hostname_or_ip_.c_str(),
          port_,
@@ -2302,8 +2336,8 @@ void FunapiSessionImpl::Add(std::shared_ptr<FunapiSessionImpl> s) {
 
 
 FunapiSessionImpl::FunapiSessionImpl(const char* hostname_or_ip,
-                                     const bool reliability)
-  : session_reliability_(reliability), hostname_or_ip_(hostname_or_ip), token_("") {
+                                     std::shared_ptr<FunapiSessionOption> option)
+: hostname_or_ip_(hostname_or_ip), token_(""), session_option_(option) {
   Initialize();
 }
 
@@ -2415,6 +2449,8 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
     if (protocol == TransportProtocol::kTcp) {
       transport = FunapiTcpTransport::Create(shared_from_this(), hostname_or_ip_, static_cast<uint16_t>(port), encoding);
 
+      transport->SetSendSessionIdOnlyOnce(session_option_->GetSendSessionIdOnlyOnce());
+
       if (option) {
         tcp_option_ = std::static_pointer_cast<FunapiTcpTransportOption>(option);
         auto tcp_transport = std::static_pointer_cast<FunapiTcpTransport>(transport);
@@ -2429,6 +2465,8 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
     }
     else if (protocol == fun::TransportProtocol::kUdp) {
       transport = FunapiUdpTransport::Create(shared_from_this(), hostname_or_ip_, static_cast<uint16_t>(port), encoding);
+
+      transport->SetSendSessionIdOnlyOnce(session_option_->GetSendSessionIdOnlyOnce());
 
       if (option) {
         udp_option_ = std::static_pointer_cast<FunapiUdpTransportOption>(option);
@@ -2668,27 +2706,29 @@ void FunapiSessionImpl::OnTransportReceived(const TransportProtocol protocol,
     session_id = proto.sid();
   }
 
-  std::string session_id_old = GetSessionId(encoding);
-  if (session_id_old.empty()) {
-    SetSessionId(session_id, encoding);
-    DebugUtils::Log("New session id: %s", GetSessionId(FunEncoding::kJson).c_str());
-  }
-  else if (session_id_old.compare(session_id) != 0) {
-    if (session_id_old.length() != session_id.length() && encoding == FunEncoding::kProtobuf) {
+  if (session_id.length() > 0) {
+    std::string session_id_old = GetSessionId(encoding);
+    if (session_id_old.empty()) {
       SetSessionId(session_id, encoding);
+      DebugUtils::Log("New session id: %s", GetSessionId(FunEncoding::kJson).c_str());
     }
-    else {
-      std::string old_string = GetSessionId(FunEncoding::kJson);
-      SetSessionId(session_id, encoding);
+    else if (session_id_old.compare(session_id) != 0) {
+      if (session_id_old.length() != session_id.length() && encoding == FunEncoding::kProtobuf) {
+        SetSessionId(session_id, encoding);
+      }
+      else {
+        std::string old_string = GetSessionId(FunEncoding::kJson);
+        SetSessionId(session_id, encoding);
 
-      std::string new_string = GetSessionId(FunEncoding::kJson);
-      DebugUtils::Log("Session id changed: %s => %s", old_string.c_str(), new_string.c_str());
+        std::string new_string = GetSessionId(FunEncoding::kJson);
+        DebugUtils::Log("Session id changed: %s => %s", old_string.c_str(), new_string.c_str());
 
-      OnSessionEvent(protocol, SessionEventType::kChanged, new_string, nullptr);
+        OnSessionEvent(protocol, SessionEventType::kChanged, new_string, nullptr);
+      }
     }
   }
 
-  if (session_reliability_) {
+  if (session_option_->GetSessionReliability()) {
     if (msg_type.empty())
       return;
   }
@@ -3357,7 +3397,7 @@ void FunapiSessionImpl::SendRedirectConenectMessage(const TransportProtocol prot
 
 
 bool FunapiSessionImpl::IsReliableSession() const {
-  return session_reliability_;
+  return session_option_->GetSessionReliability();
 }
 
 
@@ -3446,8 +3486,8 @@ void FunapiSessionImpl::PushNetworkThreadTask(const FunapiThread::TaskHandler &h
 // FunapiSession implementation.
 
 
-FunapiSession::FunapiSession(const char* hostname_or_ip, bool reliability)
-: impl_(std::make_shared<FunapiSessionImpl>(hostname_or_ip, reliability)) {
+FunapiSession::FunapiSession(const char* hostname_or_ip, std::shared_ptr<FunapiSessionOption> option)
+: impl_(std::make_shared<FunapiSessionImpl>(hostname_or_ip, option)) {
   FunapiSessionImpl::Add(impl_);
 }
 
@@ -3458,8 +3498,17 @@ FunapiSession::~FunapiSession() {
 
 
 std::shared_ptr<FunapiSession> FunapiSession::Create(const char* hostname_or_ip,
+                                                     std::shared_ptr<FunapiSessionOption> option) {
+  return std::make_shared<FunapiSession>(hostname_or_ip, option);
+}
+
+
+std::shared_ptr<FunapiSession> FunapiSession::Create(const char* hostname_or_ip,
                                                      bool reliability) {
-  return std::make_shared<FunapiSession>(hostname_or_ip, reliability);
+  auto option = FunapiSessionOption::Create();
+  option->SetSessionReliability(reliability);
+
+  return FunapiSession::Create(hostname_or_ip, option);
 }
 
 
@@ -3581,6 +3630,77 @@ void FunapiSession::SetTransportOptionCallback(const TransportOptionHandler &han
 
 void FunapiSession::UpdateAll() {
   FunapiSessionImpl::UpdateAll();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// FunapiSessionOptionImpl implementation.
+
+class FunapiSessionOptionImpl : public std::enable_shared_from_this<FunapiSessionOptionImpl> {
+ public:
+  FunapiSessionOptionImpl() = default;
+  virtual ~FunapiSessionOptionImpl() = default;
+
+  void SetSessionReliability(const bool reliability);
+  bool GetSessionReliability();
+
+  void SetSendSessionIdOnlyOnce(const bool once);
+  bool GetSendSessionIdOnlyOnce();
+
+ private:
+  bool use_session_reliability_ = false;
+  bool use_send_session_id_only_once_ = false;
+};
+
+
+void FunapiSessionOptionImpl::SetSessionReliability(const bool reliability) {
+  use_session_reliability_ = reliability;
+}
+
+
+bool FunapiSessionOptionImpl::GetSessionReliability() {
+  return use_session_reliability_;
+}
+
+
+void FunapiSessionOptionImpl::SetSendSessionIdOnlyOnce(const bool once) {
+  use_send_session_id_only_once_ = once;
+}
+
+
+bool FunapiSessionOptionImpl::GetSendSessionIdOnlyOnce() {
+  return use_send_session_id_only_once_;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// FunapiSessionOption implementation.
+
+FunapiSessionOption::FunapiSessionOption ()
+: impl_(std::make_shared<FunapiSessionOptionImpl>()) {
+}
+
+
+std::shared_ptr<FunapiSessionOption> FunapiSessionOption::Create() {
+  return std::make_shared<FunapiSessionOption>();
+}
+
+
+void FunapiSessionOption::SetSessionReliability(const bool reliability) {
+  impl_->SetSessionReliability(reliability);
+}
+
+
+bool FunapiSessionOption::GetSessionReliability() {
+  return impl_->GetSessionReliability();
+}
+
+
+void FunapiSessionOption::SetSendSessionIdOnlyOnce(const bool once) {
+  impl_->SetSendSessionIdOnlyOnce(once);
+}
+
+
+bool FunapiSessionOption::GetSendSessionIdOnlyOnce() {
+  return impl_->GetSendSessionIdOnlyOnce();
 }
 
 }  // namespace fun

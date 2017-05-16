@@ -69,6 +69,7 @@
 #include <sstream>
 #include <string>
 #include <functional>
+#include <algorithm>
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiLibProtobufEncodedDescriptorDatabaseExtraTest, "LibProtobuf.EncodedDescriptorDatabaseExtraTest", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 

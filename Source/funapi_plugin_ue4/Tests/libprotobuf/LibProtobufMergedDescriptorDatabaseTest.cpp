@@ -61,6 +61,7 @@
 #include <sstream>
 #include <string>
 #include <functional>
+#include <algorithm>
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiLibProtobufMergedDescriptorDatabaseTest, "LibProtobuf.MergedDescriptorDatabaseTest", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 

@@ -23,7 +23,6 @@ std::string FunapiUtil::MD5String(const std::string &file_name, bool use_front) 
   const size_t md5_buffer_size = 16;
   std::vector<unsigned char> buffer(read_buffer_size);
   std::vector<unsigned char> md5(md5_buffer_size);
-  std::string ret;
   size_t length;
 
   FILE *fp = fopen(file_name.c_str(), "rb");
@@ -45,10 +44,10 @@ std::string FunapiUtil::MD5String(const std::string &file_name, bool use_front) 
   MD5_Final(md5.data(), &ctx);
   fclose(fp);
 
-  char c[3];
-  for (int i = 0; i<md5_buffer_size; ++i) {
+  std::string ret(md5_buffer_size*2, 0);
+  char* c = const_cast<char*>(ret.data());
+  for (int i = 0; i<md5_buffer_size; ++i, c+=2) {
     sprintf(c, "%02x", md5[i]);
-    ret.append(c);
   }
 
   return ret;
@@ -62,7 +61,6 @@ std::string FunapiUtil::MD5String(const std::string &file_name, bool use_front) 
   const size_t md5_buffer_size = 16;
   std::vector<unsigned char> buffer(read_buffer_size);
   std::vector<unsigned char> md5_buffer(read_buffer_size);
-  std::string ret;
   size_t length;
   FMD5 md5;
 
@@ -85,10 +83,10 @@ std::string FunapiUtil::MD5String(const std::string &file_name, bool use_front) 
 
   fclose(fp);
 
-  char c[3];
-  for (int i = 0; i<md5_buffer_size; ++i) {
+  std::string ret(md5_buffer_size*2, 0);
+  char* c = const_cast<char*>(ret.data());
+  for (int i = 0; i<md5_buffer_size; ++i, c+=2) {
     sprintf(c, "%02x", md5_buffer[i]);
-    ret.append(c);
   }
 
   return ret;

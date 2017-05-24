@@ -86,6 +86,9 @@ class FUNAPI_API FunapiSession : public std::enable_shared_from_this<FunapiSessi
   typedef std::function<void(const std::shared_ptr<FunapiSession>&,
                              const std::string&)> RecvTimeoutHandler;
 
+  typedef std::function<void(const std::shared_ptr<FunapiSession>&,
+                             const int32_t)> RecvTimeoutIntHandler;
+
   typedef std::function<std::shared_ptr<FunapiTransportOption>(const TransportProtocol,
                                                                const std::string&)> TransportOptionHandler;
 
@@ -134,6 +137,10 @@ class FUNAPI_API FunapiSession : public std::enable_shared_from_this<FunapiSessi
   void AddRecvTimeoutCallback(const RecvTimeoutHandler &handler);
   void SetRecvTimeout(const std::string &msg_type, const int seconds);
   void EraseRecvTimeout(const std::string &msg_type);
+
+  void AddRecvTimeoutCallback(const RecvTimeoutIntHandler &handler);
+  void SetRecvTimeout(const int32_t msg_type, const int seconds);
+  void EraseRecvTimeout(const int32_t msg_type);
 
   void SetTransportOptionCallback(const TransportOptionHandler &handler);
 

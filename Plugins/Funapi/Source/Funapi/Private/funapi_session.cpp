@@ -264,6 +264,7 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   typedef FunapiSession::ProtobufRecvHandler ProtobufRecvHandler;
   typedef FunapiSession::JsonRecvHandler JsonRecvHandler;
   typedef FunapiSession::RecvTimeoutHandler RecvTimeoutHandler;
+  typedef FunapiSession::RecvTimeoutIntHandler RecvTimeoutIntHandler;
   typedef FunapiSession::TransportOptionHandler TransportOptionHandler;
 
   FunapiSessionImpl() = delete;
@@ -307,8 +308,11 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   FunEncoding GetEncoding(const TransportProtocol protocol) const;
 
   void AddRecvTimeoutCallback(const RecvTimeoutHandler &handler);
+  void AddRecvTimeoutCallback(const RecvTimeoutIntHandler &handler);
   void SetRecvTimeout(const std::string &msg_type, const int seconds);
+  void SetRecvTimeout(const int32_t msg_type, const int seconds);
   void EraseRecvTimeout(const std::string &msg_type);
+  void EraseRecvTimeout(const int32_t msg_type);
 
   void SetTransportOptionCallback(const TransportOptionHandler &handler);
 
@@ -414,6 +418,7 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   FunapiEvent<TransportEventHandler> on_transport_event_;
 
   FunapiEvent<RecvTimeoutHandler> on_recv_timeout_;
+  FunapiEvent<RecvTimeoutIntHandler> on_recv_timeout_int_;
 
   std::string hostname_or_ip_;
   std::weak_ptr<FunapiSession> session_;
@@ -421,10 +426,12 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   std::vector<TransportProtocol> v_protocols_ = { TransportProtocol::kTcp, TransportProtocol::kHttp, TransportProtocol::kUdp };
 
   std::unordered_map<std::string, std::shared_ptr<FunapiTimer>> m_recv_timeout_;
+  std::unordered_map<int32_t, std::shared_ptr<FunapiTimer>> m_recv_timeout_int_;
   std::mutex m_recv_timeout_mutex_;
 
   void CheckRecvTimeout();
   void OnRecvTimeout(const std::string &msg_type);
+  void OnRecvTimeout(const int32_t msg_type);
 
   std::string token_;
 
@@ -2684,6 +2691,7 @@ void FunapiSessionImpl::OnTransportReceived(const TransportProtocol protocol,
                                             const std::shared_ptr<FunapiMessage> message) {
   std::string msg_type;
   std::string session_id;
+  int32_t msg_type2 = 0;
 
   if (encoding == FunEncoding::kJson) {
     rapidjson::Document &json = message->GetJsonDocumenet();
@@ -2702,8 +2710,17 @@ void FunapiSessionImpl::OnTransportReceived(const TransportProtocol protocol,
   } else if (encoding == FunEncoding::kProtobuf) {
     FunMessage &proto = message->GetProtobufMessage();
 
-    msg_type = proto.msgtype();
-    session_id = proto.sid();
+    if (proto.has_msgtype()) {
+      msg_type = proto.msgtype();
+    }
+
+    if (proto.has_sid()) {
+      session_id = proto.sid();
+    }
+
+    if (proto.has_msgtype2()) {
+      msg_type2 = proto.msgtype2();
+    }
   }
 
   if (session_id.length() > 0) {
@@ -2729,11 +2746,16 @@ void FunapiSessionImpl::OnTransportReceived(const TransportProtocol protocol,
   }
 
   if (session_option_->GetSessionReliability()) {
-    if (msg_type.empty())
+    if (msg_type.empty() && 0 == msg_type2)
       return;
   }
 
-  EraseRecvTimeout(msg_type);
+  if (!msg_type.empty()) {
+    EraseRecvTimeout(msg_type);
+  }
+  else if (msg_type2 != 0) {
+    EraseRecvTimeout(msg_type2);
+  }
 
   MessageHandlerMap::iterator it = message_handlers_.find(msg_type);
   if (it != message_handlers_.end()) {
@@ -3393,9 +3415,20 @@ void FunapiSessionImpl::AddRecvTimeoutCallback(const RecvTimeoutHandler &handler
 }
 
 
+void FunapiSessionImpl::AddRecvTimeoutCallback(const RecvTimeoutIntHandler &handler) {
+  on_recv_timeout_int_ += handler;
+}
+
+
 void FunapiSessionImpl::SetRecvTimeout(const std::string &msg_type, const int seconds) {
   std::unique_lock<std::mutex> lock(m_recv_timeout_mutex_);
   m_recv_timeout_[msg_type] = std::make_shared<FunapiTimer>(seconds);
+}
+
+
+void FunapiSessionImpl::SetRecvTimeout(const int32_t msg_type, const int seconds) {
+  std::unique_lock<std::mutex> lock(m_recv_timeout_mutex_);
+  m_recv_timeout_int_[msg_type] = std::make_shared<FunapiTimer>(seconds);
 }
 
 
@@ -3405,8 +3438,15 @@ void FunapiSessionImpl::EraseRecvTimeout(const std::string &msg_type) {
 }
 
 
+void FunapiSessionImpl::EraseRecvTimeout(const int32_t msg_type) {
+  std::unique_lock<std::mutex> lock(m_recv_timeout_mutex_);
+  m_recv_timeout_int_.erase(msg_type);
+}
+
+
 void FunapiSessionImpl::CheckRecvTimeout() {
   std::vector<std::string> msg_types;
+  std::vector<int32_t> msg_types2;
 
   {
     std::unique_lock<std::mutex> lock(m_recv_timeout_mutex_);
@@ -3424,6 +3464,23 @@ void FunapiSessionImpl::CheckRecvTimeout() {
   for (auto t : msg_types) {
     OnRecvTimeout(t);
   }
+
+  {
+    std::unique_lock<std::mutex> lock(m_recv_timeout_mutex_);
+    for (auto i : m_recv_timeout_int_) {
+      if (i.second->IsExpired()) {
+        msg_types2.push_back(i.first);
+      }
+    }
+
+    for (auto t : msg_types2) {
+      m_recv_timeout_int_.erase(t);
+    }
+  }
+
+  for (auto t : msg_types2) {
+    OnRecvTimeout(t);
+  }
 }
 
 
@@ -3431,6 +3488,16 @@ void FunapiSessionImpl::OnRecvTimeout(const std::string &msg_type) {
   PushTaskQueue([this, msg_type]()->bool {
     if (auto s = session_.lock()) {
       on_recv_timeout_(s, msg_type);
+    }
+    return true;
+  });
+}
+
+
+void FunapiSessionImpl::OnRecvTimeout(const int32_t msg_type) {
+  PushTaskQueue([this, msg_type]()->bool {
+    if (auto s = session_.lock()) {
+      on_recv_timeout_int_(s, msg_type);
     }
     return true;
   });
@@ -3606,6 +3673,21 @@ void FunapiSession::SetRecvTimeout(const std::string &msg_type, const int second
 
 
 void FunapiSession::EraseRecvTimeout(const std::string &msg_type) {
+  impl_->EraseRecvTimeout(msg_type);
+}
+
+
+void FunapiSession::AddRecvTimeoutCallback(const RecvTimeoutIntHandler &handler) {
+  impl_->AddRecvTimeoutCallback(handler);
+}
+
+
+void FunapiSession::SetRecvTimeout(const int32_t msg_type, const int seconds) {
+  impl_->SetRecvTimeout(msg_type, seconds);
+}
+
+
+void FunapiSession::EraseRecvTimeout(const int32_t msg_type) {
   impl_->EraseRecvTimeout(msg_type);
 }
 

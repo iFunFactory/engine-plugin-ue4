@@ -146,6 +146,13 @@ class FUNAPI_API FunMessage : public ::google::protobuf::Message {
   inline bool urgent() const;
   inline void set_urgent(bool value);
 
+  // optional int32 msgtype2 = 6;
+  inline bool has_msgtype2() const;
+  inline void clear_msgtype2();
+  static const int kMsgtype2FieldNumber = 6;
+  inline ::google::protobuf::int32 msgtype2() const;
+  inline void set_msgtype2(::google::protobuf::int32 value);
+
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(FunMessage)
   // @@protoc_insertion_point(class_scope:FunMessage)
  private:
@@ -159,6 +166,8 @@ class FUNAPI_API FunMessage : public ::google::protobuf::Message {
   inline void clear_has_ack();
   inline void set_has_urgent();
   inline void clear_has_urgent();
+  inline void set_has_msgtype2();
+  inline void clear_has_msgtype2();
 
   ::google::protobuf::internal::ExtensionSet _extensions_;
 
@@ -171,6 +180,7 @@ class FUNAPI_API FunMessage : public ::google::protobuf::Message {
   ::google::protobuf::uint32 seq_;
   ::google::protobuf::uint32 ack_;
   bool urgent_;
+  ::google::protobuf::int32 msgtype2_;
   friend void FUNAPI_API protobuf_AddDesc_funapi_2fnetwork_2ffun_5fmessage_2eproto();
   friend void protobuf_AssignDesc_funapi_2fnetwork_2ffun_5fmessage_2eproto();
   friend void protobuf_ShutdownFile_funapi_2fnetwork_2ffun_5fmessage_2eproto();
@@ -409,6 +419,29 @@ inline void FunMessage::set_urgent(bool value) {
   // @@protoc_insertion_point(field_set:FunMessage.urgent)
 }
 
+// optional int32 msgtype2 = 6;
+inline bool FunMessage::has_msgtype2() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void FunMessage::set_has_msgtype2() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void FunMessage::clear_has_msgtype2() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void FunMessage::clear_msgtype2() {
+  msgtype2_ = 0;
+  clear_has_msgtype2();
+}
+inline ::google::protobuf::int32 FunMessage::msgtype2() const {
+  // @@protoc_insertion_point(field_get:FunMessage.msgtype2)
+  return msgtype2_;
+}
+inline void FunMessage::set_msgtype2(::google::protobuf::int32 value) {
+  set_has_msgtype2();
+  msgtype2_ = value;
+  // @@protoc_insertion_point(field_set:FunMessage.msgtype2)
+}
 
 // @@protoc_insertion_point(namespace_scope)
 

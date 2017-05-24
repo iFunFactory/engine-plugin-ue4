@@ -21,6 +21,7 @@ message FunMessage {
   optional uint32 seq = 3;
   optional uint32 ack = 4;
   optional bool urgent = 5;
+  optional int32 msgtype2 = 6;
 
   ////////////////////////////////////////////////////////////////////
   // CAUTION: EXTENSIONS FROM 8 THROUGH 15 ARE RESERVED BY THE ENGINE.

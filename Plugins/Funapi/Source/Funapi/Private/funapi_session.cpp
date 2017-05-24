@@ -2756,6 +2756,10 @@ void FunapiSessionImpl::OnSessionOpen(const TransportProtocol protocol,
                                       const std::shared_ptr<FunapiMessage> message) {
   OnSessionEvent(protocol, SessionEventType::kOpened, GetSessionId(FunEncoding::kJson), nullptr);
 
+  if (IsRedirecting()) {
+    SendRedirectConenectMessage(protocol, token_);
+  }
+
   for (size_t i=1;i<connect_protocols_.size();++i) {
     if (auto transport = GetTransport(connect_protocols_[i])) {
       transport->Start();
@@ -2987,7 +2991,7 @@ void FunapiSessionImpl::OnRedirectConnectMessage(const TransportProtocol protoco
   FunRedirectConnectMessage_Result result = redirect->result();
 
   if (result == FunRedirectConnectMessage_Result_OK) {
-     token_ = "";
+    token_ = "";
     OnSessionEvent(protocol, SessionEventType::kRedirectSucceeded, GetSessionId(FunEncoding::kJson), nullptr);
   }
   else {
@@ -3192,28 +3196,6 @@ void FunapiSessionImpl::OnTransportStarted(const TransportProtocol protocol) {
     SendEmptyMessage(protocol);
   }
 
-  if (IsRedirecting()) {
-    bool is_started = true;
-    for (auto p : connect_protocols_) {
-      if (auto t = GetTransport(p)) {
-        if (!t->IsStarted()) {
-          is_started = false;
-        }
-      }
-      else {
-        is_started = false;
-      }
-
-      if (is_started == false) {
-        break;
-      }
-    }
-
-    if (is_started) {
-      SendRedirectConenectMessage(connect_protocols_[0], token_);
-    }
-  }
-
   OnTransportEvent(protocol, TransportEventType::kStarted);
 
   tasks_->Set([this]()->bool{
@@ -3376,6 +3358,11 @@ void FunapiSessionImpl::SendRedirectConenectMessage(const TransportProtocol prot
     msg.SetObject();
     rapidjson::Value message_node(token.c_str(), msg.GetAllocator());
     msg.AddMember("token", message_node, msg.GetAllocator());
+
+    // Encodes a messsage type.
+    rapidjson::Value msg_type_node;
+    msg_type_node.SetString(rapidjson::StringRef(kRedirectConnectMessageType), msg.GetAllocator());
+    msg.AddMember(rapidjson::StringRef(kMessageTypeAttributeName), msg_type_node, msg.GetAllocator());
 
     message = FunapiMessage::Create(msg);
   }

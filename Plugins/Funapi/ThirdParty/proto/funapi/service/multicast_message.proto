@@ -18,6 +18,8 @@ message FunMulticastMessage {
     EC_ALREADY_LEFT = 2;
     EC_FULL_MEMBER = 3;
     EC_CLOSED = 4;
+    EC_INVALID_TOKEN = 5;
+    EC_CANNOT_CREATE_CHANNEL = 6;
   }
 
   optional string channel = 1;
@@ -27,13 +29,14 @@ message FunMulticastMessage {
   optional string sender = 5;
   optional ErrorCode error_code = 6;
   repeated FunMulticastChannelListMessage channels = 7;
+  optional string token = 8;
 
   ////////////////////////////////////////////////////////////////////
   // GAME SHOULD EXTEND FunMultiCastMessage.
-  // Field numbers from 8 to 15 are reserved.
+  // Field numbers from 10 to 15 are reserved.
   // Game must use from 16.
   ////////////////////////////////////////////////////////////////////
-  extensions 8 to max;
+  extensions 10 to max;
 }
 
 
@@ -43,7 +46,7 @@ message FunChatMessage {
 
 
 extend FunMulticastMessage {
-  optional FunChatMessage chat = 8;
+  optional FunChatMessage chat = 10;
 }
 
 

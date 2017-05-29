@@ -79,7 +79,7 @@ public:
   bool IsConnected() const;
   bool IsInChannel(const std::string &channel_id) const;
 
-  bool JoinChannel(const std::string &channel_id);
+  bool JoinChannel(const std::string &channel_id, const std::string &token = "");
 
   bool LeaveChannel(const std::string &channel_id);
   bool LeaveAllChannels();

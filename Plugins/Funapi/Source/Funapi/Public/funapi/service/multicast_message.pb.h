@@ -54,11 +54,13 @@ enum FunMulticastMessage_ErrorCode {
   FunMulticastMessage_ErrorCode_EC_ALREADY_JOINED = 1,
   FunMulticastMessage_ErrorCode_EC_ALREADY_LEFT = 2,
   FunMulticastMessage_ErrorCode_EC_FULL_MEMBER = 3,
-  FunMulticastMessage_ErrorCode_EC_CLOSED = 4
+  FunMulticastMessage_ErrorCode_EC_CLOSED = 4,
+  FunMulticastMessage_ErrorCode_EC_INVALID_TOKEN = 5,
+  FunMulticastMessage_ErrorCode_EC_CANNOT_CREATE_CHANNEL = 6
 };
 FUNAPI_API bool FunMulticastMessage_ErrorCode_IsValid(int value);
 const FunMulticastMessage_ErrorCode FunMulticastMessage_ErrorCode_ErrorCode_MIN = FunMulticastMessage_ErrorCode_EC_ALREADY_JOINED;
-const FunMulticastMessage_ErrorCode FunMulticastMessage_ErrorCode_ErrorCode_MAX = FunMulticastMessage_ErrorCode_EC_CLOSED;
+const FunMulticastMessage_ErrorCode FunMulticastMessage_ErrorCode_ErrorCode_MAX = FunMulticastMessage_ErrorCode_EC_CANNOT_CREATE_CHANNEL;
 const int FunMulticastMessage_ErrorCode_ErrorCode_ARRAYSIZE = FunMulticastMessage_ErrorCode_ErrorCode_MAX + 1;
 
 FUNAPI_API const ::google::protobuf::EnumDescriptor* FunMulticastMessage_ErrorCode_descriptor();
@@ -223,6 +225,8 @@ class FUNAPI_API FunMulticastMessage : public ::google::protobuf::Message {
   static const ErrorCode EC_ALREADY_LEFT = FunMulticastMessage_ErrorCode_EC_ALREADY_LEFT;
   static const ErrorCode EC_FULL_MEMBER = FunMulticastMessage_ErrorCode_EC_FULL_MEMBER;
   static const ErrorCode EC_CLOSED = FunMulticastMessage_ErrorCode_EC_CLOSED;
+  static const ErrorCode EC_INVALID_TOKEN = FunMulticastMessage_ErrorCode_EC_INVALID_TOKEN;
+  static const ErrorCode EC_CANNOT_CREATE_CHANNEL = FunMulticastMessage_ErrorCode_EC_CANNOT_CREATE_CHANNEL;
   static inline bool ErrorCode_IsValid(int value) {
     return FunMulticastMessage_ErrorCode_IsValid(value);
   }
@@ -310,6 +314,18 @@ class FUNAPI_API FunMulticastMessage : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::FunMulticastChannelListMessage >*
       mutable_channels();
 
+  // optional string token = 8;
+  inline bool has_token() const;
+  inline void clear_token();
+  static const int kTokenFieldNumber = 8;
+  inline const ::std::string& token() const;
+  inline void set_token(const ::std::string& value);
+  inline void set_token(const char* value);
+  inline void set_token(const char* value, size_t size);
+  inline ::std::string* mutable_token();
+  inline ::std::string* release_token();
+  inline void set_allocated_token(::std::string* token);
+
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(FunMulticastMessage)
   // @@protoc_insertion_point(class_scope:FunMulticastMessage)
  private:
@@ -325,6 +341,8 @@ class FUNAPI_API FunMulticastMessage : public ::google::protobuf::Message {
   inline void clear_has_sender();
   inline void set_has_error_code();
   inline void clear_has_error_code();
+  inline void set_has_token();
+  inline void clear_has_token();
 
   ::google::protobuf::internal::ExtensionSet _extensions_;
 
@@ -339,6 +357,7 @@ class FUNAPI_API FunMulticastMessage : public ::google::protobuf::Message {
   int error_code_;
   ::std::string* sender_;
   ::google::protobuf::RepeatedPtrField< ::FunMulticastChannelListMessage > channels_;
+  ::std::string* token_;
   friend void FUNAPI_API protobuf_AddDesc_funapi_2fservice_2fmulticast_5fmessage_2eproto();
   friend void protobuf_AssignDesc_funapi_2fservice_2fmulticast_5fmessage_2eproto();
   friend void protobuf_ShutdownFile_funapi_2fservice_2fmulticast_5fmessage_2eproto();
@@ -432,7 +451,7 @@ class FUNAPI_API FunChatMessage : public ::google::protobuf::Message {
 };
 // ===================================================================
 
-static const int kChatFieldNumber = 8;
+static const int kChatFieldNumber = 10;
 FUNAPI_API extern ::google::protobuf::internal::ExtensionIdentifier< ::FunMulticastMessage,
     ::google::protobuf::internal::MessageTypeTraits< ::FunChatMessage >, 11, false >
   chat;
@@ -826,6 +845,82 @@ inline ::google::protobuf::RepeatedPtrField< ::FunMulticastChannelListMessage >*
 FunMulticastMessage::mutable_channels() {
   // @@protoc_insertion_point(field_mutable_list:FunMulticastMessage.channels)
   return &channels_;
+}
+
+// optional string token = 8;
+inline bool FunMulticastMessage::has_token() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void FunMulticastMessage::set_has_token() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void FunMulticastMessage::clear_has_token() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline void FunMulticastMessage::clear_token() {
+  if (token_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    token_->clear();
+  }
+  clear_has_token();
+}
+inline const ::std::string& FunMulticastMessage::token() const {
+  // @@protoc_insertion_point(field_get:FunMulticastMessage.token)
+  return *token_;
+}
+inline void FunMulticastMessage::set_token(const ::std::string& value) {
+  set_has_token();
+  if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    token_ = new ::std::string;
+  }
+  token_->assign(value);
+  // @@protoc_insertion_point(field_set:FunMulticastMessage.token)
+}
+inline void FunMulticastMessage::set_token(const char* value) {
+  set_has_token();
+  if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    token_ = new ::std::string;
+  }
+  token_->assign(value);
+  // @@protoc_insertion_point(field_set_char:FunMulticastMessage.token)
+}
+inline void FunMulticastMessage::set_token(const char* value, size_t size) {
+  set_has_token();
+  if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    token_ = new ::std::string;
+  }
+  token_->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:FunMulticastMessage.token)
+}
+inline ::std::string* FunMulticastMessage::mutable_token() {
+  set_has_token();
+  if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    token_ = new ::std::string;
+  }
+  // @@protoc_insertion_point(field_mutable:FunMulticastMessage.token)
+  return token_;
+}
+inline ::std::string* FunMulticastMessage::release_token() {
+  clear_has_token();
+  if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    return NULL;
+  } else {
+    ::std::string* temp = token_;
+    token_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    return temp;
+  }
+}
+inline void FunMulticastMessage::set_allocated_token(::std::string* token) {
+  if (token_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    delete token_;
+  }
+  if (token) {
+    set_has_token();
+    token_ = token;
+  } else {
+    clear_has_token();
+    token_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  // @@protoc_insertion_point(field_set_allocated:FunMulticastMessage.token)
 }
 
 // -------------------------------------------------------------------

@@ -280,10 +280,12 @@ bool Afunapi_tester::CreateMulticast()
     });
     multicast_->AddErrorCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
                                     int error) {
-      // EC_ALREADY_JOINED = 1,
-      // EC_ALREADY_LEFT,
+      // EC_ALREADY_JOINED = 1
+      // EC_ALREADY_LEFT
       // EC_FULL_MEMBER
       // EC_CLOSED
+      // EC_INVALID_TOKEN
+      // EC_CANNOT_CREATE_CHANNEL
     });
     multicast_->AddChannelListCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
                                           const std::map<std::string, int> &cl) {

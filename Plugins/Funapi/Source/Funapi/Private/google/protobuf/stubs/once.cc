@@ -40,7 +40,9 @@
 #ifndef GOOGLE_PROTOBUF_NO_THREAD_SAFETY
 
 #ifdef _WIN32
+#include "AllowWindowsPlatformTypes.h"
 #include <windows.h>
+#include "HideWindowsPlatformTypes.h"
 #else
 #include <sched.h>
 #endif

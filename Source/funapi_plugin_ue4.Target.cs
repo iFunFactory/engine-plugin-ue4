@@ -12,18 +12,11 @@ public class funapi_plugin_ue4Target : TargetRules
     public funapi_plugin_ue4Target(TargetInfo Target)
     {
         Type = TargetType.Game;
+
+        ExtraModuleNames.Add("funapi_plugin_ue4");
     }
 
     //
     // TargetRules interface.
     //
-
-    public override void SetupBinaries(
-        TargetInfo Target,
-        ref List<UEBuildBinaryConfiguration> OutBuildBinaryConfigurations,
-        ref List<string> OutExtraModuleNames
-        )
-    {
-        OutExtraModuleNames.AddRange( new string[] { "funapi_plugin_ue4" } );
-    }
 }

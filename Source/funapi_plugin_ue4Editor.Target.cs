@@ -9,21 +9,14 @@ using System.Collections.Generic;
 
 public class funapi_plugin_ue4EditorTarget : TargetRules
 {
-    public funapi_plugin_ue4EditorTarget(TargetInfo Target)
+    public funapi_plugin_ue4EditorTarget(TargetInfo Target) : base(Target)
     {
         Type = TargetType.Editor;
+
+        ExtraModuleNames.Add("funapi_plugin_ue4");
     }
 
     //
     // TargetRules interface.
     //
-
-    public override void SetupBinaries(
-        TargetInfo Target,
-        ref List<UEBuildBinaryConfiguration> OutBuildBinaryConfigurations,
-        ref List<string> OutExtraModuleNames
-        )
-    {
-        OutExtraModuleNames.AddRange( new string[] { "funapi_plugin_ue4" } );
-    }
 }

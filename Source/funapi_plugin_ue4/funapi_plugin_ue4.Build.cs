@@ -9,7 +9,7 @@ using System.IO;
 
 public class funapi_plugin_ue4 : ModuleRules
 {
-    public funapi_plugin_ue4(TargetInfo Target)
+    public funapi_plugin_ue4(ReadOnlyTargetRules Target) : base(Target)
     {
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
         PublicDependencyModuleNames.AddRange(new string[] { "Json", "UMG" });

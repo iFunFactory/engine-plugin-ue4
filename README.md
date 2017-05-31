@@ -58,3 +58,14 @@ Funapi plugin unreal engine 4
 
 그 외에 플러그인에 대한 문의 사항이나 버그 신고는 <funapi-support@ifunfactory.com> 으로 메일을
 보내주세요.
+
+## 버전별 주요 이슈
+
+아래 설명의 버전보다 낮은 버전의 플러그인을 사용하고 있다면 아래 내용을 참고해 주세요.
+괄호안은 지원하는 서버 버전입니다.
+
+### v62 (2118 experimental)
+멀티캐스트 채널에 token 을 지정할 수 있는 기능 추가
+
+### v61 (2109 experimental)
+Protobuf 의 Message Type 을 String 대신 Integer 를 쓸 수 있는 기능 추가

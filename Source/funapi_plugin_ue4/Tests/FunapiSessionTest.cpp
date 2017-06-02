@@ -1117,3 +1117,185 @@ bool FFunapiSessionTestMulticastReliabilityProtobuf::RunTest(const FString& Para
 
   return is_ok;
 }
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMsgtypeIntegerEchoProtobuf, "Funapi-Experimental.MsgtypeInteger.I_E_Pbuf", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
+
+bool FFunapiSessionTestMsgtypeIntegerEchoProtobuf::RunTest(const FString& Parameters)
+{
+  std::string send_string = "Protobuf Echo Message";
+  std::string server_ip = g_server_ip;
+
+  auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
+  bool is_ok = true;
+  bool is_working = true;
+
+  session->AddSessionEventCallback(
+    [&send_string](
+      const std::shared_ptr<fun::FunapiSession> &s,
+      const fun::TransportProtocol protocol,
+      const fun::SessionEventType type,
+      const std::string &session_id,
+      const std::shared_ptr<fun::FunapiError> &error)
+  {
+    if (type == fun::SessionEventType::kOpened) {
+      // send
+      FunMessage msg;
+      msg.set_msgtype2(pbuf_echo.number());
+      PbufEchoMessage *echo = msg.MutableExtension(pbuf_echo);
+      echo->set_msg(send_string.c_str());
+      s->SendMessage(msg);
+    }
+  });
+
+  session->AddTransportEventCallback(
+    [&is_ok, &is_working](
+      const std::shared_ptr<fun::FunapiSession> &s,
+      const fun::TransportProtocol protocol,
+      const fun::TransportEventType type,
+      const std::shared_ptr<fun::FunapiError> &error)
+  {
+    if (type == fun::TransportEventType::kConnectionFailed) {
+      UE_LOG(LogFunapiExample, Error, TEXT("kConnectionFailed"));
+      is_ok = false;
+      is_working = false;
+    }
+    else if (type == fun::TransportEventType::kConnectionTimedOut) {
+      UE_LOG(LogFunapiExample, Error, TEXT("kConnectionTimedOut"));
+      is_ok = false;
+      is_working = false;
+    }
+  });
+
+  session->AddProtobufRecvCallback(
+    [&is_working, &is_ok, &send_string](
+      const std::shared_ptr<fun::FunapiSession> &funapi_session,
+      const fun::TransportProtocol transport_protocol,
+      const FunMessage &fun_message)
+  {
+    if (fun_message.msgtype2() == pbuf_echo.number()) {
+      PbufEchoMessage echo = fun_message.GetExtension(pbuf_echo);
+
+      if (send_string.compare(echo.msg()) == 0) {
+        is_ok = true;
+      }
+      else {
+        is_ok = false;
+      }
+    }
+    else {
+      is_ok = false;
+    }
+
+    is_working = false;
+  });
+
+  session->Connect(fun::TransportProtocol::kTcp, 8422, fun::FunEncoding::kProtobuf);
+
+  while (is_working) {
+    session->Update();
+    std::this_thread::sleep_for(std::chrono::milliseconds(16)); // 60fps
+  }
+
+  session->Close();
+
+  return is_ok;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMsgtypeIntegerEchoProtobuf2, "Funapi-Experimental.MsgtypeInteger.I_E_Pbuf_2", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
+
+bool FFunapiSessionTestMsgtypeIntegerEchoProtobuf2::RunTest(const FString& Parameters)
+{
+  int send_count = 100;
+  std::string server_ip = g_server_ip;
+  fun::FunEncoding encoding = fun::FunEncoding::kProtobuf;
+  uint16_t port = 8422;
+  bool with_session_reliability = true;
+
+  auto send_function = [](
+    const std::shared_ptr<fun::FunapiSession>& s,
+    int number)
+  {
+    std::stringstream ss;
+    ss << number;
+
+    // send
+    FunMessage msg;
+    msg.set_msgtype2(pbuf_echo.number());
+    PbufEchoMessage *echo = msg.MutableExtension(pbuf_echo);
+    echo->set_msg(ss.str().c_str());
+    s->SendMessage(msg);
+  };
+
+  auto session = fun::FunapiSession::Create(server_ip.c_str(), with_session_reliability);
+  bool is_ok = true;
+  bool is_working = true;
+
+  session->AddSessionEventCallback(
+    [&send_function](
+      const std::shared_ptr<fun::FunapiSession> &s,
+      const fun::TransportProtocol protocol,
+      const fun::SessionEventType type,
+      const std::string &session_id,
+      const std::shared_ptr<fun::FunapiError> &error)
+  {
+    if (type == fun::SessionEventType::kOpened) {
+      send_function(s, 0);
+    }
+  });
+
+  session->AddTransportEventCallback(
+    [&is_ok, &is_working](
+      const std::shared_ptr<fun::FunapiSession> &s,
+      const fun::TransportProtocol protocol,
+      const fun::TransportEventType type,
+      const std::shared_ptr<fun::FunapiError> &error)
+  {
+    if (type == fun::TransportEventType::kConnectionFailed) {
+      is_ok = false;
+      is_working = false;
+    }
+    else if (type == fun::TransportEventType::kConnectionTimedOut) {
+      is_ok = false;
+      is_working = false;
+    }
+
+    verify(type != fun::TransportEventType::kConnectionFailed);
+    verify(type != fun::TransportEventType::kConnectionTimedOut);
+  });
+
+  session->AddProtobufRecvCallback(
+    [&is_working, &is_ok, &send_function, &send_count](
+      const std::shared_ptr<fun::FunapiSession> &s,
+      const fun::TransportProtocol transport_protocol,
+      const FunMessage &fun_message)
+  {
+    if (fun_message.msgtype2() == pbuf_echo.number()) {
+      PbufEchoMessage echo = fun_message.GetExtension(pbuf_echo);
+
+      int number = atoi(echo.msg().c_str());
+      if (number >= send_count) {
+        is_ok = true;
+        is_working = false;
+      }
+      else {
+        send_function(s, number + 1);
+      }
+    }
+    else {
+      is_ok = false;
+      is_working = false;
+      verify(is_ok);
+    }
+  });
+
+  session->Connect(fun::TransportProtocol::kTcp, port, encoding);
+
+  while (is_working) {
+    session->Update();
+    std::this_thread::sleep_for(std::chrono::milliseconds(16)); // 60fps
+  }
+
+  session->Close();
+
+  return is_ok;
+}

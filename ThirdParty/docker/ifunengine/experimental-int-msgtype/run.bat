@@ -1,0 +1,1 @@
+docker run -t --name test-int-msgtype -p 8412:8412 -p 8413:8413/udp -p 8418:8418 -p 8422:8422 -p 8423:8423/udp -p 8428:8428 experimental-int-msgtype

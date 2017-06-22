@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -462,13 +462,20 @@ class FunapiEncryptionImpl : public std::enable_shared_from_this<FunapiEncryptio
   void SetEncryptionType(EncryptionType type);
   void SetEncryptionType(EncryptionType type, const std::string &key);
 
-  bool Encrypt(HeaderFields &header_fields, std::vector<uint8_t> &body);
-  bool Decrypt(HeaderFields &header_fields, std::vector<uint8_t> &body);
+  bool Encrypt(HeaderFields &header_fields,
+               std::vector<uint8_t> &body,
+               const EncryptionType encryption_type);
+  bool Decrypt(HeaderFields &header_fields,
+               std::vector<uint8_t> &body,
+               std::vector<EncryptionType>& encryption_types);
 
   void SetHeaderFieldsForHttpSend (HeaderFields &header_fields);
   void SetHeaderFieldsForHttpRecv (HeaderFields &header_fields);
 
   bool UseSodium();
+  bool HasEncryption(const EncryptionType type);
+  bool IsHandShakeCompleted(const EncryptionType type);
+  bool IsHandShakeCompleted();
 
  private:
   bool CreateEncryptor(const EncryptionType type);
@@ -523,7 +530,8 @@ bool FunapiEncryptionImpl::CreateEncryptor(const EncryptionType type) {
 
 
 bool FunapiEncryptionImpl::Decrypt(HeaderFields &header_fields,
-                                   std::vector<uint8_t> &body) {
+                                   std::vector<uint8_t> &body,
+                                   std::vector<EncryptionType>& encryption_types) {
   std::string encryption_header;
   std::string encryption_str("");
 
@@ -561,14 +569,32 @@ bool FunapiEncryptionImpl::Decrypt(HeaderFields &header_fields,
 
       type = static_cast<EncryptionType>(atoi(encryption_header.substr(begin).c_str()));
       CreateEncryptor(type);
+
+      if (HasEncryption(EncryptionType::kChacha20Encryption)) {
+        encryption_types.push_back(EncryptionType::kChacha20Encryption);
+      }
+      if (HasEncryption(EncryptionType::kAes128Encryption)) {
+        encryption_types.push_back(EncryptionType::kAes128Encryption);
+      }
+      if (false == HasEncryption(EncryptionType::kIFunEngine1Encryption)) {
+        encryption_types.push_back(EncryptionType::kDefaultEncryption);
+      }
+
+    }
+    else {
+      encryption_types.push_back(EncryptionType::kDefaultEncryption);
     }
   }
   else if (encryption_str.length() > 0) {
     EncryptionType type = static_cast<EncryptionType>(atoi(encryption_str.c_str()));
     if (type == EncryptionType::kIFunEngine1Encryption) {
       std::shared_ptr<Encryptor1> e1 = std::static_pointer_cast<Encryptor1>(GetEncryptor(type));
+
       if (e1) {
-        e1->HandShake(encryption_header);
+        if (false == e1->IsHandShakeCompleted()) {
+          encryption_types.push_back(EncryptionType::kIFunEngine1Encryption);
+          e1->HandShake(encryption_header);
+        }
       }
     }
 
@@ -584,8 +610,10 @@ bool FunapiEncryptionImpl::Decrypt(HeaderFields &header_fields,
 }
 
 
-bool FunapiEncryptionImpl::Encrypt(HeaderFields &header_fields, std::vector<uint8_t> &body) {
-  std::shared_ptr<Encryptor> e = GetEncryptor(encryptor_type_);
+bool FunapiEncryptionImpl::Encrypt(HeaderFields &header_fields,
+                                   std::vector<uint8_t> &body,
+                                   const EncryptionType encryption_type) {
+  std::shared_ptr<Encryptor> e = GetEncryptor(encryption_type);
 
   if (e) {
     std::stringstream ss_encryption_type;
@@ -599,6 +627,9 @@ bool FunapiEncryptionImpl::Encrypt(HeaderFields &header_fields, std::vector<uint
 
       ss_encryption_type << "-" << e->GetHandShakeString();
       use_encrypt = false;
+
+      body.resize(0);
+      header_fields[kLengthHeaderField] = "0";
     }
 
     header_fields[kEncryptionHeaderField] = ss_encryption_type.str();
@@ -632,18 +663,22 @@ void FunapiEncryptionImpl::SetEncryptionType(EncryptionType type) {
   std::shared_ptr<Encryptor> e = Encryptor::Create(type);
   if (e) {
     encryptors_[type] = e;
+    encryptor_type_ = type;
   }
 }
 
 
 void FunapiEncryptionImpl::SetEncryptionType(EncryptionType type, const std::string &key) {
-  SetEncryptionType(type);
+  std::shared_ptr<Encryptor> e = Encryptor::Create(type);
+  if (e) {
+    encryptors_[type] = e;
+    encryptor_type_ = type;
 
-  if (key.length() > 0) {
-    auto e = GetEncryptor(type);
-    if (e->GetEncryptionType() == EncryptionType::kChacha20Encryption ||
-        e->GetEncryptionType() == EncryptionType::kAes128Encryption) {
-      e->HandShake(key);
+    if (key.length() > 0) {
+      if (e->GetEncryptionType() == EncryptionType::kChacha20Encryption ||
+          e->GetEncryptionType() == EncryptionType::kAes128Encryption) {
+        e->HandShake(key);
+      }
     }
   }
 }
@@ -655,6 +690,35 @@ bool FunapiEncryptionImpl::UseSodium() {
   }
 
   if (GetEncryptor(EncryptionType::kAes128Encryption)) {
+    return true;
+  }
+
+  return false;
+}
+
+
+bool FunapiEncryptionImpl::IsHandShakeCompleted(const EncryptionType type) {
+  if (auto e = GetEncryptor(type)) {
+    return e->IsHandShakeCompleted();
+  }
+
+  return false;
+}
+
+
+bool FunapiEncryptionImpl::IsHandShakeCompleted() {
+  for (auto iter : encryptors_) {
+    if (false == iter.second->IsHandShakeCompleted()) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+
+bool FunapiEncryptionImpl::HasEncryption(const EncryptionType type) {
+  if (auto e = GetEncryptor(type)) {
     return true;
   }
 
@@ -684,13 +748,17 @@ void FunapiEncryption::SetEncryptionType(EncryptionType type, const std::string 
 }
 
 
-bool FunapiEncryption::Encrypt(HeaderFields &header_fields, std::vector<uint8_t> &body) {
-  return impl_->Encrypt(header_fields, body);
+bool FunapiEncryption::Encrypt(HeaderFields &header_fields,
+                               std::vector<uint8_t> &body,
+                               const EncryptionType encryption_type) {
+  return impl_->Encrypt(header_fields, body, encryption_type);
 }
 
 
-bool FunapiEncryption::Decrypt(HeaderFields &header_fields, std::vector<uint8_t> &body) {
-  return impl_->Decrypt(header_fields, body);
+bool FunapiEncryption::Decrypt(HeaderFields &header_fields,
+                               std::vector<uint8_t> &body,
+                               std::vector<EncryptionType>& encryption_types) {
+  return impl_->Decrypt(header_fields, body, encryption_types);
 }
 
 
@@ -706,6 +774,21 @@ void FunapiEncryption::SetHeaderFieldsForHttpRecv (HeaderFields &header_fields) 
 
 bool FunapiEncryption::UseSodium() {
   return impl_->UseSodium();
+}
+
+
+bool FunapiEncryption::IsHandShakeCompleted(const EncryptionType type) {
+  return impl_->IsHandShakeCompleted(type);
+}
+
+
+bool FunapiEncryption::IsHandShakeCompleted() {
+  return impl_->IsHandShakeCompleted();
+}
+
+
+bool FunapiEncryption::HasEncryption(const EncryptionType type) {
+  return impl_->HasEncryption(type);
 }
 
 }  // namespace fun

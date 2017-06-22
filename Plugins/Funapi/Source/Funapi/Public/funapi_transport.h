@@ -124,8 +124,7 @@ class FUNAPI_API FunapiTransportOption : public std::enable_shared_from_this<Fun
   FunapiTransportOption() = default;
   virtual ~FunapiTransportOption() = default;
 
-  virtual void SetEncryptionType(EncryptionType type) = 0;
-  virtual EncryptionType GetEncryptionType() = 0;
+  virtual void SetEncryptionType(const EncryptionType type) = 0;
 };
 
 
@@ -152,11 +151,11 @@ class FUNAPI_API FunapiTcpTransportOption : public FunapiTransportOption {
   void SetConnectTimeout(const int seconds);
   int GetConnectTimeout();
 
-  void SetEncryptionType(EncryptionType type);
-  EncryptionType GetEncryptionType();
+  void SetEncryptionType(const EncryptionType type);
+  std::vector<EncryptionType> GetEncryptionTypes();
 
-  void SetEncryptionType(EncryptionType type, const std::string &public_key);
-  const std::string& GetPublicKey();
+  void SetEncryptionType(const EncryptionType type, const std::string &public_key);
+  std::string GetPublicKey(const EncryptionType type);
 
  private:
   std::shared_ptr<FunapiTcpTransportOptionImpl> impl_;
@@ -171,7 +170,7 @@ class FUNAPI_API FunapiUdpTransportOption : public FunapiTransportOption {
 
   static std::shared_ptr<FunapiUdpTransportOption> Create();
 
-  void SetEncryptionType(EncryptionType type);
+  void SetEncryptionType(const EncryptionType type);
   EncryptionType GetEncryptionType();
 
  private:
@@ -196,7 +195,7 @@ class FUNAPI_API FunapiHttpTransportOption : public FunapiTransportOption {
   void SetUseHttps(const bool https);
   bool GetUseHttps();
 
-  void SetEncryptionType(EncryptionType type);
+  void SetEncryptionType(const EncryptionType type);
   EncryptionType GetEncryptionType();
 
   void SetCACertFilePath(const std::string &path);

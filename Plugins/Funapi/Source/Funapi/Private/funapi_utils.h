@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -15,14 +15,6 @@
 #endif
 
 namespace fun {
-
-#ifdef FUNAPI_PLATFORM_WINDOWS
-#define ssize_t   size_t
-#define access    _access
-#define snprintf  _snprintf
-#define F_OK      0
-#define mkdir(path, mode)   _mkdir(path)
-#endif
 
 // Function event
 template <typename T>

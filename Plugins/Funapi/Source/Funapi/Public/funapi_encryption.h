@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -36,13 +36,18 @@ class FUNAPI_API FunapiEncryption : public std::enable_shared_from_this<FunapiEn
   void SetEncryptionType(EncryptionType type);
   void SetEncryptionType(EncryptionType type, const std::string &key);
 
-  bool Encrypt(HeaderFields &header_fields, std::vector<uint8_t> &body);
-  bool Decrypt(HeaderFields &header_fields, std::vector<uint8_t> &body);
+  bool Encrypt(HeaderFields &header_fields,
+               std::vector<uint8_t> &body,
+               const EncryptionType encryption_type = EncryptionType::kDefaultEncryption);
+  bool Decrypt(HeaderFields &header_fields, std::vector<uint8_t> &body, std::vector<EncryptionType>& encryption_types);
 
   void SetHeaderFieldsForHttpSend (HeaderFields &header_fields);
   void SetHeaderFieldsForHttpRecv (HeaderFields &header_fields);
 
   bool UseSodium();
+  bool HasEncryption(const EncryptionType type);
+  bool IsHandShakeCompleted(const EncryptionType type);
+  bool IsHandShakeCompleted();
 
  private:
   std::shared_ptr<FunapiEncryptionImpl> impl_;

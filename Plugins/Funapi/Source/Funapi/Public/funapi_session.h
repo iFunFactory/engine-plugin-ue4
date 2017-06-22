@@ -15,6 +15,7 @@
 #include <string>
 
 #include "funapi_transport.h"
+#include "funapi_encryption.h"
 #include "funapi/network/ping_message.pb.h"
 #include "funapi/service/redirect_message.pb.h"
 #include "funapi/management/maintenance_message.pb.h"
@@ -112,10 +113,12 @@ class FUNAPI_API FunapiSession : public std::enable_shared_from_this<FunapiSessi
 
   void SendMessage(const std::string &msg_type,
                    const std::string &json_string,
-                   const TransportProtocol protocol = TransportProtocol::kDefault);
+                   const TransportProtocol protocol = TransportProtocol::kDefault,
+                   const EncryptionType encryption_type = EncryptionType::kDefaultEncryption);
 
   void SendMessage(const FunMessage &message,
-                   const TransportProtocol protocol = TransportProtocol::kDefault);
+                   const TransportProtocol protocol = TransportProtocol::kDefault,
+                   const EncryptionType encryption_type = EncryptionType::kDefaultEncryption);
 
   bool IsConnected(const TransportProtocol protocol) const;
   bool IsConnected() const;

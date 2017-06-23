@@ -1,0 +1,1 @@
+docker run -t --name test-chacha20-reliability -p 8712:8712 -p 8713:8713/udp -p 8718:8718 -p 8722:8722 -p 8723:8723/udp -p 8728:8728 ifunengine-chacha20-reliability

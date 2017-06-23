@@ -1,0 +1,1 @@
+docker run -t --name test-sodium-reliability -p 9012:9012 -p 9013:9013/udp -p 9018:9018 -p 9022:9022 -p 9023:9023/udp -p 9028:9028 ifunengine-sodium-reliability

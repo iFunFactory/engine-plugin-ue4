@@ -13,6 +13,10 @@
 #include "FunapiPrivatePCH.h"
 #endif
 
+#ifdef FUNAPI_COCOS2D
+#include "cocos2d.h"
+#endif
+
 #ifdef FUNAPI_UE4_PLATFORM_WINDOWS
 #include "AllowWindowsPlatformTypes.h"
 #endif

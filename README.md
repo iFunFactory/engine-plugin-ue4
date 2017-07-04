@@ -3,21 +3,23 @@ Funapi plugin unreal engine 4
 
 이 플러그인은 iFun Engine 게임 서버를 사용하는 Unreal Engine 4 사용자를 위한 클라이언트 플러그인입니다.
 
-## 기능
+# 기능
 
 * TCP, UDP, HTTP 프로토콜 사용 가능
 * JSON, Protobuf-net 형식의 메시지 타입 지원
 * ChaCha20, AES-128을 포함한 4종류의 암호화 타입 지원
 * 멀티캐스트, 채팅, 게임내 리소스 다운로드 등 다양한 기능 지원
 
-## 사용방법
+# 다운로드
 
-### 다운로드
 **git clone** 으로 다운 받거나 **zip 파일** 을 다운 받아 압축을 풀고 사용하시면 됩니다.
+
 클라이언트 플러그인 코드는 ``Plugins`` 폴더의 ``Funapi``에 있습니다.
 
-### 테스트 프로젝트
+# 테스트 프로젝트
+
 ``funapi_plugin_ue4.uproject`` 파일을 열면 됩니다.
+
 테스트 코드는 ``funapi_tester.cpp`` 와 ``funapi_tester.h`` 파일에 있습니다.
 
 서버 주소가 로컬로 되어 있으니 서버가 로컬에 있지 않다면
@@ -28,7 +30,7 @@ Funapi plugin unreal engine 4
 서버를 설치하고 아무것도 변경하지 않았다면 기본적으로 TCP, HTTP의 JSON 포트만 열려 있습니다.
 다른 프로토콜과 메시지 타입을 사용하려면 서버와 클라이언트의 포트 번호를 맞춰서 변경하고 테스트하면 됩니다.
 
-### 내 프로젝트에 적용
+# 내 프로젝트에 적용
 ``Plugins`` 폴더의 ``Funapi`` 폴더를 플러그인을 사용할 프로젝트의 ``Plugins`` 폴더로
 복사하면 됩니다.
 
@@ -49,7 +51,7 @@ Funapi plugin unreal engine 4
 
 자세한 사용방법은 샘플과 도움말을 참고해 주세요.
 
-## 도움말
+# 도움말
 
 클라이언트 플러그인의 도움말은 <https://www.ifunfactory.com/engine/documents/reference/ko/client-plugin.html> 를 참고해 주세요.
 
@@ -59,7 +61,7 @@ Funapi plugin unreal engine 4
 그 외에 플러그인에 대한 문의 사항이나 버그 신고는 <funapi-support@ifunfactory.com> 으로 메일을
 보내주세요.
 
-## 버전별 주요 이슈
+# 버전별 주요 이슈
 
 아래 설명의 버전보다 낮은 버전의 플러그인을 사용하고 있다면 아래 내용을 참고해 주세요.
 괄호안은 지원하는 서버 버전입니다.

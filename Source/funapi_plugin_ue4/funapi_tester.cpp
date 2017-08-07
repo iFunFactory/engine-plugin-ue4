@@ -41,7 +41,17 @@ void Afunapi_tester::Tick(float DeltaTime)
 {
   Super::Tick(DeltaTime);
 
-  fun::FunapiTasks::UpdateAll();
+  // fun::FunapiTasks::UpdateAll();
+
+  fun::FunapiSession::UpdateAll();
+
+  if (announcement_) {
+    fun::FunapiAnnouncement::UpdateAll();
+  }
+
+  if (downloader_) {
+    fun::FunapiHttpDownloader::UpdateAll();
+  }
 
   UpdateUI();
 }

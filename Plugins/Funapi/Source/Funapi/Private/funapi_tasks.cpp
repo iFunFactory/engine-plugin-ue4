@@ -25,11 +25,9 @@ class FunapiTasksImpl : public std::enable_shared_from_this<FunapiTasksImpl> {
 
   void Update();
   virtual void Push(const TaskHandler &task);
-  virtual void Set(const TaskHandler &task);
   virtual int Size();
 
  protected:
-  std::shared_ptr<std::function<bool()>> function_ = nullptr;
   std::queue<std::shared_ptr<std::function<bool()>>> queue_;
   std::mutex mutex_;
 };
@@ -46,14 +44,6 @@ FunapiTasksImpl::~FunapiTasksImpl() {
 
 void FunapiTasksImpl::Update() {
   std::shared_ptr<std::function<bool()>> task = nullptr;
-
-  {
-    std::unique_lock<std::mutex> lock(mutex_);
-    task = function_;
-  }
-  if (task) {
-    if ((*task)() == false) return;
-  }
 
   while (true) {
     {
@@ -88,20 +78,6 @@ void FunapiTasksImpl::Push(const TaskHandler &task)
 }
 
 
-void FunapiTasksImpl::Set(const TaskHandler &task)
-{
-  std::unique_lock<std::mutex> lock(mutex_);
-
-  if (task) {
-    auto h = std::make_shared<TaskHandler>(task);
-    function_ = h;
-  }
-  else {
-    function_ = nullptr;
-  }
-}
-
-
 int FunapiTasksImpl::Size()
 {
   std::unique_lock<std::mutex> lock(mutex_);
@@ -128,11 +104,6 @@ std::shared_ptr<FunapiTasks> FunapiTasks::Create() {
 
 void FunapiTasks::Push(const TaskHandler &task) {
   impl_->Push(task);
-}
-
-
-void FunapiTasks::Set(const TaskHandler &task) {
-  impl_->Set(task);
 }
 
 
@@ -163,7 +134,6 @@ class FunapiThreadImpl : public FunapiTasksImpl {
   virtual ~FunapiThreadImpl();
 
   void Push(const TaskHandler &task);
-  void Set(const TaskHandler &task);
   void Join();
 
   std::string GetThreadId();
@@ -210,13 +180,6 @@ void FunapiThreadImpl::Push(const TaskHandler &task)
 }
 
 
-void FunapiThreadImpl::Set(const TaskHandler &task)
-{
-  FunapiTasksImpl::Set(task);
-  condition_.notify_one();
-}
-
-
 void FunapiThreadImpl::JoinThread() {
   run_ = false;
   condition_.notify_all();
@@ -229,7 +192,7 @@ void FunapiThreadImpl::Thread() {
   while (run_) {
     {
       std::unique_lock<std::mutex> lock(mutex_);
-      if (function_ == nullptr && queue_.empty()) {
+      if (queue_.empty()) {
         condition_.wait(mutex_);
       }
     }
@@ -273,11 +236,6 @@ std::shared_ptr<FunapiThread> FunapiThread::Create(const std::string &thread_id)
 
 void FunapiThread::Push(const TaskHandler &task) {
   impl_->Push(task);
-}
-
-
-void FunapiThread::Set(const TaskHandler &task) {
-  impl_->Set(task);
 }
 
 

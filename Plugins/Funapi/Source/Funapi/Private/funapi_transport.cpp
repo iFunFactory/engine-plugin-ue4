@@ -20,44 +20,76 @@ namespace fun {
 
 class FunapiErrorImpl : public std::enable_shared_from_this<FunapiErrorImpl> {
  public:
+  typedef FunapiError::ErrorType ErrorType;
   typedef FunapiError::ErrorCode ErrorCode;
 
   FunapiErrorImpl() = delete;
-  FunapiErrorImpl(ErrorCode error_code);
+  FunapiErrorImpl(const ErrorType type,
+                  const int code,
+                  const std::string& error_string);
   ~FunapiErrorImpl() = default;
 
-  ErrorCode GetErrorCode();
+  ErrorType GetErrorType();
+  int GetErrorCode();
+  std::string GetErrorString();
 
  private:
-  ErrorCode error_code_;
+  ErrorType error_type_;
+  int error_code_;
+  std::string error_string_;
 };
 
 
-FunapiErrorImpl::FunapiErrorImpl (ErrorCode error_code)
-: error_code_(error_code) {
+FunapiErrorImpl::FunapiErrorImpl (const ErrorType type, const int code, const std::string& error_string)
+: error_type_(type), error_code_(code), error_string_(error_string) {
 }
 
 
-FunapiError::ErrorCode FunapiErrorImpl::GetErrorCode() {
+FunapiErrorImpl::ErrorType FunapiErrorImpl::GetErrorType() {
+  return error_type_;
+}
+
+
+int FunapiErrorImpl::GetErrorCode() {
   return error_code_;
+}
+
+
+std::string FunapiErrorImpl::GetErrorString() {
+  return error_string_;
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiError implementation.
 
-FunapiError::FunapiError (ErrorCode error_code)
-: impl_(std::make_shared<FunapiErrorImpl>(error_code)) {
+FunapiError::FunapiError (const ErrorType type, const int code, const std::string& error_string)
+: impl_(std::make_shared<FunapiErrorImpl>(type, code, error_string)) {
 }
 
 
-std::shared_ptr<FunapiError> FunapiError::Create(ErrorCode error_code) {
-  return std::make_shared<FunapiError>(error_code);
+std::shared_ptr<FunapiError> FunapiError::Create(const ErrorType type, const int code, const std::string& error_string) {
+  return std::make_shared<FunapiError>(type, code, error_string);
 }
 
 
-FunapiError::ErrorCode FunapiError::GetErrorCode() {
+std::shared_ptr<FunapiError> FunapiError::Create(const ErrorType type, const ErrorCode code) {
+  return std::make_shared<FunapiError>(type, static_cast<int>(code), std::string());
+}
+
+
+FunapiError::ErrorType FunapiError::GetErrorType() {
+  return impl_->GetErrorType();
+}
+
+
+int FunapiError::GetErrorCode() {
   return impl_->GetErrorCode();
+}
+
+
+std::string FunapiError::GetErrorString() {
+  return impl_->GetErrorString();
 }
 
 

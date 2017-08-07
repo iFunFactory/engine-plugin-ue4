@@ -99,6 +99,14 @@ enum class FUNAPI_API EncryptionType : int;
 class FunapiErrorImpl;
 class FUNAPI_API FunapiError : public std::enable_shared_from_this<FunapiError> {
  public:
+  enum class ErrorType : int {
+    kDefault,
+    kRedirect,
+    kSocket,
+    kCurl,
+  };
+
+  // legacy
   enum class ErrorCode : int {
     kNone,
     kRedirectConnectInvalidToken,
@@ -107,12 +115,15 @@ class FUNAPI_API FunapiError : public std::enable_shared_from_this<FunapiError> 
   };
 
   FunapiError() = delete;
-  FunapiError(ErrorCode code);
+  FunapiError(const ErrorType type, const int code, const std::string& error_string);
   virtual ~FunapiError() = default;
 
-  static std::shared_ptr<FunapiError> Create(ErrorCode error_code);
+  static std::shared_ptr<FunapiError> Create(const ErrorType type, const int code, const std::string& error_string = "");
+  static std::shared_ptr<FunapiError> Create(const ErrorType type, const ErrorCode code);
 
-  ErrorCode GetErrorCode();
+  ErrorType GetErrorType();
+  int GetErrorCode();
+  std::string GetErrorString();
 
  private:
   std::shared_ptr<FunapiErrorImpl> impl_;

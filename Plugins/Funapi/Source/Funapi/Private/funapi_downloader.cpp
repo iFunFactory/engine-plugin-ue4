@@ -204,10 +204,8 @@ void FunapiHttpDownloaderImpl::Start(std::weak_ptr<FunapiHttpDownloader> d) {
 
   std::weak_ptr<FunapiHttpDownloaderImpl> weak = shared_from_this();
   thread_->Push([weak, this]()->bool {
-    if (!weak.expired()) {
-      if (auto impl = weak.lock()) {
-        GetDownloadList(url_, path_);
-      }
+    if (auto impl = weak.lock()) {
+      GetDownloadList(url_, path_);
     }
 
     return true;
@@ -379,15 +377,12 @@ void FunapiHttpDownloaderImpl::AddCompletionCallback(const CompletionHandler &ha
 void FunapiHttpDownloaderImpl::OnReady() {
   std::weak_ptr<FunapiHttpDownloaderImpl> weak = shared_from_this();
   tasks_->Push([weak, this]()->bool {
-    if (!weak.expired()) {
-      if (auto impl = weak.lock()) {
-        if (!downloader_.expired()) {
-          if (auto d = downloader_.lock()) {
-            on_ready_(d, info_list_);
-          }
-        }
+    if (auto impl = weak.lock()) {
+      if (auto d = downloader_.lock()) {
+        on_ready_(d, info_list_);
       }
     }
+
     return true;
   });
 }
@@ -396,16 +391,13 @@ void FunapiHttpDownloaderImpl::OnReady() {
 void FunapiHttpDownloaderImpl::OnProgress(const int index, const uint64_t bytes) {
   std::weak_ptr<FunapiHttpDownloaderImpl> weak = shared_from_this();
   tasks_->Push([weak, this, index, bytes]()->bool {
-    if (!weak.expired()) {
-      if (auto impl = weak.lock()) {
-        if (!downloader_.expired()) {
-          if (auto d = downloader_.lock()) {
-            auto info = info_list_[index];
-            on_progress_(d, info_list_, index, max_index_, bytes, info->GetSize());
-          }
-        }
+    if (auto impl = weak.lock()) {
+      if (auto d = downloader_.lock()) {
+        auto info = info_list_[index];
+        on_progress_(d, info_list_, index, max_index_, bytes, info->GetSize());
       }
     }
+
     return true;
   });
 }
@@ -414,15 +406,12 @@ void FunapiHttpDownloaderImpl::OnProgress(const int index, const uint64_t bytes)
 void FunapiHttpDownloaderImpl::OnCompletion(const ResultCode result) {
   std::weak_ptr<FunapiHttpDownloaderImpl> weak = shared_from_this();
   tasks_->Push([weak, this, result]()->bool {
-    if (!weak.expired()) {
-      if (auto impl = weak.lock()) {
-        if (!downloader_.expired()) {
-          if (auto d = downloader_.lock()) {
-            on_completion_(d, info_list_, result);
-          }
-        }
+    if (auto impl = weak.lock()) {
+      if (auto d = downloader_.lock()) {
+        on_completion_(d, info_list_, result);
       }
     }
+
     return true;
   });
 }

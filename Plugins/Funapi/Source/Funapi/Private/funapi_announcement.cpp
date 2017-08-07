@@ -215,13 +215,9 @@ void FunapiAnnouncementImpl::AddCompletionCallback(const CompletionHandler &hand
 void FunapiAnnouncementImpl::OnCompletion(const FunapiAnnouncement::ResultCode result) {
   std::weak_ptr<FunapiAnnouncementImpl> weak = shared_from_this();
   tasks_->Push([weak, this, result]()->bool {
-    if (!weak.expired()) {
-      if (auto impl = weak.lock()) {
-        if (!announcement_.expired()) {
-          if (auto a = announcement_.lock()) {
-            on_completion_(a, info_list_, result);
-          }
-        }
+    if (auto impl = weak.lock()) {
+      if (auto a = announcement_.lock()) {
+        on_completion_(a, info_list_, result);
       }
     }
 
@@ -303,35 +299,37 @@ void FunapiAnnouncementImpl::RequestList(std::weak_ptr<FunapiAnnouncement> a, in
   announcement_ = a;
 
   std::weak_ptr<FunapiAnnouncementImpl> weak = shared_from_this();
-  thread_->Push([weak, this, max_count]()->bool {
-    if (!weak.expired()) {
-      if (auto impl = weak.lock()) {
-        std::stringstream ss_url;
-        ss_url << url_ << "/announcements/?count=" << max_count;
+  thread_->Push([weak, this, max_count]()->bool
+  {
+    if (auto impl = weak.lock()) {
+      std::stringstream ss_url;
+      ss_url << url_ << "/announcements/?count=" << max_count;
 
-        DebugUtils::Log("RequestList - url = %s", ss_url.str().c_str());
+      DebugUtils::Log("RequestList - url = %s", ss_url.str().c_str());
 
-        auto http = FunapiHttp::Create();
-        http->
-        GetRequest(ss_url.str(),
-                   FunapiHttp::HeaderFields(),
-                   [this](const int error_code,
-                          const std::string error_string)
-        {
-          std::stringstream ss_temp;
-          ss_temp << error_code << " " << error_string;
-          DebugUtils::Log ("%s\n", ss_temp.str().c_str());
+      auto http = FunapiHttp::Create();
+      http->GetRequest
+      (ss_url.str(),
+       FunapiHttp::HeaderFields(),
+       [this]
+       (const int error_code,
+        const std::string error_string)
+      {
+        std::stringstream ss_temp;
+        ss_temp << error_code << " " << error_string;
+        DebugUtils::Log ("%s\n", ss_temp.str().c_str());
 
-          OnCompletion(FunapiAnnouncement::ResultCode::kInvalidUrl);
-        }, [this](const std::vector<std::string> &headers,
-                  const std::vector<uint8_t> &v_recv)
-        {
-          std::string temp(v_recv.begin(), v_recv.end());
-          DebugUtils::Log ("%s\n", temp.c_str());
+        OnCompletion(FunapiAnnouncement::ResultCode::kInvalidUrl);
+      },
+       [this]
+       (const std::vector<std::string> &headers,
+        const std::vector<uint8_t> &v_recv)
+      {
+        std::string temp(v_recv.begin(), v_recv.end());
+        DebugUtils::Log ("%s\n", temp.c_str());
 
-          OnAnnouncementInfoList(std::string(v_recv.begin(), v_recv.end()));
-        });
-      }
+        OnAnnouncementInfoList(std::string(v_recv.begin(), v_recv.end()));
+      });
     }
 
     return true;

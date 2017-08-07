@@ -30,18 +30,18 @@ std::string FunapiUtil::MD5String(const std::string &file_name, bool use_front) 
     return std::string("");
   }
 
-  MD5_CTX ctx;
-  MD5_Init(&ctx);
+  md5_state_t ctx;
+  md5_init(&ctx);
   if (use_front) {
     length = fread(buffer.data(), 1, read_buffer_size, fp);
-    MD5_Update(&ctx, buffer.data(), length);
+    md5_append(&ctx, buffer.data(), static_cast<int>(length));
   }
   else {
     while ((length = fread(buffer.data(), 1, read_buffer_size, fp)) != 0) {
-      MD5_Update(&ctx, buffer.data(), length);
+      md5_append(&ctx, buffer.data(), static_cast<int>(length));
     }
   }
-  MD5_Final(md5.data(), &ctx);
+  md5_finish(&ctx, md5.data());
   fclose(fp);
 
   std::string ret(md5_buffer_size*2, 0);

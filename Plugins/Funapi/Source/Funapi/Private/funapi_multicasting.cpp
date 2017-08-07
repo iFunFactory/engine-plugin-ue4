@@ -169,20 +169,18 @@ void FunapiMulticastImpl::AddChannelListCallback(const ChannelListNotify &handle
 }
 
 
-void FunapiMulticastImpl::OnJoined(const std::string &channel_id, const std::string &sender) {
-  if (!multicast_.expired()) {
-    if (auto m = multicast_.lock()) {
-      on_joined_(m, channel_id, sender);
-    }
+void FunapiMulticastImpl::OnJoined(const std::string &channel_id,
+                                   const std::string &sender) {
+  if (auto m = multicast_.lock()) {
+    on_joined_(m, channel_id, sender);
   }
 }
 
 
-void FunapiMulticastImpl::OnLeft(const std::string &channel_id, const std::string &sender) {
-  if (!multicast_.expired()) {
-    if (auto m = multicast_.lock()) {
-      on_left_(m, channel_id, sender);
-    }
+void FunapiMulticastImpl::OnLeft(const std::string &channel_id,
+                                 const std::string &sender) {
+  if (auto m = multicast_.lock()) {
+    on_left_(m, channel_id, sender);
   }
 }
 
@@ -193,19 +191,15 @@ void FunapiMulticastImpl::OnError(const std::string &channel_id, const int error
     channels_.erase(channel_id);
   }
 
-  if (!multicast_.expired()) {
-    if (auto m = multicast_.lock()) {
-      on_error_(m, error);
-    }
+  if (auto m = multicast_.lock()) {
+    on_error_(m, error);
   }
 }
 
 
 void FunapiMulticastImpl::OnChannelList(const std::map<std::string, int> &cl) {
-  if (!multicast_.expired()) {
-    if (auto m = multicast_.lock()) {
-      on_channel_list_(m, cl);
-    }
+  if (auto m = multicast_.lock()) {
+    on_channel_list_(m, cl);
   }
 }
 
@@ -492,10 +486,8 @@ void FunapiMulticastImpl::OnReceived(const std::string &json_string) {
 
   if (OnReceived(channel_id, sender, join, leave, error_code) == false) {
     if (json_channel_handlers_.find(channel_id) != json_channel_handlers_.end()) {
-      if (!multicast_.expired()) {
-        if (auto m = multicast_.lock()) {
-          json_channel_handlers_[channel_id](m, channel_id, sender, json_string);
-        }
+      if (auto m = multicast_.lock()) {
+        json_channel_handlers_[channel_id](m, channel_id, sender, json_string);
       }
     }
   }
@@ -536,10 +528,8 @@ void FunapiMulticastImpl::OnReceived(const FunMessage &message) {
 
   if (OnReceived(channel_id, sender, join, leave, error_code) == false) {
     if (protobuf_channel_handlers_.find(channel_id) != protobuf_channel_handlers_.end()) {
-      if (!multicast_.expired()) {
-        if (auto m = multicast_.lock()) {
-          protobuf_channel_handlers_[channel_id](m, channel_id, sender, message);
-        }
+      if (auto m = multicast_.lock()) {
+        protobuf_channel_handlers_[channel_id](m, channel_id, sender, message);
       }
     }
   }
@@ -612,15 +602,16 @@ FunEncoding FunapiMulticastImpl::GetEncoding() {
 
 void FunapiMulticastImpl::AddSessionEventCallback(const FunapiMulticast::SessionEventHandler &handler) {
   if (session_) {
-    session_->AddSessionEventCallback([this, handler](const std::shared_ptr<fun::FunapiSession> &session,
-                                                      const fun::TransportProtocol protocol,
-                                                      const fun::SessionEventType type,
-                                                      const std::string &session_id,
-                                                      const std::shared_ptr<FunapiError> &error) {
-      if (!multicast_.expired()) {
-        if (auto m = multicast_.lock()) {
-          handler(m, type, session_id, error);
-        }
+    session_->AddSessionEventCallback
+    ([this, handler]
+     (const std::shared_ptr<fun::FunapiSession> &session,
+      const fun::TransportProtocol protocol,
+      const fun::SessionEventType type,
+      const std::string &session_id,
+      const std::shared_ptr<FunapiError> &error)
+    {
+      if (auto m = multicast_.lock()) {
+        handler(m, type, session_id, error);
       }
     });
   }
@@ -629,14 +620,15 @@ void FunapiMulticastImpl::AddSessionEventCallback(const FunapiMulticast::Session
 
 void FunapiMulticastImpl::AddTransportEventCallback(const FunapiMulticast::TransportEventHandler &handler) {
   if (session_) {
-    session_->AddTransportEventCallback([this, handler](const std::shared_ptr<fun::FunapiSession> &session,
-                                                        const fun::TransportProtocol protocol,
-                                                        const fun::TransportEventType type,
-                                                        const std::shared_ptr<FunapiError> &error) {
-      if (!multicast_.expired()) {
-        if (auto m = multicast_.lock()) {
-          handler(m, type, error);
-        }
+    session_->AddTransportEventCallback
+    ([this, handler]
+     (const std::shared_ptr<fun::FunapiSession> &session,
+      const fun::TransportProtocol protocol,
+      const fun::TransportEventType type,
+      const std::shared_ptr<FunapiError> &error)
+    {
+      if (auto m = multicast_.lock()) {
+        handler(m, type, error);
       }
     });
   }

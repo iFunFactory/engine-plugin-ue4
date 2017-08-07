@@ -12,6 +12,7 @@ namespace fun {
 class FunapiSocket {
  public:
   static std::string GetStringFromAddrInfo(struct addrinfo *info);
+  static bool Select();
 };
 
 

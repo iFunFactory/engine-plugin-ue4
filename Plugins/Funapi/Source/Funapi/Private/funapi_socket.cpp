@@ -20,6 +20,13 @@ class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
 
   static std::string GetStringFromAddrInfo(struct addrinfo *info);
 
+  static std::vector<std::weak_ptr<FunapiSocketImpl>> vec_sockets_;
+  static std::mutex vec_sockets_mutex_;
+
+  static void Add(std::shared_ptr<FunapiSocketImpl> s);
+  static std::vector<std::shared_ptr<FunapiSocketImpl>> GetSocketImpls();
+  static bool Select();
+
   static const int kBufferSize = 65536;
 
   int GetSocket();
@@ -72,6 +79,87 @@ std::string FunapiSocketImpl::GetStringFromAddrInfo(struct addrinfo *info) {
   }
 
   return "NULL";
+}
+
+
+std::vector<std::weak_ptr<FunapiSocketImpl>> FunapiSocketImpl::vec_sockets_;
+std::mutex FunapiSocketImpl::vec_sockets_mutex_;
+
+
+void FunapiSocketImpl::Add(std::shared_ptr<FunapiSocketImpl> s) {
+  std::unique_lock<std::mutex> lock(vec_sockets_mutex_);
+  vec_sockets_.push_back(s);
+}
+
+
+std::vector<std::shared_ptr<FunapiSocketImpl>> FunapiSocketImpl::GetSocketImpls() {
+  std::vector<std::shared_ptr<FunapiSocketImpl>> v_sockets;
+  std::vector<std::weak_ptr<FunapiSocketImpl>> v_weak_sockets;
+  {
+    std::unique_lock<std::mutex> lock(vec_sockets_mutex_);
+    if (!vec_sockets_.empty()) {
+      for (auto i : vec_sockets_) {
+        if (auto s = i.lock()) {
+          v_sockets.push_back(s);
+          v_weak_sockets.push_back(i);
+        }
+      }
+
+      vec_sockets_.swap(v_weak_sockets);
+    }
+  }
+
+  return v_sockets;
+}
+
+
+bool FunapiSocketImpl::Select() {
+  auto v_sockets = FunapiSocketImpl::GetSocketImpls();
+
+  if (!v_sockets.empty()) {
+    int max_fd = -1;
+
+    fd_set rset;
+    fd_set wset;
+    fd_set eset;
+
+    FD_ZERO(&rset);
+    FD_ZERO(&wset);
+    FD_ZERO(&eset);
+
+    std::vector<std::shared_ptr<FunapiSocketImpl>> v_select_sockets;
+    for (auto s : v_sockets)
+    {
+      if (s->IsReadySelect())
+      {
+        int fd = s->GetSocket();
+        if (fd > 0) {
+          if (fd > max_fd) max_fd = fd;
+
+          FD_SET(fd, &rset);
+          FD_SET(fd, &wset);
+          FD_SET(fd, &eset);
+
+          v_select_sockets.push_back(s);
+        }
+      }
+    }
+
+    if (!v_select_sockets.empty())
+    {
+      struct timeval timeout = { 0, 0 };
+      if (select(max_fd + 1, &rset, &wset, &eset, &timeout) > 0)
+      {
+        for (auto s : v_select_sockets) {
+          s->OnSelect(rset, wset, eset);
+        }
+      }
+
+      return true;
+    }
+  }
+
+  return false;
 }
 
 
@@ -196,12 +284,16 @@ bool FunapiSocketImpl::InitSocket(struct addrinfo *info,
 void FunapiSocketImpl::SocketSelect(const fd_set rset,
                                     const fd_set wset,
                                     const fd_set eset) {
-  if (FD_ISSET(socket_, &rset)) {
-    OnRecv();
+  if (socket_ > 0) {
+    if (FD_ISSET(socket_, &rset)) {
+      OnRecv();
+    }
   }
 
-  if (FD_ISSET(socket_, &wset)) {
-    OnSend();
+  if (socket_ > 0) {
+    if (FD_ISSET(socket_, &wset)) {
+      OnSend();
+    }
   }
 }
 
@@ -387,7 +479,7 @@ void FunapiTcpImpl::Connect(struct addrinfo *addrinfo_res) {
 
 
 void FunapiTcpImpl::Connect(struct addrinfo *addrinfo_res,
-                        ConnectCompletionHandler connect_completion_handler) {
+                            ConnectCompletionHandler connect_completion_handler) {
   completion_handler_ = connect_completion_handler;
 
   Connect(addrinfo_res);
@@ -509,6 +601,7 @@ void FunapiTcpImpl::OnSend() {
 
     if (nSent <= 0) {
       send_completion_handler_(true, errno, strerror(errno), nSent);
+      CloseSocket();
     }
     else {
       offset_ += nSent;
@@ -535,6 +628,7 @@ void FunapiTcpImpl::OnRecv() {
 
   if (nRead <= 0) {
     recv_handler_(true, errno, strerror(errno), nRead, buffer);
+    CloseSocket();
   }
   else {
     recv_handler_(false, 0, "", nRead, buffer);
@@ -546,6 +640,13 @@ bool FunapiTcpImpl::Send(const std::vector<uint8_t> &body, SendCompletionHandler
   send_completion_handler_ = send_completion_handler;
 
   body_.insert(body_.end(), body.cbegin(), body.cend());
+
+//  // log
+//  {
+//    std::string temp_string(body.cbegin(), body.cend());
+//    printf("\"%s\"\n", temp_string.c_str());
+//  }
+//  //
 
   return true;
 }
@@ -642,6 +743,7 @@ void FunapiUdpImpl::OnRecv() {
 
   if (nRead <= 0) {
     recv_handler_(true, errno, strerror(errno), nRead, receiving_vector);
+    CloseSocket();
   }
   else {
     recv_handler_(false, 0, "", nRead, receiving_vector);
@@ -660,6 +762,7 @@ bool FunapiUdpImpl::Send(const std::vector<uint8_t> &body, SendCompletionHandler
 
   if (nSent <= 0) {
     send_completion_handler(true, errno, strerror(errno), nSent);
+    CloseSocket();
   }
   else {
     send_completion_handler(false, 0, "", nSent);
@@ -677,11 +780,17 @@ std::string FunapiSocket::GetStringFromAddrInfo(struct addrinfo *info) {
 }
 
 
+bool FunapiSocket::Select() {
+  return FunapiSocketImpl::Select();
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiTcp implementation.
 
 FunapiTcp::FunapiTcp()
 : impl_(std::make_shared<FunapiTcpImpl>()) {
+  FunapiSocketImpl::Add(impl_);
 }
 
 
@@ -745,6 +854,7 @@ FunapiUdp::FunapiUdp(const char* hostname_or_ip,
                                         init_handler,
                                         send_handler,
                                         recv_handler)) {
+  FunapiSocketImpl::Add(impl_);
 }
 
 

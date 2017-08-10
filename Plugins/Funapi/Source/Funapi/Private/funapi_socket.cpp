@@ -226,6 +226,8 @@ bool FunapiSocketImpl::InitAddrInfo(int socktype,
 
 void FunapiSocketImpl::CloseSocket() {
   if (socket_ >= 0) {
+    // DebugUtils::Log("Socket [%d] closed.", socket_);
+
 #ifdef FUNAPI_PLATFORM_WINDOWS
     closesocket(socket_);
 #else
@@ -525,9 +527,10 @@ void FunapiTcpImpl::Connect(const char* hostname_or_ip,
   }
 
   // log
-  // Tries to connect.
-  // std::string hostname_or_ip = FunapiSocketImpl::GetStringFromAddrInfo(addrinfo_res_);
-  // DebugUtils::Log("Try to tcp connect to server - %s %d", hostname_or_ip.c_str(), port);
+  {
+    std::string hostname = FunapiSocketImpl::GetStringFromAddrInfo(addrinfo_res_);
+    DebugUtils::Log("Address Info: %s -> %s", hostname_or_ip, hostname.c_str());
+  }
   // //
 
   Connect(addrinfo_res_);
@@ -594,10 +597,11 @@ void FunapiTcpImpl::OnSend() {
                                       reinterpret_cast<char*>(body_.data()) + offset_,
                                       body_.size() - offset_,
                                       0));
-
+    /*
     if (nSent == 0) {
       DebugUtils::Log("Socket [%d] closed.", socket_);
     }
+    */
 
     if (nSent <= 0) {
       send_completion_handler_(true, errno, strerror(errno), nSent);
@@ -622,9 +626,11 @@ void FunapiTcpImpl::OnRecv() {
 
   int nRead = static_cast<int>(recv(socket_, reinterpret_cast<char*>(buffer.data()), kBufferSize, 0));
 
+  /*
   if (nRead == 0) {
     DebugUtils::Log("Socket [%d] closed.", socket_);
   }
+  */
 
   if (nRead <= 0) {
     recv_handler_(true, errno, strerror(errno), nRead, buffer);
@@ -737,9 +743,11 @@ void FunapiUdpImpl::OnRecv() {
                                         (&addrinfo_res_->ai_addrlen)));
 #endif // FUNAPI_PLATFORM_WINDOWS
 
+  /*
   if (nRead == 0) {
     DebugUtils::Log("Socket [%d] closed.", socket_);
   }
+  */
 
   if (nRead <= 0) {
     recv_handler_(true, errno, strerror(errno), nRead, receiving_vector);
@@ -756,9 +764,11 @@ bool FunapiUdpImpl::Send(const std::vector<uint8_t> &body, SendCompletionHandler
 
   int nSent = static_cast<int>(sendto(socket_, reinterpret_cast<char*>(buf), body.size(), 0, addrinfo_res_->ai_addr, addrinfo_res_->ai_addrlen));
 
+  /*
   if (nSent == 0) {
     DebugUtils::Log("Socket [%d] closed.", socket_);
   }
+  */
 
   if (nSent <= 0) {
     send_completion_handler(true, errno, strerror(errno), nSent);

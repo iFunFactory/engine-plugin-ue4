@@ -42,6 +42,74 @@ enum class FUNAPI_API TransportEventType : int {
 };
 
 
+inline FUNAPI_API std::string SessionEventTypeToString(SessionEventType type) {
+  std::string ret("");
+
+  switch (type) {
+    case SessionEventType::kOpened:
+      ret = "Opened";
+      break;
+
+    case SessionEventType::kClosed:
+      ret = "Closed";
+      break;
+
+    case SessionEventType::kChanged:
+      ret = "Changed";
+      break;
+
+    case SessionEventType::kRedirectStarted:
+      ret = "RedirectStarted";
+      break;
+
+    case SessionEventType::kRedirectSucceeded:
+      ret = "RedirectSucceeded";
+      break;
+
+    case SessionEventType::kRedirectFailed:
+      ret = "RedirectFailed";
+      break;
+
+    default:
+      assert(false);
+  }
+
+  return ret;
+}
+
+
+inline FUNAPI_API std::string TransportEventTypeToString(TransportEventType type) {
+  std::string ret("");
+
+  switch (type) {
+    case TransportEventType::kStarted:
+      ret = "Started";
+      break;
+
+    case TransportEventType::kStopped:
+      ret = "Stopped";
+      break;
+
+    case TransportEventType::kConnectionFailed:
+      ret = "ConnectionFailed";
+      break;
+
+    case TransportEventType::kConnectionTimedOut:
+      ret = "ConnectionTimedOut";
+      break;
+
+    case TransportEventType::kDisconnected:
+      ret = "Disconnected";
+      break;
+
+    default:
+      assert(false);
+  }
+
+  return ret;
+}
+
+
 class FunapiSessionOptionImpl;
 class FUNAPI_API FunapiSessionOption : public std::enable_shared_from_this<FunapiSessionOption> {
  public:

@@ -27,11 +27,14 @@ class FunapiErrorImpl : public std::enable_shared_from_this<FunapiErrorImpl> {
   FunapiErrorImpl(const ErrorType type,
                   const int code,
                   const std::string& error_string);
-  ~FunapiErrorImpl() = default;
+  virtual ~FunapiErrorImpl() = default;
 
   ErrorType GetErrorType();
   int GetErrorCode();
   std::string GetErrorString();
+
+  std::string GetErrorTypeString();
+  std::string DebugString();
 
  private:
   ErrorType error_type_;
@@ -57,6 +60,60 @@ int FunapiErrorImpl::GetErrorCode() {
 
 std::string FunapiErrorImpl::GetErrorString() {
   return error_string_;
+}
+
+
+std::string FunapiErrorImpl::GetErrorTypeString() {
+  std::string ret;
+
+  switch (error_type_) {
+    case ErrorType::kDefault:
+      ret = "Default";
+      break;
+
+    case ErrorType::kRedirect:
+      ret = "Redirect";
+      break;
+
+    case ErrorType::kSocket:
+      ret = "Socket";
+      break;
+
+    case ErrorType::kCurl:
+      ret = "Curl";
+      break;
+
+    case ErrorType::kSeq:
+      ret = "Seq";
+      break;
+
+    case ErrorType::kPing:
+      ret = "Ping";
+      break;
+
+    default:
+      ret = "None";
+  }
+
+  return ret;
+}
+
+
+std::string FunapiErrorImpl::DebugString() {
+  std::stringstream ss;
+
+  ss << "ErrorType=" << GetErrorTypeString();
+  ss << ":";
+
+  if (error_code_ != 0) {
+    ss << "(" << error_code_ << ")";
+  }
+
+  if (error_string_.length() > 0) {
+    ss << " " << error_string_;
+  }
+
+  return ss.str();
 }
 
 
@@ -93,13 +150,23 @@ std::string FunapiError::GetErrorString() {
 }
 
 
+std::string FunapiError::GetErrorTypeString() {
+  return impl_->GetErrorTypeString();
+}
+
+
+std::string FunapiError::DebugString() {
+  return impl_->DebugString();
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiTransportOptionImpl implementation.
 
 class FunapiTransportOptionImpl : public std::enable_shared_from_this<FunapiTransportOptionImpl> {
  public:
   FunapiTransportOptionImpl() = default;
-  ~FunapiTransportOptionImpl() = default;
+  virtual ~FunapiTransportOptionImpl() = default;
 
   virtual void SetEncryptionType(EncryptionType type) = 0;
 };

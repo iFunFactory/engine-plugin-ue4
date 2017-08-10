@@ -62,19 +62,19 @@ inline FUNAPI_API std::string TransportProtocolToString(TransportProtocol protoc
 
   switch (protocol) {
     case TransportProtocol::kDefault:
-      ret = "Unknown";
+      ret = "Default";
       break;
 
     case TransportProtocol::kTcp:
-      ret = "Tcp";
+      ret = "TCP";
       break;
 
     case TransportProtocol::kUdp:
-      ret = "Udp";
+      ret = "UDP";
       break;
 
     case TransportProtocol::kHttp:
-      ret = "Http";
+      ret = "HTTP";
       break;
 
     default:
@@ -93,6 +93,27 @@ enum class FUNAPI_API FunEncoding
   kProtobuf
 };
 
+
+inline FUNAPI_API std::string EncodingToString(FunEncoding encoding) {
+  std::string ret("");
+
+  switch (encoding) {
+    case FunEncoding::kJson:
+      ret = "JSON";
+      break;
+
+    case FunEncoding::kProtobuf:
+      ret = "Protobuf";
+      break;
+
+    default:
+      assert(false);
+  }
+
+  return ret;
+}
+
+
 enum class FUNAPI_API EncryptionType : int;
 
 
@@ -104,6 +125,8 @@ class FUNAPI_API FunapiError : public std::enable_shared_from_this<FunapiError> 
     kRedirect,
     kSocket,
     kCurl,
+    kSeq,
+    kPing,
   };
 
   // legacy
@@ -124,6 +147,9 @@ class FUNAPI_API FunapiError : public std::enable_shared_from_this<FunapiError> 
   ErrorType GetErrorType();
   int GetErrorCode();
   std::string GetErrorString();
+
+  std::string GetErrorTypeString();
+  std::string DebugString();
 
  private:
   std::shared_ptr<FunapiErrorImpl> impl_;

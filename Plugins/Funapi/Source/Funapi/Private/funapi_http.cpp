@@ -5,6 +5,9 @@
 // consent of iFunFactory Inc.
 
 #include "funapi_plugin.h"
+
+#ifndef FUNAPI_UE4_PLATFORM_PS4
+
 #include "funapi_utils.h"
 #include "funapi_tasks.h"
 #include "funapi_http.h"
@@ -398,3 +401,5 @@ void FunapiHttp::SetConnectTimeout(const long seconds) {
 }
 
 }  // namespace fun
+
+#endif

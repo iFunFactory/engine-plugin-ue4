@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <array>
 
+#if FUNAPI_HAVE_SODIUM
 #define SODIUM_STATIC
 #include "sodium.h"
 #include "sodium/crypto_hash_sha512.h"
@@ -19,6 +20,7 @@
 #include "sodium/crypto_stream_chacha20.h"
 #include "sodium/randombytes.h"
 #include "sodium/utils.h"
+#endif // FUNAPI_HAVE_SODIUM
 
 namespace fun {
 
@@ -127,10 +129,23 @@ bool Encryptor0::Decrypt(std::vector<uint8_t> &body) {
 #include "funapi_encryption_legacy.h"
 
 ////////////////////////////////////////////////////////////////////////////////
+// SecureInit
+#ifdef FUNAPI_UE4_PLATFORM_PS4
+#include "ps4/funapi_encryption_ps4.h"
+#else
+class SecureInit : public std::enable_shared_from_this<SecureInit> {
+ public:
+  SecureInit() = default;
+  virtual ~SecureInit() = default;
+};
+#endif // FUNAPI_UE4_PLATFORM_PS4
+
+#if FUNAPI_HAVE_SODIUM
+////////////////////////////////////////////////////////////////////////////////
 // EncryptorSodium implementation.
 class EncryptorSodium : public Encryptor {
  public:
-  EncryptorSodium() = default;
+  EncryptorSodium();
   virtual ~EncryptorSodium() = default;
 
   virtual const std::string& GetHandShakeString();
@@ -144,6 +159,14 @@ class EncryptorSodium : public Encryptor {
 
   std::string handshake_string_;
 };
+
+
+EncryptorSodium::EncryptorSodium() {
+  static std::shared_ptr<SecureInit> secure_init = std::make_shared<SecureInit>();
+  if (::sodium_init() != 0) {
+    // error
+  }
+}
 
 
 const std::string &EncryptorSodium::GetHandShakeString() {
@@ -410,6 +433,126 @@ void EncryptorAes128::GenerateAes128Secret(std::array<uint8_t, 1408> *key,
 
   ::crypto_stream_aes128ctr_beforenm(&(*key)[0], &_key[0]);
 }
+#else // FUNAPI_HAVE_SODIUM
+class EncryptorSodium : public Encryptor {
+public:
+  EncryptorSodium();
+  virtual ~EncryptorSodium() = default;
+
+  virtual const std::string& GetHandShakeString();
+
+protected:
+  std::string handshake_string_;
+};
+
+
+EncryptorSodium::EncryptorSodium() {
+}
+
+
+const std::string &EncryptorSodium::GetHandShakeString() {
+  handshake_completed_ = true;
+  return handshake_string_;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// EncryptorChacha20 implementation.
+class EncryptorChacha20 : public EncryptorSodium {
+public:
+  EncryptorChacha20();
+  virtual ~EncryptorChacha20();
+
+  EncryptionType GetEncryptionType();
+  static std::string GetEncryptionName();
+
+  void HandShake(const std::string &key);
+
+  bool Encrypt(std::vector<uint8_t> &body);
+  bool Decrypt(std::vector<uint8_t> &body);
+};
+
+
+EncryptorChacha20::EncryptorChacha20() {
+}
+
+
+EncryptorChacha20::~EncryptorChacha20() {
+}
+
+
+EncryptionType EncryptorChacha20::GetEncryptionType() {
+  return EncryptionType::kChacha20Encryption;
+}
+
+
+std::string EncryptorChacha20::GetEncryptionName() {
+  return "chacha20";
+}
+
+
+bool EncryptorChacha20::Encrypt(std::vector<uint8_t> &body) {
+  return true;
+}
+
+
+bool EncryptorChacha20::Decrypt(std::vector<uint8_t> &body) {
+  return true;
+}
+
+
+void EncryptorChacha20::HandShake(const std::string &key) {
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// EncryptorAes128 implementation.
+class EncryptorAes128 : public EncryptorSodium {
+public:
+  EncryptorAes128();
+  virtual ~EncryptorAes128();
+
+  EncryptionType GetEncryptionType();
+  static std::string GetEncryptionName();
+
+  void HandShake(const std::string &key);
+
+  bool Encrypt(std::vector<uint8_t> &body);
+  bool Decrypt(std::vector<uint8_t> &body);
+};
+
+
+EncryptorAes128::EncryptorAes128() {
+}
+
+
+EncryptorAes128::~EncryptorAes128() {
+}
+
+
+EncryptionType EncryptorAes128::GetEncryptionType() {
+  return EncryptionType::kAes128Encryption;
+}
+
+
+std::string EncryptorAes128::GetEncryptionName() {
+  return "aes128";
+}
+
+
+bool EncryptorAes128::Encrypt(std::vector<uint8_t> &body) {
+  return true;
+}
+
+
+bool EncryptorAes128::Decrypt(std::vector<uint8_t> &body) {
+  return true;
+}
+
+
+void EncryptorAes128::HandShake(const std::string &key) {
+}
+#endif // FUNAPI_HAVE_SODIUM
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -487,9 +630,6 @@ class FunapiEncryptionImpl : public std::enable_shared_from_this<FunapiEncryptio
 
 
 FunapiEncryptionImpl::FunapiEncryptionImpl() {
-  if (::sodium_init() != 0) {
-    // error
-  }
 }
 
 

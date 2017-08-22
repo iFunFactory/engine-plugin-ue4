@@ -31,6 +31,8 @@
 // Author: kenton@google.com (Kenton Varda)
 // emulates google3/testing/base/public/googletest.cc
 
+#ifndef FUNAPI_UE4_PLATFORM_PS4
+
 #include "google/protobuf/stubs/strutil.h"
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -258,3 +260,5 @@ struct ForceShutdown {
 
 }  // namespace protobuf
 }  // namespace google
+
+#endif

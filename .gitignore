@@ -5,3 +5,6 @@ Binaries
 funapi_plugin_ue4.xcodeproj
 Build
 funapi_plugin_ue4.xcworkspace
+/Plugins/Funapi/ThirdParty/lib/PS4
+/Plugins/Funapi/ThirdParty/include/PS4
+/Plugins/Funapi/Source/Funapi/Private/ps4

@@ -28,6 +28,7 @@
 #include <io.h>
 #include <direct.h>
 #else
+#ifndef FUNAPI_UE4_PLATFORM_PS4
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -36,7 +37,8 @@
 #include <fcntl.h>
 #include <assert.h>
 #include <unistd.h>
-#endif
+#endif // FUNAPI_UE4_PLATFORM_PS4
+#endif // FUNAPI_PLATFORM_WINDOWS
 
 #include <map>
 #include <string>

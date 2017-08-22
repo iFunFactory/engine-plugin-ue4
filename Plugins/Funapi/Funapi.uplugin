@@ -1,7 +1,7 @@
 {
 	"FileVersion" : 3,
 	"Version" : 1,
-	"VersionName" : "1.68",
+	"VersionName" : "1.70",
 	"FriendlyName" : "Funapi Plugin",
 	"Description" : "Funapi Plugin UE4",
 	"Category" : "iFunFactory",
@@ -20,7 +20,7 @@
 			"Name" : "Funapi",
 			"Type" : "Runtime",
 			"LoadingPhase" : "Default",
-			"WhitelistPlatforms" : [ "IOS", "Android", "Mac", "Win32", "Win64" ]
+			"WhitelistPlatforms" : [ "IOS", "Android", "Mac", "Win32", "Win64", "PS4" ]
 		}
 	]
 }

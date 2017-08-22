@@ -66,6 +66,8 @@ namespace UnrealBuildTool.Rules
 
             if (Target.Platform == UnrealTargetPlatform.Mac)
             {
+                Definitions.Add("FUNAPI_HAVE_SODIUM=1");
+
                 PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include", "Mac"));
 
                 LibPath += "lib/Mac";
@@ -73,11 +75,12 @@ namespace UnrealBuildTool.Rules
                 PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcrypto.a"));
                 PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libssl.a"));
                 PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libz.a"));
-                // PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libprotobuf.a"));
                 PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.a"));
             }
             else if (Target.Platform == UnrealTargetPlatform.Win32)
             {
+                Definitions.Add("FUNAPI_HAVE_SODIUM=1");
+
                 PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include", "Windows", "x86"));
 
                 LibPath += "lib/Windows/x86";
@@ -85,24 +88,26 @@ namespace UnrealBuildTool.Rules
 
                 PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl_a.lib"));
                 PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libeay32.lib"));
-                // PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libprotobuf.lib"));
                 PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.lib"));
                 Definitions.Add("CURL_STATICLIB=1");
             }
             else if (Target.Platform == UnrealTargetPlatform.Win64)
             {
+                Definitions.Add("FUNAPI_HAVE_SODIUM=1");
+
                 PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include", "Windows", "x64"));
 
                 LibPath += "lib/Windows/x64";
                 PublicLibraryPaths.Add(LibPath);
 
                 PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl_a.lib"));
-                // PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libprotobuf.lib"));
                 PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.lib"));
                 Definitions.Add("CURL_STATICLIB=1");
             }
             else if (Target.Platform == UnrealTargetPlatform.Android)
             {
+                Definitions.Add("FUNAPI_HAVE_SODIUM=1");
+
                 // toolchain will filter properly
                 PublicIncludePaths.Add(LibPath + "include/Android/ARMv7");
                 PublicLibraryPaths.Add(LibPath + "lib/Android/ARMv7");
@@ -114,26 +119,41 @@ namespace UnrealBuildTool.Rules
                 //PublicLibraryPaths.Add(LibPath + "lib/Android/x64");
 
                 LibPath += "lib/Android/ARMv7";
-                //PublicAdditionalLibraries.Add("curl");
-                //PublicAdditionalLibraries.Add("crypto");
-                //PublicAdditionalLibraries.Add("protobuf");
 
                 PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl.a"));
                 PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcrypto.a"));
                 PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libssl.a"));
-                // PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libprotobuf.a"));
                 PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.a"));
             }
             else if (Target.Platform == UnrealTargetPlatform.IOS)
             {
+                Definitions.Add("FUNAPI_HAVE_SODIUM=1");
+
                 PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include", "iOS"));
 
                 LibPath += "lib/iOS";
                 PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl.a"));
                 PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcrypto.a"));
                 PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libssl.a"));
-                // PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libprotobuf.a"));
                 PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.a"));
+            }
+            else if (Target.Platform == UnrealTargetPlatform.PS4)
+            {
+                Definitions.Add("FUNAPI_UE4_PLATFORM_PS4=1");
+                Definitions.Add("RAPIDJSON_HAS_CXX11_RVALUE_REFS=0");
+
+                Definitions.Add("FUNAPI_HAVE_SODIUM=1");
+
+                PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include", "PS4"));
+                LibPath += "lib/PS4";
+
+                PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.a"));
+            
+            }
+            else if (Target.Platform == UnrealTargetPlatform.Linux)
+            {
+                Definitions.Add("FUNAPI_HAVE_SODIUM=0");
+                AddEngineThirdPartyPrivateStaticDependencies(Target, "libcurl");
             }
         }
     }

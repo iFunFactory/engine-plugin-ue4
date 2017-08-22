@@ -29037,7 +29037,8 @@ const ::google::protobuf::Message& TestService::GetRequestPrototype(
       return ::protobuf_unittest::BarRequest::default_instance();
     default:
       GOOGLE_LOG(FATAL) << "Bad method index; this should never happen.";
-      return *reinterpret_cast< ::google::protobuf::Message*>(NULL);
+      // return *reinterpret_cast< ::google::protobuf::Message*>(NULL);
+      return ::protobuf_unittest::BarRequest::default_instance();
   }
 }
 
@@ -29051,7 +29052,8 @@ const ::google::protobuf::Message& TestService::GetResponsePrototype(
       return ::protobuf_unittest::BarResponse::default_instance();
     default:
       GOOGLE_LOG(FATAL) << "Bad method index; this should never happen.";
-      return *reinterpret_cast< ::google::protobuf::Message*>(NULL);
+      // return *reinterpret_cast< ::google::protobuf::Message*>(NULL);
+      return ::protobuf_unittest::BarResponse::default_instance();
   }
 }
 

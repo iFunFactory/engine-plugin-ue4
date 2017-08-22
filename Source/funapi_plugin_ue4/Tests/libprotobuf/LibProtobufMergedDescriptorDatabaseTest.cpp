@@ -32,6 +32,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#ifndef FUNAPI_UE4_PLATFORM_PS4
+
 #include "funapi_plugin_ue4.h"
 #include "AutomationTest.h"
 
@@ -6005,3 +6007,5 @@ baz2_ = enum2_->value(1);
 
   return true;
 }
+
+#endif

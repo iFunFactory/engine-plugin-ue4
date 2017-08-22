@@ -32,6 +32,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#ifndef FUNAPI_UE4_PLATFORM_PS4
+
 #include "funapi_plugin_ue4.h"
 #include "AutomationTest.h"
 
@@ -1560,3 +1562,5 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
 
   return true;
 }
+
+#endif

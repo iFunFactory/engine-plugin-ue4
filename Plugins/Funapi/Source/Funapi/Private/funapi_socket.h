@@ -11,8 +11,23 @@ namespace fun {
 
 class FunapiSocket {
  public:
-  static std::string GetStringFromAddrInfo(struct addrinfo *info);
   static bool Select();
+};
+
+
+class FunapiAddrInfoImpl;
+class FunapiAddrInfo : public std::enable_shared_from_this<FunapiAddrInfo> {
+ public:
+  FunapiAddrInfo();
+  virtual ~FunapiAddrInfo();
+
+  static std::shared_ptr<FunapiAddrInfo> Create();
+
+  std::string GetString();
+  std::shared_ptr<FunapiAddrInfoImpl> GetImpl();
+
+ private:
+  std::shared_ptr<FunapiAddrInfoImpl> impl_;
 };
 
 
@@ -23,7 +38,7 @@ class FunapiTcp : public std::enable_shared_from_this<FunapiTcp> {
                              const bool is_timed_out,
                              const int error_code,
                              const std::string &error_string,
-                             struct addrinfo *addrinfo_res)> ConnectCompletionHandler;
+                             std::shared_ptr<FunapiAddrInfo> addrinfo_res)> ConnectCompletionHandler;
 
   typedef std::function<void(const bool is_failed,
                              const int error_code,
@@ -47,15 +62,15 @@ class FunapiTcp : public std::enable_shared_from_this<FunapiTcp> {
                const int sever_port,
                const time_t connect_timeout_seconds,
                const bool disable_nagle,
-               ConnectCompletionHandler connect_completion_handler,
-               SendHandler send_handler,
-               RecvHandler recv_handler);
+               const ConnectCompletionHandler &connect_completion_handler,
+               const SendHandler &send_handler,
+               const RecvHandler &recv_handler);
 
-  void Connect(struct addrinfo *addrinfo_res,
-               ConnectCompletionHandler connect_completion_handler);
+  void Connect(std::shared_ptr<FunapiAddrInfo> addrinfo,
+               const ConnectCompletionHandler &connect_completion_handler);
 
   bool Send(const std::vector<uint8_t> &body,
-            SendCompletionHandler send_completion_handler);
+            const SendCompletionHandler &send_completion_handler);
 
   int GetSocket();
   void OnSelect(const fd_set rset, const fd_set wset, const fd_set eset);
@@ -88,18 +103,18 @@ class FunapiUdp : public std::enable_shared_from_this<FunapiUdp> {
   FunapiUdp() = delete;
   FunapiUdp(const char* hostname_or_ip,
             const int port,
-            InitHandler init_handler,
-            SendHandler send_handler,
-            RecvHandler recv_handler);
+            const InitHandler &init_handler,
+            const SendHandler &send_handler,
+            const RecvHandler &recv_handler);
   virtual ~FunapiUdp();
 
   static std::shared_ptr<FunapiUdp> Create(const char* hostname_or_ip,
                                            const int port,
-                                           InitHandler init_handler,
-                                           SendHandler send_handler,
-                                           RecvHandler recv_handler);
+                                           const InitHandler &init_handler,
+                                           const SendHandler &send_handler,
+                                           const RecvHandler &recv_handler);
 
-  bool Send(const std::vector<uint8_t> &body, SendCompletionHandler send_completion_handler);
+  bool Send(const std::vector<uint8_t> &body, const SendCompletionHandler &send_completion_handler);
 
   int GetSocket();
   void OnSelect(const fd_set rset, const fd_set wset, const fd_set eset);

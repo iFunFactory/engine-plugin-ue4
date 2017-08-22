@@ -31,6 +31,8 @@
 // Author: kenton@google.com (Kenton Varda)
 // emulates google3/file/base/file.cc
 
+#ifndef FUNAPI_UE4_PLATFORM_PS4
+
 #include "file.h"
 #include <stdio.h>
 #include <sys/stat.h>
@@ -206,3 +208,5 @@ void File::DeleteRecursively(const string& name,
 
 }  // namespace protobuf
 }  // namespace google
+
+#endif

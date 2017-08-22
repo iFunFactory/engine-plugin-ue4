@@ -20,6 +20,7 @@
 		"Android",
 		"IOS",
 		"MacNoEditor",
-		"WindowsNoEditor"
+		"WindowsNoEditor",
+		"PS4"
 	]
 }

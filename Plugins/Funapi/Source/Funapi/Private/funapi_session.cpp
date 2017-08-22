@@ -1476,8 +1476,12 @@ class FunapiTcpTransport : public FunapiTransport {
                              std::vector<uint8_t> &body,
                              const EncryptionType encryption_type);
   void Connect();
-  void Connect(struct addrinfo *addrinfo_res);
-  void OnConnectCompletion(const bool isFailed, const bool isTimedOut, const int error_code, const std::string &error_string, struct addrinfo *addrinfo_res);
+  void Connect(std::shared_ptr<FunapiAddrInfo> addrinfo_res);
+  void OnConnectCompletion(const bool isFailed,
+                           const bool isTimedOut,
+                           const int error_code,
+                           const std::string &error_string,
+                           std::shared_ptr<FunapiAddrInfo> addrinfo_res);
 
   void OnDisconnecting(std::shared_ptr<FunapiError> error = nullptr);
 
@@ -1524,7 +1528,7 @@ class FunapiTcpTransport : public FunapiTransport {
 
   std::shared_ptr<FunapiTcp> tcp_;
   std::vector<uint8_t> send_buffer_;
-  struct addrinfo *addrinfo_res_ = nullptr;
+  std::shared_ptr<FunapiAddrInfo> addrinfo_res_ = nullptr;
 };
 
 
@@ -1667,9 +1671,9 @@ void FunapiTcpTransport::OnConnectCompletion(const bool isFailed,
                                              const bool isTimedOut,
                                              const int error_code,
                                              const std::string &error_string,
-                                             struct addrinfo *addrinfo_res) {
+                                             std::shared_ptr<FunapiAddrInfo> addrinfo_res) {
   addrinfo_res_ = addrinfo_res;
-  std::string hostname_or_ip = FunapiSocket::GetStringFromAddrInfo(addrinfo_res);
+  std::string hostname_or_ip = addrinfo_res->GetString();
 
   if (isFailed) {
     SetUpdateState(UpdateState::kNone);
@@ -1689,7 +1693,6 @@ void FunapiTcpTransport::OnConnectCompletion(const bool isFailed,
       ++reconnect_count_;
 
       if (kMaxReconnectCount < reconnect_count_) {
-        addrinfo_res_ = addrinfo_res_->ai_next;
         reconnect_count_ = 0;
         reconnect_wait_seconds_ = 1;
 
@@ -1738,7 +1741,7 @@ void FunapiTcpTransport::Connect() {
                              const bool is_timed_out,
                              const int error_code,
                              const std::string &error_string,
-                             struct addrinfo *addrinfo_res)
+                             std::shared_ptr<FunapiAddrInfo> addrinfo_res)
   {
     if (auto t = weak.lock()) {
       OnConnectCompletion(is_failed, is_timed_out, error_code, error_string, addrinfo_res);
@@ -1772,7 +1775,7 @@ void FunapiTcpTransport::Connect() {
 }
 
 
-void FunapiTcpTransport::Connect(struct addrinfo *addrinfo_res) {
+void FunapiTcpTransport::Connect(std::shared_ptr<FunapiAddrInfo> addrinfo_res) {
   SetState(TransportState::kConnecting);
 
   if (addrinfo_res && tcp_) {
@@ -1784,7 +1787,7 @@ void FunapiTcpTransport::Connect(struct addrinfo *addrinfo_res) {
       const bool is_timed_out,
       const int error_code,
       const std::string &error_string,
-      struct addrinfo *ai_res)
+      std::shared_ptr<FunapiAddrInfo> ai_res)
     {
       if (auto t = weak.lock()) {
         OnConnectCompletion(is_failed, is_timed_out, error_code, error_string, ai_res);

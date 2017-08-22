@@ -66,6 +66,18 @@ Funapi plugin unreal engine 4
 아래 설명의 버전보다 낮은 버전의 플러그인을 사용하고 있다면 아래 내용을 참고해 주세요.
 괄호안은 지원하는 서버 버전입니다.
 
+### v90 experimental (2544 experimental)
+Delayed Ack
+
+### v85 experimental (2497 experimental)
+TCP TLS
+
+### v93 experimental (2497 experimental)
+Websocket Transport
+
+### v73 experimental (2368 experimental)
+Dedicated Server Rpc
+
 ### v62 (2118 experimental, 2214 stable)
 멀티캐스트 채널에 token 을 지정할 수 있는 기능 추가
 

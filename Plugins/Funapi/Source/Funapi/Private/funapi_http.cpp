@@ -4,13 +4,16 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
-#include "funapi_plugin.h"
+#ifndef FUNAPI_UE4_PLATFORM_PS4
+
+#ifdef FUNAPI_UE4
+#include "FunapiPrivatePCH.h"
+#endif
+
+#include "funapi_http.h"
 #include "funapi_utils.h"
 #include "funapi_tasks.h"
-#include "funapi_http.h"
 #include "curl/curl.h"
-#include <stdio.h>
-#include <string.h>
 
 namespace fun {
 
@@ -300,7 +303,16 @@ void FunapiHttpImpl::PostRequest(const std::string &url,
     error_handler(res, curl_easy_strerror(res));
   }
   else {
-    completion_handler(header_receiving, body_receiving);
+    long response_code = 0;
+    curl_easy_getinfo(curl_handle_, CURLINFO_RESPONSE_CODE, &response_code);
+    if (response_code == 200) {
+      completion_handler(header_receiving, body_receiving);
+    }
+    else {
+      std::stringstream ss;
+      ss << "http response code " << response_code;
+      error_handler(response_code, ss.str());
+    }
   }
 
   if (chunk) {
@@ -398,3 +410,5 @@ void FunapiHttp::SetConnectTimeout(const long seconds) {
 }
 
 }  // namespace fun
+
+#endif

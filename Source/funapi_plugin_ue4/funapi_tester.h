@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -11,6 +11,7 @@
 #include "funapi_downloader.h"
 #include "funapi_session.h"
 #include "funapi_multicasting.h"
+#include "funapi_rpc.h"
 #include "funapi_tester.generated.h"
 
 UCLASS()
@@ -35,6 +36,9 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
 
   UFUNCTION(BlueprintCallable, Category="Funapi")
   bool ConnectHttp();
+
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool ConnectWebsocket();
 
   UFUNCTION(BlueprintCallable, Category="Funapi")
   void Disconnect();
@@ -134,6 +138,8 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
   void Connect(const fun::TransportProtocol protocol);
   void UpdateUI();
   void SendRedirectTestMessage();
+  bool TestRpc();
+  bool TestBeginPlay();
 
   // Please change this address for test.
   std::string kServer = "127.0.0.1";
@@ -143,6 +149,10 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
   bool with_session_reliability_ = false;
 
   std::shared_ptr<fun::FunapiSession> session_ = nullptr;
+
+#if FUNAPI_HAVE_RPC
+  std::shared_ptr<fun::FunapiRpc> rpc_ = nullptr;
+#endif
 
   const std::string kMulticastTestChannel = "multicast";
   std::shared_ptr<fun::FunapiMulticast> multicast_ = nullptr;

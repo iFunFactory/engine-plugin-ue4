@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -13,6 +13,7 @@
 #include "test_messages.pb.h"
 #include "funapi_tasks.h"
 #include "funapi_encryption.h"
+#include "funapi_rpc.h"
 
 
 // Sets default values
@@ -30,6 +31,10 @@ Afunapi_tester::~Afunapi_tester()
 void Afunapi_tester::BeginPlay()
 {
   Super::BeginPlay();
+
+#ifdef FUNAPI_UE4_PLATFORM_PS4
+  TestBeginPlay();
+#endif
 }
 
 void Afunapi_tester::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -41,8 +46,6 @@ void Afunapi_tester::Tick(float DeltaTime)
 {
   Super::Tick(DeltaTime);
 
-  // fun::FunapiTasks::UpdateAll();
-
   fun::FunapiSession::UpdateAll();
 
   if (announcement_) {
@@ -52,6 +55,12 @@ void Afunapi_tester::Tick(float DeltaTime)
   if (downloader_) {
     fun::FunapiHttpDownloader::UpdateAll();
   }
+
+#if FUNAPI_HAVE_RPC
+  if (rpc_) {
+    rpc_->Update();
+  }
+#endif
 
   UpdateUI();
 }
@@ -465,7 +474,7 @@ bool Afunapi_tester::DownloaderTest()
     ss_download_url << "http://" << kDownloadServer << ":" << kDownloadServerPort;
 
     downloader_ = fun::FunapiHttpDownloader::Create(ss_download_url.str(),
-                                                    TCHAR_TO_UTF8(*(FPaths::GameSavedDir())));
+                                                    TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir())));
 
     downloader_->AddReadyCallback([](const std::shared_ptr<fun::FunapiHttpDownloader>&downloader,
                                      const std::vector<std::shared_ptr<fun::FunapiDownloadFileInfo>>&info) {
@@ -516,7 +525,7 @@ bool Afunapi_tester::RequestAnnouncements()
     ss_url << "http://" << kAnnouncementServer << ":" << kAnnouncementServerPort;
 
     announcement_ = fun::FunapiAnnouncement::Create(ss_url.str(),
-                                                    TCHAR_TO_UTF8(*(FPaths::GameSavedDir())));
+                                                    TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir())));
 
     announcement_->AddCompletionCallback([this](const std::shared_ptr<fun::FunapiAnnouncement> &announcement,
                                                 const std::vector<std::shared_ptr<fun::FunapiAnnouncementInfo>>&info,
@@ -752,6 +761,11 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
       session_->Connect(protocol, port, encoding, option);
       */
     }
+#if FUNAPI_HAVE_WEBSOCKET
+    else if (protocol == fun::TransportProtocol::kWebsocket) {
+      port = with_protobuf_ ? 18022 : 18012;
+    }
+#endif
 
     if (with_session_reliability_) {
       port += 200;
@@ -771,4 +785,46 @@ void Afunapi_tester::OnSessionInitiated(const std::string &session_id)
 void Afunapi_tester::OnSessionClosed()
 {
   UE_LOG(LogFunapiExample, Log, TEXT("Session closed"));
+}
+
+bool Afunapi_tester::TestRpc()
+{
+#if FUNAPI_HAVE_RPC
+  std::string server_ip = kServer;
+  uint16_t port = 8015;
+
+  rpc_ = fun::FunapiRpc::Create();
+
+  rpc_->SetHandler
+  ("echo",
+   [](const std::string &type,
+      const FunDedicatedServerRpcMessage &request_message,
+      const fun::FunapiRpc::ResponseHandler &response_handler)
+  {
+    UE_LOG(LogFunapiExample, Log, TEXT("type='%s', %s"), *FString(type.c_str()), *FString(request_message.ShortDebugString().c_str()));
+    response_handler(request_message);
+  });
+
+  auto option = fun::FunapiRpcOption::Create();
+  option->AddInitializer(server_ip, port);
+
+  rpc_->Start(option);
+#endif
+
+  return true;
+}
+
+bool Afunapi_tester::ConnectWebsocket()
+{
+#if FUNAPI_HAVE_WEBSOCKET
+  Connect(fun::TransportProtocol::kWebsocket);
+#endif
+  return true;
+}
+
+bool Afunapi_tester::TestBeginPlay()
+{
+  ConnectWebsocket();
+  SendEchoMessage();
+  return true;
 }

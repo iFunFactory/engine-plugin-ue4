@@ -7,11 +7,7 @@
 #ifndef SRC_FUNAPI_DOWNLOADER_H_
 #define SRC_FUNAPI_DOWNLOADER_H_
 
-#include "funapi_build_config.h"
-
-#include <memory>
-#include <functional>
-#include <vector>
+#include "funapi_plugin.h"
 
 namespace fun {
 

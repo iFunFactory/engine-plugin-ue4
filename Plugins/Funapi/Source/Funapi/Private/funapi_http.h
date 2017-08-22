@@ -7,6 +7,8 @@
 #ifndef SRC_FUNAPI_HTTP_H_
 #define SRC_FUNAPI_HTTP_H_
 
+#include "funapi_plugin.h"
+
 namespace fun {
 
 class FunapiHttpImpl;

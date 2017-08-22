@@ -6596,7 +6596,8 @@ const ::google::protobuf::Message& TestServiceWithCustomOptions::GetRequestProto
       return ::protobuf_unittest::CustomOptionFooRequest::default_instance();
     default:
       GOOGLE_LOG(FATAL) << "Bad method index; this should never happen.";
-      return *reinterpret_cast< ::google::protobuf::Message*>(NULL);
+      // return *reinterpret_cast< ::google::protobuf::Message*>(NULL);
+      return ::protobuf_unittest::CustomOptionFooRequest::default_instance();
   }
 }
 
@@ -6608,7 +6609,8 @@ const ::google::protobuf::Message& TestServiceWithCustomOptions::GetResponseProt
       return ::protobuf_unittest::CustomOptionFooResponse::default_instance();
     default:
       GOOGLE_LOG(FATAL) << "Bad method index; this should never happen.";
-      return *reinterpret_cast< ::google::protobuf::Message*>(NULL);
+      // return *reinterpret_cast< ::google::protobuf::Message*>(NULL);
+      return ::protobuf_unittest::CustomOptionFooResponse::default_instance();
   }
 }
 
@@ -6679,7 +6681,8 @@ const ::google::protobuf::Message& AggregateService::GetRequestPrototype(
       return ::protobuf_unittest::AggregateMessage::default_instance();
     default:
       GOOGLE_LOG(FATAL) << "Bad method index; this should never happen.";
-      return *reinterpret_cast< ::google::protobuf::Message*>(NULL);
+      // return *reinterpret_cast< ::google::protobuf::Message*>(NULL);
+      return ::protobuf_unittest::AggregateMessage::default_instance();
   }
 }
 
@@ -6691,7 +6694,8 @@ const ::google::protobuf::Message& AggregateService::GetResponsePrototype(
       return ::protobuf_unittest::AggregateMessage::default_instance();
     default:
       GOOGLE_LOG(FATAL) << "Bad method index; this should never happen.";
-      return *reinterpret_cast< ::google::protobuf::Message*>(NULL);
+      // return *reinterpret_cast< ::google::protobuf::Message*>(NULL);
+      return ::protobuf_unittest::AggregateMessage::default_instance();
   }
 }
 

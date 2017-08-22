@@ -32,6 +32,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#if !defined(FUNAPI_UE4_PLATFORM_PS4) && !defined(FUNAPI_UE4_PLATFORM_ANDROID) && !defined(FUNAPI_UE4_PLATFORM_LINUX)
+
 #include "funapi_plugin_ue4.h"
 #include "AutomationTest.h"
 
@@ -1114,3 +1116,5 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
 
   return true;
 }
+
+#endif

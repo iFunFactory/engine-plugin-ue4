@@ -4,10 +4,13 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
-#include "funapi_plugin.h"
+#ifdef FUNAPI_UE4
+#include "FunapiPrivatePCH.h"
+#endif
+
+#include "funapi_transport.h"
 #include "funapi_version.h"
 #include "funapi_utils.h"
-#include "funapi_transport.h"
 #include "funapi_encryption.h"
 #include "funapi_tasks.h"
 #include "funapi_http.h"
@@ -91,6 +94,10 @@ std::string FunapiErrorImpl::GetErrorTypeString() {
       ret = "Ping";
       break;
 
+    case ErrorType::kWebsocket:
+      ret = "Websocket";
+      break;
+
     default:
       ret = "None";
   }
@@ -167,8 +174,6 @@ class FunapiTransportOptionImpl : public std::enable_shared_from_this<FunapiTran
  public:
   FunapiTransportOptionImpl() = default;
   virtual ~FunapiTransportOptionImpl() = default;
-
-  virtual void SetEncryptionType(EncryptionType type) = 0;
 };
 
 
@@ -201,6 +206,12 @@ class FunapiTcpTransportOptionImpl : public FunapiTransportOptionImpl {
   std::vector<EncryptionType> GetEncryptionTypes();
   std::string GetPublicKey(const EncryptionType type);
 
+  void SetUseTLS(const bool use_tls);
+  bool GetUseTLS();
+
+  void SetCACertFilePath(const std::string &path);
+  const std::string& GetCACertFilePath();
+
  private:
   bool disable_nagle_ = true;
   bool auto_reconnect_ = false;
@@ -209,6 +220,8 @@ class FunapiTcpTransportOptionImpl : public FunapiTransportOptionImpl {
   int timeout_seconds_ = 10;
   std::vector<EncryptionType> encryption_types_;
   std::unordered_map<int32_t, std::string> pubilc_keys_;
+  bool use_tls_ = false;
+  std::string cert_file_path_;
 };
 
 
@@ -285,6 +298,26 @@ std::string FunapiTcpTransportOptionImpl::GetPublicKey(const EncryptionType type
   }
 
   return "";
+}
+
+
+void FunapiTcpTransportOptionImpl::SetUseTLS(const bool use_tls) {
+  use_tls_ = use_tls;
+}
+
+
+bool FunapiTcpTransportOptionImpl::GetUseTLS() {
+  return use_tls_;
+}
+
+
+void FunapiTcpTransportOptionImpl::SetCACertFilePath(const std::string &path) {
+  cert_file_path_ = path;
+}
+
+
+const std::string& FunapiTcpTransportOptionImpl::GetCACertFilePath() {
+  return cert_file_path_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -394,6 +427,33 @@ const std::string& FunapiHttpTransportOptionImpl::GetCACertFilePath() {
   return cert_file_path_;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+// FunapiWebsocketTransportOptionImpl implementation.
+
+class FunapiWebsocketTransportOptionImpl : public FunapiTransportOptionImpl {
+public:
+  FunapiWebsocketTransportOptionImpl() = default;
+  virtual ~FunapiWebsocketTransportOptionImpl() = default;
+
+  void SetUseWss(const bool use_wss);
+  bool GetUseWss();
+
+private:
+  bool use_wss_ = false;
+};
+
+
+void FunapiWebsocketTransportOptionImpl::SetUseWss(const bool wss) {
+  use_wss_ = wss;
+}
+
+
+bool FunapiWebsocketTransportOptionImpl::GetUseWss() {
+  return use_wss_;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiTcpTransportOption implementation.
 
@@ -479,6 +539,34 @@ std::string FunapiTcpTransportOption::GetPublicKey(const EncryptionType type) {
 }
 
 
+#if FUNAPI_HAVE_TCP_TLS
+void FunapiTcpTransportOption::SetUseTLS(const bool use_tls) {
+  impl_->SetUseTLS(use_tls);
+}
+#endif
+
+
+bool FunapiTcpTransportOption::GetUseTLS() {
+  return impl_->GetUseTLS();
+}
+
+
+#ifdef FUNAPI_UE4_PLATFORM_PS4
+void FunapiTcpTransportOption::SetCACert(const std::string &cert) {
+  impl_->SetCACertFilePath(cert);
+}
+#else
+void FunapiTcpTransportOption::SetCACertFilePath(const std::string &path) {
+  impl_->SetCACertFilePath(path);
+}
+#endif
+
+
+const std::string& FunapiTcpTransportOption::GetCACertFilePath() {
+  return impl_->GetCACertFilePath();
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiUdpTransportOption implementation.
 
@@ -545,9 +633,15 @@ EncryptionType FunapiHttpTransportOption::GetEncryptionType() {
 }
 
 
+#ifdef FUNAPI_UE4_PLATFORM_PS4
+void FunapiHttpTransportOption::SetCACert(const std::string &cert) {
+  impl_->SetCACertFilePath(cert);
+}
+#else
 void FunapiHttpTransportOption::SetCACertFilePath(const std::string &path) {
   impl_->SetCACertFilePath(path);
 }
+#endif
 
 
 const std::string& FunapiHttpTransportOption::GetCACertFilePath() {
@@ -562,6 +656,31 @@ void FunapiHttpTransportOption::SetConnectTimeout(const time_t seconds) {
 
 time_t FunapiHttpTransportOption::GetConnectTimeout() {
   return impl_->GetConnectTimeout();
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FunapiWebsocketTransportOption implementation.
+
+FunapiWebsocketTransportOption::FunapiWebsocketTransportOption()
+  : impl_(std::make_shared<FunapiWebsocketTransportOptionImpl>()) {
+}
+
+
+std::shared_ptr<FunapiWebsocketTransportOption> FunapiWebsocketTransportOption::Create() {
+  return std::make_shared<FunapiWebsocketTransportOption>();
+}
+
+
+/*
+void FunapiWebsocketTransportOption::SetUseWss(const bool use_wss) {
+  impl_->SetUseWss(use_wss);
+}
+*/
+
+
+bool FunapiWebsocketTransportOption::GetUseWss() {
+  return impl_->GetUseWss();
 }
 
 }  // namespace fun

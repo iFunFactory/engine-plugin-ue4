@@ -2364,7 +2364,7 @@ bool FFunapiSessionTestMultithread::RunTest(const FString& Parameters) {
   (const int index,
     const std::string &server_ip,
     const int server_port,
-    const fun::TransportProtocol protocol,
+    const fun::TransportProtocol p,
     const fun::FunEncoding encoding,
     const bool use_session_reliability)
   {
@@ -2569,10 +2569,10 @@ bool FFunapiSessionTestMultithreadUpdateAll::RunTest(const FString& Parameters) 
 
   auto test_funapi_session =
     [&send_message, kMaxCount, &complete_mutex, &v_completed]
-  (const int index,
+   (const int index,
     const std::string &server_ip,
     const int server_port,
-    const fun::TransportProtocol protocol,
+    const fun::TransportProtocol p,
     const fun::FunEncoding encoding,
     const bool use_session_reliability)
   {

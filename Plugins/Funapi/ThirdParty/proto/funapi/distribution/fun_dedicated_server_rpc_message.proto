@@ -1,0 +1,47 @@
+// Copyright (C) 2017 iFunFactory Inc. All Rights Reserved.
+//
+// This work is confidential and proprietary to iFunFactory Inc. and
+// must not be used, disclosed, copied, or distributed without the prior
+// consent of iFunFactory Inc.
+
+
+// This protobuf message should be the outermost message.
+// Any RPC message should be in the form of FunDedicatedServerRpcMessage's extension.
+// For example, say we have a message like this:
+//   message MyRpcMessage {
+//    ...
+//   }
+// We can carry MyRpcMessage in FunDedicatedServerRpcMessage like this:
+//   extend FunDedicatedServerRpcMessage {
+//     optional MyRpcMessage mymessage = 32;
+//   }
+//
+// In C++, you can use like this:
+//   Ptr<FunDedicatedServerRpcMessage> req(new FunDedicatedServerRpcMessage);
+//   req->set_type("MyRpcType");
+//   MyRpcMessage *sub_message = req->MutableExtension(mymessage);
+//   sub_message->...
+//
+//   DedicatedServerRpc::Call(target, req, callback);
+
+message FunDedicatedServerRpcMessage {
+  required bytes xid = 1;          // You do not specify this manually.
+  required string type = 2;
+  required bool is_request = 3;    // You do not specify this manually.
+
+  ////////////////////////////////////////////////////////////////////
+  // CAUTION: EXTENSIONS FROM 8 THROUGH 31 ARE RESERVED BY THE ENGINE.
+  // GAME DEVELOPER SHOULD USE FROM 32.
+  ////////////////////////////////////////////////////////////////////
+  extensions 8 to max;
+}
+
+
+extend FunDedicatedServerRpcMessage {
+  optional FunDedicatedServerRpcSystemMessage ds_rpc_sys = 8;
+}
+
+
+message FunDedicatedServerRpcSystemMessage {
+  optional string data = 1;
+}

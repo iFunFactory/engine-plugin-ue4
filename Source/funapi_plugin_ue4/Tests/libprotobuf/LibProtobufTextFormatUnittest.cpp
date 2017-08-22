@@ -32,6 +32,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#ifndef FUNAPI_UE4_PLATFORM_PS4
+
 #include "funapi_plugin_ue4.h"
 #include "AutomationTest.h"
 
@@ -138,7 +140,7 @@ void ExpectLocation(google::protobuf::TextFormat::ParseInfoTree* tree,
 }
 
 static std::string TestSourceDir() {
-  return std::string(TCHAR_TO_UTF8(*(FPaths::GameSavedDir()))) + "../ThirdParty";
+  return std::string(TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir()))) + "../ThirdParty";
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiLibProtobufTextFormatUnitTest, "LibProtobuf.TextFormatUnitTest", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
@@ -1560,3 +1562,5 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
 
   return true;
 }
+
+#endif

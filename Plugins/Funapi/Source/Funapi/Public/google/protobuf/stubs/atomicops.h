@@ -181,7 +181,7 @@ GOOGLE_PROTOBUF_ATOMICOPS_ERROR
 
 // Apple.
 #elif defined(GOOGLE_PROTOBUF_OS_APPLE)
-#include <google/protobuf/stubs/atomicops_internals_macosx.h>
+#include <google/protobuf/stubs/atomicops_internals_generic_c11_atomic.h>
 
 // GCC.
 #elif defined(__GNUC__)

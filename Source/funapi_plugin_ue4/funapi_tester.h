@@ -11,6 +11,7 @@
 #include "funapi_downloader.h"
 #include "funapi_session.h"
 #include "funapi_multicasting.h"
+#include "funapi_rpc.h"
 #include "funapi_tester.generated.h"
 
 UCLASS()
@@ -134,6 +135,7 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
   void Connect(const fun::TransportProtocol protocol);
   void UpdateUI();
   void SendRedirectTestMessage();
+  bool ConnectRpc();
 
   // Please change this address for test.
   std::string kServer = "127.0.0.1";
@@ -143,6 +145,8 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
   bool with_session_reliability_ = false;
 
   std::shared_ptr<fun::FunapiSession> session_ = nullptr;
+
+  std::shared_ptr<fun::FunapiRpc> rpc_ = nullptr;
 
   const std::string kMulticastTestChannel = "multicast";
   std::shared_ptr<fun::FunapiMulticast> multicast_ = nullptr;

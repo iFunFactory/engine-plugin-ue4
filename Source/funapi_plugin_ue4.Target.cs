@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 public class funapi_plugin_ue4Target : TargetRules
 {
-    public funapi_plugin_ue4Target(TargetInfo Target)
+    public funapi_plugin_ue4Target(TargetInfo Target) : base(Target)
     {
         Type = TargetType.Game;
 

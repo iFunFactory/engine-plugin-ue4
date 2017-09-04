@@ -13,6 +13,7 @@
 #include "test_messages.pb.h"
 #include "funapi_tasks.h"
 #include "funapi_encryption.h"
+#include "funapi_rpc.h"
 
 
 // Sets default values
@@ -41,8 +42,6 @@ void Afunapi_tester::Tick(float DeltaTime)
 {
   Super::Tick(DeltaTime);
 
-  // fun::FunapiTasks::UpdateAll();
-
   fun::FunapiSession::UpdateAll();
 
   if (announcement_) {
@@ -51,6 +50,10 @@ void Afunapi_tester::Tick(float DeltaTime)
 
   if (downloader_) {
     fun::FunapiHttpDownloader::UpdateAll();
+  }
+
+  if (rpc_) {
+    rpc_->Update();
   }
 
   UpdateUI();
@@ -771,4 +774,33 @@ void Afunapi_tester::OnSessionInitiated(const std::string &session_id)
 void Afunapi_tester::OnSessionClosed()
 {
   UE_LOG(LogFunapiExample, Log, TEXT("Session closed"));
+}
+
+bool Afunapi_tester::ConnectRpc()
+{
+  std::string server_ip = kServer;
+  uint16_t port = 8015;
+
+  rpc_ = fun::FunapiRpc::Create();
+
+  rpc_->Connect(server_ip, port,
+    [](fun::FunapiRpc::EventType type, const std::string &hostname_or_ip, const int port)
+  {
+    if (type == fun::FunapiRpc::EventType::kDisconnected) {
+      UE_LOG(LogFunapiExample, Log, TEXT("fun::FunapiRpc::EventType::kDisconnected"));
+    }
+
+    if (type == fun::FunapiRpc::EventType::kConnected) {
+      UE_LOG(LogFunapiExample, Log, TEXT("fun::FunapiRpc::EventType::kConnected"));
+    }
+  });
+
+  rpc_->SetHandler("echo",
+    [](const std::string &type, const std::vector<uint8_t> &v_request, const fun::FunapiRpc::ResponseHandler response_handler)
+  {
+    UE_LOG(LogFunapiExample, Log, TEXT("type='%s', v='%s' \n"), *FString(type.c_str()), *FString(std::string(v_request.cbegin(), v_request.cend()).c_str()));
+    response_handler(v_request);
+  });
+
+  return true;
 }

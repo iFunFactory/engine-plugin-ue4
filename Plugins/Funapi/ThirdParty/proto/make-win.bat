@@ -3,7 +3,8 @@ funapi\management\maintenance_message.proto ^
 funapi\network\fun_message.proto ^
 funapi\network\ping_message.proto ^
 funapi\service\multicast_message.proto ^
-funapi\service\redirect_message.proto
+funapi\service\redirect_message.proto ^
+funapi\rpc\fun_dedicated_server_rpc_message.proto
 
 ..\build\Windows\protoc --cpp_out=..\..\..\..\Source\funapi_plugin_ue4 test_messages.proto
 
@@ -13,5 +14,7 @@ copy ..\..\Source\Funapi\Public\funapi\network\*.cc ..\..\Source\Funapi\Private\
 del ..\..\Source\Funapi\Public\funapi\network\*.cc
 copy ..\..\Source\Funapi\Public\funapi\service\*.cc ..\..\Source\Funapi\Private\funapi\service
 del ..\..\Source\Funapi\Public\funapi\service\*.cc
+copy ..\..\Source\Funapi\Public\funapi\rpc\*.cc ..\..\Source\Funapi\Private\funapi\rpc
+del ..\..\Source\Funapi\Public\funapi\rpc\*.cc
 
 pause

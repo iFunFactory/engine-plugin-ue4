@@ -21,6 +21,7 @@
 		"IOS",
 		"MacNoEditor",
 		"WindowsNoEditor",
-		"PS4"
+		"PS4",
+		"LinuxNoEditor"
 	]
 }

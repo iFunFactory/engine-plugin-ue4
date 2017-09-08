@@ -63,11 +63,12 @@ class FunapiRpcImpl : public std::enable_shared_from_this<FunapiRpcImpl> {
   FunapiRpcImpl();
   virtual ~FunapiRpcImpl();
 
+  void Start(std::shared_ptr<FunapiRpcOption> option);
   void Connect(const std::string &hostname_or_ip, int port, const EventHandler &handler);
   void SetHandler(const std::string &type, const RpcHandler &handler);
   void Update();
 
-  void OnHandler(std::shared_ptr<FunapiRpcPeer> peer, const FunDedicatedServerRpcMessage &msg);
+  void OnHandler(std::shared_ptr<FunapiRpcPeer> peer, std::shared_ptr<FunapiRpcMessage> msg);
   std::shared_ptr<FunapiTasks> GetTasksQueue();
 
   void DebugCall(const FunDedicatedServerRpcMessage &debug_request);
@@ -111,7 +112,7 @@ class FunapiRpcPeer : public std::enable_shared_from_this<FunapiRpcPeer> {
   void Update();
 
   void SetEventCallback(const EventHandler &handler);
-  void Call(const FunDedicatedServerRpcMessage &debug_request);
+  void Call(std::shared_ptr<FunapiRpcMessage> message);
 
   void SetRpcImpl(std::weak_ptr<FunapiRpcImpl> weak);
 
@@ -241,11 +242,12 @@ void FunapiRpcPeer::OnRecv(const int read_length, const std::vector<uint8_t> &re
       DebugUtils::Log("[RPC:S->C] %s", protobuf_message.ShortDebugString().c_str());
 #endif
 
+      auto recv_funapi_rpc_message = std::make_shared<FunapiRpcMessage>(protobuf_message);
       std::weak_ptr<FunapiRpcPeer> weak = shared_from_this();
-      PushTaskQueue([this, weak, protobuf_message]()->bool {
+      PushTaskQueue([this, weak, recv_funapi_rpc_message]()->bool {
         if (auto peer = weak.lock()) {
           if (auto impl = rpc_impl_.lock()) {
-            impl->OnHandler(peer, protobuf_message);
+            impl->OnHandler(peer, recv_funapi_rpc_message);
           }
         }
         return true;
@@ -486,8 +488,7 @@ void FunapiRpcPeer::ClearSendQueue() {
 }
 
 
-void FunapiRpcPeer::Call(const FunDedicatedServerRpcMessage &debug_request) {
-  auto message = std::make_shared<FunapiRpcMessage>(debug_request);
+void FunapiRpcPeer::Call(std::shared_ptr<FunapiRpcMessage> message) {
   PushTaskQueue([this, message]()->bool {
     PushSendQueue(message);
     return true;
@@ -506,6 +507,15 @@ FunapiRpcImpl::FunapiRpcImpl() {
 
 FunapiRpcImpl::~FunapiRpcImpl() {
   // DebugUtils::Log("%s", __FUNCTION__);
+}
+
+
+void FunapiRpcImpl::Start(std::shared_ptr<FunapiRpcOption> option) {
+  auto& v = option->GetInitializers();
+  for (auto t : v) {
+    Connect(std::get<0>(t), std::get<1>(t),
+            [](const EventType type, const std::string &hostname_or_ip, const int port){});
+  }
 }
 
 
@@ -562,8 +572,8 @@ void FunapiRpcImpl::Update() {
 
 
 void FunapiRpcImpl::OnHandler(std::shared_ptr<FunapiRpcPeer> peer,
-                              const FunDedicatedServerRpcMessage &msg) {
-  std::string type = msg.type();
+                              std::shared_ptr<FunapiRpcMessage> request_message) {
+  std::string type = request_message->GetMessage().type();
   std::shared_ptr<RpcHandler> handler = nullptr;
   {
     std::unique_lock<std::mutex> lock(handler_map_mutex_);
@@ -573,16 +583,15 @@ void FunapiRpcImpl::OnHandler(std::shared_ptr<FunapiRpcPeer> peer,
   }
 
   if (handler) {
-    std::string xid = msg.xid();
-    auto response_handler = [peer, type, xid](const std::vector<uint8_t> &v_response) {
-      FunDedicatedServerRpcMessage msg;
-      msg.set_type(type);
-      msg.set_xid(xid);
-      msg.set_data(v_response.data(), v_response.size());
-      peer->Call(msg);
+    auto response_handler = [peer, request_message](const FunDedicatedServerRpcMessage &msg) {
+      auto response_msg = std::make_shared<FunapiRpcMessage>(msg);
+      response_msg->GetMessage().set_type(request_message->GetMessage().type());
+      response_msg->GetMessage().set_xid(request_message->GetMessage().xid());
+
+      peer->Call(response_msg);
     };
 
-    (*handler)(type, std::vector<uint8_t>(msg.data().cbegin(), msg.data().cend()), response_handler);
+    (*handler)(type, request_message->GetMessage(), response_handler);
   }
   else {
     DebugUtils::Log("[RPC] handler not found '%s'", type.c_str());
@@ -604,8 +613,9 @@ void FunapiRpcImpl::DebugCall(const FunDedicatedServerRpcMessage &debug_request)
     }
   }
 
+  auto request_message = std::make_shared<FunapiRpcMessage>(debug_request);
   for (auto p : v_peer) {
-    p->Call(debug_request);
+    p->Call(request_message);
   }
 }
 
@@ -630,8 +640,8 @@ std::shared_ptr<FunapiRpc> FunapiRpc::Create() {
 }
 
 
-void FunapiRpc::Connect(const std::string &hostname_or_ip, const int port, const EventHandler &handler) {
-  impl_->Connect(hostname_or_ip, port, handler);
+void FunapiRpc::Start(std::shared_ptr<FunapiRpcOption> option) {
+  impl_->Start(option);
 }
 
 
@@ -649,5 +659,52 @@ void FunapiRpc::DebugCall(const FunDedicatedServerRpcMessage &debug_request) {
   impl_->DebugCall(debug_request);
 }
 */
+
+////////////////////////////////////////////////////////////////////////////////
+// FunapiRpcOptionImpl implementation.
+
+class FunapiRpcOptionImpl : public std::enable_shared_from_this<FunapiRpcOptionImpl> {
+ public:
+  FunapiRpcOptionImpl() = default;
+  virtual ~FunapiRpcOptionImpl() = default;
+
+  void AddInitializer(const std::string &hostname_or_ip, const int port);
+  std::vector<std::tuple<std::string, int>>& GetInitializers();
+
+ private:
+  std::vector<std::tuple<std::string, int>> initializers_;
+};
+
+
+void FunapiRpcOptionImpl::AddInitializer(const std::string &hostname_or_ip, const int port) {
+  initializers_.push_back(std::make_tuple(hostname_or_ip, port));
+}
+
+
+std::vector<std::tuple<std::string, int>>& FunapiRpcOptionImpl::GetInitializers() {
+  return initializers_;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FunapiRpcOption implementation.
+
+FunapiRpcOption::FunapiRpcOption() : impl_(std::make_shared<FunapiRpcOptionImpl>()) {
+}
+
+
+std::shared_ptr<FunapiRpcOption> FunapiRpcOption::Create() {
+  return std::make_shared<FunapiRpcOption>();
+}
+
+
+void FunapiRpcOption::AddInitializer(const std::string &hostname_or_ip, const int port) {
+  impl_->AddInitializer(hostname_or_ip, port);
+}
+
+
+std::vector<std::tuple<std::string, int>>& FunapiRpcOption::GetInitializers() {
+  return impl_->GetInitializers();
+}
 
 }  // namespace fun

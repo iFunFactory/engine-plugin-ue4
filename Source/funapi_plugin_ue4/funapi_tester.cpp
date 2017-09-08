@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -14,6 +14,7 @@
 #include "funapi_tasks.h"
 #include "funapi_encryption.h"
 #include "funapi_rpc.h"
+#include "funapi/rpc/fun_dedicated_server_rpc_message.pb.h"
 
 
 // Sets default values
@@ -776,31 +777,27 @@ void Afunapi_tester::OnSessionClosed()
   UE_LOG(LogFunapiExample, Log, TEXT("Session closed"));
 }
 
-bool Afunapi_tester::ConnectRpc()
+bool Afunapi_tester::TestRpc()
 {
   std::string server_ip = kServer;
   uint16_t port = 8015;
 
   rpc_ = fun::FunapiRpc::Create();
 
-  rpc_->Connect(server_ip, port,
-    [](fun::FunapiRpc::EventType type, const std::string &hostname_or_ip, const int port)
+  rpc_->SetHandler
+  ("echo",
+   [](const std::string &type,
+      const FunDedicatedServerRpcMessage &request_message,
+      const fun::FunapiRpc::ResponseHandler &response_handler)
   {
-    if (type == fun::FunapiRpc::EventType::kDisconnected) {
-      UE_LOG(LogFunapiExample, Log, TEXT("fun::FunapiRpc::EventType::kDisconnected"));
-    }
-
-    if (type == fun::FunapiRpc::EventType::kConnected) {
-      UE_LOG(LogFunapiExample, Log, TEXT("fun::FunapiRpc::EventType::kConnected"));
-    }
+    UE_LOG(LogFunapiExample, Log, TEXT("type='%s', %s"), *FString(type.c_str()), *FString(request_message.ShortDebugString().c_str()));
+    response_handler(request_message);
   });
 
-  rpc_->SetHandler("echo",
-    [](const std::string &type, const std::vector<uint8_t> &v_request, const fun::FunapiRpc::ResponseHandler response_handler)
-  {
-    UE_LOG(LogFunapiExample, Log, TEXT("type='%s', v='%s' \n"), *FString(type.c_str()), *FString(std::string(v_request.cbegin(), v_request.cend()).c_str()));
-    response_handler(v_request);
-  });
+  auto option = fun::FunapiRpcOption::Create();
+  option->AddInitializer(server_ip, port);
+
+  rpc_->Start(option);
 
   return true;
 }

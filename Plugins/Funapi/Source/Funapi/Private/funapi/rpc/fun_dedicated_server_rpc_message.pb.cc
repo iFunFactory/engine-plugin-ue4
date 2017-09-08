@@ -21,6 +21,9 @@ namespace {
 const ::google::protobuf::Descriptor* FunDedicatedServerRpcMessage_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   FunDedicatedServerRpcMessage_reflection_ = NULL;
+const ::google::protobuf::Descriptor* FunDedicatedServerRpcInfoMessage_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  FunDedicatedServerRpcInfoMessage_reflection_ = NULL;
 
 }  // namespace
 
@@ -32,10 +35,9 @@ void protobuf_AssignDesc_funapi_2frpc_2ffun_5fdedicated_5fserver_5frpc_5fmessage
       "funapi/rpc/fun_dedicated_server_rpc_message.proto");
   GOOGLE_CHECK(file != NULL);
   FunDedicatedServerRpcMessage_descriptor_ = file->message_type(0);
-  static const int FunDedicatedServerRpcMessage_offsets_[3] = {
+  static const int FunDedicatedServerRpcMessage_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunDedicatedServerRpcMessage, xid_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunDedicatedServerRpcMessage, type_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunDedicatedServerRpcMessage, data_),
   };
   FunDedicatedServerRpcMessage_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -44,10 +46,24 @@ void protobuf_AssignDesc_funapi_2frpc_2ffun_5fdedicated_5fserver_5frpc_5fmessage
       FunDedicatedServerRpcMessage_offsets_,
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunDedicatedServerRpcMessage, _has_bits_[0]),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunDedicatedServerRpcMessage, _unknown_fields_),
-      -1,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunDedicatedServerRpcMessage, _extensions_),
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(FunDedicatedServerRpcMessage));
+  FunDedicatedServerRpcInfoMessage_descriptor_ = file->message_type(1);
+  static const int FunDedicatedServerRpcInfoMessage_offsets_[1] = {
+  };
+  FunDedicatedServerRpcInfoMessage_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      FunDedicatedServerRpcInfoMessage_descriptor_,
+      FunDedicatedServerRpcInfoMessage::default_instance_,
+      FunDedicatedServerRpcInfoMessage_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunDedicatedServerRpcInfoMessage, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunDedicatedServerRpcInfoMessage, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(FunDedicatedServerRpcInfoMessage));
 }
 
 namespace {
@@ -62,6 +78,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     FunDedicatedServerRpcMessage_descriptor_, &FunDedicatedServerRpcMessage::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    FunDedicatedServerRpcInfoMessage_descriptor_, &FunDedicatedServerRpcInfoMessage::default_instance());
 }
 
 }  // namespace
@@ -69,6 +87,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
 void protobuf_ShutdownFile_funapi_2frpc_2ffun_5fdedicated_5fserver_5frpc_5fmessage_2eproto() {
   delete FunDedicatedServerRpcMessage::default_instance_;
   delete FunDedicatedServerRpcMessage_reflection_;
+  delete FunDedicatedServerRpcInfoMessage::default_instance_;
+  delete FunDedicatedServerRpcInfoMessage_reflection_;
 }
 
 void protobuf_AddDesc_funapi_2frpc_2ffun_5fdedicated_5fserver_5frpc_5fmessage_2eproto() {
@@ -79,13 +99,21 @@ void protobuf_AddDesc_funapi_2frpc_2ffun_5fdedicated_5fserver_5frpc_5fmessage_2e
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n1funapi/rpc/fun_dedicated_server_rpc_me"
-    "ssage.proto\"G\n\034FunDedicatedServerRpcMess"
-    "age\022\013\n\003xid\030\001 \002(\014\022\014\n\004type\030\002 \002(\t\022\014\n\004data\030\003"
-    " \002(\014", 124);
+    "ssage.proto\"C\n\034FunDedicatedServerRpcMess"
+    "age\022\013\n\003xid\030\001 \002(\014\022\014\n\004type\030\002 \002(\t*\010\010\010\020\200\200\200\200\002"
+    "\"\"\n FunDedicatedServerRpcInfoMessage:Q\n\007"
+    "ds_info\022\035.FunDedicatedServerRpcMessage\030\010"
+    " \001(\0132!.FunDedicatedServerRpcInfoMessage", 239);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "funapi/rpc/fun_dedicated_server_rpc_message.proto", &protobuf_RegisterTypes);
   FunDedicatedServerRpcMessage::default_instance_ = new FunDedicatedServerRpcMessage();
+  FunDedicatedServerRpcInfoMessage::default_instance_ = new FunDedicatedServerRpcInfoMessage();
+  ::google::protobuf::internal::ExtensionSet::RegisterMessageExtension(
+    &::FunDedicatedServerRpcMessage::default_instance(),
+    8, 11, false, false,
+    &::FunDedicatedServerRpcInfoMessage::default_instance());
   FunDedicatedServerRpcMessage::default_instance_->InitAsDefaultInstance();
+  FunDedicatedServerRpcInfoMessage::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_funapi_2frpc_2ffun_5fdedicated_5fserver_5frpc_5fmessage_2eproto);
 }
 
@@ -101,7 +129,6 @@ struct StaticDescriptorInitializer_funapi_2frpc_2ffun_5fdedicated_5fserver_5frpc
 #ifndef _MSC_VER
 const int FunDedicatedServerRpcMessage::kXidFieldNumber;
 const int FunDedicatedServerRpcMessage::kTypeFieldNumber;
-const int FunDedicatedServerRpcMessage::kDataFieldNumber;
 #endif  // !_MSC_VER
 
 FunDedicatedServerRpcMessage::FunDedicatedServerRpcMessage()
@@ -125,7 +152,6 @@ void FunDedicatedServerRpcMessage::SharedCtor() {
   _cached_size_ = 0;
   xid_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   type_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  data_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -140,9 +166,6 @@ void FunDedicatedServerRpcMessage::SharedDtor() {
   }
   if (type_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete type_;
-  }
-  if (data_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    delete data_;
   }
   if (this != default_instance_) {
   }
@@ -170,7 +193,8 @@ FunDedicatedServerRpcMessage* FunDedicatedServerRpcMessage::New() const {
 }
 
 void FunDedicatedServerRpcMessage::Clear() {
-  if (_has_bits_[0 / 32] & 7) {
+  _extensions_.Clear();
+  if (_has_bits_[0 / 32] & 3) {
     if (has_xid()) {
       if (xid_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
         xid_->clear();
@@ -179,11 +203,6 @@ void FunDedicatedServerRpcMessage::Clear() {
     if (has_type()) {
       if (type_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
         type_->clear();
-      }
-    }
-    if (has_data()) {
-      if (data_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-        data_->clear();
       }
     }
   }
@@ -226,19 +245,6 @@ bool FunDedicatedServerRpcMessage::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(26)) goto parse_data;
-        break;
-      }
-
-      // required bytes data = 3;
-      case 3: {
-        if (tag == 26) {
-         parse_data:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-                input, this->mutable_data()));
-        } else {
-          goto handle_unusual;
-        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -249,6 +255,11 @@ bool FunDedicatedServerRpcMessage::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           goto success;
+        }
+        if ((64u <= tag)) {
+          DO_(_extensions_.ParseField(tag, input, default_instance_,
+                                      mutable_unknown_fields()));
+          continue;
         }
         DO_(::google::protobuf::internal::WireFormat::SkipField(
               input, tag, mutable_unknown_fields()));
@@ -284,11 +295,9 @@ void FunDedicatedServerRpcMessage::SerializeWithCachedSizes(
       2, this->type(), output);
   }
 
-  // required bytes data = 3;
-  if (has_data()) {
-    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
-      3, this->data(), output);
-  }
+  // Extension range [8, 536870912)
+  _extensions_.SerializeWithCachedSizes(
+      8, 536870912, output);
 
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
@@ -318,12 +327,9 @@ void FunDedicatedServerRpcMessage::SerializeWithCachedSizes(
         2, this->type(), target);
   }
 
-  // required bytes data = 3;
-  if (has_data()) {
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
-        3, this->data(), target);
-  }
+  // Extension range [8, 536870912)
+  target = _extensions_.SerializeWithCachedSizesToArray(
+      8, 536870912, target);
 
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
@@ -351,14 +357,9 @@ int FunDedicatedServerRpcMessage::ByteSize() const {
           this->type());
     }
 
-    // required bytes data = 3;
-    if (has_data()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::BytesSize(
-          this->data());
-    }
-
   }
+  total_size += _extensions_.ByteSize();
+
   if (!unknown_fields().empty()) {
     total_size +=
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
@@ -391,10 +392,8 @@ void FunDedicatedServerRpcMessage::MergeFrom(const FunDedicatedServerRpcMessage&
     if (from.has_type()) {
       set_type(from.type());
     }
-    if (from.has_data()) {
-      set_data(from.data());
-    }
   }
+  _extensions_.MergeFrom(from._extensions_);
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
@@ -411,19 +410,20 @@ void FunDedicatedServerRpcMessage::CopyFrom(const FunDedicatedServerRpcMessage& 
 }
 
 bool FunDedicatedServerRpcMessage::IsInitialized() const {
-  if ((_has_bits_[0] & 0x00000007) != 0x00000007) return false;
+  if ((_has_bits_[0] & 0x00000003) != 0x00000003) return false;
 
-  return true;
+
+  if (!_extensions_.IsInitialized()) return false;  return true;
 }
 
 void FunDedicatedServerRpcMessage::Swap(FunDedicatedServerRpcMessage* other) {
   if (other != this) {
     std::swap(xid_, other->xid_);
     std::swap(type_, other->type_);
-    std::swap(data_, other->data_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
+    _extensions_.Swap(&other->_extensions_);
   }
 }
 
@@ -435,6 +435,183 @@ void FunDedicatedServerRpcMessage::Swap(FunDedicatedServerRpcMessage* other) {
   return metadata;
 }
 
+
+// ===================================================================
+
+#ifndef _MSC_VER
+#endif  // !_MSC_VER
+
+FunDedicatedServerRpcInfoMessage::FunDedicatedServerRpcInfoMessage()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:FunDedicatedServerRpcInfoMessage)
+}
+
+void FunDedicatedServerRpcInfoMessage::InitAsDefaultInstance() {
+}
+
+FunDedicatedServerRpcInfoMessage::FunDedicatedServerRpcInfoMessage(const FunDedicatedServerRpcInfoMessage& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+  // @@protoc_insertion_point(copy_constructor:FunDedicatedServerRpcInfoMessage)
+}
+
+void FunDedicatedServerRpcInfoMessage::SharedCtor() {
+  _cached_size_ = 0;
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+FunDedicatedServerRpcInfoMessage::~FunDedicatedServerRpcInfoMessage() {
+  // @@protoc_insertion_point(destructor:FunDedicatedServerRpcInfoMessage)
+  SharedDtor();
+}
+
+void FunDedicatedServerRpcInfoMessage::SharedDtor() {
+  if (this != default_instance_) {
+  }
+}
+
+void FunDedicatedServerRpcInfoMessage::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* FunDedicatedServerRpcInfoMessage::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return FunDedicatedServerRpcInfoMessage_descriptor_;
+}
+
+const FunDedicatedServerRpcInfoMessage& FunDedicatedServerRpcInfoMessage::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_funapi_2frpc_2ffun_5fdedicated_5fserver_5frpc_5fmessage_2eproto();
+  return *default_instance_;
+}
+
+FunDedicatedServerRpcInfoMessage* FunDedicatedServerRpcInfoMessage::default_instance_ = NULL;
+
+FunDedicatedServerRpcInfoMessage* FunDedicatedServerRpcInfoMessage::New() const {
+  return new FunDedicatedServerRpcInfoMessage;
+}
+
+void FunDedicatedServerRpcInfoMessage::Clear() {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool FunDedicatedServerRpcInfoMessage::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:FunDedicatedServerRpcInfoMessage)
+  for (;;) {
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+  handle_unusual:
+    if (tag == 0 ||
+        ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+        ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+      goto success;
+    }
+    DO_(::google::protobuf::internal::WireFormat::SkipField(
+          input, tag, mutable_unknown_fields()));
+  }
+success:
+  // @@protoc_insertion_point(parse_success:FunDedicatedServerRpcInfoMessage)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:FunDedicatedServerRpcInfoMessage)
+  return false;
+#undef DO_
+}
+
+void FunDedicatedServerRpcInfoMessage::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:FunDedicatedServerRpcInfoMessage)
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:FunDedicatedServerRpcInfoMessage)
+}
+
+::google::protobuf::uint8* FunDedicatedServerRpcInfoMessage::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // @@protoc_insertion_point(serialize_to_array_start:FunDedicatedServerRpcInfoMessage)
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:FunDedicatedServerRpcInfoMessage)
+  return target;
+}
+
+int FunDedicatedServerRpcInfoMessage::ByteSize() const {
+  int total_size = 0;
+
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void FunDedicatedServerRpcInfoMessage::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const FunDedicatedServerRpcInfoMessage* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const FunDedicatedServerRpcInfoMessage*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void FunDedicatedServerRpcInfoMessage::MergeFrom(const FunDedicatedServerRpcInfoMessage& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void FunDedicatedServerRpcInfoMessage::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void FunDedicatedServerRpcInfoMessage::CopyFrom(const FunDedicatedServerRpcInfoMessage& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool FunDedicatedServerRpcInfoMessage::IsInitialized() const {
+
+  return true;
+}
+
+void FunDedicatedServerRpcInfoMessage::Swap(FunDedicatedServerRpcInfoMessage* other) {
+  if (other != this) {
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata FunDedicatedServerRpcInfoMessage::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = FunDedicatedServerRpcInfoMessage_descriptor_;
+  metadata.reflection = FunDedicatedServerRpcInfoMessage_reflection_;
+  return metadata;
+}
+
+::google::protobuf::internal::ExtensionIdentifier< ::FunDedicatedServerRpcMessage,
+    ::google::protobuf::internal::MessageTypeTraits< ::FunDedicatedServerRpcInfoMessage >, 11, false >
+  ds_info(kDsInfoFieldNumber, ::FunDedicatedServerRpcInfoMessage::default_instance());
 
 // @@protoc_insertion_point(namespace_scope)
 

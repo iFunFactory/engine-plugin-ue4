@@ -13,8 +13,24 @@ class FunDedicatedServerRpcMessage;
 
 namespace fun {
 
+class FunapiRpcOptionImpl;
+class FUNAPI_API FunapiRpcOption : public std::enable_shared_from_this<FunapiRpcOption> {
+ public:
+  FunapiRpcOption();
+  virtual ~FunapiRpcOption() = default;
+
+  static std::shared_ptr<FunapiRpcOption> Create();
+
+  void AddInitializer(const std::string &hostname_or_ip, const int port);
+  std::vector<std::tuple<std::string, int>>& GetInitializers();
+
+ private:
+  std::shared_ptr<FunapiRpcOptionImpl> impl_;
+};
+
+
 class FunapiRpcImpl;
-class FUNAPI_API FunapiRpc {
+class FUNAPI_API FunapiRpc : public std::enable_shared_from_this<FunapiRpc> {
  public:
   enum class EventType : int {
     kConnected,
@@ -27,10 +43,10 @@ class FUNAPI_API FunapiRpc {
                              const std::string &hostname_or_ip,
                              const int port)> EventHandler;
 
-  typedef std::function<void(const std::vector<uint8_t> &v_response)> ResponseHandler;
+  typedef std::function<void(const FunDedicatedServerRpcMessage &response_message)> ResponseHandler;
 
   typedef std::function<void(const std::string &type,
-                             const std::vector<uint8_t> &v_request,
+                             const FunDedicatedServerRpcMessage &request_message,
                              const ResponseHandler &response_handler)> RpcHandler;
 
   FunapiRpc();
@@ -38,11 +54,7 @@ class FUNAPI_API FunapiRpc {
 
   static std::shared_ptr<FunapiRpc> Create();
 
-  void Connect(const std::string &hostname_or_ip,
-                      const int port,
-                      const EventHandler &handler = [](const EventType type,
-                                                       const std::string &hostname_or_ip,
-                                                       const int port){});
+  void Start(std::shared_ptr<FunapiRpcOption> option);
   void SetHandler(const std::string &type, const RpcHandler &handler);
   void Update();
 

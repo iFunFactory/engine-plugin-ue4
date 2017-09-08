@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -135,7 +135,7 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
   void Connect(const fun::TransportProtocol protocol);
   void UpdateUI();
   void SendRedirectTestMessage();
-  bool ConnectRpc();
+  bool TestRpc();
 
   // Please change this address for test.
   std::string kServer = "127.0.0.1";

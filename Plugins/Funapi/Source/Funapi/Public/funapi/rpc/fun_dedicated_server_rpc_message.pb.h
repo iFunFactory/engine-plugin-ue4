@@ -45,6 +45,7 @@ void protobuf_AssignDesc_funapi_2frpc_2ffun_5fdedicated_5fserver_5frpc_5fmessage
 void protobuf_ShutdownFile_funapi_2frpc_2ffun_5fdedicated_5fserver_5frpc_5fmessage_2eproto();
 
 class FunDedicatedServerRpcMessage;
+class FunDedicatedServerRpcInfoMessage;
 
 // ===================================================================
 
@@ -125,26 +126,15 @@ class FUNAPI_API FunDedicatedServerRpcMessage : public ::google::protobuf::Messa
   inline ::std::string* release_type();
   inline void set_allocated_type(::std::string* type);
 
-  // required bytes data = 3;
-  inline bool has_data() const;
-  inline void clear_data();
-  static const int kDataFieldNumber = 3;
-  inline const ::std::string& data() const;
-  inline void set_data(const ::std::string& value);
-  inline void set_data(const char* value);
-  inline void set_data(const void* value, size_t size);
-  inline ::std::string* mutable_data();
-  inline ::std::string* release_data();
-  inline void set_allocated_data(::std::string* data);
-
+  GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(FunDedicatedServerRpcMessage)
   // @@protoc_insertion_point(class_scope:FunDedicatedServerRpcMessage)
  private:
   inline void set_has_xid();
   inline void clear_has_xid();
   inline void set_has_type();
   inline void clear_has_type();
-  inline void set_has_data();
-  inline void clear_has_data();
+
+  ::google::protobuf::internal::ExtensionSet _extensions_;
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -152,7 +142,6 @@ class FUNAPI_API FunDedicatedServerRpcMessage : public ::google::protobuf::Messa
   mutable int _cached_size_;
   ::std::string* xid_;
   ::std::string* type_;
-  ::std::string* data_;
   friend void FUNAPI_API protobuf_AddDesc_funapi_2frpc_2ffun_5fdedicated_5fserver_5frpc_5fmessage_2eproto();
   friend void protobuf_AssignDesc_funapi_2frpc_2ffun_5fdedicated_5fserver_5frpc_5fmessage_2eproto();
   friend void protobuf_ShutdownFile_funapi_2frpc_2ffun_5fdedicated_5fserver_5frpc_5fmessage_2eproto();
@@ -160,8 +149,81 @@ class FUNAPI_API FunDedicatedServerRpcMessage : public ::google::protobuf::Messa
   void InitAsDefaultInstance();
   static FunDedicatedServerRpcMessage* default_instance_;
 };
+// -------------------------------------------------------------------
+
+class FUNAPI_API FunDedicatedServerRpcInfoMessage : public ::google::protobuf::Message {
+ public:
+  FunDedicatedServerRpcInfoMessage();
+  virtual ~FunDedicatedServerRpcInfoMessage();
+
+  FunDedicatedServerRpcInfoMessage(const FunDedicatedServerRpcInfoMessage& from);
+
+  inline FunDedicatedServerRpcInfoMessage& operator=(const FunDedicatedServerRpcInfoMessage& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const FunDedicatedServerRpcInfoMessage& default_instance();
+
+  void Swap(FunDedicatedServerRpcInfoMessage* other);
+
+  // implements Message ----------------------------------------------
+
+  FunDedicatedServerRpcInfoMessage* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const FunDedicatedServerRpcInfoMessage& from);
+  void MergeFrom(const FunDedicatedServerRpcInfoMessage& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // @@protoc_insertion_point(class_scope:FunDedicatedServerRpcInfoMessage)
+ private:
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::uint32 _has_bits_[1];
+  mutable int _cached_size_;
+  friend void FUNAPI_API protobuf_AddDesc_funapi_2frpc_2ffun_5fdedicated_5fserver_5frpc_5fmessage_2eproto();
+  friend void protobuf_AssignDesc_funapi_2frpc_2ffun_5fdedicated_5fserver_5frpc_5fmessage_2eproto();
+  friend void protobuf_ShutdownFile_funapi_2frpc_2ffun_5fdedicated_5fserver_5frpc_5fmessage_2eproto();
+
+  void InitAsDefaultInstance();
+  static FunDedicatedServerRpcInfoMessage* default_instance_;
+};
 // ===================================================================
 
+static const int kDsInfoFieldNumber = 8;
+FUNAPI_API extern ::google::protobuf::internal::ExtensionIdentifier< ::FunDedicatedServerRpcMessage,
+    ::google::protobuf::internal::MessageTypeTraits< ::FunDedicatedServerRpcInfoMessage >, 11, false >
+  ds_info;
 
 // ===================================================================
 
@@ -319,81 +381,9 @@ inline void FunDedicatedServerRpcMessage::set_allocated_type(::std::string* type
   // @@protoc_insertion_point(field_set_allocated:FunDedicatedServerRpcMessage.type)
 }
 
-// required bytes data = 3;
-inline bool FunDedicatedServerRpcMessage::has_data() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void FunDedicatedServerRpcMessage::set_has_data() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void FunDedicatedServerRpcMessage::clear_has_data() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void FunDedicatedServerRpcMessage::clear_data() {
-  if (data_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    data_->clear();
-  }
-  clear_has_data();
-}
-inline const ::std::string& FunDedicatedServerRpcMessage::data() const {
-  // @@protoc_insertion_point(field_get:FunDedicatedServerRpcMessage.data)
-  return *data_;
-}
-inline void FunDedicatedServerRpcMessage::set_data(const ::std::string& value) {
-  set_has_data();
-  if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    data_ = new ::std::string;
-  }
-  data_->assign(value);
-  // @@protoc_insertion_point(field_set:FunDedicatedServerRpcMessage.data)
-}
-inline void FunDedicatedServerRpcMessage::set_data(const char* value) {
-  set_has_data();
-  if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    data_ = new ::std::string;
-  }
-  data_->assign(value);
-  // @@protoc_insertion_point(field_set_char:FunDedicatedServerRpcMessage.data)
-}
-inline void FunDedicatedServerRpcMessage::set_data(const void* value, size_t size) {
-  set_has_data();
-  if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    data_ = new ::std::string;
-  }
-  data_->assign(reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_set_pointer:FunDedicatedServerRpcMessage.data)
-}
-inline ::std::string* FunDedicatedServerRpcMessage::mutable_data() {
-  set_has_data();
-  if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    data_ = new ::std::string;
-  }
-  // @@protoc_insertion_point(field_mutable:FunDedicatedServerRpcMessage.data)
-  return data_;
-}
-inline ::std::string* FunDedicatedServerRpcMessage::release_data() {
-  clear_has_data();
-  if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    return NULL;
-  } else {
-    ::std::string* temp = data_;
-    data_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-    return temp;
-  }
-}
-inline void FunDedicatedServerRpcMessage::set_allocated_data(::std::string* data) {
-  if (data_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    delete data_;
-  }
-  if (data) {
-    set_has_data();
-    data_ = data;
-  } else {
-    clear_has_data();
-    data_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  }
-  // @@protoc_insertion_point(field_set_allocated:FunDedicatedServerRpcMessage.data)
-}
+// -------------------------------------------------------------------
+
+// FunDedicatedServerRpcInfoMessage
 
 
 // @@protoc_insertion_point(namespace_scope)

@@ -9,7 +9,7 @@
 
 #include "funapi_build_config.h"
 
-class FunDedicatedServerRpcMessage;
+#include "funapi/distribution/fun_dedicated_server_rpc_message.pb.h"
 
 namespace fun {
 
@@ -24,6 +24,15 @@ class FUNAPI_API FunapiRpcOption : public std::enable_shared_from_this<FunapiRpc
   void AddInitializer(const std::string &hostname_or_ip, const int port);
   std::vector<std::tuple<std::string, int>>& GetInitializers();
 
+  void SetDisableNagle(const bool disable_nagle);
+  bool GetDisableNagle();
+
+  void SetConnectTimeout(const int seconds);
+  int GetConnectTimeout();
+
+  void SetTag(const std::string &tag);
+  std::string GetTag();
+
  private:
   std::shared_ptr<FunapiRpcOptionImpl> impl_;
 };
@@ -37,11 +46,13 @@ class FUNAPI_API FunapiRpc : public std::enable_shared_from_this<FunapiRpc> {
     kDisconnected,
     kConnectionFailed,
     kConnectionTimedOut,
+    kPeerId,
   };
 
   typedef std::function<void(const EventType type,
                              const std::string &hostname_or_ip,
-                             const int port)> EventHandler;
+                             const int port,
+                             const std::string &peer_id)> EventHandler;
 
   typedef std::function<void(const FunDedicatedServerRpcMessage &response_message)> ResponseHandler;
 
@@ -55,11 +66,13 @@ class FUNAPI_API FunapiRpc : public std::enable_shared_from_this<FunapiRpc> {
   static std::shared_ptr<FunapiRpc> Create();
 
   void Start(std::shared_ptr<FunapiRpcOption> option);
+  void SetPeerEventHandler(const EventHandler &handler);
   void SetHandler(const std::string &type, const RpcHandler &handler);
   void Update();
 
   // debug function // don't use
   // void DebugCall(const FunDedicatedServerRpcMessage &debug_request);
+  // void DebugMasterCall(const FunDedicatedServerRpcMessage &debug_request);
 
  private:
   std::shared_ptr<FunapiRpcImpl> impl_;

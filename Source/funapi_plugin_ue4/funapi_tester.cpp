@@ -14,7 +14,6 @@
 #include "funapi_tasks.h"
 #include "funapi_encryption.h"
 #include "funapi_rpc.h"
-#include "funapi/rpc/fun_dedicated_server_rpc_message.pb.h"
 
 
 // Sets default values

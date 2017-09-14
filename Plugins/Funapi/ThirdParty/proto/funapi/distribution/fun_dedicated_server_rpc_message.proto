@@ -25,8 +25,9 @@
 //   DedicatedServerRpc::Call(target, req, callback);
 
 message FunDedicatedServerRpcMessage {
-  required bytes xid = 1;     // You do not specify this manually.
+  required bytes xid = 1;          // You do not specify this manually.
   required string type = 2;
+  required bool is_request = 3;    // You do not specify this manually.
 
   ////////////////////////////////////////////////////////////////////
   // CAUTION: EXTENSIONS FROM 8 THROUGH 31 ARE RESERVED BY THE ENGINE.
@@ -37,9 +38,10 @@ message FunDedicatedServerRpcMessage {
 
 
 extend FunDedicatedServerRpcMessage {
-  optional FunDedicatedServerRpcInfoMessage ds_info = 8;
+  optional FunDedicatedServerRpcSystemMessage ds_rpc_sys = 8;
 }
 
 
-message FunDedicatedServerRpcInfoMessage {
+message FunDedicatedServerRpcSystemMessage {
+  optional string data = 1;
 }

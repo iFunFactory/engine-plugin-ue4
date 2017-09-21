@@ -91,6 +91,10 @@ std::string FunapiErrorImpl::GetErrorTypeString() {
       ret = "Ping";
       break;
 
+    case ErrorType::kWebsocket:
+      ret = "Websocket";
+      break;
+
     default:
       ret = "None";
   }
@@ -167,8 +171,6 @@ class FunapiTransportOptionImpl : public std::enable_shared_from_this<FunapiTran
  public:
   FunapiTransportOptionImpl() = default;
   virtual ~FunapiTransportOptionImpl() = default;
-
-  virtual void SetEncryptionType(EncryptionType type) = 0;
 };
 
 
@@ -394,6 +396,33 @@ const std::string& FunapiHttpTransportOptionImpl::GetCACertFilePath() {
   return cert_file_path_;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+// FunapiWebsocketTransportOptionImpl implementation.
+
+class FunapiWebsocketTransportOptionImpl : public FunapiTransportOptionImpl {
+public:
+  FunapiWebsocketTransportOptionImpl() = default;
+  virtual ~FunapiWebsocketTransportOptionImpl() = default;
+
+  void SetUseWss(const bool use_wss);
+  bool GetUseWss();
+
+private:
+  bool use_wss_ = false;
+};
+
+
+void FunapiWebsocketTransportOptionImpl::SetUseWss(const bool wss) {
+  use_wss_ = wss;
+}
+
+
+bool FunapiWebsocketTransportOptionImpl::GetUseWss() {
+  return use_wss_;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiTcpTransportOption implementation.
 
@@ -562,6 +591,29 @@ void FunapiHttpTransportOption::SetConnectTimeout(const time_t seconds) {
 
 time_t FunapiHttpTransportOption::GetConnectTimeout() {
   return impl_->GetConnectTimeout();
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FunapiWebsocketTransportOption implementation.
+
+FunapiWebsocketTransportOption::FunapiWebsocketTransportOption()
+  : impl_(std::make_shared<FunapiWebsocketTransportOptionImpl>()) {
+}
+
+
+std::shared_ptr<FunapiWebsocketTransportOption> FunapiWebsocketTransportOption::Create() {
+  return std::make_shared<FunapiWebsocketTransportOption>();
+}
+
+
+void FunapiWebsocketTransportOption::SetUseWss(const bool use_wss) {
+  impl_->SetUseWss(use_wss);
+}
+
+
+bool FunapiWebsocketTransportOption::GetUseWss() {
+  return impl_->GetUseWss();
 }
 
 }  // namespace fun

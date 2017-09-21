@@ -34,6 +34,7 @@ public class Funapi : ModuleRules
             {
                 "Core",
                 "Engine",
+                "WebSockets"
                 // ... add other public dependencies that you statically link with here ...
             }
         );

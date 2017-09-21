@@ -755,6 +755,9 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
       session_->Connect(protocol, port, encoding, option);
       */
     }
+    else if (protocol == fun::TransportProtocol::kWebsocket) {
+      port = with_protobuf_ ? 18022 : 18012;
+    }
 
     if (with_session_reliability_) {
       port += 200;
@@ -798,5 +801,11 @@ bool Afunapi_tester::TestRpc()
 
   rpc_->Start(option);
 
+  return true;
+}
+
+bool Afunapi_tester::ConnectWebsocket()
+{
+  Connect(fun::TransportProtocol::kWebsocket);
   return true;
 }

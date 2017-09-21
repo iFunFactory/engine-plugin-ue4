@@ -53,6 +53,7 @@ enum class FUNAPI_API TransportProtocol : int
   kTcp = 0,
   kUdp,
   kHttp,
+  kWebsocket,
   kDefault,
 };
 
@@ -75,6 +76,10 @@ inline FUNAPI_API std::string TransportProtocolToString(TransportProtocol protoc
 
     case TransportProtocol::kHttp:
       ret = "HTTP";
+      break;
+
+    case TransportProtocol::kWebsocket:
+      ret = "WEBSOCKET";
       break;
 
     default:
@@ -127,6 +132,7 @@ class FUNAPI_API FunapiError : public std::enable_shared_from_this<FunapiError> 
     kCurl,
     kSeq,
     kPing,
+    kWebsocket,
   };
 
   // legacy
@@ -160,8 +166,6 @@ class FUNAPI_API FunapiTransportOption : public std::enable_shared_from_this<Fun
  public:
   FunapiTransportOption() = default;
   virtual ~FunapiTransportOption() = default;
-
-  virtual void SetEncryptionType(const EncryptionType type) = 0;
 };
 
 
@@ -240,6 +244,22 @@ class FUNAPI_API FunapiHttpTransportOption : public FunapiTransportOption {
 
  private:
   std::shared_ptr<FunapiHttpTransportOptionImpl> impl_;
+};
+
+
+class FunapiWebsocketTransportOptionImpl;
+class FUNAPI_API FunapiWebsocketTransportOption : public FunapiTransportOption {
+ public:
+  FunapiWebsocketTransportOption();
+  virtual ~FunapiWebsocketTransportOption() = default;
+
+  static std::shared_ptr<FunapiWebsocketTransportOption> Create();
+
+  void SetUseWss(const bool use_wss);
+  bool GetUseWss();
+
+ private:
+  std::shared_ptr<FunapiWebsocketTransportOptionImpl> impl_;
 };
 
 }  // namespace fun

@@ -37,6 +37,9 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
   UFUNCTION(BlueprintCallable, Category="Funapi")
   bool ConnectHttp();
 
+  UFUNCTION(BlueprintCallable, Category = "Funapi")
+  bool ConnectWebsocket();
+
   UFUNCTION(BlueprintCallable, Category="Funapi")
   void Disconnect();
 

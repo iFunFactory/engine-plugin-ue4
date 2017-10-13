@@ -9,6 +9,8 @@
 
 #include "funapi_build_config.h"
 
+#ifndef FUNAPI_UE4_PLATFORM_PS4
+
 #include "funapi/distribution/fun_dedicated_server_rpc_message.pb.h"
 
 namespace fun {
@@ -80,4 +82,6 @@ class FUNAPI_API FunapiRpc : public std::enable_shared_from_this<FunapiRpc> {
 
 }  // namespace fun
 
-#endif  // SRC_FUNAPI_RPC_H_
+#endif // FUNAPI_UE4_PLATFORM_PS4
+
+#endif // SRC_FUNAPI_RPC_H_

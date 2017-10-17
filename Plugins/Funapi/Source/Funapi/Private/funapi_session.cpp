@@ -4,10 +4,16 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
+#ifdef FUNAPI_UE4
+#include "FunapiPrivatePCH.h"
+#else
+#include "funapi_build_config.h"
+#endif
+
+#include "funapi_session.h"
 #include "funapi_plugin.h"
 #include "funapi_utils.h"
 #include "funapi_tasks.h"
-#include "funapi_session.h"
 #include "funapi_http.h"
 #include "funapi_socket.h"
 #include "funapi_encryption.h"
@@ -2523,6 +2529,12 @@ void FunapiWebsocketTransport::Start() {
     return;
 
   SetState(TransportState::kConnecting);
+
+#ifdef FUNAPI_UE4
+#if (WEBSOCKETS_PACKAGE == 0)
+#error UE4 Websockets required
+#endif
+#endif // FUNAPI_UE4
 
 #if WITH_WEBSOCKETS
   FModuleManager::LoadModuleChecked<FWebSocketsModule>("WebSockets");

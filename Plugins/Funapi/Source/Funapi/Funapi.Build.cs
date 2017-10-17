@@ -9,6 +9,20 @@ public class Funapi : ModuleRules
     public Funapi(ReadOnlyTargetRules Target) : base(Target) // >= 4.16
     {
         Definitions.Add("WITH_FUNAPI=1");
+        Definitions.Add("FUNAPI_UE4=1");
+
+        if (Target.Platform == UnrealTargetPlatform.Win32 ||
+            Target.Platform == UnrealTargetPlatform.Win64) {
+            Definitions.Add("FUNAPI_PLATFORM_WINDOWS=1");
+            Definitions.Add("FUNAPI_UE4_PLATFORM_WINDOWS=1");
+        }
+
+        if (Target.Platform == UnrealTargetPlatform.Linux) {
+            Definitions.Add("FUNAPI_HAVE_SODIUM=0");
+        }
+        else {
+            Definitions.Add("FUNAPI_HAVE_SODIUM=1");
+        }
 
         PublicIncludePaths.AddRange(
             new string[] {
@@ -68,8 +82,6 @@ public class Funapi : ModuleRules
 
         if (Target.Platform == UnrealTargetPlatform.Mac)
         {
-            Definitions.Add("FUNAPI_HAVE_SODIUM=1");
-
             PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include", "Mac"));
 
             LibPath += "lib/Mac";
@@ -81,8 +93,6 @@ public class Funapi : ModuleRules
         }
         else if (Target.Platform == UnrealTargetPlatform.Win32)
         {
-            Definitions.Add("FUNAPI_HAVE_SODIUM=1");
-
             PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include", "Windows", "x86"));
 
             LibPath += "lib/Windows/x86";
@@ -95,8 +105,6 @@ public class Funapi : ModuleRules
         }
         else if (Target.Platform == UnrealTargetPlatform.Win64)
         {
-            Definitions.Add("FUNAPI_HAVE_SODIUM=1");
-
             PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include", "Windows", "x64"));
 
             LibPath += "lib/Windows/x64";
@@ -108,8 +116,6 @@ public class Funapi : ModuleRules
         }
         else if (Target.Platform == UnrealTargetPlatform.Android)
         {
-            Definitions.Add("FUNAPI_HAVE_SODIUM=1");
-
             // toolchain will filter properly
             PublicIncludePaths.Add(LibPath + "include/Android/ARMv7");
             PublicLibraryPaths.Add(LibPath + "lib/Android/ARMv7");
@@ -129,8 +135,6 @@ public class Funapi : ModuleRules
         }
         else if (Target.Platform == UnrealTargetPlatform.IOS)
         {
-            Definitions.Add("FUNAPI_HAVE_SODIUM=1");
-
             PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include", "iOS"));
 
             LibPath += "lib/iOS";
@@ -144,8 +148,6 @@ public class Funapi : ModuleRules
             Definitions.Add("FUNAPI_UE4_PLATFORM_PS4=1");
             Definitions.Add("RAPIDJSON_HAS_CXX11_RVALUE_REFS=0");
 
-            Definitions.Add("FUNAPI_HAVE_SODIUM=1");
-
             PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include", "PS4"));
             LibPath += "lib/PS4";
 
@@ -153,7 +155,6 @@ public class Funapi : ModuleRules
         }
         else if (Target.Platform == UnrealTargetPlatform.Linux)
         {
-            Definitions.Add("FUNAPI_HAVE_SODIUM=0");
             AddEngineThirdPartyPrivateStaticDependencies(Target, "libcurl");
         }
     }

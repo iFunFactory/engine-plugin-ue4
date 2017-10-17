@@ -7,13 +7,8 @@
 #ifndef SRC_FUNAPI_PLUGIN_H_
 #define SRC_FUNAPI_PLUGIN_H_
 
-#include "funapi_build_config.h"
-
-#ifdef FUNAPI_UE4
-#include "FunapiPrivatePCH.h"
-#endif
-
 #ifdef FUNAPI_COCOS2D
+#include "funapi_build_config.h"
 #include "cocos2d.h"
 #endif
 

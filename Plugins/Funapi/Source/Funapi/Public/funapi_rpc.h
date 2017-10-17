@@ -7,8 +7,6 @@
 #ifndef SRC_FUNAPI_RPC_H_
 #define SRC_FUNAPI_RPC_H_
 
-#include "funapi_build_config.h"
-
 #ifndef FUNAPI_UE4_PLATFORM_PS4
 
 #include "funapi/distribution/fun_dedicated_server_rpc_message.pb.h"

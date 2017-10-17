@@ -4,10 +4,16 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
+#ifdef FUNAPI_UE4
+#include "FunapiPrivatePCH.h"
+#else
+#include "funapi_build_config.h"
+#endif
+
+#include "funapi_multicasting.h"
 #include "funapi_plugin.h"
 #include "funapi_utils.h"
 #include "funapi_session.h"
-#include "funapi_multicasting.h"
 
 namespace fun {
 

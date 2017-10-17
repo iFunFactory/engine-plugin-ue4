@@ -7,8 +7,6 @@
 #ifndef SRC_FUNAPI_SESSION_H_
 #define SRC_FUNAPI_SESSION_H_
 
-#include "funapi_build_config.h"
-
 #include <memory>
 #include <functional>
 #include <vector>

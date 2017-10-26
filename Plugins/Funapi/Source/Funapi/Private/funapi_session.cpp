@@ -2885,7 +2885,7 @@ void FunapiSessionImpl::OnConnect(const TransportProtocol protocol) {
 void FunapiSessionImpl::Connect(const TransportProtocol protocol) {
   PushTaskQueue([this, protocol]()->bool {
     OnConnect(protocol);
-    return true;
+    return false;
   });
 }
 
@@ -2931,7 +2931,7 @@ void FunapiSessionImpl::OnClose() {
 void FunapiSessionImpl::Close() {
   PushTaskQueue([this]()->bool{
     OnClose();
-    return true;
+    return false;
   });
 }
 
@@ -2952,7 +2952,7 @@ void FunapiSessionImpl::OnClose(const TransportProtocol protocol) {
 void FunapiSessionImpl::Close(const TransportProtocol protocol) {
   PushTaskQueue([this, protocol]()->bool{
     OnClose(protocol);
-    return true;
+    return false;
   });
 }
 

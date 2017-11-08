@@ -209,6 +209,12 @@ class FunapiTcpTransportOptionImpl : public FunapiTransportOptionImpl {
   std::vector<EncryptionType> GetEncryptionTypes();
   std::string GetPublicKey(const EncryptionType type);
 
+  void SetUseTLS(const bool use_tls);
+  bool GetUseTLS();
+
+  void SetCACertFilePath(const std::string &path);
+  const std::string& GetCACertFilePath();
+
  private:
   bool disable_nagle_ = true;
   bool auto_reconnect_ = false;
@@ -217,6 +223,8 @@ class FunapiTcpTransportOptionImpl : public FunapiTransportOptionImpl {
   int timeout_seconds_ = 10;
   std::vector<EncryptionType> encryption_types_;
   std::unordered_map<int32_t, std::string> pubilc_keys_;
+  bool use_tls_ = false;
+  std::string cert_file_path_;
 };
 
 
@@ -293,6 +301,26 @@ std::string FunapiTcpTransportOptionImpl::GetPublicKey(const EncryptionType type
   }
 
   return "";
+}
+
+
+void FunapiTcpTransportOptionImpl::SetUseTLS(const bool use_tls) {
+  use_tls_ = use_tls;
+}
+
+
+bool FunapiTcpTransportOptionImpl::GetUseTLS() {
+  return use_tls_;
+}
+
+
+void FunapiTcpTransportOptionImpl::SetCACertFilePath(const std::string &path) {
+  cert_file_path_ = path;
+}
+
+
+const std::string& FunapiTcpTransportOptionImpl::GetCACertFilePath() {
+  return cert_file_path_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -514,6 +542,32 @@ std::string FunapiTcpTransportOption::GetPublicKey(const EncryptionType type) {
 }
 
 
+void FunapiTcpTransportOption::SetUseTLS(const bool use_tls) {
+  impl_->SetUseTLS(use_tls);
+}
+
+
+bool FunapiTcpTransportOption::GetUseTLS() {
+  return impl_->GetUseTLS();
+}
+
+
+#ifdef FUNAPI_UE4_PLATFORM_PS4
+void FunapiTcpTransportOption::SetCACert(const std::string &cert) {
+  impl_->SetCACertFilePath(cert);
+}
+#else
+void FunapiTcpTransportOption::SetCACertFilePath(const std::string &path) {
+  impl_->SetCACertFilePath(path);
+}
+#endif
+
+
+const std::string& FunapiTcpTransportOption::GetCACertFilePath() {
+  return impl_->GetCACertFilePath();
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiUdpTransportOption implementation.
 
@@ -580,9 +634,15 @@ EncryptionType FunapiHttpTransportOption::GetEncryptionType() {
 }
 
 
+#ifdef FUNAPI_UE4_PLATFORM_PS4
+void FunapiHttpTransportOption::SetCACert(const std::string &cert) {
+  impl_->SetCACertFilePath(cert);
+}
+#else
 void FunapiHttpTransportOption::SetCACertFilePath(const std::string &path) {
   impl_->SetCACertFilePath(path);
 }
+#endif
 
 
 const std::string& FunapiHttpTransportOption::GetCACertFilePath() {

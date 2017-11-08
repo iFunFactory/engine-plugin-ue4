@@ -7,6 +7,11 @@
 #ifndef SRC_FUNAPI_SOCKET_H_
 #define SRC_FUNAPI_SOCKET_H_
 
+#include <memory>
+#include <string>
+#include <functional>
+#include <vector>
+
 namespace fun {
 
 class FunapiSocket {
@@ -62,6 +67,16 @@ class FunapiTcp : public std::enable_shared_from_this<FunapiTcp> {
                const int sever_port,
                const time_t connect_timeout_seconds,
                const bool disable_nagle,
+               const ConnectCompletionHandler &connect_completion_handler,
+               const SendHandler &send_handler,
+               const RecvHandler &recv_handler);
+
+  void Connect(const char* hostname_or_ip,
+               const int sever_port,
+               const time_t connect_timeout_seconds,
+               const bool disable_nagle,
+               const bool use_tls,
+               const std::string &cert_file_path,
                const ConnectCompletionHandler &connect_completion_handler,
                const SendHandler &send_handler,
                const RecvHandler &recv_handler);

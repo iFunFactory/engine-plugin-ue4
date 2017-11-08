@@ -7,6 +7,7 @@
 #ifndef SRC_FUNAPI_TRANSPORT_H_
 #define SRC_FUNAPI_TRANSPORT_H_
 
+#include <vector>
 #include <memory>
 #include <functional>
 #include <string>
@@ -196,6 +197,16 @@ class FUNAPI_API FunapiTcpTransportOption : public FunapiTransportOption {
   void SetEncryptionType(const EncryptionType type, const std::string &public_key);
   std::string GetPublicKey(const EncryptionType type);
 
+  void SetUseTLS(const bool use_tls);
+  bool GetUseTLS();
+
+#ifdef FUNAPI_UE4_PLATFORM_PS4
+  void SetCACert(const std::string &cert);
+#else
+  void SetCACertFilePath(const std::string &path);
+#endif
+  const std::string& GetCACertFilePath();
+
  private:
   std::shared_ptr<FunapiTcpTransportOptionImpl> impl_;
 };
@@ -237,7 +248,11 @@ class FUNAPI_API FunapiHttpTransportOption : public FunapiTransportOption {
   void SetEncryptionType(const EncryptionType type);
   EncryptionType GetEncryptionType();
 
+#ifdef FUNAPI_UE4_PLATFORM_PS4
+  void SetCACert(const std::string &cert);
+#else
   void SetCACertFilePath(const std::string &path);
+#endif
   const std::string& GetCACertFilePath();
 
  private:

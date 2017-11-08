@@ -1475,6 +1475,8 @@ class FunapiTcpTransport : public FunapiTransport {
   void SetAutoReconnect(const bool auto_reconnect);
   void SetSequenceNumberValidation(const bool validation);
   void SetEnablePing(const bool enable_ping);
+  void SetUseTLS(const bool use_tls);
+  void SetCACertFilePath(const std::string &path);
   void ResetClientPingTimeout();
 
   bool UseSodium();
@@ -1532,6 +1534,9 @@ class FunapiTcpTransport : public FunapiTransport {
   bool disable_nagle_ = true;
   bool auto_reconnect_ = false;
   bool enable_ping_ = false;
+
+  bool use_tls_ = false;
+  std::string cert_file_path_;
 
   FunapiTimer client_ping_timeout_timer_;
   FunapiTimer ping_send_timer_;
@@ -1662,6 +1667,16 @@ void FunapiTcpTransport::SetEnablePing(const bool enable_ping) {
 }
 
 
+void FunapiTcpTransport::SetUseTLS(const bool use_tls) {
+  use_tls_ = use_tls;
+}
+
+
+void FunapiTcpTransport::SetCACertFilePath(const std::string &path) {
+  cert_file_path_ = path;
+}
+
+
 void FunapiTcpTransport::ResetClientPingTimeout() {
   client_ping_timeout_timer_.SetTimer(kPingTimeoutSeconds);
 }
@@ -1749,6 +1764,8 @@ void FunapiTcpTransport::Connect() {
                 port_,
                 connect_timeout_seconds_,
                 disable_nagle_,
+                use_tls_,
+                cert_file_path_,
                 [weak, this](const bool is_failed,
                              const bool is_timed_out,
                              const int error_code,
@@ -2794,6 +2811,8 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
         tcp_transport->SetDisableNagle(tcp_option_->GetDisableNagle());
         tcp_transport->SetConnectTimeout(tcp_option_->GetConnectTimeout());
         tcp_transport->SetSequenceNumberValidation(tcp_option_->GetSequenceNumberValidation());
+        tcp_transport->SetUseTLS(tcp_option_->GetUseTLS());
+        tcp_transport->SetCACertFilePath(tcp_option_->GetCACertFilePath());
         auto encryption_types = tcp_option_->GetEncryptionTypes();
         for (auto type : encryption_types) {
           tcp_transport->SetEncryptionType(type, tcp_option_->GetPublicKey(type));

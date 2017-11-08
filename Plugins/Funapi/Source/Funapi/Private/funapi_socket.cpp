@@ -12,9 +12,31 @@
 
 #ifndef FUNAPI_UE4_PLATFORM_PS4
 
-#include "funapi_socket.h"
 #include "funapi_plugin.h"
+#include "funapi_socket.h"
 #include "funapi_utils.h"
+
+#ifdef FUNAPI_UE4
+
+#if PLATFORM_WINDOWS
+#include "WindowsHWrapper.h"
+#include "AllowWindowsPlatformTypes.h"
+#endif
+// Work around a conflict between a UI namespace defined by engine code and a typedef in OpenSSL
+#define UI UI_ST
+THIRD_PARTY_INCLUDES_START
+#include "openssl/ssl.h"
+#include "openssl/err.h"
+THIRD_PARTY_INCLUDES_END
+#undef UI
+#if PLATFORM_WINDOWS
+#include "HideWindowsPlatformTypes.h"
+#endif
+
+#else
+#include "openssl/ssl.h"
+#include "openssl/err.h"
+#endif // FUNAPI_UE4
 
 namespace fun {
 
@@ -292,6 +314,8 @@ bool FunapiSocketImpl::InitAddrInfo(int socktype,
 
 
 void FunapiSocketImpl::CloseSocket() {
+  // DebugUtils::Log("%s", __FUNCTION__);
+
   if (socket_ >= 0) {
     // DebugUtils::Log("Socket [%d] closed.", socket_);
 
@@ -390,6 +414,16 @@ class FunapiTcpImpl : public FunapiSocketImpl {
                const SendHandler &send_handler,
                const RecvHandler &recv_handler);
 
+  void Connect(const char* hostname_or_ip,
+               const int sever_port,
+               const time_t connect_timeout_seconds,
+               const bool disable_nagle,
+               const bool use_tls,
+               const std::string &cert_file_path,
+               const ConnectCompletionHandler &connect_completion_handler,
+               const SendHandler &send_handler,
+               const RecvHandler &recv_handler);
+
   void Connect(struct addrinfo *addrinfo_res,
                const ConnectCompletionHandler &connect_completion_handler);
 
@@ -413,6 +447,9 @@ class FunapiTcpImpl : public FunapiSocketImpl {
                            const int error_code,
                            const std::string &error_string);
 
+  bool ConnectTLS();
+  void CleanupSSL();
+
   void OnSend();
   void OnRecv();
 
@@ -435,6 +472,14 @@ class FunapiTcpImpl : public FunapiSocketImpl {
   std::vector<uint8_t> body_;
   int offset_ = 0;
   time_t connect_timeout_seconds_ = 5;
+
+  // https://curl.haxx.se/docs/caextract.html
+  // https://curl.haxx.se/ca/cacert.pem
+  std::string cert_file_path_;
+  bool use_tls_ = false;
+
+  SSL_CTX *ctx_ = nullptr;
+  SSL *ssl_ = nullptr;
 };
 
 
@@ -444,6 +489,23 @@ FunapiTcpImpl::FunapiTcpImpl() {
 
 FunapiTcpImpl::~FunapiTcpImpl() {
   // DebugUtils::Log("%s", __FUNCTION__);
+  CleanupSSL();
+}
+
+
+void FunapiTcpImpl::CleanupSSL() {
+  // DebugUtils::Log("%s", __FUNCTION__);
+
+  if (ssl_) {
+    SSL_shutdown(ssl_);
+    SSL_free(ssl_);
+    ssl_ = nullptr;
+  }
+
+  if (ctx_) {
+    SSL_CTX_free(ctx_);
+    ctx_ = nullptr;
+  }
 }
 
 
@@ -562,12 +624,35 @@ void FunapiTcpImpl::Connect(const char* hostname_or_ip,
                             const ConnectCompletionHandler &connect_completion_handler,
                             const SendHandler &send_handler,
                             const RecvHandler &recv_handler) {
+  Connect(hostname_or_ip,
+          port,
+          connect_timeout_seconds,
+          disable_nagle,
+          false, "",
+          connect_completion_handler,
+          send_handler,
+          recv_handler);
+}
+
+
+void FunapiTcpImpl::Connect(const char* hostname_or_ip,
+                            const int port,
+                            const time_t connect_timeout_seconds,
+                            const bool disable_nagle,
+                            const bool use_tls,
+                            const std::string &cert_file_path,
+                            const ConnectCompletionHandler &connect_completion_handler,
+                            const SendHandler &send_handler,
+                            const RecvHandler &recv_handler) {
   completion_handler_ = connect_completion_handler;
 
   if (socket_ != -1) {
     OnConnectCompletion(true, false, 0, "");
     return;
   }
+
+  use_tls_ = use_tls;
+  cert_file_path_ = cert_file_path;
 
   send_handler_ = send_handler;
   recv_handler_ = recv_handler;
@@ -637,10 +722,110 @@ bool FunapiTcpImpl::InitTcpSocketOption(bool disable_nagle, int &error_code, std
 }
 
 
+bool FunapiTcpImpl::ConnectTLS() {
+  auto on_ssl_error_completion = [this]() {
+    SSL_load_error_strings();
+
+    unsigned long error_code = ERR_get_error();
+    char error_buffer[1024];
+    ERR_error_string(error_code, (char *)error_buffer);
+
+    OnConnectCompletion(true, false, static_cast<int>(error_code), error_buffer);
+  };
+
+  SSL_library_init();
+
+  CleanupSSL();
+
+  SSL_METHOD *method = (SSL_METHOD *)SSLv23_client_method();
+
+  if (!method) {
+    on_ssl_error_completion();
+    return false;
+  }
+
+  ctx_ = SSL_CTX_new(method);
+
+  if (!ctx_) {
+    on_ssl_error_completion();
+    return false;
+  }
+
+  bool use_verify = false;
+
+  if (!cert_file_path_.empty()) {
+    if (!SSL_CTX_load_verify_locations(ctx_, cert_file_path_.c_str(), NULL)) {
+      on_ssl_error_completion();
+      return false;
+    }
+    else {
+      SSL_CTX_set_verify(ctx_, SSL_VERIFY_PEER, NULL);
+      SSL_CTX_set_verify_depth(ctx_, 1);
+
+      use_verify = true;
+    }
+  }
+
+  ssl_ = SSL_new(ctx_);
+
+  if (!ssl_) {
+    on_ssl_error_completion();
+    return false;
+  }
+
+  int ret = SSL_set_fd(ssl_, socket_);
+  if (ret !=  1) {
+    on_ssl_error_completion();
+    return false;
+  }
+
+  while (true)
+  {
+    ret = SSL_connect(ssl_);
+    if (ret != 1) {
+      int n = SSL_get_error(ssl_, ret);
+
+      if (n == SSL_ERROR_WANT_READ || n == SSL_ERROR_WANT_READ) {
+        continue;
+      }
+      else {
+        on_ssl_error_completion();
+        return false;
+      }
+    }
+    else {
+      break;
+    }
+  }
+
+  if (use_verify) {
+    if (SSL_get_peer_certificate(ssl_) != NULL)
+    {
+      if (SSL_get_verify_result(ssl_) != X509_V_OK) {
+        on_ssl_error_completion();
+        return false;
+      }
+    }
+    else {
+      on_ssl_error_completion();
+      return false;
+    }
+  }
+
+  return true;
+}
+
+
 void FunapiTcpImpl::OnConnectCompletion(const bool is_failed,
                                         const bool is_timed_out,
                                         const int error_code,
                                         const std::string &error_string) {
+  if (false == is_failed && use_tls_) {
+    if (false == ConnectTLS()) {
+      return;
+    }
+  }
+
   if (completion_handler_) {
     if (!is_failed) {
       socket_select_state_ = SocketSelectState::kSelect;
@@ -663,10 +848,20 @@ void FunapiTcpImpl::OnSend() {
   }
 
   if (!body_.empty()) {
-    int nSent = static_cast<int>(send(socket_,
-                                      reinterpret_cast<char*>(body_.data()) + offset_,
-                                      body_.size() - offset_,
-                                      0));
+    int nSent = 0;
+
+    if (use_tls_) {
+      nSent = static_cast<int>(SSL_write(ssl_,
+        reinterpret_cast<char*>(body_.data()) + offset_,
+        body_.size() - offset_));
+    }
+    else {
+      nSent = static_cast<int>(send(socket_,
+        reinterpret_cast<char*>(body_.data()) + offset_,
+        body_.size() - offset_,
+        0));
+    }
+
     /*
     if (nSent == 0) {
       DebugUtils::Log("Socket [%d] closed.", socket_);
@@ -694,7 +889,14 @@ void FunapiTcpImpl::OnSend() {
 void FunapiTcpImpl::OnRecv() {
   std::vector<uint8_t> buffer(kBufferSize);
 
-  int nRead = static_cast<int>(recv(socket_, reinterpret_cast<char*>(buffer.data()), kBufferSize, 0));
+  int nRead = 0;
+
+  if (use_tls_) {
+    nRead = static_cast<int>(SSL_read(ssl_, reinterpret_cast<char*>(buffer.data()), kBufferSize));
+  }
+  else {
+    nRead = static_cast<int>(recv(socket_, reinterpret_cast<char*>(buffer.data()), kBufferSize, 0));
+  }
 
   /*
   if (nRead == 0) {
@@ -921,6 +1123,27 @@ void FunapiTcp::Connect(const char* hostname_or_ip,
                 connect_completion_handler,
                 send_handler,
                 recv_handler);
+}
+
+
+void FunapiTcp::Connect(const char* hostname_or_ip,
+                        const int port,
+                        const time_t connect_timeout_seconds,
+                        const bool disable_nagle,
+                        const bool use_tls,
+                        const std::string &cert_file_path,
+                        const ConnectCompletionHandler &connect_completion_handler,
+                        const SendHandler &send_handler,
+                        const RecvHandler &recv_handler) {
+  impl_->Connect(hostname_or_ip,
+                 port,
+                 connect_timeout_seconds,
+                 disable_nagle,
+                 use_tls,
+                 cert_file_path,
+                 connect_completion_handler,
+                 send_handler,
+                 recv_handler);
 }
 
 

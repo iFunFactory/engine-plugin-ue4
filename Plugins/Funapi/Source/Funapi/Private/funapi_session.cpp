@@ -3544,6 +3544,8 @@ void FunapiSessionImpl::UpdateSocketSelect() {
 
 
 void FunapiSessionImpl::Update() {
+  auto self = shared_from_this();
+
   UpdateTasks();
   UpdateTrasnports();
   UpdateSocketSelect();

@@ -468,7 +468,7 @@ bool Afunapi_tester::DownloaderTest()
     ss_download_url << "http://" << kDownloadServer << ":" << kDownloadServerPort;
 
     downloader_ = fun::FunapiHttpDownloader::Create(ss_download_url.str(),
-                                                    TCHAR_TO_UTF8(*(FPaths::GameSavedDir())));
+                                                    TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir())));
 
     downloader_->AddReadyCallback([](const std::shared_ptr<fun::FunapiHttpDownloader>&downloader,
                                      const std::vector<std::shared_ptr<fun::FunapiDownloadFileInfo>>&info) {
@@ -519,7 +519,7 @@ bool Afunapi_tester::RequestAnnouncements()
     ss_url << "http://" << kAnnouncementServer << ":" << kAnnouncementServerPort;
 
     announcement_ = fun::FunapiAnnouncement::Create(ss_url.str(),
-                                                    TCHAR_TO_UTF8(*(FPaths::GameSavedDir())));
+                                                    TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir())));
 
     announcement_->AddCompletionCallback([this](const std::shared_ptr<fun::FunapiAnnouncement> &announcement,
                                                 const std::vector<std::shared_ptr<fun::FunapiAnnouncementInfo>>&info,

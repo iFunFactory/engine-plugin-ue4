@@ -140,7 +140,7 @@ void ExpectLocation(google::protobuf::TextFormat::ParseInfoTree* tree,
 }
 
 static std::string TestSourceDir() {
-  return std::string(TCHAR_TO_UTF8(*(FPaths::GameSavedDir()))) + "../ThirdParty";
+  return std::string(TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir()))) + "../ThirdParty";
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiLibProtobufTextFormatUnitTest, "LibProtobuf.TextFormatUnitTest", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)

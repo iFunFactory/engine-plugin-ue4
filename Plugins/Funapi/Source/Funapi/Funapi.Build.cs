@@ -19,9 +19,18 @@ public class Funapi : ModuleRules
 
         if (Target.Platform == UnrealTargetPlatform.Linux) {
             Definitions.Add("FUNAPI_HAVE_SODIUM=0");
+            Definitions.Add("FUNAPI_HAVE_AES128=0");
         }
         else {
             Definitions.Add("FUNAPI_HAVE_SODIUM=1");
+            if (Target.Platform == UnrealTargetPlatform.Android)
+            {
+                Definitions.Add("FUNAPI_HAVE_AES128=0");
+            }
+            else
+            {
+                Definitions.Add("FUNAPI_HAVE_AES128=1");
+            }
         }
 
         PublicIncludePaths.AddRange(
@@ -117,22 +126,20 @@ public class Funapi : ModuleRules
         }
         else if (Target.Platform == UnrealTargetPlatform.Android)
         {
+            Definitions.Add("FUNAPI_UE4_PLATFORM_ANDROID=1");
+
             // toolchain will filter properly
             PublicIncludePaths.Add(LibPath + "include/Android/ARMv7");
             PublicLibraryPaths.Add(LibPath + "lib/Android/ARMv7");
-            //PublicIncludePaths.Add(LibPath + "include/Android/ARM64");
-            //PublicLibraryPaths.Add(LibPath + "lib/Android/ARM64");
+            PublicIncludePaths.Add(LibPath + "include/Android/ARM64");
+            PublicLibraryPaths.Add(LibPath + "lib/Android/ARM64");
             //PublicIncludePaths.Add(LibPath + "include/Android/x86");
             //PublicLibraryPaths.Add(LibPath + "lib/Android/x86");
             //PublicIncludePaths.Add(LibPath + "include/Android/x64");
             //PublicLibraryPaths.Add(LibPath + "lib/Android/x64");
 
-            LibPath += "lib/Android/ARMv7";
-
-            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl.a"));
-            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcrypto.a"));
-            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libssl.a"));
-            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.a"));
+            PublicAdditionalLibraries.Add("sodium");
+            PublicAdditionalLibraries.Add("curl");
         }
         else if (Target.Platform == UnrealTargetPlatform.IOS)
         {

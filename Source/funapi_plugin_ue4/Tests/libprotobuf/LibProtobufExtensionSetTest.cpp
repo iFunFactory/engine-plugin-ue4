@@ -32,7 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#ifndef FUNAPI_UE4_PLATFORM_PS4
+#if !defined(FUNAPI_UE4_PLATFORM_PS4) && !defined(FUNAPI_UE4_PLATFORM_ANDROID)
 
 #include "funapi_plugin_ue4.h"
 #include "AutomationTest.h"

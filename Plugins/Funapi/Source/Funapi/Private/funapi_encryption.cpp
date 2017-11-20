@@ -334,12 +334,82 @@ void EncryptorChacha20::GenerateChacha20Secret(std::array<uint8_t, 32> *key,
   ::memcpy(&(*dec_nonce)[0], &secret[0] + 32, 8);
   ::memcpy(&(*enc_nonce)[0], &secret[0] + 40, 8);
 }
+#else // FUNAPI_HAVE_SODIUM
+class EncryptorSodium : public Encryptor {
+public:
+  EncryptorSodium();
+  virtual ~EncryptorSodium() = default;
+
+  virtual const std::string& GetHandShakeString();
+
+protected:
+  std::string handshake_string_;
+};
 
 
+EncryptorSodium::EncryptorSodium() {
+}
+
+
+const std::string &EncryptorSodium::GetHandShakeString() {
+  handshake_completed_ = true;
+  return handshake_string_;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// EncryptorChacha20 implementation.
+class EncryptorChacha20 : public EncryptorSodium {
+public:
+  EncryptorChacha20();
+  virtual ~EncryptorChacha20();
+
+  EncryptionType GetEncryptionType();
+  static std::string GetEncryptionName();
+
+  void HandShake(const std::string &key);
+
+  bool Encrypt(std::vector<uint8_t> &body);
+  bool Decrypt(std::vector<uint8_t> &body);
+};
+
+
+EncryptorChacha20::EncryptorChacha20() {
+}
+
+
+EncryptorChacha20::~EncryptorChacha20() {
+}
+
+
+EncryptionType EncryptorChacha20::GetEncryptionType() {
+  return EncryptionType::kChacha20Encryption;
+}
+
+
+std::string EncryptorChacha20::GetEncryptionName() {
+  return "chacha20";
+}
+
+
+bool EncryptorChacha20::Encrypt(std::vector<uint8_t> &body) {
+  return true;
+}
+
+
+bool EncryptorChacha20::Decrypt(std::vector<uint8_t> &body) {
+  return true;
+}
+
+
+void EncryptorChacha20::HandShake(const std::string &key) {
+}
+#endif // FUNAPI_HAVE_SODIUM
+
+#if (FUNAPI_HAVE_SODIUM && FUNAPI_HAVE_AES128)
 ////////////////////////////////////////////////////////////////////////////////
 // EncryptorAes128 implementation.
 class EncryptorAes128 : public EncryptorSodium {
-public:
+ public:
   EncryptorAes128();
   virtual ~EncryptorAes128();
 
@@ -351,7 +421,7 @@ public:
   bool Encrypt(std::vector<uint8_t> &body);
   bool Decrypt(std::vector<uint8_t> &body);
 
-private:
+ private:
   void GenerateAes128Secret(std::array<uint8_t, 1408> *key,
                             std::array<uint8_t, 16> *enc_nonce,
                             std::array<uint8_t, 16> *dec_nonce,
@@ -439,82 +509,11 @@ void EncryptorAes128::GenerateAes128Secret(std::array<uint8_t, 1408> *key,
 
   ::crypto_stream_aes128ctr_beforenm(&(*key)[0], &_key[0]);
 }
-#else // FUNAPI_HAVE_SODIUM
-class EncryptorSodium : public Encryptor {
-public:
-  EncryptorSodium();
-  virtual ~EncryptorSodium() = default;
-
-  virtual const std::string& GetHandShakeString();
-
-protected:
-  std::string handshake_string_;
-};
-
-
-EncryptorSodium::EncryptorSodium() {
-}
-
-
-const std::string &EncryptorSodium::GetHandShakeString() {
-  handshake_completed_ = true;
-  return handshake_string_;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// EncryptorChacha20 implementation.
-class EncryptorChacha20 : public EncryptorSodium {
-public:
-  EncryptorChacha20();
-  virtual ~EncryptorChacha20();
-
-  EncryptionType GetEncryptionType();
-  static std::string GetEncryptionName();
-
-  void HandShake(const std::string &key);
-
-  bool Encrypt(std::vector<uint8_t> &body);
-  bool Decrypt(std::vector<uint8_t> &body);
-};
-
-
-EncryptorChacha20::EncryptorChacha20() {
-}
-
-
-EncryptorChacha20::~EncryptorChacha20() {
-}
-
-
-EncryptionType EncryptorChacha20::GetEncryptionType() {
-  return EncryptionType::kChacha20Encryption;
-}
-
-
-std::string EncryptorChacha20::GetEncryptionName() {
-  return "chacha20";
-}
-
-
-bool EncryptorChacha20::Encrypt(std::vector<uint8_t> &body) {
-  return true;
-}
-
-
-bool EncryptorChacha20::Decrypt(std::vector<uint8_t> &body) {
-  return true;
-}
-
-
-void EncryptorChacha20::HandShake(const std::string &key) {
-}
-
-
+#else
 ////////////////////////////////////////////////////////////////////////////////
 // EncryptorAes128 implementation.
 class EncryptorAes128 : public EncryptorSodium {
-public:
+ public:
   EncryptorAes128();
   virtual ~EncryptorAes128();
 
@@ -558,8 +557,7 @@ bool EncryptorAes128::Decrypt(std::vector<uint8_t> &body) {
 
 void EncryptorAes128::HandShake(const std::string &key) {
 }
-#endif // FUNAPI_HAVE_SODIUM
-
+#endif 
 
 ////////////////////////////////////////////////////////////////////////////////
 // Encryptor implementation.

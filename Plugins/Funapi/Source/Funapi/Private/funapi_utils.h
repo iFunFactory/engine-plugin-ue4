@@ -7,10 +7,6 @@
 #ifndef SRC_FUNAPI_UTILS_H_
 #define SRC_FUNAPI_UTILS_H_
 
-#ifndef FUNAPI_UE4
-#include "funapi_build_config.h"
-#endif
-
 #ifdef FUNAPI_PLATFORM_WINDOWS
 #include <stdint.h>
 #pragma warning(disable:4996)

@@ -1619,7 +1619,7 @@ void FunapiTcpTransport::OnDisconnecting(std::shared_ptr<FunapiError> error) {
 
 
 void FunapiTcpTransport::Ping() {
-  if (enable_ping_) {
+  if (enable_ping_ && GetState() == TransportState::kConnected) {
     if (ping_send_timer_.IsExpired()){
       ping_send_timer_.SetTimer(kPingIntervalSecond);
 

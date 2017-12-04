@@ -308,7 +308,16 @@ void FunapiHttpImpl::PostRequest(const std::string &url,
     error_handler(res, curl_easy_strerror(res));
   }
   else {
-    completion_handler(header_receiving, body_receiving);
+    long response_code = 0;
+    curl_easy_getinfo(curl_handle_, CURLINFO_RESPONSE_CODE, &response_code);
+    if (response_code == 200) {
+      completion_handler(header_receiving, body_receiving);
+    }
+    else {
+      std::stringstream ss;
+      ss << "http response code " << response_code;
+      error_handler(response_code, ss.str());
+    }
   }
 
   if (chunk) {

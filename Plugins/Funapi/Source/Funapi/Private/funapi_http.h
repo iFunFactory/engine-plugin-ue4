@@ -7,6 +7,12 @@
 #ifndef SRC_FUNAPI_HTTP_H_
 #define SRC_FUNAPI_HTTP_H_
 
+#include <string>
+#include <functional>
+#include <vector>
+#include <memory>
+#include <map>
+
 namespace fun {
 
 class FunapiHttpImpl;

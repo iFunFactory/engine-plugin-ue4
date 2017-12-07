@@ -7,6 +7,8 @@
 #ifndef SRC_FUNAPI_UTILS_H_
 #define SRC_FUNAPI_UTILS_H_
 
+#include "funapi_plugin.h"
+
 #ifdef FUNAPI_PLATFORM_WINDOWS
 #include <stdint.h>
 #pragma warning(disable:4996)
@@ -87,7 +89,6 @@ class FunapiUtil
 {
  public:
   static bool SeqLess(const uint32_t x, const uint32_t y) {
-    // 아래 참고
     //  - http://en.wikipedia.org/wiki/Serial_number_arithmetic
     //  - RFC 1982
     return (int32_t)(y - x) > 0;

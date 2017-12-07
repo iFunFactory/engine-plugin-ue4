@@ -7,10 +7,7 @@
 #ifndef SRC_FUNAPI_ENCRYPTION_H_
 #define SRC_FUNAPI_ENCRYPTION_H_
 
-#include <memory>
-#include <map>
-#include <string>
-#include <vector>
+#include "funapi_plugin.h"
 
 namespace fun {
 

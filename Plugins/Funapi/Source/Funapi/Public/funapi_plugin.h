@@ -7,7 +7,7 @@
 #ifndef SRC_FUNAPI_PLUGIN_H_
 #define SRC_FUNAPI_PLUGIN_H_
 
-#ifdef FUNAPI_COCOS2D
+#ifndef FUNAPI_UE4
 #include "funapi_build_config.h"
 #include "cocos2d.h"
 #endif
@@ -35,8 +35,10 @@
 #endif // FUNAPI_UE4_PLATFORM_PS4
 #endif // FUNAPI_PLATFORM_WINDOWS
 
+#include <array>
 #include <map>
 #include <string>
+#include <vector>
 #include <list>
 #include <sstream>
 #include <functional>

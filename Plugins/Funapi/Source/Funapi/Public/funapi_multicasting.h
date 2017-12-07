@@ -7,11 +7,7 @@
 #ifndef SRC_FUNAPI_MULTICASTING_H_
 #define SRC_FUNAPI_MULTICASTING_H_
 
-#include <memory>
-#include <functional>
-#include <vector>
-#include <map>
-
+#include "funapi_plugin.h"
 #include "funapi_session.h"
 #include "funapi/service/multicast_message.pb.h"
 

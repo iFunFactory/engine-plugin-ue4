@@ -7,11 +7,7 @@
 #ifndef SRC_FUNAPI_TRANSPORT_H_
 #define SRC_FUNAPI_TRANSPORT_H_
 
-#include <vector>
-#include <memory>
-#include <functional>
-#include <string>
-#include <assert.h>
+#include "funapi_plugin.h"
 
 namespace fun {
 

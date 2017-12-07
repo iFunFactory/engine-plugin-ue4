@@ -6,13 +6,11 @@
 
 #ifdef FUNAPI_UE4
 #include "FunapiPrivatePCH.h"
-#else
-#include "funapi_build_config.h"
 #endif
 
 #include "funapi_multicasting.h"
-#include "funapi_plugin.h"
 #include "funapi_utils.h"
+#include "funapi_encryption.h"
 #include "funapi_session.h"
 
 namespace fun {

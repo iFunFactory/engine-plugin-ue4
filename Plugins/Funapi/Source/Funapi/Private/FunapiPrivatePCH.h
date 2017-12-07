@@ -16,3 +16,5 @@ DECLARE_LOG_CATEGORY_EXTERN(LogFunapi, Log, All);
 #if !UE_BUILD_SHIPPING
 #define DEBUG_LOG
 #endif
+
+#include "funapi_plugin.h"

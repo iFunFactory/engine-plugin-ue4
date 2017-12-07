@@ -7,9 +7,7 @@
 #ifndef SRC_FUNAPI_ANNOUNCEMENT_H_
 #define SRC_FUNAPI_ANNOUNCEMENT_H_
 
-#include <memory>
-#include <functional>
-#include <vector>
+#include "funapi_plugin.h"
 
 namespace fun {
 

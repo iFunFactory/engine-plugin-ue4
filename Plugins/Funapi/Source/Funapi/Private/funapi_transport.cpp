@@ -6,12 +6,9 @@
 
 #ifdef FUNAPI_UE4
 #include "FunapiPrivatePCH.h"
-#else
-#include "funapi_build_config.h"
 #endif
 
 #include "funapi_transport.h"
-#include "funapi_plugin.h"
 #include "funapi_version.h"
 #include "funapi_utils.h"
 #include "funapi_encryption.h"

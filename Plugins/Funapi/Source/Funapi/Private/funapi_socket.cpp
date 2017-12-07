@@ -4,20 +4,16 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
-#ifdef FUNAPI_UE4
-#include "FunapiPrivatePCH.h"
-#else
-#include "funapi_build_config.h"
-#endif
-
 #ifndef FUNAPI_UE4_PLATFORM_PS4
 
-#include "funapi_plugin.h"
+#ifdef FUNAPI_UE4
+#include "FunapiPrivatePCH.h"
+#endif
+
 #include "funapi_socket.h"
 #include "funapi_utils.h"
 
 #ifdef FUNAPI_UE4
-
 #if PLATFORM_WINDOWS
 #include "WindowsHWrapper.h"
 #include "AllowWindowsPlatformTypes.h"
@@ -32,8 +28,7 @@ THIRD_PARTY_INCLUDES_END
 #if PLATFORM_WINDOWS
 #include "HideWindowsPlatformTypes.h"
 #endif
-
-#else
+#else // FUNAPI_UE4
 #include "openssl/ssl.h"
 #include "openssl/err.h"
 #endif // FUNAPI_UE4
@@ -137,9 +132,9 @@ class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
                   std::string &error_string);
   void CloseSocket();
 
-  void SocketSelect(const fd_set rset,
-                    const fd_set wset,
-                    const fd_set eset);
+  void SocketSelect(fd_set rset,
+                    fd_set wset,
+                    fd_set eset);
 
   virtual void OnSend() = 0;
   virtual void OnRecv() = 0;
@@ -374,9 +369,9 @@ bool FunapiSocketImpl::InitSocket(struct addrinfo *info,
 }
 
 
-void FunapiSocketImpl::SocketSelect(const fd_set rset,
-                                    const fd_set wset,
-                                    const fd_set eset) {
+void FunapiSocketImpl::SocketSelect(fd_set rset,
+                                    fd_set wset,
+                                    fd_set eset) {
   if (socket_ > 0) {
     if (FD_ISSET(socket_, &rset)) {
       OnRecv();
@@ -438,9 +433,9 @@ class FunapiTcpImpl : public FunapiSocketImpl {
                            int &error_code,
                            std::string &error_string);
 
-  void SocketSelect(const fd_set rset,
-                    const fd_set wset,
-                    const fd_set eset);
+  void SocketSelect(fd_set rset,
+                    fd_set wset,
+                    fd_set eset);
 
   void OnConnectCompletion(const bool is_failed,
                            const bool is_timed_out,
@@ -556,7 +551,7 @@ void FunapiTcpImpl::Connect(struct addrinfo *addrinfo_res) {
   FD_SET(socket_, &wset);
   FD_SET(socket_, &eset);
 
-  struct timeval timeout = { connect_timeout_seconds_, 0 };
+  struct timeval timeout = { static_cast<long>(connect_timeout_seconds_), 0 };
   rc = select(socket_+1, &rset, &wset, &eset, &timeout);
   if (rc < 0) {
     // select failed

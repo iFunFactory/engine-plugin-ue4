@@ -7,10 +7,7 @@
 #ifndef SRC_FUNAPI_SOCKET_H_
 #define SRC_FUNAPI_SOCKET_H_
 
-#include <memory>
-#include <string>
-#include <functional>
-#include <vector>
+#include "funapi_plugin.h"
 
 namespace fun {
 

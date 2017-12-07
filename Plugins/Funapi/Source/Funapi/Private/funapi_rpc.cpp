@@ -4,16 +4,13 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
-#ifdef FUNAPI_UE4
-#include "FunapiPrivatePCH.h"
-#else
-#include "funapi_build_config.h"
-#endif
-
 #ifndef FUNAPI_UE4_PLATFORM_PS4
 
+#ifdef FUNAPI_UE4
+#include "FunapiPrivatePCH.h"
+#endif
+
 #include "funapi_rpc.h"
-#include "funapi_plugin.h"
 #include "funapi_utils.h"
 #include "funapi_tasks.h"
 #include "funapi_socket.h"
@@ -787,7 +784,7 @@ void FunapiRpcImpl::Start(std::shared_ptr<FunapiRpcOption> option) {
 
 
 void FunapiRpcImpl::Connect(const int index) {
-  if (index >= rpc_option_->GetInitializers().size()) {
+  if (index >= static_cast<int>(rpc_option_->GetInitializers().size())) {
     return;
   }
 
@@ -825,7 +822,7 @@ void FunapiRpcImpl::Connect(const int index) {
 
         int new_index = 0;
         auto &v = rpc_option_->GetInitializers();
-        if ((index+1) < v.size()) {
+        if ((index+1) < static_cast<int>(v.size())) {
           new_index = index + 1;
         }
 

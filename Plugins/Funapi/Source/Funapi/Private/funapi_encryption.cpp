@@ -6,16 +6,11 @@
 
 #ifdef FUNAPI_UE4
 #include "FunapiPrivatePCH.h"
-#else
-#include "funapi_build_config.h"
 #endif
 
 #include "funapi_encryption.h"
-#include "funapi_plugin.h"
 #include "funapi_utils.h"
 #include "funapi_transport.h"
-#include <stdlib.h>
-#include <array>
 
 #if FUNAPI_HAVE_SODIUM
 #define SODIUM_STATIC
@@ -557,7 +552,7 @@ bool EncryptorAes128::Decrypt(std::vector<uint8_t> &body) {
 
 void EncryptorAes128::HandShake(const std::string &key) {
 }
-#endif 
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Encryptor implementation.

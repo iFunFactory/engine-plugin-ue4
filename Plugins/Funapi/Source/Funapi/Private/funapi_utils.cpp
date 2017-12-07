@@ -6,12 +6,9 @@
 
 #ifdef FUNAPI_UE4
 #include "FunapiPrivatePCH.h"
-#else
-#include "funapi_build_config.h"
 #endif
 
 #include "funapi_utils.h"
-#include "funapi_plugin.h"
 
 #ifdef FUNAPI_COCOS2D
 #include "md5/md5.h"

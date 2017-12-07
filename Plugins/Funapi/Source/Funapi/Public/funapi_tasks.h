@@ -7,9 +7,7 @@
 #ifndef SRC_FUNAPI_TASKS_H_
 #define SRC_FUNAPI_TASKS_H_
 
-#include <memory>
-#include <functional>
-#include <string>
+#include "funapi_plugin.h"
 
 namespace fun {
 

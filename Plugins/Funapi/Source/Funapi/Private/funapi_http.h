@@ -7,11 +7,7 @@
 #ifndef SRC_FUNAPI_HTTP_H_
 #define SRC_FUNAPI_HTTP_H_
 
-#include <string>
-#include <functional>
-#include <vector>
-#include <memory>
-#include <map>
+#include "funapi_plugin.h"
 
 namespace fun {
 

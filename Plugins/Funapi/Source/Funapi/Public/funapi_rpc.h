@@ -9,6 +9,7 @@
 
 #ifndef FUNAPI_UE4_PLATFORM_PS4
 
+#include "funapi_plugin.h"
 #include "funapi/distribution/fun_dedicated_server_rpc_message.pb.h"
 
 namespace fun {

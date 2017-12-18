@@ -627,6 +627,7 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
 
   void SetSendSessionIdOnlyOnce(const bool once);
   void SetUseFirstSessionId(const bool use);
+  void SetDelayedAckInterval(const int millisecond);
 
  protected:
   void PushNetworkThreadTask(const FunapiThread::TaskHandler &handler);
@@ -688,6 +689,16 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
   bool seq_receiving_ = false;
   bool ack_receiving_ = false;
   bool reconnect_first_ack_receiving_ = false;
+
+  void SetAck(std::shared_ptr<FunapiMessage> message);
+  uint32_t ack_send_ = 0;
+  bool has_ack_send_ = false;
+
+  bool IsDelayedAckInterval() const;
+  int GetDelayedAckInterval() const;
+  bool IsDelayedAckSendTime();
+  double delayed_ack_interval_ = 0;
+  int64_t ack_sent_time_ = 0;
 
   std::shared_ptr<FunapiEncryption> encrytion_;
   bool sequence_number_validation_ = false;
@@ -921,6 +932,27 @@ void FunapiTransport::SetSeq(std::shared_ptr<FunapiMessage> message) {
 }
 
 
+void FunapiTransport::SetAck(std::shared_ptr<FunapiMessage> message) {
+  if (IsDelayedAckSendTime()) {
+    if (has_ack_send_) {
+      has_ack_send_ = false;
+
+      auto encoding = message->GetEncoding();
+      if (encoding == FunEncoding::kJson) {
+        auto &msg = message->GetJsonDocumenet();
+        rapidjson::Value ack_node;
+        ack_node.SetUint(ack_send_);
+        msg.AddMember(rapidjson::StringRef(kAckNumAttributeName), ack_node, msg.GetAllocator());
+      }
+      else if (encoding == FunEncoding::kProtobuf) {
+        auto &msg = message->GetProtobufMessage();
+        msg.set_ack(ack_send_);
+      }
+    }
+  }
+}
+
+
 void FunapiTransport::SetUseFirstSessionId(const bool use) {
   first_set_session_id_ = use;
 }
@@ -938,6 +970,16 @@ void FunapiTransport::SetSendSessionIdOnlyOnce(const bool once) {
 
 bool FunapiTransport::UseSendSessionIdOnlyOnce() {
   return use_send_session_id_only_once_;
+}
+
+
+void FunapiTransport::SetDelayedAckInterval(const int millisecond) {
+  delayed_ack_interval_ = millisecond;
+}
+
+
+int FunapiTransport::GetDelayedAckInterval() const {
+  return delayed_ack_interval_;
 }
 
 
@@ -1098,7 +1140,9 @@ bool FunapiTransport::TryToDecodeBody(std::vector<uint8_t> &receiving,
     }
 
     if (reconnect_first_ack_receiving_) {
-      OnSendAck(TransportProtocol::kTcp, seq_recvd_ + 1);
+      if (auto s = session_impl_.lock()) {
+        s->SendAck(TransportProtocol::kTcp, seq_recvd_ + 1);
+      }
     }
   }
 
@@ -1183,6 +1227,7 @@ void FunapiTransport::PushSendQueue(std::shared_ptr<FunapiMessage> message,
 bool FunapiTransport::EncodeThenSendMessage(std::shared_ptr<FunapiMessage> message) {
   SetSessionId(message);
   SetSeq(message);
+  SetAck(message);
 
   return EncodeThenSendMessage(message, message->GetBody(), message->GetEncryptionType());
 }
@@ -1276,8 +1321,36 @@ bool FunapiTransport::OnAckReceived(const uint32_t ack) {
 }
 
 
+bool FunapiTransport::IsDelayedAckSendTime() {
+  if (IsDelayedAckInterval()) {
+    auto time_now = std::chrono::system_clock::now().time_since_epoch().count() / 1000;
+    auto diff = time_now - ack_sent_time_;
+
+    if (diff >= delayed_ack_interval_) {
+      ack_sent_time_ = time_now;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+bool FunapiTransport::IsDelayedAckInterval() const {
+  if (IsReliableSession() && delayed_ack_interval_ > 0) {
+    return true;
+  }
+
+  return false;
+}
+
+
 void FunapiTransport::OnSendAck(const TransportProtocol protocol, const uint32_t seq) {
-  if (auto s = session_impl_.lock()) {
+  if (IsDelayedAckInterval()) {
+    ack_send_ = seq;
+    has_ack_send_ = true;
+  }
+  else if (auto s = session_impl_.lock()) {
     s->SendAck(protocol, seq);
   }
 }
@@ -1334,8 +1407,6 @@ void FunapiTransport::OnReceived(const TransportProtocol protocol,
                                  const std::vector<uint8_t> &body) {
   auto message = FunapiMessage::Create(encoding, body);
 
-  OnTransportReceived(protocol, encoding, header, body, message);
-
   std::string msg_type;
   uint32_t ack = 0;
   uint32_t seq = 0;
@@ -1354,13 +1425,11 @@ void FunapiTransport::OnReceived(const TransportProtocol protocol,
     hasAck = json.HasMember(kAckNumAttributeName);
     if (hasAck) {
       ack = json[kAckNumAttributeName].GetUint();
-      json.RemoveMember(kAckNumAttributeName);
     }
 
     hasSeq = json.HasMember(kSeqNumAttributeName);
     if (hasSeq) {
       seq = json[kSeqNumAttributeName].GetUint();
-      json.RemoveMember(kSeqNumAttributeName);
     }
   } else if (encoding == FunEncoding::kProtobuf) {
     FunMessage &proto = message->GetProtobufMessage();
@@ -1377,7 +1446,6 @@ void FunapiTransport::OnReceived(const TransportProtocol protocol,
   if (IsReliableSession()) {
     if (hasAck) {
       OnAckReceived(ack);
-      return;
     }
 
     if (hasSeq) {
@@ -1389,6 +1457,8 @@ void FunapiTransport::OnReceived(const TransportProtocol protocol,
   if (msg_type.compare(kClientPingMessageType) == 0) {
     ResetClientPingTimeout();
   }
+
+  OnTransportReceived(protocol, encoding, header, body, message);
 }
 
 
@@ -1923,6 +1993,36 @@ void FunapiTcpTransport::Send(bool send_all) {
         ++send_count;
         if (send_count >= kMaxSend && send_all == false)
           break;
+      }
+
+      if (IsDelayedAckSendTime() || GetState() == TransportState::kDisconnecting) {
+        if (has_ack_send_) {
+          std::shared_ptr<FunapiMessage> message;
+
+          if (GetEncoding() == FunEncoding::kJson) {
+            rapidjson::Document msg;
+            msg.SetObject();
+            rapidjson::Value key(kAckNumAttributeName, msg.GetAllocator());
+            rapidjson::Value ack_node(rapidjson::kNumberType);
+            ack_node.SetUint(ack_send_);
+            msg.AddMember(key, ack_node, msg.GetAllocator());
+
+            message = FunapiMessage::Create(msg, EncryptionType::kDefaultEncryption);
+          }
+          else if (GetEncoding() == FunEncoding::kProtobuf) {
+            FunMessage msg;
+            msg.set_ack(ack_send_);
+
+            message = FunapiMessage::Create(msg, EncryptionType::kDefaultEncryption);
+          }
+
+          message->SetUseSentQueue(false);
+          message->SetUseSeq(false);
+
+          if (FunapiTransport::EncodeThenSendMessage(message)) {
+            has_ack_send_ = false;
+          }
+        }
       }
     }
   }
@@ -2798,6 +2898,7 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
       transport = FunapiTcpTransport::Create(shared_from_this(), hostname_or_ip_, static_cast<uint16_t>(port), encoding);
 
       transport->SetSendSessionIdOnlyOnce(session_option_->GetSendSessionIdOnlyOnce());
+      transport->SetDelayedAckInterval(session_option_->GetDelayedAckIntervalMillisecond());
 
       if (option) {
         tcp_option_ = std::static_pointer_cast<FunapiTcpTransportOption>(option);
@@ -4282,9 +4383,13 @@ class FunapiSessionOptionImpl : public std::enable_shared_from_this<FunapiSessio
   void SetSendSessionIdOnlyOnce(const bool once);
   bool GetSendSessionIdOnlyOnce();
 
+  void SetDelayedAckIntervalMillisecond(const int millisecond);
+  int GetDelayedAckIntervalMillisecond();
+
  private:
   bool use_session_reliability_ = false;
   bool use_send_session_id_only_once_ = false;
+  int delayed_ack_interval_millisecond_ = 0;
 };
 
 
@@ -4305,6 +4410,20 @@ void FunapiSessionOptionImpl::SetSendSessionIdOnlyOnce(const bool once) {
 
 bool FunapiSessionOptionImpl::GetSendSessionIdOnlyOnce() {
   return use_send_session_id_only_once_;
+}
+
+
+void FunapiSessionOptionImpl::SetDelayedAckIntervalMillisecond(const int millisecond) {
+  delayed_ack_interval_millisecond_ = millisecond;
+
+  if (millisecond > 0) {
+    SetSessionReliability(true);
+  }
+}
+
+
+int FunapiSessionOptionImpl::GetDelayedAckIntervalMillisecond() {
+  return delayed_ack_interval_millisecond_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4337,6 +4456,16 @@ void FunapiSessionOption::SetSendSessionIdOnlyOnce(const bool once) {
 
 bool FunapiSessionOption::GetSendSessionIdOnlyOnce() {
   return impl_->GetSendSessionIdOnlyOnce();
+}
+
+
+void FunapiSessionOption::SetDelayedAckIntervalMillisecond(const int millisecond) {
+  impl_->SetDelayedAckIntervalMillisecond(millisecond);
+}
+
+
+int FunapiSessionOption::GetDelayedAckIntervalMillisecond() {
+  return impl_->GetDelayedAckIntervalMillisecond();
 }
 
 }  // namespace fun

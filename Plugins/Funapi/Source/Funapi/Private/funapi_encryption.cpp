@@ -129,17 +129,6 @@ bool Encryptor0::Decrypt(std::vector<uint8_t> &body) {
 // Encryptor Legacy
 #include "funapi_encryption_legacy.h"
 
-////////////////////////////////////////////////////////////////////////////////
-// SecureInit
-#ifdef FUNAPI_UE4_PLATFORM_PS4
-#include "ps4/funapi_encryption_ps4.h"
-#else
-class SecureInit : public std::enable_shared_from_this<SecureInit> {
- public:
-  SecureInit() = default;
-  virtual ~SecureInit() = default;
-};
-#endif // FUNAPI_UE4_PLATFORM_PS4
 
 #if FUNAPI_HAVE_SODIUM
 ////////////////////////////////////////////////////////////////////////////////
@@ -163,7 +152,6 @@ class EncryptorSodium : public Encryptor {
 
 
 EncryptorSodium::EncryptorSodium() {
-  static std::shared_ptr<SecureInit> secure_init = std::make_shared<SecureInit>();
   if (::sodium_init() != 0) {
     // error
   }

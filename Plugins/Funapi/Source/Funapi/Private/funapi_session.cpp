@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2018 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -2000,20 +2000,20 @@ void FunapiTcpTransport::Send(bool send_all) {
           std::shared_ptr<FunapiMessage> message;
 
           if (GetEncoding() == FunEncoding::kJson) {
-            rapidjson::Document msg;
-            msg.SetObject();
-            rapidjson::Value key(kAckNumAttributeName, msg.GetAllocator());
+            rapidjson::Document msg_json;
+            msg_json.SetObject();
+            rapidjson::Value key(kAckNumAttributeName, msg_json.GetAllocator());
             rapidjson::Value ack_node(rapidjson::kNumberType);
             ack_node.SetUint(ack_send_);
-            msg.AddMember(key, ack_node, msg.GetAllocator());
+            msg_json.AddMember(key, ack_node, msg_json.GetAllocator());
 
-            message = FunapiMessage::Create(msg, EncryptionType::kDefaultEncryption);
+            message = FunapiMessage::Create(msg_json, EncryptionType::kDefaultEncryption);
           }
           else if (GetEncoding() == FunEncoding::kProtobuf) {
-            FunMessage msg;
-            msg.set_ack(ack_send_);
+            FunMessage msg_protobuf;
+            msg_protobuf.set_ack(ack_send_);
 
-            message = FunapiMessage::Create(msg, EncryptionType::kDefaultEncryption);
+            message = FunapiMessage::Create(msg_protobuf, EncryptionType::kDefaultEncryption);
           }
 
           message->SetUseSentQueue(false);

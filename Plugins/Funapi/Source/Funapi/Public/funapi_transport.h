@@ -48,7 +48,9 @@ enum class FUNAPI_API TransportProtocol : int
   kTcp = 0,
   kUdp,
   kHttp,
+#if FUNAPI_HAVE_WEBSOCKET
   kWebsocket,
+#endif
   kDefault,
 };
 
@@ -73,9 +75,11 @@ inline FUNAPI_API std::string TransportProtocolToString(TransportProtocol protoc
       ret = "HTTP";
       break;
 
+#if FUNAPI_HAVE_WEBSOCKET
     case TransportProtocol::kWebsocket:
       ret = "WEBSOCKET";
       break;
+#endif
 
     default:
       assert(false);
@@ -264,7 +268,7 @@ class FUNAPI_API FunapiWebsocketTransportOption : public FunapiTransportOption {
 
   static std::shared_ptr<FunapiWebsocketTransportOption> Create();
 
-  void SetUseWss(const bool use_wss);
+  // void SetUseWss(const bool use_wss);
   bool GetUseWss();
 
  private:

@@ -139,6 +139,7 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
   void UpdateUI();
   void SendRedirectTestMessage();
   bool TestRpc();
+  bool TestBeginPlay();
 
   // Please change this address for test.
   std::string kServer = "127.0.0.1";
@@ -149,7 +150,9 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
 
   std::shared_ptr<fun::FunapiSession> session_ = nullptr;
 
+#ifndef FUNAPI_UE4_PLATFORM_PS4
   std::shared_ptr<fun::FunapiRpc> rpc_ = nullptr;
+#endif
 
   const std::string kMulticastTestChannel = "multicast";
   std::shared_ptr<fun::FunapiMulticast> multicast_ = nullptr;

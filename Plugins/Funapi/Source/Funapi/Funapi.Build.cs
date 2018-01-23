@@ -14,6 +14,7 @@ public class Funapi : ModuleRules
   {
     Definitions.Add("WITH_FUNAPI=1");
     Definitions.Add("FUNAPI_UE4=1");
+    Definitions.Add("FUNAPI_HAVE_WEBSOCKET=1");
 
     if (Target.Platform == UnrealTargetPlatform.Win32 ||
         Target.Platform == UnrealTargetPlatform.Win64) {
@@ -61,8 +62,6 @@ public class Funapi : ModuleRules
       {
         "Core",
         "Engine",
-        "WebSockets",
-        "OpenSSL",
         // ... add other public dependencies that you statically link with here ...
       }
     );
@@ -89,7 +88,6 @@ public class Funapi : ModuleRules
 
     // include path
     PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include"));
-    // PublicIncludePaths.Add(Path.GetFullPath(Path.Combine(ModuleDirectory, "funapi")));
 
     // library
     var LibPath = ThirdPartyPath;
@@ -104,6 +102,7 @@ public class Funapi : ModuleRules
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libssl.a"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libz.a"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.a"));
+      PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libwebsockets.a"));
     }
     else if (Target.Platform == UnrealTargetPlatform.Win32)
     {
@@ -112,10 +111,11 @@ public class Funapi : ModuleRules
       LibPath += "lib/Windows/x86";
       PublicLibraryPaths.Add(LibPath);
 
+      Definitions.Add("CURL_STATICLIB=1");
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl_a.lib"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libeay32.lib"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.lib"));
-      Definitions.Add("CURL_STATICLIB=1");
+      PublicAdditionalLibraries.Add(Path.Combine(LibPath, "websockets_static.lib"));
     }
     else if (Target.Platform == UnrealTargetPlatform.Win64)
     {
@@ -124,9 +124,10 @@ public class Funapi : ModuleRules
       LibPath += "lib/Windows/x64";
       PublicLibraryPaths.Add(LibPath);
 
+      Definitions.Add("CURL_STATICLIB=1");
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl_a.lib"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.lib"));
-      Definitions.Add("CURL_STATICLIB=1");
+      PublicAdditionalLibraries.Add(Path.Combine(LibPath, "websockets_static.lib"));
     }
     else if (Target.Platform == UnrealTargetPlatform.Android)
     {
@@ -137,13 +138,12 @@ public class Funapi : ModuleRules
       PublicLibraryPaths.Add(LibPath + "lib/Android/ARMv7");
       PublicIncludePaths.Add(LibPath + "include/Android/ARM64");
       PublicLibraryPaths.Add(LibPath + "lib/Android/ARM64");
-      //PublicIncludePaths.Add(LibPath + "include/Android/x86");
-      //PublicLibraryPaths.Add(LibPath + "lib/Android/x86");
-      //PublicIncludePaths.Add(LibPath + "include/Android/x64");
-      //PublicLibraryPaths.Add(LibPath + "lib/Android/x64");
 
       PublicAdditionalLibraries.Add("sodium");
       PublicAdditionalLibraries.Add("curl");
+      PublicAdditionalLibraries.Add("ssl");
+      PublicAdditionalLibraries.Add("crypto");
+      PublicAdditionalLibraries.Add("websockets");
     }
     else if (Target.Platform == UnrealTargetPlatform.IOS)
     {
@@ -154,6 +154,7 @@ public class Funapi : ModuleRules
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcrypto.a"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libssl.a"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.a"));
+      PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libwebsockets.a"));
     }
     else if (Target.Platform == UnrealTargetPlatform.PS4)
     {
@@ -164,10 +165,16 @@ public class Funapi : ModuleRules
       LibPath += "lib/PS4";
 
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.a"));
+
+      PublicDependencyModuleNames.AddRange(new string[] { "WebSockets" });
+      AddEngineThirdPartyPrivateStaticDependencies(Target, "OpenSSL", "libWebSockets");
     }
     else if (Target.Platform == UnrealTargetPlatform.Linux)
     {
-      AddEngineThirdPartyPrivateStaticDependencies(Target, "libcurl");
+      Definitions.Add("FUNAPI_UE4_PLATFORM_LINUX=1");
+      Definitions.Add("RAPIDJSON_HAS_CXX11_RVALUE_REFS=0");
+
+      AddEngineThirdPartyPrivateStaticDependencies(Target, "OpenSSL", "libWebSockets", "libcurl");
     }
   }
 }

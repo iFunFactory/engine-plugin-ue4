@@ -31,6 +31,10 @@ Afunapi_tester::~Afunapi_tester()
 void Afunapi_tester::BeginPlay()
 {
   Super::BeginPlay();
+
+#ifdef FUNAPI_UE4_PLATFORM_PS4
+  TestBeginPlay();
+#endif
 }
 
 void Afunapi_tester::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -52,9 +56,11 @@ void Afunapi_tester::Tick(float DeltaTime)
     fun::FunapiHttpDownloader::UpdateAll();
   }
 
+#ifndef FUNAPI_UE4_PLATFORM_PS4
   if (rpc_) {
     rpc_->Update();
   }
+#endif
 
   UpdateUI();
 }
@@ -755,9 +761,11 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
       session_->Connect(protocol, port, encoding, option);
       */
     }
+#if FUNAPI_HAVE_WEBSOCKET
     else if (protocol == fun::TransportProtocol::kWebsocket) {
       port = with_protobuf_ ? 18022 : 18012;
     }
+#endif
 
     if (with_session_reliability_) {
       port += 200;
@@ -781,6 +789,7 @@ void Afunapi_tester::OnSessionClosed()
 
 bool Afunapi_tester::TestRpc()
 {
+#ifndef FUNAPI_UE4_PLATFORM_PS4
   std::string server_ip = kServer;
   uint16_t port = 8015;
 
@@ -800,12 +809,22 @@ bool Afunapi_tester::TestRpc()
   option->AddInitializer(server_ip, port);
 
   rpc_->Start(option);
+#endif
 
   return true;
 }
 
 bool Afunapi_tester::ConnectWebsocket()
 {
+#if FUNAPI_HAVE_WEBSOCKET
   Connect(fun::TransportProtocol::kWebsocket);
+#endif
+  return true;
+}
+
+bool Afunapi_tester::TestBeginPlay()
+{
+  ConnectWebsocket();
+  SendEchoMessage();
   return true;
 }

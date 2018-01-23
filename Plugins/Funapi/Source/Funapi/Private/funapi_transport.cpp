@@ -670,9 +670,11 @@ std::shared_ptr<FunapiWebsocketTransportOption> FunapiWebsocketTransportOption::
 }
 
 
+/*
 void FunapiWebsocketTransportOption::SetUseWss(const bool use_wss) {
   impl_->SetUseWss(use_wss);
 }
+*/
 
 
 bool FunapiWebsocketTransportOption::GetUseWss() {

@@ -13,15 +13,11 @@
 #include "funapi_tasks.h"
 #include "funapi_http.h"
 #include "funapi_socket.h"
+#include "funapi_websocket.h"
 #include "funapi_encryption.h"
 #include "funapi_version.h"
 #include "funapi/network/ping_message.pb.h"
 #include "funapi/service/redirect_message.pb.h"
-
-#if WITH_WEBSOCKETS
-#include "IWebSocket.h"
-#include "WebSocketsModule.h"
-#endif
 
 namespace fun {
 
@@ -545,7 +541,14 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   std::string hostname_or_ip_;
   std::weak_ptr<FunapiSession> session_;
 
-  std::vector<TransportProtocol> v_protocols_ = { TransportProtocol::kTcp, TransportProtocol::kWebsocket, TransportProtocol::kHttp, TransportProtocol::kUdp };
+  std::vector<TransportProtocol> v_protocols_ = {
+    TransportProtocol::kTcp,
+#if FUNAPI_HAVE_WEBSOCKET
+    TransportProtocol::kWebsocket,
+#endif
+    TransportProtocol::kHttp,
+    TransportProtocol::kUdp
+  };
 
   std::unordered_map<std::string, std::shared_ptr<FunapiTimer>> m_recv_timeout_;
   std::unordered_map<int32_t, std::shared_ptr<FunapiTimer>> m_recv_timeout_int_;
@@ -725,6 +728,10 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
   bool UseFirstSessionId();
 
   virtual void OnDisconnecting(std::shared_ptr<FunapiError> error = nullptr);
+
+  int next_decoding_offset_ = 0;
+  bool header_decoded_ = false;
+  HeaderFields header_fields_;
 
  private:
   TransportState state_ = TransportState::kDisconnected;
@@ -1594,9 +1601,6 @@ class FunapiTcpTransport : public FunapiTransport {
 
   int offset_ = 0;
   std::vector<uint8_t> receiving_vector_;
-  int next_decoding_offset_ = 0;
-  bool header_decoded_ = false;
-  HeaderFields header_fields_;
 
   bool disable_nagle_ = true;
   bool auto_reconnect_ = false;
@@ -2596,28 +2600,28 @@ class FunapiWebsocketTransport : public FunapiTransport {
 
  protected:
   bool EncodeThenSendMessage(std::shared_ptr<FunapiMessage> message,
-    std::vector<uint8_t> &body,
-    const EncryptionType encryption_type);
+                             std::vector<uint8_t> &body,
+                             const EncryptionType encryption_type);
   void OnDisconnecting(std::shared_ptr<FunapiError> error = nullptr);
 
  private:
-  std::string host_url_;
   std::vector<uint8_t> receiving_vector_;
+  bool use_wss_ = false;
 
-#if WITH_WEBSOCKETS
-  TSharedPtr<IWebSocket> websocket_ = nullptr;
-#endif
+  std::shared_ptr<FunapiWebsocket> websocket_ = nullptr;
+  std::shared_ptr<FunapiThread> websocket_thread_ = nullptr;
 };
 
 
 FunapiWebsocketTransport::FunapiWebsocketTransport(std::weak_ptr<FunapiSessionImpl> session,
   const std::string &hostname_or_ip, uint16_t port, bool use_wss, FunEncoding encoding)
-  : FunapiTransport(session, TransportProtocol::kWebsocket, hostname_or_ip, port, encoding) {
-  std::stringstream ss_url;
-  ss_url << (use_wss ? "wss" : "ws") << "://" << hostname_or_ip << ":" << port << "/";
-  host_url_ = ss_url.str();
-
-  // DebugUtils::Log("Websocket Url : %s", host_url_.c_str());
+#if FUNAPI_HAVE_WEBSOCKET
+: FunapiTransport(session, TransportProtocol::kWebsocket, hostname_or_ip, port, encoding)
+#else
+: FunapiTransport(session, TransportProtocol::kDefault, hostname_or_ip, port, encoding)
+#endif
+{
+  websocket_thread_ = FunapiThread::Get("_websocket");
 }
 
 
@@ -2627,14 +2631,20 @@ FunapiWebsocketTransport::~FunapiWebsocketTransport() {
 
 
 std::shared_ptr<FunapiWebsocketTransport> FunapiWebsocketTransport::Create(std::weak_ptr<FunapiSessionImpl> session,
-  const std::string &hostname_or_ip,
-  uint16_t port, bool use_wss, FunEncoding encoding) {
+                                                                           const std::string &hostname_or_ip,
+                                                                           uint16_t port,
+                                                                           bool use_wss,
+                                                                           FunEncoding encoding) {
   return std::make_shared<FunapiWebsocketTransport>(session, hostname_or_ip, port, use_wss, encoding);
 }
 
 
 TransportProtocol FunapiWebsocketTransport::GetProtocol() {
+#if FUNAPI_HAVE_WEBSOCKET
   return TransportProtocol::kWebsocket;
+#else
+  return TransportProtocol::kDefault;
+#endif
 }
 
 
@@ -2644,60 +2654,66 @@ void FunapiWebsocketTransport::Start() {
 
   SetState(TransportState::kConnecting);
 
-#ifdef FUNAPI_UE4
-#if (WEBSOCKETS_PACKAGE == 0)
-#error UE4 Websockets required
-#endif
-#endif // FUNAPI_UE4
-
-#if WITH_WEBSOCKETS
-  FModuleManager::LoadModuleChecked<FWebSocketsModule>("WebSockets");
-
-  TArray<FString> Protocols;
-  Protocols.Add(TEXT("ws"));
-  websocket_ = FWebSocketsModule::Get().CreateWebSocket(host_url_.c_str(), Protocols);
-
-  std::weak_ptr<FunapiTransport> weak = shared_from_this();
-  websocket_->OnConnected().AddLambda([weak, this]() {
-    if (auto t = weak.lock()) {
-      SetState(TransportState::kConnected);
-
-      OnTransportStarted(TransportProtocol::kWebsocket);
-    }
-  });
-
-  websocket_->OnConnectionError().AddLambda([weak, this](const FString& Error) {
-    if (auto t = weak.lock()) {
-      SetState(fun::TransportState::kDisconnected);
-
-      OnTransportConnectFailed(TransportProtocol::kWebsocket,
-        FunapiError::Create(FunapiError::ErrorType::kWebsocket, 0, TCHAR_TO_UTF8(*Error)));
-    }
-  });
-
-  websocket_->OnClosed().AddLambda([weak, this](int32 Status, const FString& Reason, bool bWasClean) {
-    if (auto t = weak.lock()) {
-      SetState(fun::TransportState::kDisconnecting);
-
-      if (send_queue_->Empty()) {
-        OnDisconnecting();
+  if (websocket_thread_) {
+    std::weak_ptr<FunapiTransport> weak = shared_from_this();
+    websocket_thread_->Push([weak, this]()->bool {
+      if (auto t = weak.lock()) {
+        websocket_ = FunapiWebsocket::Create();
+        websocket_->Connect
+        (hostname_or_ip_.c_str(),
+         port_,
+         false,
+         "",
+         [weak, this]
+         (const bool is_failed,
+          const int error_code,
+          const std::string &error_string)
+        {
+          if (auto t2 = weak.lock()) {
+            if (is_failed) {
+              SetState(fun::TransportState::kDisconnected);
+              OnTransportConnectFailed(GetProtocol(),
+                                       FunapiError::Create(FunapiError::ErrorType::kWebsocket, error_code, error_string));
+            }
+            else {
+              SetState(TransportState::kConnected);
+              OnTransportStarted(GetProtocol());
+            }
+          }
+        },
+         [weak, this]
+         (const int error_code,
+          const std::string &error_string)
+        {
+          // close
+          if (auto t2 = weak.lock()) {
+            SetState(fun::TransportState::kDisconnecting);
+            if (send_queue_->Empty()) {
+              OnDisconnecting(FunapiError::Create(FunapiError::ErrorType::kWebsocket, error_code, error_string));
+            }
+          }
+        },
+         [weak, this]()
+        {
+          // send
+          if (auto t2 = weak.lock()) {
+            Send();
+          }
+        },
+         [weak, this]
+         (const int read_length,
+          std::vector<uint8_t> &receiving)
+        {
+          if (auto t2 = weak.lock()) {
+            receiving_vector_.insert(receiving_vector_.end(), receiving.cbegin(), receiving.cbegin() + read_length);
+            DecodeMessage(read_length, receiving_vector_, next_decoding_offset_, header_decoded_, header_fields_);
+          }
+        });
       }
-    }
-  });
 
-  websocket_->OnRawMessage().AddLambda([weak, this](const void* Data, SIZE_T Length, SIZE_T BytesRemaining) {
-    if (auto t = weak.lock()) {
-      receiving_vector_.insert(receiving_vector_.end(), (char*)Data, (char*)Data+Length);
-
-      if (BytesRemaining == 0) {
-        DecodeMessage(receiving_vector_.size(), receiving_vector_);
-        receiving_vector_.resize(0);
-      }
-    }
-  });
-
-  websocket_->Connect();
-#endif
+      return true;
+    });
+  }
 }
 
 
@@ -2739,26 +2755,50 @@ void FunapiWebsocketTransport::Send(bool send_all) {
 
 
 bool FunapiWebsocketTransport::EncodeThenSendMessage(std::shared_ptr<FunapiMessage> message,
-  std::vector<uint8_t> &body,
-  const EncryptionType encryption_type) {
+                                                     std::vector<uint8_t> &body,
+                                                     const EncryptionType encryption_type) {
   if (GetState() == TransportState::kDisconnected) return false;
 
   if (!EncodeMessage(message, body, encryption_type)) {
     return false;
   }
 
-  bool is_protobuf = GetEncoding() == FunEncoding::kProtobuf ? true : false;
+  if (!body.empty()) {
+    bool is_protobuf = GetEncoding() == FunEncoding::kProtobuf ? true : false;
 
-#if WITH_WEBSOCKETS
-  websocket_->Send(body.data(), body.size(), is_protobuf);
-#endif
+    std::weak_ptr<FunapiTransport> weak = shared_from_this();
+    websocket_->Send(body, is_protobuf,
+                     [weak, this]
+                     (const bool is_failed,
+                      const int error_code,
+                      const std::string &error_string,
+                      const int sent_length)
+    {
+      if (auto t = weak.lock()) {
+        if (is_failed) {
+          auto error = FunapiError::Create(FunapiError::ErrorType::kWebsocket, error_code, error_string);
+          OnTransportDisconnected(GetProtocol(), error);
+          Stop(true, error);
+        }
+      }
+    });
+  }
 
   return true;
 }
 
 
 void FunapiWebsocketTransport::Update() {
-  Send();
+  if (websocket_ && websocket_thread_) {
+    std::weak_ptr<FunapiTransport> weak = shared_from_this();
+    websocket_thread_->Push([weak, this]()->bool {
+      if (auto t = weak.lock()) {
+        websocket_->Update();
+      }
+
+      return true;
+    });
+  }
 }
 
 
@@ -2815,7 +2855,9 @@ void FunapiSessionImpl::Initialize() {
   send_queues_[static_cast<int>(TransportProtocol::kTcp)] = FunapiQueue::Create();
   send_queues_[static_cast<int>(TransportProtocol::kUdp)] = FunapiQueue::Create();
   send_queues_[static_cast<int>(TransportProtocol::kHttp)] = FunapiQueue::Create();
+#if FUNAPI_HAVE_WEBSOCKET
   send_queues_[static_cast<int>(TransportProtocol::kWebsocket)] = FunapiQueue::Create();
+#endif
 
   // Installs event handlers.
   // session
@@ -2947,6 +2989,7 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
         http_transport->SetConnectTimeout(http_option_->GetConnectTimeout());
       }
     }
+#if FUNAPI_HAVE_WEBSOCKET
     else if (protocol == fun::TransportProtocol::kWebsocket) {
       bool use_wss = false;
       if (option) {
@@ -2955,6 +2998,7 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
 
       transport = FunapiWebsocketTransport::Create(shared_from_this(), hostname_or_ip_, static_cast<uint16_t>(port), use_wss, encoding);
     }
+#endif
 
     AttachTransport(transport);
 
@@ -3326,7 +3370,9 @@ void FunapiSessionImpl::OnSessionClose(const TransportProtocol protocol,
   send_queues_[static_cast<int>(TransportProtocol::kTcp)] = FunapiQueue::Create();
   send_queues_[static_cast<int>(TransportProtocol::kUdp)] = FunapiQueue::Create();
   send_queues_[static_cast<int>(TransportProtocol::kHttp)] = FunapiQueue::Create();
+#if FUNAPI_HAVE_WEBSOCKET
   send_queues_[static_cast<int>(TransportProtocol::kWebsocket)] = FunapiQueue::Create();
+#endif
 
   tasks_ = FunapiTasks::Create();
   session_id_ = FunapiSessionId::Create();

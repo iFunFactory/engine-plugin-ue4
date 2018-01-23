@@ -19,12 +19,16 @@
 #include "AllowWindowsPlatformTypes.h"
 #endif
 // Work around a conflict between a UI namespace defined by engine code and a typedef in OpenSSL
+#if PLATFORM_LINUX == 0
 #define UI UI_ST
+#endif
 THIRD_PARTY_INCLUDES_START
 #include "openssl/ssl.h"
 #include "openssl/err.h"
 THIRD_PARTY_INCLUDES_END
+#ifdef UI
 #undef UI
+#endif
 #if PLATFORM_WINDOWS
 #include "HideWindowsPlatformTypes.h"
 #endif
@@ -848,7 +852,7 @@ void FunapiTcpImpl::OnSend() {
     if (use_tls_) {
       nSent = static_cast<int>(SSL_write(ssl_,
         reinterpret_cast<char*>(body_.data()) + offset_,
-        body_.size() - offset_));
+        static_cast<int>(body_.size() - offset_)));
     }
     else {
       nSent = static_cast<int>(send(socket_,

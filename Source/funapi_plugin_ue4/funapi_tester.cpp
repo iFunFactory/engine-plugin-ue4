@@ -56,7 +56,7 @@ void Afunapi_tester::Tick(float DeltaTime)
     fun::FunapiHttpDownloader::UpdateAll();
   }
 
-#ifndef FUNAPI_UE4_PLATFORM_PS4
+#if FUNAPI_HAVE_RPC
   if (rpc_) {
     rpc_->Update();
   }
@@ -789,7 +789,7 @@ void Afunapi_tester::OnSessionClosed()
 
 bool Afunapi_tester::TestRpc()
 {
-#ifndef FUNAPI_UE4_PLATFORM_PS4
+#if FUNAPI_HAVE_RPC
   std::string server_ip = kServer;
   uint16_t port = 8015;
 

@@ -115,7 +115,9 @@ class FUNAPI_API FunapiSessionOption : public std::enable_shared_from_this<Funap
   void SetSessionReliability(const bool reliability);
   bool GetSessionReliability();
 
+#if FUNAPI_HAVE_DELAYED_ACK
   void SetDelayedAckIntervalMillisecond(const int millisecond);
+#endif
   int GetDelayedAckIntervalMillisecond();
 
   void SetSendSessionIdOnlyOnce(const bool once);

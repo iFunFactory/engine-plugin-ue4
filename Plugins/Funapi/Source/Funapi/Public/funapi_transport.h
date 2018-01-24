@@ -197,7 +197,9 @@ class FUNAPI_API FunapiTcpTransportOption : public FunapiTransportOption {
   void SetEncryptionType(const EncryptionType type, const std::string &public_key);
   std::string GetPublicKey(const EncryptionType type);
 
+#if FUNAPI_HAVE_TCP_TLS
   void SetUseTLS(const bool use_tls);
+#endif
   bool GetUseTLS();
 
 #ifdef FUNAPI_UE4_PLATFORM_PS4

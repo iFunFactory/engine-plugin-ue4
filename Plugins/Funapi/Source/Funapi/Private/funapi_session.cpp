@@ -4505,9 +4505,11 @@ bool FunapiSessionOption::GetSendSessionIdOnlyOnce() {
 }
 
 
+#if FUNAPI_HAVE_DELAYED_ACK
 void FunapiSessionOption::SetDelayedAckIntervalMillisecond(const int millisecond) {
   impl_->SetDelayedAckIntervalMillisecond(millisecond);
 }
+#endif
 
 
 int FunapiSessionOption::GetDelayedAckIntervalMillisecond() {

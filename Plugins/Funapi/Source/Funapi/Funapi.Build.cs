@@ -14,7 +14,17 @@ public class Funapi : ModuleRules
   {
     Definitions.Add("WITH_FUNAPI=1");
     Definitions.Add("FUNAPI_UE4=1");
+
+    Definitions.Add("FUNAPI_HAVE_DELAYED_ACK=1");
+    Definitions.Add("FUNAPI_HAVE_TCP_TLS=1");
     Definitions.Add("FUNAPI_HAVE_WEBSOCKET=1");
+
+    if (Target.Platform == UnrealTargetPlatform.PS4) {
+      Definitions.Add("FUNAPI_HAVE_RPC=0");
+    }
+    else {
+      Definitions.Add("FUNAPI_HAVE_RPC=1");
+    }
 
     if (Target.Platform == UnrealTargetPlatform.Win32 ||
         Target.Platform == UnrealTargetPlatform.Win64) {

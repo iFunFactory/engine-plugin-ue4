@@ -150,7 +150,7 @@ class FUNAPI_PLUGIN_UE4_API Afunapi_tester : public AActor
 
   std::shared_ptr<fun::FunapiSession> session_ = nullptr;
 
-#ifndef FUNAPI_UE4_PLATFORM_PS4
+#if FUNAPI_HAVE_RPC
   std::shared_ptr<fun::FunapiRpc> rpc_ = nullptr;
 #endif
 

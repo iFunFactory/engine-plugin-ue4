@@ -539,9 +539,11 @@ std::string FunapiTcpTransportOption::GetPublicKey(const EncryptionType type) {
 }
 
 
+#if FUNAPI_HAVE_TCP_TLS
 void FunapiTcpTransportOption::SetUseTLS(const bool use_tls) {
   impl_->SetUseTLS(use_tls);
 }
+#endif
 
 
 bool FunapiTcpTransportOption::GetUseTLS() {

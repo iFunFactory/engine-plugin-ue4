@@ -1446,7 +1446,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
     // TEST_F(RepeatedFieldInsertionIteratorsTest, Words)
     {
       verify(words.size() == protobuffer.repeated_string_size());
-      for (int i = 0; i < words.size(); ++i)
+      for (int i = 0; i < (int)words.size(); ++i)
         verify(words.at(i) == protobuffer.repeated_string(i));
     }
 
@@ -1463,7 +1463,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
       std::copy(words.begin(), words.end(), RepeatedPtrFieldBackInserter(
         protobuffer.mutable_repeated_string()));
       verify(words.size() == protobuffer.repeated_string_size());
-      for (int i = 0; i < words.size(); ++i)
+      for (int i = 0; i < (int)words.size(); ++i)
         verify(words.at(i) == protobuffer.repeated_string(i));
     }
 

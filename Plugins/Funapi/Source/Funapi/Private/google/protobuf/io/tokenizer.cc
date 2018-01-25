@@ -1104,7 +1104,7 @@ void Tokenizer::ParseStringAppend(const string& text, string* output) {
 
 template<typename CharacterClass>
 static bool AllInClass(const string& s) {
-  for (int i = 0; i < s.size(); ++i) {
+  for (int i = 0; i < (int)s.size(); ++i) {
     if (!CharacterClass::InClass(s[i]))
       return false;
   }

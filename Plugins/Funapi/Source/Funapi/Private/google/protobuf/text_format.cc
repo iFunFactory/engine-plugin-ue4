@@ -157,7 +157,7 @@ TextFormat::ParseLocation TextFormat::ParseInfoTree::GetLocation(
 
   const vector<TextFormat::ParseLocation>* locations =
       FindOrNull(locations_, field);
-  if (locations == NULL || index >= locations->size()) {
+  if (locations == NULL || index >= (int)locations->size()) {
     return TextFormat::ParseLocation();
   }
 
@@ -170,7 +170,7 @@ TextFormat::ParseInfoTree* TextFormat::ParseInfoTree::GetTreeForNested(
   if (index == -1) { index = 0; }
 
   const vector<TextFormat::ParseInfoTree*>* trees = FindOrNull(nested_, field);
-  if (trees == NULL || index >= trees->size()) {
+  if (trees == NULL || index >= (int)trees->size()) {
     return NULL;
   }
 
@@ -1048,7 +1048,7 @@ class TextFormat::Printer::TextGenerator {
   // level is zero.
   void Outdent() {
     if (indent_.empty() ||
-        indent_.size() < initial_indent_level_ * 2) {
+        (int)indent_.size() < initial_indent_level_ * 2) {
       GOOGLE_LOG(DFATAL) << " Outdent() without matching Indent().";
       return;
     }
@@ -1423,7 +1423,7 @@ void TextFormat::Printer::Print(const Message& message,
   if (print_message_fields_in_index_order_) {
     sort(fields.begin(), fields.end(), FieldIndexSorter());
   }
-  for (int i = 0; i < fields.size(); i++) {
+  for (int i = 0; i < (int)fields.size(); i++) {
     PrintField(message, reflection, fields[i], generator);
   }
   if (!hide_unknown_fields_) {

@@ -149,7 +149,7 @@ string StringPrintfVector(const char* format, const vector<string>& v) {
   // or displaying random chunks of memory to users.
 
   const char* cstr[kStringPrintfVectorMaxArgs];
-  for (int i = 0; i < v.size(); ++i) {
+  for (int i = 0; i < (int)v.size(); ++i) {
     cstr[i] = v[i].c_str();
   }
   for (int i = v.size(); i < GOOGLE_ARRAYSIZE(cstr); ++i) {

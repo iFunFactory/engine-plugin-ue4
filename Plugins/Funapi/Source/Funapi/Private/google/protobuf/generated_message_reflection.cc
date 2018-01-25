@@ -599,7 +599,7 @@ void GeneratedMessageReflection::SwapFields(
 
   std::set<int> swapped_oneof;
 
-  for (int i = 0; i < fields.size(); i++) {
+  for (int i = 0; i < (int)fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
     if (field->is_extension()) {
       MutableExtensionSet(message1)->SwapExtension(

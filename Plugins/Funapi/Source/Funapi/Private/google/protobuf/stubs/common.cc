@@ -376,7 +376,7 @@ void ShutdownProtobufLibrary() {
   // Make it safe to call this multiple times.
   if (internal::shutdown_functions == NULL) return;
 
-  for (int i = 0; i < internal::shutdown_functions->size(); i++) {
+  for (int i = 0; i < (int)internal::shutdown_functions->size(); i++) {
     internal::shutdown_functions->at(i)();
   }
   delete internal::shutdown_functions;

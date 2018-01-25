@@ -3240,7 +3240,7 @@ void TestUtil::ReflectionTester::RemoveLastRepeatedsViaReflection(
 
   vector<const FieldDescriptor*> output;
   reflection->ListFields(*message, &output);
-  for (int i=0; i<output.size(); ++i) {
+  for (int i=0; i<(int)output.size(); ++i) {
     const FieldDescriptor* field = output[i];
     if (!field->is_repeated()) continue;
 
@@ -3254,7 +3254,7 @@ void TestUtil::ReflectionTester::ReleaseLastRepeatedsViaReflection(
 
   vector<const FieldDescriptor*> output;
   reflection->ListFields(*message, &output);
-  for (int i=0; i<output.size(); ++i) {
+  for (int i=0; i<(int)output.size(); ++i) {
     const FieldDescriptor* field = output[i];
     if (!field->is_repeated()) continue;
     if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) continue;
@@ -3273,7 +3273,7 @@ void TestUtil::ReflectionTester::SwapRepeatedsViaReflection(Message* message) {
 
   vector<const FieldDescriptor*> output;
   reflection->ListFields(*message, &output);
-  for (int i=0; i<output.size(); ++i) {
+  for (int i=0; i<(int)output.size(); ++i) {
     const FieldDescriptor* field = output[i];
     if (!field->is_repeated()) continue;
 
@@ -3289,7 +3289,7 @@ SetAllocatedOptionalMessageFieldsToNullViaReflection(
   vector<const FieldDescriptor*> fields;
   reflection->ListFields(*message, &fields);
 
-  for (int i = 0; i < fields.size(); ++i) {
+  for (int i = 0; i < (int)fields.size(); ++i) {
     const FieldDescriptor* field = fields[i];
     if (!field->is_optional() ||
         field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) continue;
@@ -3309,7 +3309,7 @@ SetAllocatedOptionalMessageFieldsToMessageViaReflection(
   vector<const FieldDescriptor*> fields;
   from_reflection->ListFields(*from_message, &fields);
 
-  for (int i = 0; i < fields.size(); ++i) {
+  for (int i = 0; i < (int)fields.size(); ++i) {
     const FieldDescriptor* field = fields[i];
     if (!field->is_optional() ||
         field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) continue;

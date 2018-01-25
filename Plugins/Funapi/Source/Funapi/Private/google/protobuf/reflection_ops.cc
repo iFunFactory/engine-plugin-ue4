@@ -65,7 +65,7 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
 
   vector<const FieldDescriptor*> fields;
   from_reflection->ListFields(from, &fields);
-  for (int i = 0; i < fields.size(); i++) {
+  for (int i = 0; i < (int)fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
 
     if (field->is_repeated()) {
@@ -131,7 +131,7 @@ void ReflectionOps::Clear(Message* message) {
 
   vector<const FieldDescriptor*> fields;
   reflection->ListFields(*message, &fields);
-  for (int i = 0; i < fields.size(); i++) {
+  for (int i = 0; i < (int)fields.size(); i++) {
     reflection->ClearField(message, fields[i]);
   }
 
@@ -154,7 +154,7 @@ bool ReflectionOps::IsInitialized(const Message& message) {
   // Check that sub-messages are initialized.
   vector<const FieldDescriptor*> fields;
   reflection->ListFields(message, &fields);
-  for (int i = 0; i < fields.size(); i++) {
+  for (int i = 0; i < (int)fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
 
@@ -185,7 +185,7 @@ void ReflectionOps::DiscardUnknownFields(Message* message) {
 
   vector<const FieldDescriptor*> fields;
   reflection->ListFields(*message, &fields);
-  for (int i = 0; i < fields.size(); i++) {
+  for (int i = 0; i < (int)fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       if (field->is_repeated()) {
@@ -240,7 +240,7 @@ void ReflectionOps::FindInitializationErrors(
   // Check sub-messages.
   vector<const FieldDescriptor*> fields;
   reflection->ListFields(message, &fields);
-  for (int i = 0; i < fields.size(); i++) {
+  for (int i = 0; i < (int)fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
 

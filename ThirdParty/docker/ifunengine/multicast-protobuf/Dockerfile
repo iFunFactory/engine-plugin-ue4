@@ -2,12 +2,12 @@ FROM ubuntu:16.04
 MAINTAINER JunHyun Park <junhyunpark@ifunfactory.com>
 
 RUN apt-get update
-RUN apt-get install -y wget apt-transport-https net-tools gettext dos2unix
+RUN apt-get install -y wget apt-transport-https net-tools
+RUN apt-get install -y gettext lsb dos2unix
 
-ADD ifunfactory.gpg.key /root/
-RUN apt-key add /root/ifunfactory.gpg.key
-
-ADD ifunfactory.list /etc/apt/sources.list.d/
+WORKDIR /home/
+RUN wget https://ifunfactory.com/engine/funapi-apt-setup.deb
+RUN dpkg -i funapi-apt-setup.deb
 
 RUN apt-get update
 RUN apt-get upgrade -y

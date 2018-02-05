@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2018 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -8,7 +8,7 @@
 #define SRC_FUNAPI_SESSION_H_
 
 #include "funapi_plugin.h"
-#include "funapi_transport.h"
+#include "funapi_option.h"
 #include "funapi_encryption.h"
 #include "funapi/network/ping_message.pb.h"
 #include "funapi/service/redirect_message.pb.h"
@@ -17,6 +17,37 @@
 class FunMessage;
 
 namespace fun {
+
+static const char* kLengthHeaderField = "LEN";
+static const char* kMaintenanceMessageType = "_maintenance";
+
+
+enum class FUNAPI_API TransportState : int {
+  kDisconnected = 0,
+  kDisconnecting,
+  kConnecting,
+  kConnected
+};
+
+// Funapi transport protocol
+enum class FUNAPI_API TransportProtocol : int
+{
+  kTcp = 0,
+  kUdp,
+  kHttp,
+#if FUNAPI_HAVE_WEBSOCKET
+  kWebsocket,
+#endif
+  kDefault,
+};
+
+// Message encoding type
+enum class FUNAPI_API FunEncoding
+{
+  kNone,
+  kJson,
+  kProtobuf
+};
 
 enum class FUNAPI_API SessionEventType : int {
   kOpened,
@@ -36,98 +67,10 @@ enum class FUNAPI_API TransportEventType : int {
 };
 
 
-inline FUNAPI_API std::string SessionEventTypeToString(SessionEventType type) {
-  std::string ret("");
-
-  switch (type) {
-    case SessionEventType::kOpened:
-      ret = "Opened";
-      break;
-
-    case SessionEventType::kClosed:
-      ret = "Closed";
-      break;
-
-    case SessionEventType::kChanged:
-      ret = "Changed";
-      break;
-
-    case SessionEventType::kRedirectStarted:
-      ret = "RedirectStarted";
-      break;
-
-    case SessionEventType::kRedirectSucceeded:
-      ret = "RedirectSucceeded";
-      break;
-
-    case SessionEventType::kRedirectFailed:
-      ret = "RedirectFailed";
-      break;
-
-    default:
-      assert(false);
-  }
-
-  return ret;
-}
+extern FUNAPI_API std::string TransportProtocolToString(TransportProtocol protocol);
 
 
-inline FUNAPI_API std::string TransportEventTypeToString(TransportEventType type) {
-  std::string ret("");
-
-  switch (type) {
-    case TransportEventType::kStarted:
-      ret = "Started";
-      break;
-
-    case TransportEventType::kStopped:
-      ret = "Stopped";
-      break;
-
-    case TransportEventType::kConnectionFailed:
-      ret = "ConnectionFailed";
-      break;
-
-    case TransportEventType::kConnectionTimedOut:
-      ret = "ConnectionTimedOut";
-      break;
-
-    case TransportEventType::kDisconnected:
-      ret = "Disconnected";
-      break;
-
-    default:
-      assert(false);
-  }
-
-  return ret;
-}
-
-
-class FunapiSessionOptionImpl;
-class FUNAPI_API FunapiSessionOption : public std::enable_shared_from_this<FunapiSessionOption> {
- public:
-  FunapiSessionOption();
-  virtual ~FunapiSessionOption() = default;
-
-  static std::shared_ptr<FunapiSessionOption> Create();
-
-  void SetSessionReliability(const bool reliability);
-  bool GetSessionReliability();
-
-#if FUNAPI_HAVE_DELAYED_ACK
-  void SetDelayedAckIntervalMillisecond(const int millisecond);
-#endif
-  int GetDelayedAckIntervalMillisecond();
-
-  void SetSendSessionIdOnlyOnce(const bool once);
-  bool GetSendSessionIdOnlyOnce();
-
- private:
-  std::shared_ptr<FunapiSessionOptionImpl> impl_;
-};
-
-
+class FunapiSessionOption;
 class FunapiSessionImpl;
 class FUNAPI_API FunapiSession : public std::enable_shared_from_this<FunapiSession> {
  public:

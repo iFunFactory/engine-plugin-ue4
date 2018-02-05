@@ -21,6 +21,151 @@
 
 namespace fun {
 
+static const char* kHeaderDelimeter = "\n";
+static const char* kHeaderFieldDelimeter = ":";
+static const char* kVersionHeaderField = "VER";
+static const char* kPluginVersionHeaderField = "PVER";
+
+static const char* kMessageTypeAttributeName = "_msgtype";
+static const char* kSessionIdAttributeName = "_sid";
+static const char* kSeqNumAttributeName = "_seq";
+static const char* kAckNumAttributeName = "_ack";
+
+static const char* kSessionOpenedMessageType = "_session_opened";
+static const char* kSessionClosedMessageType = "_session_closed";
+static const char* kServerPingMessageType = "_ping_s";
+static const char* kClientPingMessageType = "_ping_c";
+static const char* kRedirectMessageType = "_sc_redirect";
+static const char* kRedirectConnectMessageType = "_cs_redirect_connect";
+static const char* kPingTimestampField = "timestamp";
+
+// http header
+static const char* kCookieRequestHeaderField = "Cookie";
+static const char* kCookieResponseHeaderField = "SET-COOKIE";
+
+
+static std::string EncodingToString(FunEncoding encoding) {
+  std::string ret("");
+
+  switch (encoding) {
+    case FunEncoding::kJson:
+      ret = "JSON";
+      break;
+
+    case FunEncoding::kProtobuf:
+      ret = "Protobuf";
+      break;
+
+    default:
+      assert(false);
+  }
+
+  return ret;
+}
+
+
+static std::string SessionEventTypeToString(SessionEventType type) {
+  std::string ret("");
+
+  switch (type) {
+    case SessionEventType::kOpened:
+      ret = "Opened";
+      break;
+
+    case SessionEventType::kClosed:
+      ret = "Closed";
+      break;
+
+    case SessionEventType::kChanged:
+      ret = "Changed";
+      break;
+
+    case SessionEventType::kRedirectStarted:
+      ret = "RedirectStarted";
+      break;
+
+    case SessionEventType::kRedirectSucceeded:
+      ret = "RedirectSucceeded";
+      break;
+
+    case SessionEventType::kRedirectFailed:
+      ret = "RedirectFailed";
+      break;
+
+    default:
+      assert(false);
+  }
+
+  return ret;
+}
+
+
+static std::string TransportEventTypeToString(TransportEventType type) {
+  std::string ret("");
+
+  switch (type) {
+    case TransportEventType::kStarted:
+      ret = "Started";
+      break;
+
+    case TransportEventType::kStopped:
+      ret = "Stopped";
+      break;
+
+    case TransportEventType::kConnectionFailed:
+      ret = "ConnectionFailed";
+      break;
+
+    case TransportEventType::kConnectionTimedOut:
+      ret = "ConnectionTimedOut";
+      break;
+
+    case TransportEventType::kDisconnected:
+      ret = "Disconnected";
+      break;
+
+    default:
+      assert(false);
+  }
+
+  return ret;
+}
+
+
+std::string TransportProtocolToString(TransportProtocol protocol) {
+  std::string ret("");
+
+  switch (protocol) {
+  case TransportProtocol::kDefault:
+    ret = "Default";
+    break;
+
+  case TransportProtocol::kTcp:
+    ret = "TCP";
+    break;
+
+  case TransportProtocol::kUdp:
+    ret = "UDP";
+    break;
+
+  case TransportProtocol::kHttp:
+    ret = "HTTP";
+    break;
+
+#if FUNAPI_HAVE_WEBSOCKET
+  case TransportProtocol::kWebsocket:
+    ret = "WEBSOCKET";
+    break;
+#endif
+
+  default:
+    assert(false);
+  }
+
+  return ret;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiQueue implementation.
 class FunapiMessage;
@@ -4413,107 +4558,6 @@ void FunapiSession::SetTransportOptionCallback(const TransportOptionHandler &han
 
 void FunapiSession::UpdateAll() {
   FunapiSessionImpl::UpdateAll();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// FunapiSessionOptionImpl implementation.
-
-class FunapiSessionOptionImpl : public std::enable_shared_from_this<FunapiSessionOptionImpl> {
- public:
-  FunapiSessionOptionImpl() = default;
-  virtual ~FunapiSessionOptionImpl() = default;
-
-  void SetSessionReliability(const bool reliability);
-  bool GetSessionReliability();
-
-  void SetSendSessionIdOnlyOnce(const bool once);
-  bool GetSendSessionIdOnlyOnce();
-
-  void SetDelayedAckIntervalMillisecond(const int millisecond);
-  int GetDelayedAckIntervalMillisecond();
-
- private:
-  bool use_session_reliability_ = false;
-  bool use_send_session_id_only_once_ = false;
-  int delayed_ack_interval_millisecond_ = 0;
-};
-
-
-void FunapiSessionOptionImpl::SetSessionReliability(const bool reliability) {
-  use_session_reliability_ = reliability;
-}
-
-
-bool FunapiSessionOptionImpl::GetSessionReliability() {
-  return use_session_reliability_;
-}
-
-
-void FunapiSessionOptionImpl::SetSendSessionIdOnlyOnce(const bool once) {
-  use_send_session_id_only_once_ = once;
-}
-
-
-bool FunapiSessionOptionImpl::GetSendSessionIdOnlyOnce() {
-  return use_send_session_id_only_once_;
-}
-
-
-void FunapiSessionOptionImpl::SetDelayedAckIntervalMillisecond(const int millisecond) {
-  delayed_ack_interval_millisecond_ = millisecond;
-
-  if (millisecond > 0) {
-    SetSessionReliability(true);
-  }
-}
-
-
-int FunapiSessionOptionImpl::GetDelayedAckIntervalMillisecond() {
-  return delayed_ack_interval_millisecond_;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// FunapiSessionOption implementation.
-
-FunapiSessionOption::FunapiSessionOption ()
-: impl_(std::make_shared<FunapiSessionOptionImpl>()) {
-}
-
-
-std::shared_ptr<FunapiSessionOption> FunapiSessionOption::Create() {
-  return std::make_shared<FunapiSessionOption>();
-}
-
-
-void FunapiSessionOption::SetSessionReliability(const bool reliability) {
-  impl_->SetSessionReliability(reliability);
-}
-
-
-bool FunapiSessionOption::GetSessionReliability() {
-  return impl_->GetSessionReliability();
-}
-
-
-void FunapiSessionOption::SetSendSessionIdOnlyOnce(const bool once) {
-  impl_->SetSendSessionIdOnlyOnce(once);
-}
-
-
-bool FunapiSessionOption::GetSendSessionIdOnlyOnce() {
-  return impl_->GetSendSessionIdOnlyOnce();
-}
-
-
-#if FUNAPI_HAVE_DELAYED_ACK
-void FunapiSessionOption::SetDelayedAckIntervalMillisecond(const int millisecond) {
-  impl_->SetDelayedAckIntervalMillisecond(millisecond);
-}
-#endif
-
-
-int FunapiSessionOption::GetDelayedAckIntervalMillisecond() {
-  return impl_->GetDelayedAckIntervalMillisecond();
 }
 
 }  // namespace fun

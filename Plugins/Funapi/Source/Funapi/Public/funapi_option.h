@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2018 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -11,155 +11,7 @@
 
 namespace fun {
 
-static const char* kHeaderDelimeter = "\n";
-static const char* kHeaderFieldDelimeter = ":";
-static const char* kVersionHeaderField = "VER";
-static const char* kPluginVersionHeaderField = "PVER";
-static const char* kLengthHeaderField = "LEN";
-
-static const char* kMessageTypeAttributeName = "_msgtype";
-static const char* kSessionIdAttributeName = "_sid";
-static const char* kSeqNumAttributeName = "_seq";
-static const char* kAckNumAttributeName = "_ack";
-
-static const char* kSessionOpenedMessageType = "_session_opened";
-static const char* kSessionClosedMessageType = "_session_closed";
-static const char* kMaintenanceMessageType = "_maintenance";
-static const char* kServerPingMessageType = "_ping_s";
-static const char* kClientPingMessageType = "_ping_c";
-static const char* kRedirectMessageType = "_sc_redirect";
-static const char* kRedirectConnectMessageType = "_cs_redirect_connect";
-static const char* kPingTimestampField = "timestamp";
-
-// http header
-static const char* kCookieRequestHeaderField = "Cookie";
-static const char* kCookieResponseHeaderField = "SET-COOKIE";
-
-enum class FUNAPI_API TransportState : int {
-  kDisconnected = 0,
-  kDisconnecting,
-  kConnecting,
-  kConnected
-};
-
-// Funapi transport protocol
-enum class FUNAPI_API TransportProtocol : int
-{
-  kTcp = 0,
-  kUdp,
-  kHttp,
-#if FUNAPI_HAVE_WEBSOCKET
-  kWebsocket,
-#endif
-  kDefault,
-};
-
-
-inline FUNAPI_API std::string TransportProtocolToString(TransportProtocol protocol) {
-  std::string ret("");
-
-  switch (protocol) {
-    case TransportProtocol::kDefault:
-      ret = "Default";
-      break;
-
-    case TransportProtocol::kTcp:
-      ret = "TCP";
-      break;
-
-    case TransportProtocol::kUdp:
-      ret = "UDP";
-      break;
-
-    case TransportProtocol::kHttp:
-      ret = "HTTP";
-      break;
-
-#if FUNAPI_HAVE_WEBSOCKET
-    case TransportProtocol::kWebsocket:
-      ret = "WEBSOCKET";
-      break;
-#endif
-
-    default:
-      assert(false);
-  }
-
-  return ret;
-}
-
-
-// Message encoding type
-enum class FUNAPI_API FunEncoding
-{
-  kNone,
-  kJson,
-  kProtobuf
-};
-
-
-inline FUNAPI_API std::string EncodingToString(FunEncoding encoding) {
-  std::string ret("");
-
-  switch (encoding) {
-    case FunEncoding::kJson:
-      ret = "JSON";
-      break;
-
-    case FunEncoding::kProtobuf:
-      ret = "Protobuf";
-      break;
-
-    default:
-      assert(false);
-  }
-
-  return ret;
-}
-
-
 enum class FUNAPI_API EncryptionType : int;
-
-
-class FunapiErrorImpl;
-class FUNAPI_API FunapiError : public std::enable_shared_from_this<FunapiError> {
- public:
-  enum class ErrorType : int {
-    kDefault,
-    kRedirect,
-    kSocket,
-    kCurl,
-    kSeq,
-    kPing,
-    kWebsocket,
-  };
-
-  // legacy
-  enum class ErrorCode : int {
-    kNone,
-    kRedirectConnectInvalidToken,
-    kRedirectConnectExpired,
-    kRedirectConnectAuthFailed,
-  };
-
-  FunapiError() = delete;
-  FunapiError(const ErrorType type, const int code, const std::string& error_string);
-  virtual ~FunapiError() = default;
-
-  static std::shared_ptr<FunapiError> Create(const ErrorType type, const int code, const std::string& error_string = "");
-  static std::shared_ptr<FunapiError> Create(const ErrorType type, const ErrorCode code);
-
-  ErrorType GetErrorType();
-  int GetErrorCode();
-  std::string GetErrorString();
-
-  std::string GetErrorTypeString();
-  std::string DebugString();
-
- private:
-  std::shared_ptr<FunapiErrorImpl> impl_;
-};
-
 
 class FUNAPI_API FunapiTransportOption : public std::enable_shared_from_this<FunapiTransportOption> {
  public:
@@ -275,6 +127,70 @@ class FUNAPI_API FunapiWebsocketTransportOption : public FunapiTransportOption {
 
  private:
   std::shared_ptr<FunapiWebsocketTransportOptionImpl> impl_;
+};
+
+
+class FunapiErrorImpl;
+class FUNAPI_API FunapiError : public std::enable_shared_from_this<FunapiError> {
+ public:
+  enum class ErrorType : int {
+    kDefault,
+    kRedirect,
+    kSocket,
+    kCurl,
+    kSeq,
+    kPing,
+    kWebsocket,
+  };
+
+  // legacy
+  enum class ErrorCode : int {
+    kNone,
+    kRedirectConnectInvalidToken,
+    kRedirectConnectExpired,
+    kRedirectConnectAuthFailed,
+  };
+
+  FunapiError() = delete;
+  FunapiError(const ErrorType type, const int code, const std::string& error_string);
+  virtual ~FunapiError() = default;
+
+  static std::shared_ptr<FunapiError> Create(const ErrorType type, const int code, const std::string& error_string = "");
+  static std::shared_ptr<FunapiError> Create(const ErrorType type, const ErrorCode code);
+
+  ErrorType GetErrorType();
+  int GetErrorCode();
+  std::string GetErrorString();
+
+  std::string GetErrorTypeString();
+  std::string DebugString();
+
+ private:
+  std::shared_ptr<FunapiErrorImpl> impl_;
+};
+
+
+class FunapiSessionOptionImpl;
+class FUNAPI_API FunapiSessionOption : public std::enable_shared_from_this<FunapiSessionOption> {
+ public:
+  FunapiSessionOption();
+  virtual ~FunapiSessionOption() = default;
+
+  static std::shared_ptr<FunapiSessionOption> Create();
+
+  void SetSessionReliability(const bool reliability);
+  bool GetSessionReliability();
+
+#if FUNAPI_HAVE_DELAYED_ACK
+  void SetDelayedAckIntervalMillisecond(const int millisecond);
+#endif
+  int GetDelayedAckIntervalMillisecond();
+
+  void SetSendSessionIdOnlyOnce(const bool once);
+  bool GetSendSessionIdOnlyOnce();
+
+ private:
+  std::shared_ptr<FunapiSessionOptionImpl> impl_;
 };
 
 }  // namespace fun

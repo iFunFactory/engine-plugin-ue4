@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2018 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -19,6 +19,9 @@
 #endif
 
 namespace fun {
+
+////////////////////////////////////////////////////////////////////////////////
+// FunapiUtil implementation.
 
 #ifdef FUNAPI_COCOS2D
 std::string FunapiUtil::MD5String(const std::string &file_name, bool use_front) {
@@ -150,5 +153,87 @@ std::string FunapiUtil::BytesFromString(const std::string &uuid) {
 
   return uuid_str;
 }
+
+
+bool FunapiUtil::SeqLess(const uint32_t x, const uint32_t y) {
+  //  - http://en.wikipedia.org/wiki/Serial_number_arithmetic
+  //  - RFC 1982
+  return (int32_t)(y - x) > 0;
+}
+
+bool FunapiUtil::IsFileExists(const std::string &file_name) {
+#ifdef FUNAPI_COCOS2D
+  return cocos2d::FileUtils::getInstance()->isFileExist(file_name.c_str());
+#endif
+
+#ifdef FUNAPI_UE4
+  return FPlatformFileManager::Get().GetPlatformFile().FileExists(ANSI_TO_TCHAR(file_name.c_str()));
+#endif
+
+  return false;
+};
+
+
+long FunapiUtil::GetFileSize(const std::string &file_name) {
+#ifdef FUNAPI_COCOS2D
+  return cocos2d::FileUtils::getInstance()->getFileSize(file_name.c_str());
+#endif
+
+#ifdef FUNAPI_UE4
+  return FPlatformFileManager::Get().GetPlatformFile().FileSize(ANSI_TO_TCHAR(file_name.c_str()));
+#endif
+
+  return 0;
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FunapiTimer implementation.
+
+FunapiTimer::FunapiTimer(time_t seconds) {
+  SetTimer(seconds);
+}
+
+
+bool FunapiTimer::IsExpired() const {
+  if (time_ == 0)
+    return false;
+
+  if (time(NULL) > time_)
+    return true;
+
+  return false;
+};
+
+
+void FunapiTimer::SetTimer(const time_t seconds) {
+  time_ = time(NULL) + seconds;
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+// DebugUtils implementation.
+
+void DebugUtils::Log(std::string fmt, ...) {
+#ifdef DEBUG_LOG
+  const int MAX_LENGTH = 2048;
+
+  va_list args;
+  char buffer[MAX_LENGTH];
+
+  va_start(args, fmt);
+  vsnprintf(buffer, MAX_LENGTH, fmt.c_str(), args);
+  va_end(args);
+
+#ifdef FUNAPI_COCOS2D
+  CCLOG("%s", buffer);
+#endif
+
+#ifdef FUNAPI_UE4
+  UE_LOG(LogFunapi, Log, TEXT("%s"), *FString(buffer));
+#endif
+
+#endif // DEBUG_LOG
+};
 
 }  // namespace fun

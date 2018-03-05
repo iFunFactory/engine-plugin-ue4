@@ -15,34 +15,34 @@
 #include "funapi_socket.h"
 #include "funapi_websocket.h"
 #include "funapi_encryption.h"
+#include "funapi_compression.h"
 #include "funapi_version.h"
 #include "funapi/network/ping_message.pb.h"
 #include "funapi/service/redirect_message.pb.h"
 
-namespace fun {
+#define kHeaderDelimeter "\n"
+#define kHeaderFieldDelimeter ":"
+#define kVersionHeaderField "VER"
+#define kPluginVersionHeaderField "PVER"
 
-static const char* kHeaderDelimeter = "\n";
-static const char* kHeaderFieldDelimeter = ":";
-static const char* kVersionHeaderField = "VER";
-static const char* kPluginVersionHeaderField = "PVER";
+#define kMessageTypeAttributeName "_msgtype"
+#define kSessionIdAttributeName "_sid"
+#define kSeqNumAttributeName "_seq"
+#define kAckNumAttributeName "_ack"
 
-static const char* kMessageTypeAttributeName = "_msgtype";
-static const char* kSessionIdAttributeName = "_sid";
-static const char* kSeqNumAttributeName = "_seq";
-static const char* kAckNumAttributeName = "_ack";
-
-static const char* kSessionOpenedMessageType = "_session_opened";
-static const char* kSessionClosedMessageType = "_session_closed";
-static const char* kServerPingMessageType = "_ping_s";
-static const char* kClientPingMessageType = "_ping_c";
-static const char* kRedirectMessageType = "_sc_redirect";
-static const char* kRedirectConnectMessageType = "_cs_redirect_connect";
-static const char* kPingTimestampField = "timestamp";
+#define kSessionOpenedMessageType "_session_opened"
+#define kSessionClosedMessageType "_session_closed"
+#define kServerPingMessageType "_ping_s"
+#define kClientPingMessageType "_ping_c"
+#define kRedirectMessageType "_sc_redirect"
+#define kRedirectConnectMessageType "_cs_redirect_connect"
+#define kPingTimestampField "timestamp"
 
 // http header
-static const char* kCookieRequestHeaderField = "Cookie";
-static const char* kCookieResponseHeaderField = "SET-COOKIE";
+#define kCookieRequestHeaderField "Cookie"
+#define kCookieResponseHeaderField "SET-COOKIE"
 
+namespace fun {
 
 static std::string EncodingToString(FunEncoding encoding) {
   std::string ret("");
@@ -767,6 +767,9 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
   void SetEncryptionType(EncryptionType type);
   void SetEncryptionType(EncryptionType type, const std::string &public_key);
 
+  void SetCompressionType(CompressionType type);
+  void SetZstdDictBase64String(const std::string &zstd_dict_base64string);
+
   void SetState(TransportState state);
   TransportState GetState();
 
@@ -851,6 +854,8 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
   std::shared_ptr<FunapiEncryption> encrytion_;
   bool sequence_number_validation_ = false;
 
+  std::shared_ptr<FunapiCompression> compression_;
+
   std::weak_ptr<FunapiSessionImpl> session_impl_;
 
   void OnTransportReceived(const TransportProtocol protocol,
@@ -897,6 +902,7 @@ FunapiTransport::FunapiTransport(std::weak_ptr<FunapiSessionImpl> session,
                                  uint16_t port, FunEncoding encoding)
 : encoding_(encoding),
   encrytion_(std::make_shared<FunapiEncryption>()),
+  compression_(std::make_shared<FunapiCompression>()),
   session_impl_(session),
   protocol_(protocol),
   hostname_or_ip_(hostname_or_ip),
@@ -935,6 +941,8 @@ bool FunapiTransport::EncodeMessage(std::shared_ptr<FunapiMessage> message,
   // DebugUtils::Log("Header to send: %s", header_string.c_str());
   // DebugUtils::Log("send message: %s", body_string.c_str());
   // //
+
+  compression_->Compress(header_fields, body);
 
   if (false == encrytion_->Encrypt(header_fields, body, encryption_type))
     return false;
@@ -1169,14 +1177,17 @@ bool FunapiTransport::TryToDecodeHeader(std::vector<uint8_t> &receiving,
                                         bool &header_decoded,
                                         HeaderFields &header_fields) {
   // DebugUtils::Log("Trying to decode header fields.");
+  static const char* ptrHeaderDelimeter = kHeaderDelimeter;
+  static const char* ptrHeaderFieldDelimeter = kHeaderFieldDelimeter;
+
   int received_size = static_cast<int>(receiving.size());
   for (; next_decoding_offset < received_size;) {
     char *base = reinterpret_cast<char *>(receiving.data());
     char *ptr =
     std::search(base + next_decoding_offset,
                 base + received_size,
-                kHeaderDelimeter,
-                kHeaderDelimeter + strlen(kHeaderDelimeter));
+                ptrHeaderDelimeter,
+                ptrHeaderDelimeter + strlen(ptrHeaderDelimeter));
 
     int eol_offset = static_cast<int>(ptr - base);
     if (eol_offset >= received_size) {
@@ -1200,8 +1211,8 @@ bool FunapiTransport::TryToDecodeHeader(std::vector<uint8_t> &receiving,
       return true;
     }
 
-    ptr = std::search(line, line + line_length, kHeaderFieldDelimeter,
-                      kHeaderFieldDelimeter + strlen(kHeaderFieldDelimeter));
+    ptr = std::search(line, line + line_length, ptrHeaderFieldDelimeter,
+                      ptrHeaderFieldDelimeter + strlen(ptrHeaderFieldDelimeter));
     assert((ptr - base) < eol_offset);
 
     // Generates null-terminated string by replacing the delimeter with \0.
@@ -1258,6 +1269,9 @@ bool FunapiTransport::TryToDecodeBody(std::vector<uint8_t> &receiving,
 
   if (body_length > 0) {
     std::vector<uint8_t> v(receiving.begin() + next_decoding_offset, receiving.begin() + next_decoding_offset + body_length);
+
+    compression_->Decompress(header_fields, v);
+
     encrytion_->Decrypt(header_fields, v, encryption_types);
     v.push_back('\0');
 
@@ -1451,6 +1465,20 @@ void FunapiTransport::SetEncryptionType(EncryptionType type, const std::string &
 }
 
 
+void FunapiTransport::SetCompressionType(CompressionType type) {
+  if (CompressionType::kNone != type) {
+    compression_->SetCompressionType(type);
+  }
+}
+
+
+void FunapiTransport::SetZstdDictBase64String(const std::string &zstd_dict_base64string) {
+#if FUNAPI_HAVE_ZSTD
+  compression_->SetZstdDictBase64String(zstd_dict_base64string);
+#endif
+}
+
+
 bool FunapiTransport::OnAckReceived(const uint32_t ack) {
   ack_receiving_ = true;
 
@@ -1567,6 +1595,11 @@ void FunapiTransport::OnReceived(const TransportProtocol protocol,
 
   if (encoding == FunEncoding::kJson) {
     rapidjson::Document &json = message->GetJsonDocumenet();
+
+    if (json.HasParseError()) {
+      DebugUtils::Log("JSON ParseError");
+      return;
+    }
 
     if (json.HasMember(kMessageTypeAttributeName)) {
       const rapidjson::Value &msg_type_node = json[kMessageTypeAttributeName];
@@ -2556,6 +2589,9 @@ bool FunapiHttpTransport::EncodeThenSendMessage(std::shared_ptr<FunapiMessage> m
   HeaderFields header_fields_for_send;
   MakeHeaderFields(header_fields_for_send, body);
 
+  compression_->Compress(header_fields_for_send, body);
+  compression_->SetHeaderFieldsForHttpSend(header_fields_for_send);
+
   encrytion_->Encrypt(header_fields_for_send, body, encryption_type);
   encrytion_->SetHeaderFieldsForHttpSend(header_fields_for_send);
 
@@ -2637,6 +2673,7 @@ bool FunapiHttpTransport::EncodeThenSendMessage(std::shared_ptr<FunapiMessage> m
         cookie_ = it->second;
       }
 
+      compression_->SetHeaderFieldsForHttpRecv(header_fields);
       encrytion_->SetHeaderFieldsForHttpRecv(header_fields);
 
       bool header_decoded = true;
@@ -2656,8 +2693,10 @@ void FunapiHttpTransport::WebResponseHeaderCb(const void *data, int len, HeaderF
 
   buf[len-2] = '\0';
 
-  char *ptr = std::search(buf, buf + len, kHeaderFieldDelimeter,
-                          kHeaderFieldDelimeter + strlen(kHeaderFieldDelimeter));
+  static const char *ptrHeaderFieldDelimeter = kHeaderFieldDelimeter;
+
+  char *ptr = std::search(buf, buf + len, ptrHeaderFieldDelimeter,
+                          ptrHeaderFieldDelimeter + strlen(ptrHeaderFieldDelimeter));
   size_t eol_offset = ptr - buf;
   if (eol_offset >= (size_t)len)
     return;
@@ -3102,6 +3141,14 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
         for (auto type : encryption_types) {
           tcp_transport->SetEncryptionType(type, tcp_option_->GetPublicKey(type));
         }
+        auto compression_types = tcp_option_->GetCompressionTypes();
+        for (auto type : compression_types) {
+          tcp_transport->SetCompressionType(type);
+        }
+
+#if FUNAPI_HAVE_ZSTD
+        tcp_transport->SetZstdDictBase64String(tcp_option_->GetZstdDictBase64String());
+#endif
       }
     }
     else if (protocol == fun::TransportProtocol::kUdp) {
@@ -3114,6 +3161,15 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
         auto udp_transport = std::static_pointer_cast<FunapiUdpTransport>(transport);
 
         udp_transport->SetEncryptionType(udp_option_->GetEncryptionType());
+
+        auto compression_types = udp_option_->GetCompressionTypes();
+        for (auto type : compression_types) {
+          udp_transport->SetCompressionType(type);
+        }
+
+#if FUNAPI_HAVE_ZSTD
+        udp_transport->SetZstdDictBase64String(udp_option_->GetZstdDictBase64String());
+#endif
       }
     }
     else if (protocol == fun::TransportProtocol::kHttp) {
@@ -3132,6 +3188,15 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
         http_transport->SetEncryptionType(http_option_->GetEncryptionType());
         http_transport->SetCACertFilePath(http_option_->GetCACertFilePath());
         http_transport->SetConnectTimeout(http_option_->GetConnectTimeout());
+
+        auto compression_types = http_option_->GetCompressionTypes();
+        for (auto type : compression_types) {
+          http_transport->SetCompressionType(type);
+        }
+
+#if FUNAPI_HAVE_ZSTD
+        http_transport->SetZstdDictBase64String(http_option_->GetZstdDictBase64String());
+#endif
       }
     }
 #if FUNAPI_HAVE_WEBSOCKET
@@ -3142,6 +3207,20 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
       }
 
       transport = FunapiWebsocketTransport::Create(shared_from_this(), hostname_or_ip_, static_cast<uint16_t>(port), use_wss, encoding);
+
+      if (option) {
+        websocket_option_ = std::static_pointer_cast<FunapiWebsocketTransportOption>(option);
+        auto websocket_transport = std::static_pointer_cast<FunapiWebsocketTransport>(transport);
+
+        auto compression_types = websocket_option_->GetCompressionTypes();
+        for (auto type : compression_types) {
+          websocket_transport->SetCompressionType(type);
+        }
+
+#if FUNAPI_HAVE_ZSTD
+        websocket_transport->SetZstdDictBase64String(websocket_option_->GetZstdDictBase64String());
+#endif
+      }
     }
 #endif
 

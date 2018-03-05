@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2018 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -12,7 +12,6 @@
 #include "funapi_tester.h"
 #include "test_messages.pb.h"
 #include "funapi_tasks.h"
-#include "funapi_encryption.h"
 #include "funapi_rpc.h"
 
 
@@ -824,7 +823,60 @@ bool Afunapi_tester::ConnectWebsocket()
 
 bool Afunapi_tester::TestBeginPlay()
 {
-  ConnectWebsocket();
+  // ConnectWebsocket();
+  ConnectWithCompression();
   SendEchoMessage();
+  return true;
+}
+
+bool Afunapi_tester::ConnectWithCompression()
+{
+  auto protocol = fun::TransportProtocol::kTcp;
+
+  session_ = fun::FunapiSession::Create(kServer.c_str(), with_session_reliability_);
+
+  // add callback
+  session_->AddSessionEventCallback([this](const std::shared_ptr<fun::FunapiSession> &session,
+    const fun::TransportProtocol transport_protocol,
+    const fun::SessionEventType type,
+    const std::string &session_id,
+    const std::shared_ptr<fun::FunapiError> &error) {
+  });
+
+  session_->AddTransportEventCallback([this](const std::shared_ptr<fun::FunapiSession> &session,
+    const fun::TransportProtocol transport_protocol,
+    const fun::TransportEventType type,
+    const std::shared_ptr<fun::FunapiError> &error) {
+  });
+
+  session_->AddJsonRecvCallback([](const std::shared_ptr<fun::FunapiSession> &session,
+    const fun::TransportProtocol transport_protocol,
+    const std::string &msg_type,
+    const std::string &json_string) {
+  });
+
+  session_->AddProtobufRecvCallback([](const std::shared_ptr<fun::FunapiSession> &session,
+    const fun::TransportProtocol transport_protocol,
+    const FunMessage &fun_message) {
+  });
+
+  fun::FunEncoding encoding = with_protobuf_ ? fun::FunEncoding::kProtobuf : fun::FunEncoding::kJson;
+  uint16_t port = 0;
+
+  if (protocol == fun::TransportProtocol::kTcp) {
+    // port = with_protobuf_ ? 19022 : 19012;
+    port = with_protobuf_ ? 19122 : 19112;
+
+    auto option = fun::FunapiTcpTransportOption::Create();
+#if FUNAPI_HAVE_ZSTD
+    // option->SetCompressionType(fun::CompressionType::kZstd);
+#endif
+#if FUNAPI_HAVE_ZLIB
+    option->SetCompressionType(fun::CompressionType::kDeflate);
+#endif
+
+    session_->Connect(protocol, port, encoding, option);
+  }
+
   return true;
 }

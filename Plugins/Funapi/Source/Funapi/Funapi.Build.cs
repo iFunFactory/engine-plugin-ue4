@@ -15,6 +15,7 @@ public class Funapi : ModuleRules
     Definitions.Add("WITH_FUNAPI=1");
     Definitions.Add("FUNAPI_UE4=1");
 
+    Definitions.Add("FUNAPI_HAVE_ZLIB=0");
     Definitions.Add("FUNAPI_HAVE_DELAYED_ACK=0");
     Definitions.Add("FUNAPI_HAVE_TCP_TLS=0");
     Definitions.Add("FUNAPI_HAVE_WEBSOCKET=0");
@@ -33,10 +34,12 @@ public class Funapi : ModuleRules
     }
 
     if (Target.Platform == UnrealTargetPlatform.Linux) {
+      Definitions.Add("FUNAPI_HAVE_ZSTD=0");
       Definitions.Add("FUNAPI_HAVE_SODIUM=0");
       Definitions.Add("FUNAPI_HAVE_AES128=0");
     }
     else {
+      Definitions.Add("FUNAPI_HAVE_ZSTD=0");
       Definitions.Add("FUNAPI_HAVE_SODIUM=1");
       if (Target.Platform == UnrealTargetPlatform.Android)
       {
@@ -72,6 +75,7 @@ public class Funapi : ModuleRules
       {
         "Core",
         "Engine",
+        "zlib",
         // ... add other public dependencies that you statically link with here ...
       }
     );
@@ -113,6 +117,7 @@ public class Funapi : ModuleRules
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libz.a"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.a"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libwebsockets.a"));
+      PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libzstd.a"));
     }
     else if (Target.Platform == UnrealTargetPlatform.Win32)
     {
@@ -126,6 +131,7 @@ public class Funapi : ModuleRules
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libeay32.lib"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.lib"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "websockets_static.lib"));
+      PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libzstd_static.lib"));
     }
     else if (Target.Platform == UnrealTargetPlatform.Win64)
     {
@@ -138,6 +144,7 @@ public class Funapi : ModuleRules
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl_a.lib"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.lib"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "websockets_static.lib"));
+      PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libzstd_static.lib"));
     }
     else if (Target.Platform == UnrealTargetPlatform.Android)
     {
@@ -154,6 +161,7 @@ public class Funapi : ModuleRules
       PublicAdditionalLibraries.Add("ssl");
       PublicAdditionalLibraries.Add("crypto");
       PublicAdditionalLibraries.Add("websockets");
+      PublicAdditionalLibraries.Add("zstd");
     }
     else if (Target.Platform == UnrealTargetPlatform.IOS)
     {
@@ -165,6 +173,7 @@ public class Funapi : ModuleRules
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libssl.a"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.a"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libwebsockets.a"));
+      PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libzstd.a"));
     }
     else if (Target.Platform == UnrealTargetPlatform.PS4)
     {
@@ -175,6 +184,7 @@ public class Funapi : ModuleRules
       LibPath += "lib/PS4";
 
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.a"));
+      PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libzstd_static.a"));
 
       PublicDependencyModuleNames.AddRange(new string[] { "WebSockets" });
       AddEngineThirdPartyPrivateStaticDependencies(Target, "OpenSSL", "libWebSockets");

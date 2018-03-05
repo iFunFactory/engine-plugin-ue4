@@ -173,7 +173,37 @@ class FunapiTransportOptionImpl : public std::enable_shared_from_this<FunapiTran
  public:
   FunapiTransportOptionImpl() = default;
   virtual ~FunapiTransportOptionImpl() = default;
+
+  void SetCompressionType(const CompressionType type);
+  std::vector<CompressionType> GetCompressionTypes();
+
+  void SetZstdDictBase64String(const std::string &zstd_dict_base64string);
+  std::string GetZstdDictBase64String();
+
+ private:
+  std::vector<CompressionType> compression_types_;
+  std::string zstd_dict_base64string_;
 };
+
+
+void FunapiTransportOptionImpl::SetCompressionType(const CompressionType type) {
+  compression_types_.push_back(type);
+}
+
+
+std::vector<CompressionType> FunapiTransportOptionImpl::GetCompressionTypes() {
+  return compression_types_;
+}
+
+
+void FunapiTransportOptionImpl::SetZstdDictBase64String(const std::string &zstd_dict_base64string) {
+  zstd_dict_base64string_ = zstd_dict_base64string;
+}
+
+
+std::string FunapiTransportOptionImpl::GetZstdDictBase64String() {
+  return zstd_dict_base64string_;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -566,6 +596,28 @@ const std::string& FunapiTcpTransportOption::GetCACertFilePath() {
 }
 
 
+void FunapiTcpTransportOption::SetCompressionType(const CompressionType type) {
+  impl_->SetCompressionType(type);
+}
+
+
+std::vector<CompressionType> FunapiTcpTransportOption::GetCompressionTypes() {
+  return impl_->GetCompressionTypes();
+}
+
+
+#if FUNAPI_HAVE_ZSTD
+//void FunapiTcpTransportOption::SetZstdDictBase64String(const std::string &zstd_dict_base64string) {
+//  impl_->SetZstdDictBase64String(zstd_dict_base64string);
+//}
+
+
+std::string FunapiTcpTransportOption::GetZstdDictBase64String() {
+  return impl_->GetZstdDictBase64String();
+}
+#endif
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiUdpTransportOption implementation.
 
@@ -587,6 +639,28 @@ void FunapiUdpTransportOption::SetEncryptionType(const EncryptionType type) {
 EncryptionType FunapiUdpTransportOption::GetEncryptionType() {
   return impl_->GetEncryptionType();
 }
+
+
+void FunapiUdpTransportOption::SetCompressionType(const CompressionType type) {
+  impl_->SetCompressionType(type);
+}
+
+
+std::vector<CompressionType> FunapiUdpTransportOption::GetCompressionTypes() {
+  return impl_->GetCompressionTypes();
+}
+
+
+#if FUNAPI_HAVE_ZSTD
+//void FunapiUdpTransportOption::SetZstdDictBase64String(const std::string &zstd_dict_base64string) {
+//  impl_->SetZstdDictBase64String(zstd_dict_base64string);
+//}
+
+
+std::string FunapiUdpTransportOption::GetZstdDictBase64String() {
+  return impl_->GetZstdDictBase64String();
+}
+#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -658,6 +732,28 @@ time_t FunapiHttpTransportOption::GetConnectTimeout() {
 }
 
 
+void FunapiHttpTransportOption::SetCompressionType(const CompressionType type) {
+  impl_->SetCompressionType(type);
+}
+
+
+std::vector<CompressionType> FunapiHttpTransportOption::GetCompressionTypes() {
+  return impl_->GetCompressionTypes();
+}
+
+
+#if FUNAPI_HAVE_ZSTD
+//void FunapiHttpTransportOption::SetZstdDictBase64String(const std::string &zstd_dict_base64string) {
+//  impl_->SetZstdDictBase64String(zstd_dict_base64string);
+//}
+
+
+std::string FunapiHttpTransportOption::GetZstdDictBase64String() {
+  return impl_->GetZstdDictBase64String();
+}
+#endif
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiWebsocketTransportOption implementation.
 
@@ -681,6 +777,28 @@ void FunapiWebsocketTransportOption::SetUseWss(const bool use_wss) {
 bool FunapiWebsocketTransportOption::GetUseWss() {
   return impl_->GetUseWss();
 }
+
+
+void FunapiWebsocketTransportOption::SetCompressionType(const CompressionType type) {
+  impl_->SetCompressionType(type);
+}
+
+
+std::vector<CompressionType> FunapiWebsocketTransportOption::GetCompressionTypes() {
+  return impl_->GetCompressionTypes();
+}
+
+
+#if FUNAPI_HAVE_ZSTD
+//void FunapiWebsocketTransportOption::SetZstdDictBase64String(const std::string &zstd_dict_base64string) {
+//  impl_->SetZstdDictBase64String(zstd_dict_base64string);
+//}
+
+
+std::string FunapiWebsocketTransportOption::GetZstdDictBase64String() {
+  return impl_->GetZstdDictBase64String();
+}
+#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////

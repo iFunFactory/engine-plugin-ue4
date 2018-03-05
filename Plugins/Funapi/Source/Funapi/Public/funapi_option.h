@@ -4,19 +4,28 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
-#ifndef SRC_FUNAPI_TRANSPORT_H_
-#define SRC_FUNAPI_TRANSPORT_H_
+#ifndef SRC_FUNAPI_OPTION_H_
+#define SRC_FUNAPI_OPTION_H_
 
 #include "funapi_plugin.h"
 
 namespace fun {
 
 enum class FUNAPI_API EncryptionType : int;
+enum class FUNAPI_API CompressionType : int;
 
 class FUNAPI_API FunapiTransportOption : public std::enable_shared_from_this<FunapiTransportOption> {
  public:
   FunapiTransportOption() = default;
   virtual ~FunapiTransportOption() = default;
+
+  virtual void SetCompressionType(const CompressionType type) = 0;
+  virtual std::vector<CompressionType> GetCompressionTypes() = 0;
+
+#if FUNAPI_HAVE_ZSTD
+  // virtual void SetZstdDictBase64String(const std::string &zstd_dict_base64string) = 0;
+  virtual std::string GetZstdDictBase64String() = 0;
+#endif
 };
 
 
@@ -45,6 +54,14 @@ class FUNAPI_API FunapiTcpTransportOption : public FunapiTransportOption {
 
   void SetEncryptionType(const EncryptionType type);
   std::vector<EncryptionType> GetEncryptionTypes();
+
+  void SetCompressionType(const CompressionType type);
+  std::vector<CompressionType> GetCompressionTypes();
+
+#if FUNAPI_HAVE_ZSTD
+  // void SetZstdDictBase64String(const std::string &zstd_dict_base64string);
+  std::string GetZstdDictBase64String();
+#endif
 
   void SetEncryptionType(const EncryptionType type, const std::string &public_key);
   std::string GetPublicKey(const EncryptionType type);
@@ -77,6 +94,14 @@ class FUNAPI_API FunapiUdpTransportOption : public FunapiTransportOption {
   void SetEncryptionType(const EncryptionType type);
   EncryptionType GetEncryptionType();
 
+  void SetCompressionType(const CompressionType type);
+  std::vector<CompressionType> GetCompressionTypes();
+
+#if FUNAPI_HAVE_ZSTD
+  // void SetZstdDictBase64String(const std::string &zstd_dict_base64string);
+  std::string GetZstdDictBase64String();
+#endif
+
  private:
   std::shared_ptr<FunapiUdpTransportOptionImpl> impl_;
 };
@@ -102,6 +127,14 @@ class FUNAPI_API FunapiHttpTransportOption : public FunapiTransportOption {
   void SetEncryptionType(const EncryptionType type);
   EncryptionType GetEncryptionType();
 
+  void SetCompressionType(const CompressionType type);
+  std::vector<CompressionType> GetCompressionTypes();
+
+#if FUNAPI_HAVE_ZSTD
+  // void SetZstdDictBase64String(const std::string &zstd_dict_base64string);
+  std::string GetZstdDictBase64String();
+#endif
+
 #ifdef FUNAPI_UE4_PLATFORM_PS4
   void SetCACert(const std::string &cert);
 #else
@@ -124,6 +157,14 @@ class FUNAPI_API FunapiWebsocketTransportOption : public FunapiTransportOption {
 
   // void SetUseWss(const bool use_wss);
   bool GetUseWss();
+
+  void SetCompressionType(const CompressionType type);
+  std::vector<CompressionType> GetCompressionTypes();
+
+#if FUNAPI_HAVE_ZSTD
+  // void SetZstdDictBase64String(const std::string &zstd_dict_base64string);
+  std::string GetZstdDictBase64String();
+#endif
 
  private:
   std::shared_ptr<FunapiWebsocketTransportOptionImpl> impl_;
@@ -195,4 +236,4 @@ class FUNAPI_API FunapiSessionOption : public std::enable_shared_from_this<Funap
 
 }  // namespace fun
 
-#endif  // SRC_FUNAPI_TRANSPORT_H_
+#endif  // SRC_FUNAPI_OPTION_H_

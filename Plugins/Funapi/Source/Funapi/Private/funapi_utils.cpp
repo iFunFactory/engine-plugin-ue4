@@ -16,6 +16,7 @@
 
 #ifdef FUNAPI_UE4
 #include "SecureHash.h"
+#include "Misc/Base64.h"
 #endif
 
 namespace fun {
@@ -99,6 +100,46 @@ std::string FunapiUtil::MD5String(const std::string &file_name, bool use_front) 
 }
 #endif // FUNAPI_UE4
 
+#ifdef FUNAPI_COCOS2D
+bool FunapiUtil::DecodeBase64(const std::string &in, std::vector<uint8_t> &out) {
+  unsigned char *buffer = nullptr;
+  auto len = cocos2d::base64Decode((unsigned char*)in.c_str(), (unsigned int)in.length(), &buffer);
+  if (buffer) {
+    out.resize(len);
+    memcpy(out.data(), buffer, len);
+
+    free (buffer);
+    buffer = nullptr;
+
+    return true;
+  }
+
+  return false;
+}
+#endif
+
+#ifdef FUNAPI_UE4
+bool FunapiUtil::DecodeBase64(const std::string &in, std::vector<uint8_t> &out) {
+  uint32 length = in.size();
+  if (length % 4)
+  {
+    return false;
+  }
+
+  uint32 expected_length = length / 4 * 3;
+  out.resize(expected_length);
+
+  uint32 pad_count = 0;
+  bool ret = FBase64::Decode(in.data(), length, out.data(), pad_count);
+  if (ret) {
+    if (pad_count > 0) {
+      out.erase(out.end() - pad_count, out.end());
+    }
+  }
+
+  return ret;
+}
+#endif // FUNAPI_UE4
 
 std::string FunapiUtil::StringFromBytes(const std::string &uuid_str) {
   if (uuid_str.length() >= 24) {

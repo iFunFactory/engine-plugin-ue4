@@ -10,17 +10,15 @@
 #include "funapi_plugin.h"
 #include "funapi_option.h"
 #include "funapi_encryption.h"
+#include "funapi_compression.h"
 #include "funapi/network/ping_message.pb.h"
 #include "funapi/service/redirect_message.pb.h"
 #include "funapi/management/maintenance_message.pb.h"
 
-class FunMessage;
+#define kLengthHeaderField "LEN"
+#define kMaintenanceMessageType "_maintenance"
 
 namespace fun {
-
-static const char* kLengthHeaderField = "LEN";
-static const char* kMaintenanceMessageType = "_maintenance";
-
 
 enum class FUNAPI_API TransportState : int {
   kDisconnected = 0,

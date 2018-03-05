@@ -23,18 +23,19 @@
 #include "sodium/utils.h"
 #endif // FUNAPI_HAVE_SODIUM
 
-namespace fun {
-
 // http header
-static const char* kProtocolHttpEncryptionField = "X-iFun-Enc";
+#define kProtocolHttpEncryptionField "X-iFun-Enc"
 
 // Funapi header-related constants.
-static const char* kEncryptionHeaderField = "ENC";
+#define kEncryptionHeaderField "ENC"
 
 // Encryption-releated constants.
-static const char* kEncryptionHandshakeBegin = "HELLO!";
-static const char* kDelim1 = "-";
-static const char* kDelim2 = ",";
+#define kEncryptionHandshakeBegin "HELLO!"
+#define kDelim1 "-"
+#define kDelim2 ","
+
+
+namespace fun {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Encryptor implementation.

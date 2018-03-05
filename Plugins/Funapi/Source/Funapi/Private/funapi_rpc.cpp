@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2018 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -16,12 +16,13 @@
 #include "funapi_tasks.h"
 #include "funapi_socket.h"
 
-namespace fun {
+#define kRpcAddMessageType "_sys_ds_add_server"
+#define kRpcDelMessageType "_sys_ds_del_server"
+#define kRpcInfoMessageType "_sys_ds_info"
+#define kRpcMasterMessageType "_sys_ds_master"
 
-static const char* kRpcAddMessageType = "_sys_ds_add_server";
-static const char* kRpcDelMessageType = "_sys_ds_del_server";
-static const char* kRpcInfoMessageType = "_sys_ds_info";
-static const char* kRpcMasterMessageType = "_sys_ds_master";
+
+namespace fun {
 
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiRpcMessage

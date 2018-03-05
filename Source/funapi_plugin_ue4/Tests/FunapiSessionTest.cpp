@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2018 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -10,6 +10,7 @@
 #include "funapi_session.h"
 #include "funapi_multicasting.h"
 #include "funapi_tasks.h"
+#include "funapi_compression.h"
 
 #include <sstream>
 #include <thread>
@@ -3008,4 +3009,44 @@ bool FFunapiSessionTestReconnectHttpSend10Times::RunTest(const FString& Paramete
   session->Close();
 
   return is_ok;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiCompressionTestDict, "Funapi.Experimental.CompressionDict", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
+
+bool FFunapiCompressionTestDict::RunTest(const FString& Parameters) {
+#if FUNAPI_HAVE_ZSTD
+  static char dict[] = {
+    "N6Qw7OaV4zEcENhIgAAAAAAA2pAu8cEmbIanlFJKKU0jSZMxINMBAABCIJRW"
+    "+QIAAARAzIeVRcZN0YNRQRiFKgAAAIAAAAAAAAAAAAAAAAAAACRs5KZSRDquS4oAAAAAAAAAAAAAAA"
+    "EAAAAEAAAACAAAADksIl9tc2d0NTI1ODc4OSwiX21zZ196IjotOTAuOTAwMDAxLTIuNSwibG9va196"
+    "IjotOTBvb2tfeCI6LTIuNSwibDAzODE0Njk3MjcsImxvb2tfIjotOS4xMDAwMDAzODE0Njk5MDksIm"
+    "Rpcl96IjotOS4xMDAwMDE1MjU4Nzg5MDksImRpX3giOi0zMy45MDAwMDE1MjUyNDIxOSwiZGlyX3gi"
+    "Oi0zMy4xOTk5OTY5NDgyNDIxOSwicG9zX3oiOi03Ny4xOTk5OTYwOTI2NTEzNywicG9zX3oxMS4xOT"
+    "k5OTk4MDkyNjUxM29zX3giOi0xMS4xOTk5ImlkIjo0NDI4OCwicG9zX3hzdF9tb3ZlIn17ImlkIjo0"
+    "NHBlIjoicmVxdWVzdF9tb3ZlNDgsIl9tc2d0eXBlIjoicmUyMzcwNjA1NDgsIl9tc3oiOi0xNi43OT"
+    "k5OTkyMzEuNSwibG9va196IjotMTYuImxvb2tfeCI6NjEuNSwibG9feiI6LTMwLjUsImxvb2tfeC0z"
+    "OS41LCJkaXJfeiI6LTMwNSwiZGlyX3giOi0zOS41LCJwb3NfeiI6NTEuNSwiZGlyXzIzNzA2MDU1LC"
+    "Jwb3NfeiI6LTU0LjI5OTk5OTIzNzA2MDU0LCJwb3NfeCI6LTU0LjI5OXsiaWQiOjE0NDg0LCJwb3Nf"
+  };
+
+  auto compression = std::make_shared<fun::FunapiCompression>();
+  compression->SetZstdDictBase64String(dict);
+
+  std::string in_string = "{\"id\":12032,\"pos_x\":31.01,\"pos_z\":45.5293984741,\"dir_x\":-14.199799809265137,\"dir_z\":11.899918530274,\"look_x\":1.100000381469727,\"look_z\":11.600100381469727,\"_msgtype\":\"request_move\"}";
+  std::vector<uint8_t> v(in_string.cbegin(), in_string.cend());
+
+  fun::FunapiCompression::HeaderFields headers;
+  std::stringstream ss;
+  ss << v.size();
+  headers["LEN"] = ss.str();
+
+  compression->Compress(headers, v);
+  compression->Decompress(headers, v);
+
+  std::string out_string(v.cbegin(), v.cend());
+
+  return (in_string.compare(out_string) == 0);
+#else
+  return true;
+#endif
 }

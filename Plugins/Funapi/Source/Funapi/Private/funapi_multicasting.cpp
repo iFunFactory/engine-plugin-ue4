@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2018 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -13,16 +13,17 @@
 #include "funapi_encryption.h"
 #include "funapi_session.h"
 
-namespace fun {
+#define kMulticastMsgType "_multicast"
+#define kChannelId "_channel"
+#define kSender "_sender"
+#define kJoin "_join"
+#define kLeave "_leave"
+#define kErrorCode "_error_code"
+#define kChannelListId "_channels"
+#define kToken "_token"
 
-static const char* kMulticastMsgType = "_multicast";
-static const char* kChannelId = "_channel";
-static const char* kSender = "_sender";
-static const char* kJoin = "_join";
-static const char* kLeave = "_leave";
-static const char* kErrorCode = "_error_code";
-static const char* kChannelListId = "_channels";
-static const char* kToken = "_token";
+
+namespace fun {
 
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiMulticastImpl implementation.

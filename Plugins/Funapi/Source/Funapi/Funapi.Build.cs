@@ -20,14 +20,6 @@ public class Funapi : ModuleRules
     Definitions.Add("FUNAPI_HAVE_TCP_TLS=1");
     Definitions.Add("FUNAPI_HAVE_WEBSOCKET=1");
 
-    if (Target.Platform == UnrealTargetPlatform.PS4 ||
-        Target.Platform == UnrealTargetPlatform.Linux) {
-        Definitions.Add("FUNAPI_HAVE_ZSTD=0");
-    }
-    else {
-        Definitions.Add("FUNAPI_HAVE_ZSTD=1");
-    }
-
     if (Target.Platform == UnrealTargetPlatform.PS4) {
       Definitions.Add("FUNAPI_HAVE_RPC=0");
     }
@@ -42,10 +34,12 @@ public class Funapi : ModuleRules
     }
 
     if (Target.Platform == UnrealTargetPlatform.Linux) {
+      Definitions.Add("FUNAPI_HAVE_ZSTD=0");
       Definitions.Add("FUNAPI_HAVE_SODIUM=0");
       Definitions.Add("FUNAPI_HAVE_AES128=0");
     }
     else {
+      Definitions.Add("FUNAPI_HAVE_ZSTD=1");
       Definitions.Add("FUNAPI_HAVE_SODIUM=1");
       if (Target.Platform == UnrealTargetPlatform.Android)
       {
@@ -190,6 +184,7 @@ public class Funapi : ModuleRules
       LibPath += "lib/PS4";
 
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.a"));
+      PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libzstd_static.a"));
 
       PublicDependencyModuleNames.AddRange(new string[] { "WebSockets" });
       AddEngineThirdPartyPrivateStaticDependencies(Target, "OpenSSL", "libWebSockets");

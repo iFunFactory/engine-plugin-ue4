@@ -120,21 +120,12 @@ bool FunapiUtil::DecodeBase64(const std::string &in, std::vector<uint8_t> &out) 
 
 #ifdef FUNAPI_UE4
 bool FunapiUtil::DecodeBase64(const std::string &in, std::vector<uint8_t> &out) {
-  uint32 length = in.size();
-  if (length % 4)
-  {
-    return false;
-  }
+  TArray<uint8> temp_array;
 
-  uint32 expected_length = length / 4 * 3;
-  out.resize(expected_length);
-
-  uint32 pad_count = 0;
-  bool ret = FBase64::Decode(in.data(), length, out.data(), pad_count);
+  bool ret = FBase64::Decode(FString(in.c_str()), temp_array);
   if (ret) {
-    if (pad_count > 0) {
-      out.erase(out.end() - pad_count, out.end());
-    }
+    out.resize(temp_array.Num());
+    FMemory::Memcpy(out.data(), temp_array.GetData(), temp_array.Num());
   }
 
   return ret;

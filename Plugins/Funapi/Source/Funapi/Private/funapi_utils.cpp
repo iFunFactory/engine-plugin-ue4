@@ -246,7 +246,7 @@ void FunapiTimer::SetTimer(const time_t seconds) {
 ////////////////////////////////////////////////////////////////////////////////
 // DebugUtils implementation.
 
-void DebugUtils::Log(std::string fmt, ...) {
+void DebugUtils::Log(const char* fmt, ...) {
 #ifdef DEBUG_LOG
   const int MAX_LENGTH = 2048;
 
@@ -254,7 +254,7 @@ void DebugUtils::Log(std::string fmt, ...) {
   char buffer[MAX_LENGTH];
 
   va_start(args, fmt);
-  vsnprintf(buffer, MAX_LENGTH, fmt.c_str(), args);
+  vsnprintf(buffer, MAX_LENGTH, fmt, args);
   va_end(args);
 
 #ifdef FUNAPI_COCOS2D

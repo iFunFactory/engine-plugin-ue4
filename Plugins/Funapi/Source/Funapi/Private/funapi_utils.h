@@ -58,7 +58,7 @@ class FunapiTimer
 class DebugUtils
 {
  public:
-  static void Log(std::string fmt, ...);
+  static void Log(const char* fmt, ...);
 };
 
 

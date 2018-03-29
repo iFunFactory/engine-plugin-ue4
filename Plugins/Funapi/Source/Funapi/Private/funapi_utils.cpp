@@ -132,6 +132,40 @@ bool FunapiUtil::DecodeBase64(const std::string &in, std::vector<uint8_t> &out) 
 }
 #endif // FUNAPI_UE4
 
+
+int FunapiUtil::GetSocketErrorCode() {
+#ifdef FUNAPI_UE4_PLATFORM_WINDOWS
+  return ::WSAGetLastError();
+#else
+  return errno;
+#endif
+
+  return 0;
+}
+
+
+std::string FunapiUtil::GetSocketErrorString(const int code) {
+#ifdef FUNAPI_UE4_PLATFORM_WINDOWS
+  {
+    LPSTR temp_error_string = NULL;
+
+    int size = ::FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+      0, code, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), (LPSTR)&temp_error_string, 0, 0);
+
+    std::string ret = temp_error_string;
+
+    LocalFree(temp_error_string);
+
+    return ret;
+  }
+#else
+  return strerror(code);
+#endif
+
+  return "";
+}
+
+
 std::string FunapiUtil::StringFromBytes(const std::string &uuid_str) {
   if (uuid_str.length() >= 24) {
     if (uuid_str[8] == '-' &&

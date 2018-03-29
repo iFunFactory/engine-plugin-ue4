@@ -362,8 +362,8 @@ bool FunapiSocketImpl::InitSocket(struct addrinfo *info,
   }
 
   if (fd < 0) {
-    error_code = errno;
-    error_string = strerror(errno);
+    error_code = FunapiUtil::GetSocketErrorCode();
+    error_string = FunapiUtil::GetSocketErrorString(error_code);
     return false;
   }
 
@@ -445,6 +445,9 @@ class FunapiTcpImpl : public FunapiSocketImpl {
                            const bool is_timed_out,
                            const int error_code,
                            const std::string &error_string);
+
+  void OnConnectCompletion(const bool is_failed,
+                           const bool is_timed_out);
 
   bool ConnectTLS();
   void CleanupSSL();
@@ -533,12 +536,12 @@ void FunapiTcpImpl::Connect(struct addrinfo *addrinfo_res) {
 
   int rc = connect(socket_,addrinfo_res_->ai_addr, addrinfo_res_->ai_addrlen);
   if (rc != 0 && errno != EINPROGRESS) {
-    OnConnectCompletion(true, false, errno, strerror(errno));
+    OnConnectCompletion(true, false);
     return;
   }
 #ifndef FUNAPI_PLATFORM_WINDOWS
   if (rc == 0) {
-    OnConnectCompletion(true, true, errno, strerror(errno));
+    OnConnectCompletion(true, true);
     return;
   }
 #endif
@@ -559,11 +562,11 @@ void FunapiTcpImpl::Connect(struct addrinfo *addrinfo_res) {
   rc = select(socket_+1, &rset, &wset, &eset, &timeout);
   if (rc < 0) {
     // select failed
-    OnConnectCompletion(true, false, errno, strerror(errno));
+    OnConnectCompletion(true, false);
   }
   else if (rc == 0) {
     // connect timed out
-    OnConnectCompletion(true, true, errno, strerror(errno));
+    OnConnectCompletion(true, true);
   }
   else {
 #ifdef FUNAPI_PLATFORM_WINDOWS
@@ -711,8 +714,8 @@ bool FunapiTcpImpl::InitTcpSocketOption(bool disable_nagle, int &error_code, std
                             sizeof(int));
     if (result < 0) {
       // Error - TCP_NODELAY
-      error_code = errno;
-      error_string = strerror(errno);
+      error_code = FunapiUtil::GetSocketErrorCode();
+      error_string = FunapiUtil::GetSocketErrorString(error_code);
       return false;
     }
   }
@@ -816,6 +819,15 @@ bool FunapiTcpImpl::ConnectTLS() {
 
 
 void FunapiTcpImpl::OnConnectCompletion(const bool is_failed,
+                                        const bool is_timed_out) {
+  int error_code = FunapiUtil::GetSocketErrorCode();
+  std::string error_string = FunapiUtil::GetSocketErrorString(error_code);
+
+  OnConnectCompletion(is_failed, is_timed_out, error_code, error_string);
+}
+
+
+void FunapiTcpImpl::OnConnectCompletion(const bool is_failed,
                                         const bool is_timed_out,
                                         const int error_code,
                                         const std::string &error_string) {
@@ -868,7 +880,9 @@ void FunapiTcpImpl::OnSend() {
     */
 
     if (nSent <= 0) {
-      send_completion_handler_(true, errno, strerror(errno), nSent);
+      int error_code = FunapiUtil::GetSocketErrorCode();
+      std::string error_string = FunapiUtil::GetSocketErrorString(error_code);
+      send_completion_handler_(true, error_code, error_string, nSent);
       CloseSocket();
     }
     else {
@@ -904,7 +918,9 @@ void FunapiTcpImpl::OnRecv() {
   */
 
   if (nRead <= 0) {
-    recv_handler_(true, errno, strerror(errno), nRead, buffer);
+    int error_code = FunapiUtil::GetSocketErrorCode();
+    std::string error_string = FunapiUtil::GetSocketErrorString(error_code);
+    recv_handler_(true, error_code, error_string, nRead, buffer);
     CloseSocket();
   }
   else {
@@ -1021,7 +1037,9 @@ void FunapiUdpImpl::OnRecv() {
   */
 
   if (nRead <= 0) {
-    recv_handler_(true, errno, strerror(errno), nRead, receiving_vector);
+    int error_code = FunapiUtil::GetSocketErrorCode();
+    std::string error_string = FunapiUtil::GetSocketErrorString(error_code);
+    recv_handler_(true, error_code, error_string, nRead, receiving_vector);
     CloseSocket();
   }
   else {
@@ -1042,7 +1060,9 @@ bool FunapiUdpImpl::Send(const std::vector<uint8_t> &body, const SendCompletionH
   */
 
   if (nSent <= 0) {
-    send_completion_handler(true, errno, strerror(errno), nSent);
+    int error_code = FunapiUtil::GetSocketErrorCode();
+    std::string error_string = FunapiUtil::GetSocketErrorString(error_code);
+    send_completion_handler(true, error_code, error_string, nSent);
     CloseSocket();
   }
   else {

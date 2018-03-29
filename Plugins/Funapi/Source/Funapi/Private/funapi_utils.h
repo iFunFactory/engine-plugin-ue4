@@ -75,6 +75,9 @@ class FunapiUtil
   static std::string BytesFromString(const std::string &uuid);
 
   static bool DecodeBase64(const std::string &in, std::vector<uint8_t> &out);
+
+  static int GetSocketErrorCode();
+  static std::string GetSocketErrorString(const int code);
 };
 
 }  // namespace fun

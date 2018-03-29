@@ -113,10 +113,10 @@ std::string FunapiErrorImpl::DebugString() {
 
   if (error_code_ != 0) {
     ss << "(" << error_code_ << ")";
-  }
 
-  if (error_string_.length() > 0) {
-    ss << " " << error_string_;
+    if (!error_string_.empty()) {
+      ss << " " << error_string_;
+    }
   }
 
   return ss.str();

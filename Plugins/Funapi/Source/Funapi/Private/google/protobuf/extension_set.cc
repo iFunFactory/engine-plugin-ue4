@@ -103,9 +103,15 @@ void Register(const MessageLite* containing_type,
 
   if (!InsertIfNotPresent(registry_, make_pair(containing_type, number),
                           info)) {
+#if WITH_HOT_RELOAD
+    GOOGLE_LOG(INFO) << "Multiple extension registrations for type \""
+               << containing_type->GetTypeName()
+               << "\", field number " << number << "." << " If you did hot-reload, it's not a bug.";
+#else
     GOOGLE_LOG(FATAL) << "Multiple extension registrations for type \""
                << containing_type->GetTypeName()
                << "\", field number " << number << ".";
+#endif
   }
 }
 

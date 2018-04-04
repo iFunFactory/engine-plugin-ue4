@@ -277,7 +277,11 @@ GeneratedMessageFactory* GeneratedMessageFactory::singleton() {
 void GeneratedMessageFactory::RegisterFile(
     const char* file, RegistrationFunc* registration_func) {
   if (!InsertIfNotPresent(&file_map_, file, registration_func)) {
+#if WITH_HOT_RELOAD
+    GOOGLE_LOG(INFO) << "File is already registered: " << file << " If you did hot-reload, it's not a bug.";
+#else
     GOOGLE_LOG(FATAL) << "File is already registered: " << file;
+#endif
   }
 }
 

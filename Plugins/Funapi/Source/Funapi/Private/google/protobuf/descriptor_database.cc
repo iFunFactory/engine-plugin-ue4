@@ -54,7 +54,11 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddFile(
     const FileDescriptorProto& file,
     Value value) {
   if (!InsertIfNotPresent(&by_name_, file.name(), value)) {
+#if WITH_HOT_RELOAD
+    GOOGLE_LOG(INFO) << "File already exists in database: " << file.name() << " If you did hot-reload, it's not a bug.";
+#else
     GOOGLE_LOG(ERROR) << "File already exists in database: " << file.name();
+#endif
     return false;
   }
 
@@ -157,9 +161,15 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddExtension(
                             make_pair(field.extendee().substr(1),
                                       field.number()),
                             value)) {
+#if WITH_HOT_RELOAD
+      GOOGLE_LOG(INFO) << "Extension conflicts with extension already in database: "
+                    "extend " << field.extendee() << " { "
+                 << field.name() << " = " << field.number() << " }" << " If you did hot-reload, it's not a bug.";
+#else
       GOOGLE_LOG(ERROR) << "Extension conflicts with extension already in database: "
                     "extend " << field.extendee() << " { "
                  << field.name() << " = " << field.number() << " }";
+#endif
       return false;
     }
   } else {

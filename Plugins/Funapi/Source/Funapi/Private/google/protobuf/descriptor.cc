@@ -1015,7 +1015,12 @@ void DescriptorPool::InternalAddGeneratedFile(
   // any descriptor-based operations, since this might cause infinite recursion
   // or deadlock.
   InitGeneratedPoolOnce();
+
+#if WITH_HOT_RELOAD
+  generated_database_->Add(encoded_file_descriptor, size);
+#else
   GOOGLE_CHECK(generated_database_->Add(encoded_file_descriptor, size));
+#endif
 }
 
 

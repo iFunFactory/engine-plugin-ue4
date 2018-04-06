@@ -193,7 +193,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
   // // // //
   // TextFormatTest
   {
-    static std::string static_proto_debug_string_;
+    std::string static_proto_debug_string_;
 
     // Debug string read from text_format_unittest_data.txt.
     // google::protobuf::unittest::TestAllTypes proto_;
@@ -1022,7 +1022,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
   // // // //
   // TextFormatExtensionsTest
   {
-    static std::string static_proto_debug_string_;
+    std::string static_proto_debug_string_;
 
     // SetUpTestCase()
     {

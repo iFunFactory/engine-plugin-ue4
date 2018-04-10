@@ -80,6 +80,25 @@ class FunapiUtil
   static std::string GetSocketErrorString(const int code);
 };
 
+
+class FunapiInitImpl;
+class FunapiInit : public std::enable_shared_from_this<FunapiInit> {
+ public:
+  typedef std::function<void()> InitHandler;
+  typedef std::function<void()> DestroyHandler;
+
+  FunapiInit() = delete;
+  FunapiInit(const InitHandler &init_handler,
+             const DestroyHandler &destroy_handler);
+  virtual ~FunapiInit();
+
+  static std::shared_ptr<FunapiInit> Create(const InitHandler &init_handler,
+                                            const DestroyHandler &destroy_handler = [](){});
+
+ private:
+  std::shared_ptr<FunapiInitImpl> impl_;
+};
+
 }  // namespace fun
 
 

@@ -173,6 +173,7 @@ void FunapiWebsocketImpl::Init() {
 #endif // FUNAPI_UE4_PLATFORM_PS4
 
 #ifdef DEBUG_LOG
+  static auto lws_log_init = FunapiInit::Create([]()
   {
     int level = 0;
 #ifdef FUNAPI_UE4_PLATFORM_PS4
@@ -181,7 +182,7 @@ void FunapiWebsocketImpl::Init() {
     level = LLL_ERR | LLL_WARN | LLL_NOTICE | LLL_INFO | LLL_DEBUG | LLL_HEADER | LLL_EXT | LLL_CLIENT | LLL_LATENCY;
 #endif
     lws_set_log_level(level, &FunapiWebsocketImpl::Log);
-  }
+  });
 #endif // DEBUG_LOG
 
 #endif // FUNAPI_HAVE_WEBSOCKET

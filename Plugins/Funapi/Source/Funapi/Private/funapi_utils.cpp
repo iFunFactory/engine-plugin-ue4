@@ -302,4 +302,53 @@ void DebugUtils::Log(const char* fmt, ...) {
 #endif // DEBUG_LOG
 };
 
+
+////////////////////////////////////////////////////////////////////////////////
+// FunapiInitImpl implementation.
+
+class FunapiInitImpl : public std::enable_shared_from_this<FunapiInitImpl> {
+ public:
+  typedef FunapiInit::InitHandler InitHandler;
+  typedef FunapiInit::DestroyHandler DestroyHandler;
+
+  FunapiInitImpl(const InitHandler &init_handler,
+                 const DestroyHandler &destroy_handler);
+  virtual ~FunapiInitImpl();
+
+ private:
+  DestroyHandler destory_handler_;
+};
+
+
+FunapiInitImpl::FunapiInitImpl(const InitHandler &init_handler,
+                               const DestroyHandler &destroy_handler) {
+  destory_handler_ = destroy_handler;
+  init_handler();
+}
+
+
+FunapiInitImpl::~FunapiInitImpl() {
+  // DebugUtils::Log("%s", __FUNCTION__);
+  destory_handler_();
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FunapiInit implementation.
+
+FunapiInit::FunapiInit(const InitHandler &init_handler,
+                       const DestroyHandler &destroy_handler)
+  : impl_(std::make_shared<FunapiInitImpl>(init_handler, destroy_handler)) {
+}
+
+
+FunapiInit::~FunapiInit() {
+}
+
+
+std::shared_ptr<FunapiInit> FunapiInit::Create(const InitHandler &init_handler,
+                                               const DestroyHandler &destroy_handler) {
+  return std::make_shared<FunapiInit>(init_handler, destroy_handler);
+}
+
 }  // namespace fun

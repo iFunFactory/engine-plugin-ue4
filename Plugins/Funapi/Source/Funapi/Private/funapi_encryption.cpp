@@ -153,9 +153,11 @@ class EncryptorSodium : public Encryptor {
 
 
 EncryptorSodium::EncryptorSodium() {
-  if (::sodium_init() != 0) {
-    // error
-  }
+  static auto sodium_init = FunapiInit::Create([](){
+    if (::sodium_init() != 0) {
+      // error
+    }
+  });
 }
 
 

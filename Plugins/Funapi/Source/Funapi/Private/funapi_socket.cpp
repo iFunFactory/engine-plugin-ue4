@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2018 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -285,13 +285,12 @@ bool FunapiSocketImpl::InitAddrInfo(int socktype,
                                     int &error_code,
                                     std::string &error_string) {
 #ifdef FUNAPI_COCOS2D_PLATFORM_WINDOWS
-  static bool bFirst = true;
-  if (bFirst) {
-    bFirst = false;
-
+  static auto wsa_init = FunapiInit::Create([](){
     WSADATA wsaData;
     WSAStartup(MAKEWORD(2, 2), &wsaData);
-  }
+  }, [](){
+    WSACleanup();
+  });
 #endif
 
   struct addrinfo hints;
@@ -735,7 +734,9 @@ bool FunapiTcpImpl::ConnectTLS() {
     OnConnectCompletion(true, false, static_cast<int>(error_code), error_buffer);
   };
 
-  SSL_library_init();
+  static auto ssl_init = FunapiInit::Create([](){
+    SSL_library_init();
+  });
 
   CleanupSSL();
 

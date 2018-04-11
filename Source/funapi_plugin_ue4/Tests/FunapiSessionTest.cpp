@@ -3050,3 +3050,122 @@ bool FFunapiCompressionTestDict::RunTest(const FString& Parameters) {
   return true;
 #endif
 }
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiTestTLSJson, "Funapi.Experimental.TLS_Json", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
+
+bool FFunapiTestTLSJson::RunTest(const FString& Parameters) {
+#if FUNAPI_HAVE_TCP_TLS
+  std::string send_string = "Json Echo Message";
+  std::string server_ip = g_server_ip;
+
+  auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
+  bool is_ok = true;
+  bool is_working = true;
+
+  session->AddSessionEventCallback
+  ([&send_string]
+  (const std::shared_ptr<fun::FunapiSession> &s,
+    const fun::TransportProtocol protocol,
+    const fun::SessionEventType type,
+    const std::string &session_id,
+    const std::shared_ptr<fun::FunapiError> &error)
+  {
+  });
+
+  session->AddTransportEventCallback
+  ([&is_ok, &is_working]
+  (const std::shared_ptr<fun::FunapiSession> &s,
+    const fun::TransportProtocol protocol,
+    const fun::TransportEventType type,
+    const std::shared_ptr<fun::FunapiError> &error)
+  {
+    if (type == fun::TransportEventType::kConnectionFailed) {
+      is_ok = false;
+      is_working = false;
+    }
+    else if (type == fun::TransportEventType::kConnectionTimedOut) {
+      is_ok = false;
+      is_working = false;
+    }
+
+    verify(type != fun::TransportEventType::kConnectionFailed);
+    verify(type != fun::TransportEventType::kConnectionTimedOut);
+  });
+
+  session->AddJsonRecvCallback
+  ([&is_working, &is_ok, &send_string]
+  (const std::shared_ptr<fun::FunapiSession> &s,
+    const fun::TransportProtocol protocol,
+    const std::string &msg_type, const std::string &json_string)
+  {
+    if (msg_type.compare("echo") == 0) {
+      is_ok = false;
+
+      rapidjson::Document msg_recv;
+      msg_recv.Parse<0>(json_string.c_str());
+
+      verify(msg_recv.HasMember("message"));
+
+      std::string recv_string = msg_recv["message"].GetString();
+
+      if (send_string.compare(recv_string) == 0) {
+        is_ok = true;
+        is_working = false;
+      }
+    }
+  });
+
+  auto option = fun::FunapiTcpTransportOption::Create();
+  option->SetUseTLS(true);
+  session->Connect(fun::TransportProtocol::kTcp, 28012, fun::FunEncoding::kJson, option);
+
+  // send
+  {
+    for (int i = 0; i < 10; ++i) {
+      // std::to_string is not supported on android, using std::stringstream instead.
+      std::stringstream ss_temp;
+      ss_temp <<  "hello world - " << static_cast<int>(i);
+      std::string temp_string = ss_temp.str();
+
+      rapidjson::Document msg;
+      msg.SetObject();
+      rapidjson::Value message_node(temp_string.c_str(), msg.GetAllocator());
+      msg.AddMember("message", message_node, msg.GetAllocator());
+
+      // Convert JSON document to string
+      rapidjson::StringBuffer buffer;
+      rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+      msg.Accept(writer);
+      std::string json_string = buffer.GetString();
+
+      session->SendMessage("echo", json_string);
+    }
+  }
+  {
+    rapidjson::Document msg;
+    msg.SetObject();
+    rapidjson::Value message_node(send_string.c_str(), msg.GetAllocator());
+    msg.AddMember("message", message_node, msg.GetAllocator());
+
+    // Convert JSON document to string
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    msg.Accept(writer);
+    std::string json_string = buffer.GetString();
+
+    session->SendMessage("echo", json_string);
+  }
+  // //
+
+  while (is_working) {
+    session->Update();
+    std::this_thread::sleep_for(std::chrono::milliseconds(16)); // 60fps
+  }
+
+  session->Close();
+
+  return is_ok;
+#else
+  return true;
+#endif
+}

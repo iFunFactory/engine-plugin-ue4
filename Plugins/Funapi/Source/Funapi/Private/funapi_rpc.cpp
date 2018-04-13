@@ -872,7 +872,7 @@ void FunapiRpcImpl::SetPeerEventHanderReconnect(const std::string &peer_id, std:
             {
               std::unique_lock<std::mutex> lock(peer_map_mutex_);
               peer_map_.erase(peer_id);
-              if (peer_map_.size() > 0) {
+              if (!peer_map_.empty()) {
                 new_master_peer = peer_map_.cbegin()->second;
               }
             }

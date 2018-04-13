@@ -1291,7 +1291,7 @@ bool FunapiTransport::TryToDecodeBody(std::vector<uint8_t> &receiving,
     encrytion_->Decrypt(header_fields, receiving, encryption_types);
   }
 
-  if (GetProtocol() == TransportProtocol::kTcp && encryption_types.size() > 0) {
+  if (GetProtocol() == TransportProtocol::kTcp && !encryption_types.empty()) {
     if (auto s = session_impl_.lock()) {
       for (auto type : encryption_types) {
         if (type == EncryptionType::kDefaultEncryption) {

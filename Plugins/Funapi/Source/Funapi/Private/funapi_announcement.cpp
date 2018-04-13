@@ -341,7 +341,7 @@ void FunapiAnnouncementImpl::RequestList(std::weak_ptr<FunapiAnnouncement> a, in
 
 
 void FunapiAnnouncementImpl::DownloadFiles() {
-  if (info_list_.size() == 0) {
+  if (info_list_.empty()) {
     OnCompletion(fun::FunapiAnnouncement::ResultCode::kListIsNullOrEmpty);
     return;
   }

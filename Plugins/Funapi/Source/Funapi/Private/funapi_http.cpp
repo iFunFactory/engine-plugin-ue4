@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2018 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -311,7 +311,7 @@ void FunapiHttpImpl::PostRequest(const std::string &url,
     else {
       std::stringstream ss;
       ss << "http response code " << response_code;
-      error_handler(response_code, ss.str());
+      error_handler(static_cast<int>(response_code), ss.str());
     }
   }
 

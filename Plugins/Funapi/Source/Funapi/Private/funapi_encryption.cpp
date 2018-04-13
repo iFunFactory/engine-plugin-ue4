@@ -629,7 +629,7 @@ FunapiEncryptionImpl::~FunapiEncryptionImpl() {
 
 std::shared_ptr<Encryptor> FunapiEncryptionImpl::GetEncryptor(EncryptionType type) {
   if (type == EncryptionType::kDefaultEncryption) {
-    if (encryptors_.size() > 0) {
+    if (!encryptors_.empty()) {
       return encryptors_.cbegin()->second;
     }
     else {

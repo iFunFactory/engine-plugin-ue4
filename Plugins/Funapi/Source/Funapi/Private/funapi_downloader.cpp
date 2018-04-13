@@ -238,7 +238,7 @@ bool FunapiHttpDownloaderImpl::DownloadFile(int index, std::shared_ptr<FunapiDow
 
 
 void FunapiHttpDownloaderImpl::DownloadFiles() {
-  if (info_list_.size() == 0) {
+  if (info_list_.empty()) {
     OnCompletion(fun::FunapiHttpDownloader::ResultCode::kFailed);
     return;
   }

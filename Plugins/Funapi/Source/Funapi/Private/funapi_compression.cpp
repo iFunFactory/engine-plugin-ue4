@@ -519,7 +519,7 @@ bool FunapiCompressionImpl::Decompress(HeaderFields &header_fields,
 
 
 bool FunapiCompressionImpl::Compress(HeaderFields &header_fields, std::vector<uint8_t> &body) {
-  if (default_compressor_ && body.size() > 0) {
+  if (default_compressor_ && !body.empty()) {
     std::vector<uint8_t> in(body.cbegin(), body.cend());
     if (default_compressor_->Compress(in, body)) {
       HeaderFields::iterator it = header_fields.find(kLengthHeaderField);

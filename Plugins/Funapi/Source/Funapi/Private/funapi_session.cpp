@@ -311,21 +311,20 @@ class FunapiMessage : public std::enable_shared_from_this<FunapiMessage> {
                                                const std::vector<uint8_t> &body,
                                                const EncryptionType type);
 
-  rapidjson::Document& GetJsonDocumenet();
-  FunMessage& GetProtobufMessage();
+  std::shared_ptr<rapidjson::Document> GetJsonDocumenet();
+  std::shared_ptr<FunMessage> GetProtobufMessage();
   std::vector<uint8_t>& GetBody();
 
-  void SetUseSentQueue(bool use);
+  void SetUseSentQueue(const bool use);
   bool UseSentQueue();
 
-  void SetUseSeq(bool use);
+  void SetUseSeq(const bool use);
   bool UseSeq();
 
   uint32_t GetSeq();
-  void SetSeq(uint32_t seq);
+  void SetSeq(const uint32_t seq);
 
   FunEncoding GetEncoding();
-
   EncryptionType GetEncryptionType();
 
  private:
@@ -334,23 +333,25 @@ class FunapiMessage : public std::enable_shared_from_this<FunapiMessage> {
   uint32_t seq_ = 0;
   FunEncoding encoding_ = FunEncoding::kNone;
   std::vector<uint8_t> body_;
-  rapidjson::Document json_document_;
-  FunMessage protobuf_message_;
+  std::shared_ptr<rapidjson::Document> json_document_ = nullptr;
+  std::shared_ptr<FunMessage> protobuf_message_ = nullptr;
   EncryptionType encryption_type_ = EncryptionType::kNoneEncryption;
 };
 
 
 FunapiMessage::FunapiMessage(const rapidjson::Document &json,
                              const EncryptionType type)
-: encoding_(FunEncoding::kJson), encryption_type_(type) {
-  json_document_.CopyFrom(json, json_document_.GetAllocator());
+: encoding_(FunEncoding::kJson),
+  json_document_(std::make_shared<rapidjson::Document>()),
+  encryption_type_(type) {
+  json_document_->CopyFrom(json, json_document_->GetAllocator());
 }
 
 
 FunapiMessage::FunapiMessage(const FunMessage &message,
                              const EncryptionType type)
 : encoding_(FunEncoding::kProtobuf),
-  protobuf_message_(message),
+  protobuf_message_(std::make_shared<FunMessage>(message)),
   encryption_type_(type) {
 }
 
@@ -369,10 +370,12 @@ FunapiMessage::FunapiMessage(const FunEncoding encoding,
 : encoding_(encoding),
   encryption_type_(type) {
   if (encoding_ == FunEncoding::kJson) {
-    json_document_.Parse<0>(reinterpret_cast<char*>(const_cast<uint8_t*>(body.data())));
+    json_document_ = std::make_shared<rapidjson::Document>();
+    json_document_->Parse<0>(reinterpret_cast<char*>(const_cast<uint8_t*>(body.data())));
   }
   else if (encoding_ == FunEncoding::kProtobuf) {
-    protobuf_message_.ParseFromArray(body.data(), static_cast<int>(body.size()));
+    protobuf_message_ = std::make_shared<FunMessage>();
+    protobuf_message_->ParseFromArray(body.data(), static_cast<int>(body.size()));
   }
   else {
     body_ = body;
@@ -420,7 +423,7 @@ bool FunapiMessage::UseSentQueue() {
 }
 
 
-void FunapiMessage::SetUseSentQueue(bool use) {
+void FunapiMessage::SetUseSentQueue(const bool use) {
   use_sent_queue_ = use;
 }
 
@@ -430,7 +433,7 @@ bool FunapiMessage::UseSeq() {
 }
 
 
-void FunapiMessage::SetUseSeq(bool use) {
+void FunapiMessage::SetUseSeq(const bool use) {
   use_seq_ = use;
 }
 
@@ -440,17 +443,17 @@ uint32_t FunapiMessage::GetSeq() {
 }
 
 
-void FunapiMessage::SetSeq(uint32_t seq) {
+void FunapiMessage::SetSeq(const uint32_t seq) {
   seq_ = seq;
 }
 
 
-rapidjson::Document& FunapiMessage::GetJsonDocumenet() {
+std::shared_ptr<rapidjson::Document> FunapiMessage::GetJsonDocumenet() {
   return json_document_;
 }
 
 
-FunMessage& FunapiMessage::GetProtobufMessage() {
+std::shared_ptr<FunMessage> FunapiMessage::GetProtobufMessage() {
   return protobuf_message_;
 }
 
@@ -467,13 +470,13 @@ EncryptionType FunapiMessage::GetEncryptionType() {
 
 std::vector<uint8_t>& FunapiMessage::GetBody() {
   if (encoding_ == FunEncoding::kProtobuf) {
-    body_.resize(protobuf_message_.ByteSize());
-    protobuf_message_.SerializeToArray(body_.data(), protobuf_message_.ByteSize());
+    body_.resize(protobuf_message_->ByteSize());
+    protobuf_message_->SerializeToArray(body_.data(), protobuf_message_->ByteSize());
   }
   else if (encoding_ == FunEncoding::kJson) {
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    json_document_.Accept(writer);
+    json_document_->Accept(writer);
 
     std::string temp_string = buffer.GetString();
     body_ = std::vector<uint8_t>(temp_string.cbegin(), temp_string.cend());
@@ -964,12 +967,12 @@ bool FunapiTransport::EncodeMessage(std::shared_ptr<FunapiMessage> message,
 
     // body
     if (message->GetEncoding() == FunEncoding::kProtobuf) {
-      ss << message->GetProtobufMessage().ShortDebugString();
+      ss << message->GetProtobufMessage()->ShortDebugString();
     }
     else if (message->GetEncoding() == FunEncoding::kJson) {
       rapidjson::StringBuffer buffer;
       rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-      message->GetJsonDocumenet().Accept(writer);
+      message->GetJsonDocumenet()->Accept(writer);
 
       ss << buffer.GetString();
     }
@@ -1078,14 +1081,14 @@ void FunapiTransport::SetSeq(std::shared_ptr<FunapiMessage> message) {
       }
 
       if (encoding == FunEncoding::kJson) {
-        auto &msg = message->GetJsonDocumenet();
+        auto msg = message->GetJsonDocumenet();
         rapidjson::Value seq_node;
         seq_node.SetUint(seq);
-        msg.AddMember(rapidjson::StringRef(kSeqNumAttributeName), seq_node, msg.GetAllocator());
+        msg->AddMember(rapidjson::StringRef(kSeqNumAttributeName), seq_node, msg->GetAllocator());
       }
       else if (encoding == FunEncoding::kProtobuf) {
-        auto &msg = message->GetProtobufMessage();
-        msg.set_seq(seq);
+        auto msg = message->GetProtobufMessage();
+        msg->set_seq(seq);
       }
     }
   }
@@ -1099,14 +1102,14 @@ void FunapiTransport::SetAck(std::shared_ptr<FunapiMessage> message) {
 
       auto encoding = message->GetEncoding();
       if (encoding == FunEncoding::kJson) {
-        auto &msg = message->GetJsonDocumenet();
+        auto msg = message->GetJsonDocumenet();
         rapidjson::Value ack_node;
         ack_node.SetUint(ack_send_);
-        msg.AddMember(rapidjson::StringRef(kAckNumAttributeName), ack_node, msg.GetAllocator());
+        msg->AddMember(rapidjson::StringRef(kAckNumAttributeName), ack_node, msg->GetAllocator());
       }
       else if (encoding == FunEncoding::kProtobuf) {
-        auto &msg = message->GetProtobufMessage();
-        msg.set_ack(ack_send_);
+        auto msg = message->GetProtobufMessage();
+        msg->set_ack(ack_send_);
       }
     }
   }
@@ -1154,15 +1157,15 @@ void FunapiTransport::SetSessionId(std::shared_ptr<FunapiMessage> message) {
     FunEncoding encoding = message->GetEncoding();
 
     if (encoding == FunEncoding::kJson) {
-      rapidjson::Document &msg = message->GetJsonDocumenet();
+      auto msg = message->GetJsonDocumenet();
 
       rapidjson::Value session_id_node;
-      session_id_node.SetString(rapidjson::StringRef(session_id.c_str()), msg.GetAllocator());
-      msg.AddMember(rapidjson::StringRef(kSessionIdAttributeName), session_id_node, msg.GetAllocator());
+      session_id_node.SetString(rapidjson::StringRef(session_id.c_str()), msg->GetAllocator());
+      msg->AddMember(rapidjson::StringRef(kSessionIdAttributeName), session_id_node, msg->GetAllocator());
     }
     else if (encoding == FunEncoding::kProtobuf) {
-      auto &msg = message->GetProtobufMessage();
-      msg.set_sid(session_id);
+      auto msg = message->GetProtobufMessage();
+      msg->set_sid(session_id);
     }
 
     if (UseFirstSessionId() && GetProtocol() != TransportProtocol::kUdp) {
@@ -1594,38 +1597,38 @@ void FunapiTransport::OnReceived(const TransportProtocol protocol,
   bool hasSeq = false;
 
   if (encoding == FunEncoding::kJson) {
-    rapidjson::Document &json = message->GetJsonDocumenet();
+    auto json = message->GetJsonDocumenet();
 
-    if (json.HasParseError()) {
+    if (json->HasParseError()) {
       DebugUtils::Log("JSON ParseError");
       return;
     }
 
-    if (json.HasMember(kMessageTypeAttributeName)) {
-      const rapidjson::Value &msg_type_node = json[kMessageTypeAttributeName];
+    if (json->HasMember(kMessageTypeAttributeName)) {
+      const rapidjson::Value &msg_type_node = (*json)[kMessageTypeAttributeName];
       assert(msg_type_node.IsString());
       msg_type = msg_type_node.GetString();
     }
 
-    hasAck = json.HasMember(kAckNumAttributeName);
+    hasAck = json->HasMember(kAckNumAttributeName);
     if (hasAck) {
-      ack = json[kAckNumAttributeName].GetUint();
+      ack = (*json)[kAckNumAttributeName].GetUint();
     }
 
-    hasSeq = json.HasMember(kSeqNumAttributeName);
+    hasSeq = json->HasMember(kSeqNumAttributeName);
     if (hasSeq) {
-      seq = json[kSeqNumAttributeName].GetUint();
+      seq = (*json)[kSeqNumAttributeName].GetUint();
     }
   } else if (encoding == FunEncoding::kProtobuf) {
-    FunMessage &proto = message->GetProtobufMessage();
+    auto proto = message->GetProtobufMessage();
 
-    msg_type = proto.msgtype();
+    msg_type = proto->msgtype();
 
-    hasAck = proto.has_ack();
-    ack = proto.ack();
+    hasAck = proto->has_ack();
+    ack = proto->ack();
 
-    hasSeq = proto.has_seq();
-    seq = proto.seq();
+    hasSeq = proto->has_seq();
+    seq = proto->seq();
   }
 
   if (IsReliableSession()) {
@@ -2613,12 +2616,12 @@ bool FunapiHttpTransport::EncodeThenSendMessage(std::shared_ptr<FunapiMessage> m
 
     // body
     if (message->GetEncoding() == FunEncoding::kProtobuf) {
-      ss << message->GetProtobufMessage().ShortDebugString();
+      ss << message->GetProtobufMessage()->ShortDebugString();
     }
     else if (message->GetEncoding() == FunEncoding::kJson) {
       rapidjson::StringBuffer buffer;
       rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-      message->GetJsonDocumenet().Accept(writer);
+      message->GetJsonDocumenet()->Accept(writer);
 
       ss << buffer.GetString();
     }
@@ -3440,32 +3443,32 @@ void FunapiSessionImpl::OnTransportReceived(const TransportProtocol protocol,
   int32_t msg_type2 = 0;
 
   if (encoding == FunEncoding::kJson) {
-    rapidjson::Document &json = message->GetJsonDocumenet();
+    auto json = message->GetJsonDocumenet();
 
-    if (json.HasMember(kMessageTypeAttributeName)) {
-      const rapidjson::Value &msg_type_node = json[kMessageTypeAttributeName];
+    if (json->HasMember(kMessageTypeAttributeName)) {
+      const rapidjson::Value &msg_type_node = (*json)[kMessageTypeAttributeName];
       assert(msg_type_node.IsString());
       msg_type = msg_type_node.GetString();
     }
 
-    if (json.HasMember(kSessionIdAttributeName)) {
-      const rapidjson::Value &session_id_node = json[kSessionIdAttributeName];
+    if (json->HasMember(kSessionIdAttributeName)) {
+      const rapidjson::Value &session_id_node = (*json)[kSessionIdAttributeName];
       assert(session_id_node.IsString());
       session_id = session_id_node.GetString();
     }
   } else if (encoding == FunEncoding::kProtobuf) {
-    FunMessage &proto = message->GetProtobufMessage();
+    auto proto = message->GetProtobufMessage();
 
-    if (proto.has_msgtype()) {
-      msg_type = proto.msgtype();
+    if (proto->has_msgtype()) {
+      msg_type = proto->msgtype();
     }
 
-    if (proto.has_sid()) {
-      session_id = proto.sid();
+    if (proto->has_sid()) {
+      session_id = proto->sid();
     }
 
-    if (proto.has_msgtype2()) {
-      msg_type2 = proto.msgtype2();
+    if (proto->has_msgtype2()) {
+      msg_type2 = proto->msgtype2();
     }
   }
 
@@ -3483,12 +3486,12 @@ void FunapiSessionImpl::OnTransportReceived(const TransportProtocol protocol,
 
     // body
     if (encoding == FunEncoding::kProtobuf) {
-      ss << message->GetProtobufMessage().ShortDebugString();
+      ss << message->GetProtobufMessage()->ShortDebugString();
     }
     else if (encoding == FunEncoding::kJson) {
       rapidjson::StringBuffer buffer;
       rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-      message->GetJsonDocumenet().Accept(writer);
+      message->GetJsonDocumenet()->Accept(writer);
 
       ss << buffer.GetString();
     }
@@ -3549,7 +3552,7 @@ void FunapiSessionImpl::OnTransportReceived(const TransportProtocol protocol,
     OnJsonRecv(protocol, msg_type, std::string(body.begin(), body.end()));
   }
   else if (encoding == FunEncoding::kProtobuf) {
-    OnProtobufRecv(protocol, message->GetProtobufMessage());
+    OnProtobufRecv(protocol, *(message->GetProtobufMessage()));
   }
 }
 
@@ -3633,16 +3636,16 @@ void FunapiSessionImpl::OnClientPingMessage(const TransportProtocol protocol,
 
   if (encoding == FunEncoding::kJson)
   {
-    rapidjson::Document &document = message->GetJsonDocumenet();
+    auto document = message->GetJsonDocumenet();
 
-    timestamp_ms = document[kPingTimestampField].GetInt64();
+    timestamp_ms = (*document)[kPingTimestampField].GetInt64();
   }
 
   if (encoding == FunEncoding::kProtobuf)
   {
-    FunMessage &msg = message->GetProtobufMessage();
+    auto msg = message->GetProtobufMessage();
 
-    FunPingMessage ping_message = msg.GetExtension(cs_ping);
+    FunPingMessage ping_message = msg->GetExtension(cs_ping);
     timestamp_ms = ping_message.timestamp();
   }
 
@@ -3675,33 +3678,33 @@ void FunapiSessionImpl::OnRedirect() {
   fun::FunEncoding encoding = message->GetEncoding();
   assert(encoding!=FunEncoding::kNone);
 
-  FunMessage &msg = message->GetProtobufMessage();
+  auto msg = message->GetProtobufMessage();
   FunRedirectMessage *redirect_message = nullptr;
 
   if (encoding == FunEncoding::kJson) {
-    redirect_message = msg.MutableExtension(_sc_redirect);
+    redirect_message = msg->MutableExtension(_sc_redirect);
 
     // log
     // std::string temp_string(v_body.begin(), v_body.end());
     // DebugUtils::Log("json string = %s", temp_string.c_str());
     // //
 
-    rapidjson::Document &document = message->GetJsonDocumenet();
+    auto document = message->GetJsonDocumenet();
 
-    if (document.HasMember("token")) {
-      redirect_message->set_token(document["token"].GetString());
+    if (document->HasMember("token")) {
+      redirect_message->set_token((*document)["token"].GetString());
     }
 
-    if (document.HasMember("host")) {
-      redirect_message->set_host(document["host"].GetString());
+    if (document->HasMember("host")) {
+      redirect_message->set_host((*document)["host"].GetString());
     }
 
-    if (document.HasMember("flavor")) {
-      redirect_message->set_flavor(document["flavor"].GetString());
+    if (document->HasMember("flavor")) {
+      redirect_message->set_flavor((*document)["flavor"].GetString());
     }
 
-    if (document.HasMember("ports")) {
-      rapidjson::Value &ports = document["ports"];
+    if (document->HasMember("ports")) {
+      rapidjson::Value &ports = (*document)["ports"];
       int count = ports.Size();
 
       for (int i=0;i<count;++i) {
@@ -3725,7 +3728,7 @@ void FunapiSessionImpl::OnRedirect() {
 
   if (encoding == FunEncoding::kProtobuf)
   {
-    redirect_message = msg.MutableExtension(_sc_redirect);
+    redirect_message = msg->MutableExtension(_sc_redirect);
   }
 
   token_ = redirect_message->token();
@@ -3821,27 +3824,27 @@ void FunapiSessionImpl::OnRedirectConnectMessage(const TransportProtocol protoco
   fun::FunEncoding encoding = GetEncoding(protocol);
   assert(encoding!=FunEncoding::kNone);
 
-  FunMessage &msg = message->GetProtobufMessage();
+  auto msg = message->GetProtobufMessage();
   FunRedirectConnectMessage *redirect = nullptr;
 
   if (encoding == FunEncoding::kJson) {
-    redirect = msg.MutableExtension(_cs_redirect_connect);
+    redirect = msg->MutableExtension(_cs_redirect_connect);
 
     // log
     // std::string temp_string(v_body.begin(), v_body.end());
     // DebugUtils::Log("json string = %s", temp_string.c_str());
     // //
 
-    rapidjson::Document &document = message->GetJsonDocumenet();
+    auto document = message->GetJsonDocumenet();
 
-    if (document.HasMember("result")) {
-      redirect->set_result(static_cast<FunRedirectConnectMessage_Result>(document["result"].GetInt()));
+    if (document->HasMember("result")) {
+      redirect->set_result(static_cast<FunRedirectConnectMessage_Result>((*document)["result"].GetInt()));
     }
   }
 
   if (encoding == FunEncoding::kProtobuf)
   {
-    redirect = msg.MutableExtension(_cs_redirect_connect);
+    redirect = msg->MutableExtension(_cs_redirect_connect);
   }
 
   FunRedirectConnectMessage_Result result = redirect->result();

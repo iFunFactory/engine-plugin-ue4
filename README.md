@@ -31,8 +31,15 @@ Funapi plugin unreal engine 4
 다른 프로토콜과 메시지 타입을 사용하려면 서버와 클라이언트의 포트 번호를 맞춰서 변경하고 테스트하면 됩니다.
 
 # 내 프로젝트에 적용
+
+1. 파일 복사
+
 ``Plugins`` 폴더의 ``Funapi`` 폴더를 플러그인을 사용할 프로젝트의 ``Plugins`` 폴더로
 복사하면 됩니다.
+
+엔진 하위 디렉토리가 아니라 게임 프로젝트의 하위 디렉토리에 복사해야만 합니다.
+
+2. uproject 설정 추가
 
 **uproject** 파일에서 플러그인을 사용하도록 설정해야 합니다.
 
@@ -49,7 +56,15 @@ Funapi plugin unreal engine 4
 
 언리얼 에디터의 메뉴에서 **Edit -> Plugins** 를 선택하고 ``Funapi`` 플러그인을 **Enbled** 체크해도 됩니다.
 
-자세한 사용방법은 샘플과 도움말을 참고해 주세요.
+3. 게임 프로젝트의 Build.cs 파일에 플러그인 내용 추가
+
+게임 프로젝트의 **Build.cs** 파일에서 플러그인을 사용하도록 설정해야 합니다.
+
+```csharp
+PrivateDependencyModuleNames.AddRange(new string[] { "Funapi" });
+```
+
+자세한 사용방법은 샘플 프로젝트를 참고해 주세요.
 
 # 도움말
 

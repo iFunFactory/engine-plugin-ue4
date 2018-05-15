@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2018 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -185,7 +185,9 @@ void FunapiThreadImpl::Push(const TaskHandler &task)
 
 void FunapiThreadImpl::JoinThread() {
   run_ = false;
+#ifndef FUNAPI_UE4_PLATFORM_WINDOWS
   condition_.notify_all();
+#endif
   if (thread_.joinable())
     thread_.join();
 }

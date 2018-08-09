@@ -12,61 +12,66 @@ public class Funapi : ModuleRules
   // public Funapi(TargetInfo Target) // <= 4.15
   public Funapi(ReadOnlyTargetRules Target) : base(Target) // >= 4.16
   {
-    Definitions.Add("WITH_FUNAPI=1");
-    Definitions.Add("FUNAPI_UE4=1");
+    PublicDefinitions.Add("WITH_FUNAPI=1");
+    PublicDefinitions.Add("FUNAPI_UE4=1");
 
-    Definitions.Add("FUNAPI_HAVE_ZLIB=1");
-    Definitions.Add("FUNAPI_HAVE_DELAYED_ACK=1");
-    Definitions.Add("FUNAPI_HAVE_TCP_TLS=1");
-    Definitions.Add("FUNAPI_HAVE_WEBSOCKET=1");
+    PublicDefinitions.Add("FUNAPI_HAVE_ZLIB=1");
+    PublicDefinitions.Add("FUNAPI_HAVE_DELAYED_ACK=1");
+    PublicDefinitions.Add("FUNAPI_HAVE_TCP_TLS=1");
+    PublicDefinitions.Add("FUNAPI_HAVE_WEBSOCKET=1");
 
     if (Target.Platform == UnrealTargetPlatform.PS4) {
-      Definitions.Add("FUNAPI_HAVE_RPC=0");
+      PublicDefinitions.Add("FUNAPI_HAVE_RPC=0");
     }
     else {
-      Definitions.Add("FUNAPI_HAVE_RPC=1");
+      PublicDefinitions.Add("FUNAPI_HAVE_RPC=1");
     }
 
     if (Target.Platform == UnrealTargetPlatform.Win32 ||
         Target.Platform == UnrealTargetPlatform.Win64) {
-      Definitions.Add("FUNAPI_PLATFORM_WINDOWS=1");
-      Definitions.Add("FUNAPI_UE4_PLATFORM_WINDOWS=1");
+      PublicDefinitions.Add("FUNAPI_PLATFORM_WINDOWS=1");
+      PublicDefinitions.Add("FUNAPI_UE4_PLATFORM_WINDOWS=1");
     }
 
     if (Target.Platform == UnrealTargetPlatform.Linux) {
-      Definitions.Add("FUNAPI_HAVE_ZSTD=0");
-      Definitions.Add("FUNAPI_HAVE_SODIUM=0");
-      Definitions.Add("FUNAPI_HAVE_AES128=0");
+      PublicDefinitions.Add("FUNAPI_HAVE_ZSTD=0");
+      PublicDefinitions.Add("FUNAPI_HAVE_SODIUM=0");
+      PublicDefinitions.Add("FUNAPI_HAVE_AES128=0");
     }
     else {
-      Definitions.Add("FUNAPI_HAVE_ZSTD=1");
-      Definitions.Add("FUNAPI_HAVE_SODIUM=1");
+      PublicDefinitions.Add("FUNAPI_HAVE_ZSTD=1");
+      PublicDefinitions.Add("FUNAPI_HAVE_SODIUM=1");
       if (Target.Platform == UnrealTargetPlatform.Android)
       {
-        Definitions.Add("FUNAPI_HAVE_AES128=0");
+        PublicDefinitions.Add("FUNAPI_HAVE_AES128=0");
       }
       else
       {
-        Definitions.Add("FUNAPI_HAVE_AES128=1");
+        PublicDefinitions.Add("FUNAPI_HAVE_AES128=1");
       }
     }
 
     PublicIncludePaths.AddRange(
       new string[] {
-        // ... add public include paths required here ...
-        "Funapi/Pubilc",
-        "Funapi/Pubilc/funapi",
-        "Funapi/Pubilc/funapi/management",
-        "Funapi/Pubilc/funapi/network",
-        "Funapi/Pubilc/funapi/service",
-        "Funapi/Pubilc/funapi/rpc",
+        // NOTE(sungjin): Path를 문자열로 넘겨주지 않고
+        // Path.Combine(ModuleDirectory,"Path") 을 사용한다.
+        // 엔진이 플러그인의 Public, Private 폴더를 자동으로 추가해 주지만
+        // 잘못된 경로를 추가하는 현상이 있어
+        // Path.Combine 함수를 통해 명시적으로 표현하도록 하여 우회한다.
+        Path.Combine(ModuleDirectory, "Public"),
+        Path.Combine(ModuleDirectory, "Public/funapi"),
+        Path.Combine(ModuleDirectory, "Public/funapi/management"),
+        Path.Combine(ModuleDirectory, "Public/funapi/network"),
+        Path.Combine(ModuleDirectory, "Public/funapi/service"),
+        //... add public include paths required here...
       }
     );
 
     PrivateIncludePaths.AddRange(
       new string[] {
-        "Funapi/Private",
-        // ... add other private include paths required here ...
+        //ModuleDirectory = real dicractory path where Funapi.Build.cs
+        Path.Combine(ModuleDirectory, "Private"),
+        //... add other private include paths required here ...
       }
     );
 
@@ -95,7 +100,11 @@ public class Funapi : ModuleRules
     );
 
     // definitions
-    Definitions.Add("RAPIDJSON_HAS_STDSTRING=0");
+    PublicDefinitions.Add("RAPIDJSON_HAS_STDSTRING=0");
+    PublicDefinitions.Add("RAPIDJSON_HAS_CXX11_RVALUE_REFS=0");
+    // definitions for zlib
+    PublicDefinitions.Add("_LARGEFILE64_SOURCE=0");
+    PublicDefinitions.Add("_FILE_OFFSET_BITS=0");
 
     // Third party library
     var ThirdPartyPath = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "ThirdParty/"));
@@ -126,7 +135,7 @@ public class Funapi : ModuleRules
       LibPath += "lib/Windows/x86";
       PublicLibraryPaths.Add(LibPath);
 
-      Definitions.Add("CURL_STATICLIB=1");
+      PublicDefinitions.Add("CURL_STATICLIB=1");
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl_a.lib"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libeay32.lib"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.lib"));
@@ -140,7 +149,7 @@ public class Funapi : ModuleRules
       LibPath += "lib/Windows/x64";
       PublicLibraryPaths.Add(LibPath);
 
-      Definitions.Add("CURL_STATICLIB=1");
+      PublicDefinitions.Add("CURL_STATICLIB=1");
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl_a.lib"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.lib"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "websockets_static.lib"));
@@ -148,7 +157,7 @@ public class Funapi : ModuleRules
     }
     else if (Target.Platform == UnrealTargetPlatform.Android)
     {
-      Definitions.Add("FUNAPI_UE4_PLATFORM_ANDROID=1");
+      PublicDefinitions.Add("FUNAPI_UE4_PLATFORM_ANDROID=1");
 
       // toolchain will filter properly
       PublicIncludePaths.Add(LibPath + "include/Android/ARMv7");
@@ -165,6 +174,8 @@ public class Funapi : ModuleRules
     }
     else if (Target.Platform == UnrealTargetPlatform.IOS)
     {
+      PublicDefinitions.Add("WITH_HOT_RELOAD=0");
+
       PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include", "iOS"));
 
       LibPath += "lib/iOS";
@@ -177,8 +188,7 @@ public class Funapi : ModuleRules
     }
     else if (Target.Platform == UnrealTargetPlatform.PS4)
     {
-      Definitions.Add("FUNAPI_UE4_PLATFORM_PS4=1");
-      Definitions.Add("RAPIDJSON_HAS_CXX11_RVALUE_REFS=0");
+      PublicDefinitions.Add("FUNAPI_UE4_PLATFORM_PS4=1");
 
       PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include", "PS4"));
       LibPath += "lib/PS4";
@@ -191,8 +201,7 @@ public class Funapi : ModuleRules
     }
     else if (Target.Platform == UnrealTargetPlatform.Linux)
     {
-      Definitions.Add("FUNAPI_UE4_PLATFORM_LINUX=1");
-      Definitions.Add("RAPIDJSON_HAS_CXX11_RVALUE_REFS=0");
+      PublicDefinitions.Add("FUNAPI_UE4_PLATFORM_LINUX=1");
 
       AddEngineThirdPartyPrivateStaticDependencies(Target, "OpenSSL", "libWebSockets", "libcurl");
     }

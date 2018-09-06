@@ -47,11 +47,13 @@ void protobuf_AssignDesc_funapi_2fservice_2fredirect_5fmessage_2eproto() {
       "funapi/service/redirect_message.proto");
   GOOGLE_CHECK(file != NULL);
   FunRedirectMessage_descriptor_ = file->message_type(0);
-  static const int FunRedirectMessage_offsets_[4] = {
+  static const int FunRedirectMessage_offsets_[6] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunRedirectMessage, host_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunRedirectMessage, ports_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunRedirectMessage, token_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunRedirectMessage, flavor_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunRedirectMessage, target_tags_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunRedirectMessage, current_tags_),
   };
   FunRedirectMessage_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -180,29 +182,30 @@ void protobuf_AddDesc_funapi_2fservice_2fredirect_5fmessage_2eproto() {
   ::protobuf_AddDesc_funapi_2fnetwork_2ffun_5fmessage_2eproto();
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n%funapi/service/redirect_message.proto\032"
-    " funapi/network/fun_message.proto\"\334\002\n\022Fu"
+    " funapi/network/fun_message.proto\"\207\003\n\022Fu"
     "nRedirectMessage\022\014\n\004host\030\001 \002(\t\022-\n\005ports\030"
     "\002 \003(\0132\036.FunRedirectMessage.ServerPort\022\r\n"
-    "\005token\030\003 \002(\t\022\016\n\006flavor\030\004 \002(\t\032z\n\nServerPo"
-    "rt\022\014\n\004port\030\001 \002(\005\022.\n\010protocol\030\002 \002(\0162\034.Fun"
-    "RedirectMessage.Protocol\022.\n\010encoding\030\003 \002"
-    "(\0162\034.FunRedirectMessage.Encoding\"8\n\010Prot"
-    "ocol\022\r\n\tPROTO_TCP\020\001\022\r\n\tPROTO_UDP\020\002\022\016\n\nPR"
-    "OTO_HTTP\020\003\"4\n\010Encoding\022\021\n\rENCODING_JSON\020"
-    "\001\022\025\n\021ENCODING_PROTOBUF\020\002\"\240\001\n\031FunRedirect"
-    "ConnectMessage\022\r\n\005token\030\001 \001(\t\0221\n\006result\030"
-    "\002 \001(\0162!.FunRedirectConnectMessage.Result"
-    "\"A\n\006Result\022\006\n\002OK\020\000\022\021\n\rINVALID_TOKEN\020\001\022\013\n"
-    "\007EXPIRED\020\002\022\017\n\013AUTH_FAILED\020\003\"N\n!FunDedica"
-    "tedServerRedirectMessage\022\014\n\004host\030\001 \002(\t\022\014"
-    "\n\004port\030\002 \002(\005\022\r\n\005token\030\003 \002(\t\"R\n\032FunDedica"
-    "tedServerMesseage\0224\n\010redirect\030\001 \001(\0132\".Fu"
-    "nDedicatedServerRedirectMessage:6\n\014_sc_r"
-    "edirect\022\013.FunMessage\030\n \001(\0132\023.FunRedirect"
-    "Message:E\n\024_cs_redirect_connect\022\013.FunMes"
-    "sage\030\013 \001(\0132\032.FunRedirectConnectMessage:F"
-    "\n\024_sc_dedicated_server\022\013.FunMessage\030\014 \001("
-    "\0132\033.FunDedicatedServerMesseage", 950);
+    "\005token\030\003 \002(\t\022\016\n\006flavor\030\004 \002(\t\022\023\n\013target_t"
+    "ags\030\005 \003(\t\022\024\n\014current_tags\030\006 \003(\t\032z\n\nServe"
+    "rPort\022\014\n\004port\030\001 \002(\005\022.\n\010protocol\030\002 \002(\0162\034."
+    "FunRedirectMessage.Protocol\022.\n\010encoding\030"
+    "\003 \002(\0162\034.FunRedirectMessage.Encoding\"8\n\010P"
+    "rotocol\022\r\n\tPROTO_TCP\020\001\022\r\n\tPROTO_UDP\020\002\022\016\n"
+    "\nPROTO_HTTP\020\003\"4\n\010Encoding\022\021\n\rENCODING_JS"
+    "ON\020\001\022\025\n\021ENCODING_PROTOBUF\020\002\"\240\001\n\031FunRedir"
+    "ectConnectMessage\022\r\n\005token\030\001 \001(\t\0221\n\006resu"
+    "lt\030\002 \001(\0162!.FunRedirectConnectMessage.Res"
+    "ult\"A\n\006Result\022\006\n\002OK\020\000\022\021\n\rINVALID_TOKEN\020\001"
+    "\022\013\n\007EXPIRED\020\002\022\017\n\013AUTH_FAILED\020\003\"N\n!FunDed"
+    "icatedServerRedirectMessage\022\014\n\004host\030\001 \002("
+    "\t\022\014\n\004port\030\002 \002(\005\022\r\n\005token\030\003 \002(\t\"R\n\032FunDed"
+    "icatedServerMesseage\0224\n\010redirect\030\001 \001(\0132\""
+    ".FunDedicatedServerRedirectMessage:6\n\014_s"
+    "c_redirect\022\013.FunMessage\030\n \001(\0132\023.FunRedir"
+    "ectMessage:E\n\024_cs_redirect_connect\022\013.Fun"
+    "Message\030\013 \001(\0132\032.FunRedirectConnectMessag"
+    "e:F\n\024_sc_dedicated_server\022\013.FunMessage\030\014"
+    " \001(\0132\033.FunDedicatedServerMesseage", 993);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "funapi/service/redirect_message.proto", &protobuf_RegisterTypes);
   FunRedirectMessage::default_instance_ = new FunRedirectMessage();
@@ -603,6 +606,8 @@ const int FunRedirectMessage::kHostFieldNumber;
 const int FunRedirectMessage::kPortsFieldNumber;
 const int FunRedirectMessage::kTokenFieldNumber;
 const int FunRedirectMessage::kFlavorFieldNumber;
+const int FunRedirectMessage::kTargetTagsFieldNumber;
+const int FunRedirectMessage::kCurrentTagsFieldNumber;
 #endif  // !_MSC_VER
 
 FunRedirectMessage::FunRedirectMessage()
@@ -689,6 +694,8 @@ void FunRedirectMessage::Clear() {
     }
   }
   ports_.Clear();
+  target_tags_.Clear();
+  current_tags_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -763,6 +770,44 @@ bool FunRedirectMessage::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(42)) goto parse_target_tags;
+        break;
+      }
+
+      // repeated string target_tags = 5;
+      case 5: {
+        if (tag == 42) {
+         parse_target_tags:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->add_target_tags()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+            this->target_tags(this->target_tags_size() - 1).data(),
+            this->target_tags(this->target_tags_size() - 1).length(),
+            ::google::protobuf::internal::WireFormat::PARSE,
+            "target_tags");
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(42)) goto parse_target_tags;
+        if (input->ExpectTag(50)) goto parse_current_tags;
+        break;
+      }
+
+      // repeated string current_tags = 6;
+      case 6: {
+        if (tag == 50) {
+         parse_current_tags:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->add_current_tags()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+            this->current_tags(this->current_tags_size() - 1).data(),
+            this->current_tags(this->current_tags_size() - 1).length(),
+            ::google::protobuf::internal::WireFormat::PARSE,
+            "current_tags");
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(50)) goto parse_current_tags;
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -828,6 +873,26 @@ void FunRedirectMessage::SerializeWithCachedSizes(
       4, this->flavor(), output);
   }
 
+  // repeated string target_tags = 5;
+  for (int i = 0; i < this->target_tags_size(); i++) {
+  ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    this->target_tags(i).data(), this->target_tags(i).length(),
+    ::google::protobuf::internal::WireFormat::SERIALIZE,
+    "target_tags");
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      5, this->target_tags(i), output);
+  }
+
+  // repeated string current_tags = 6;
+  for (int i = 0; i < this->current_tags_size(); i++) {
+  ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    this->current_tags(i).data(), this->current_tags(i).length(),
+    ::google::protobuf::internal::WireFormat::SERIALIZE,
+    "current_tags");
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      6, this->current_tags(i), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -878,6 +943,26 @@ void FunRedirectMessage::SerializeWithCachedSizes(
         4, this->flavor(), target);
   }
 
+  // repeated string target_tags = 5;
+  for (int i = 0; i < this->target_tags_size(); i++) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->target_tags(i).data(), this->target_tags(i).length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "target_tags");
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteStringToArray(5, this->target_tags(i), target);
+  }
+
+  // repeated string current_tags = 6;
+  for (int i = 0; i < this->current_tags_size(); i++) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->current_tags(i).data(), this->current_tags(i).length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "current_tags");
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteStringToArray(6, this->current_tags(i), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -920,6 +1005,20 @@ int FunRedirectMessage::ByteSize() const {
         this->ports(i));
   }
 
+  // repeated string target_tags = 5;
+  total_size += 1 * this->target_tags_size();
+  for (int i = 0; i < this->target_tags_size(); i++) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+      this->target_tags(i));
+  }
+
+  // repeated string current_tags = 6;
+  total_size += 1 * this->current_tags_size();
+  for (int i = 0; i < this->current_tags_size(); i++) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+      this->current_tags(i));
+  }
+
   if (!unknown_fields().empty()) {
     total_size +=
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
@@ -946,6 +1045,8 @@ void FunRedirectMessage::MergeFrom(const ::google::protobuf::Message& from) {
 void FunRedirectMessage::MergeFrom(const FunRedirectMessage& from) {
   GOOGLE_CHECK_NE(&from, this);
   ports_.MergeFrom(from.ports_);
+  target_tags_.MergeFrom(from.target_tags_);
+  current_tags_.MergeFrom(from.current_tags_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_host()) {
       set_host(from.host());
@@ -985,6 +1086,8 @@ void FunRedirectMessage::Swap(FunRedirectMessage* other) {
     ports_.Swap(&other->ports_);
     std::swap(token_, other->token_);
     std::swap(flavor_, other->flavor_);
+    target_tags_.Swap(&other->target_tags_);
+    current_tags_.Swap(&other->current_tags_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

@@ -804,102 +804,147 @@ std::string FunapiWebsocketTransportOption::GetZstdDictBase64String() {
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiSessionOptionImpl implementation.
 
-class FunapiSessionOptionImpl : public std::enable_shared_from_this<FunapiSessionOptionImpl> {
- public:
-  FunapiSessionOptionImpl() = default;
-  virtual ~FunapiSessionOptionImpl() = default;
+class FunapiSessionOptionImpl : public std::enable_shared_from_this<FunapiSessionOptionImpl>
+{
+public:
+    FunapiSessionOptionImpl() = default;
+    virtual ~FunapiSessionOptionImpl() = default;
 
-  void SetSessionReliability(const bool reliability);
-  bool GetSessionReliability();
+    void SetSessionReliability(const bool reliability);
+    bool GetSessionReliability();
 
-  void SetSendSessionIdOnlyOnce(const bool once);
-  bool GetSendSessionIdOnlyOnce();
+    void SetSendSessionIdOnlyOnce(const bool once);
+    bool GetSendSessionIdOnlyOnce();
 
-  void SetDelayedAckIntervalMillisecond(const int millisecond);
-  int GetDelayedAckIntervalMillisecond();
+    void SetUseRedirectQueue(const bool use);
+    bool GetUseRedirectQueue();
 
- private:
-  bool use_session_reliability_ = false;
-  bool use_send_session_id_only_once_ = false;
-  int delayed_ack_interval_millisecond_ = 0;
+    void SetDelayedAckIntervalMillisecond(const int millisecond);
+    int GetDelayedAckIntervalMillisecond();
+
+private:
+    bool use_session_reliability_ = false;
+    bool use_send_session_id_only_once_ = false;
+    bool use_redirect_message_queue_ = false;
+    int delayed_ack_interval_millisecond_ = 0;
 };
 
 
-void FunapiSessionOptionImpl::SetSessionReliability(const bool reliability) {
-  use_session_reliability_ = reliability;
+void FunapiSessionOptionImpl::SetSessionReliability(const bool reliability)
+{
+    use_session_reliability_ = reliability;
 }
 
 
-bool FunapiSessionOptionImpl::GetSessionReliability() {
-  return use_session_reliability_;
+bool FunapiSessionOptionImpl::GetSessionReliability()
+{
+    return use_session_reliability_;
 }
 
 
-void FunapiSessionOptionImpl::SetSendSessionIdOnlyOnce(const bool once) {
-  use_send_session_id_only_once_ = once;
+void FunapiSessionOptionImpl::SetSendSessionIdOnlyOnce(const bool once)
+{
+    use_send_session_id_only_once_ = once;
 }
 
 
-bool FunapiSessionOptionImpl::GetSendSessionIdOnlyOnce() {
-  return use_send_session_id_only_once_;
+bool FunapiSessionOptionImpl::GetSendSessionIdOnlyOnce()
+{
+    return use_send_session_id_only_once_;
 }
 
 
-void FunapiSessionOptionImpl::SetDelayedAckIntervalMillisecond(const int millisecond) {
-  delayed_ack_interval_millisecond_ = millisecond;
-
-  if (millisecond > 0) {
-    SetSessionReliability(true);
-  }
+void FunapiSessionOptionImpl::SetUseRedirectQueue(const bool use)
+{
+    use_redirect_message_queue_ = use;
 }
 
 
-int FunapiSessionOptionImpl::GetDelayedAckIntervalMillisecond() {
-  return delayed_ack_interval_millisecond_;
+bool FunapiSessionOptionImpl::GetUseRedirectQueue()
+{
+    return use_redirect_message_queue_;
 }
+
+
+void FunapiSessionOptionImpl::SetDelayedAckIntervalMillisecond(const int millisecond)
+{
+    delayed_ack_interval_millisecond_ = millisecond;
+
+    if (millisecond > 0)
+    {
+        SetSessionReliability(true);
+    }
+}
+
+
+int FunapiSessionOptionImpl::GetDelayedAckIntervalMillisecond()
+{
+    return delayed_ack_interval_millisecond_;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiSessionOption implementation.
 
 FunapiSessionOption::FunapiSessionOption ()
-: impl_(std::make_shared<FunapiSessionOptionImpl>()) {
+    : impl_(std::make_shared<FunapiSessionOptionImpl>())
+{
 }
 
 
-std::shared_ptr<FunapiSessionOption> FunapiSessionOption::Create() {
-  return std::make_shared<FunapiSessionOption>();
+std::shared_ptr<FunapiSessionOption> FunapiSessionOption::Create()
+{
+    return std::make_shared<FunapiSessionOption>();
 }
 
 
-void FunapiSessionOption::SetSessionReliability(const bool reliability) {
-  impl_->SetSessionReliability(reliability);
+void FunapiSessionOption::SetSessionReliability(const bool reliability)
+{
+    impl_->SetSessionReliability(reliability);
 }
 
 
-bool FunapiSessionOption::GetSessionReliability() {
-  return impl_->GetSessionReliability();
+bool FunapiSessionOption::GetSessionReliability()
+{
+    return impl_->GetSessionReliability();
 }
 
 
-void FunapiSessionOption::SetSendSessionIdOnlyOnce(const bool once) {
-  impl_->SetSendSessionIdOnlyOnce(once);
+void FunapiSessionOption::SetSendSessionIdOnlyOnce(const bool once)
+{
+    impl_->SetSendSessionIdOnlyOnce(once);
 }
 
 
-bool FunapiSessionOption::GetSendSessionIdOnlyOnce() {
-  return impl_->GetSendSessionIdOnlyOnce();
+bool FunapiSessionOption::GetSendSessionIdOnlyOnce()
+{
+    return impl_->GetSendSessionIdOnlyOnce();
+}
+
+
+void FunapiSessionOption::SetUseRedirectQueue(const bool use)
+{
+    impl_->SetUseRedirectQueue(use);
+}
+
+
+bool FunapiSessionOption::GetUseRedirectQueue()
+{
+    return impl_->GetUseRedirectQueue();
 }
 
 
 #if FUNAPI_HAVE_DELAYED_ACK
-void FunapiSessionOption::SetDelayedAckIntervalMillisecond(const int millisecond) {
-  impl_->SetDelayedAckIntervalMillisecond(millisecond);
+void FunapiSessionOption::SetDelayedAckIntervalMillisecond(const int millisecond)
+{
+    impl_->SetDelayedAckIntervalMillisecond(millisecond);
 }
 #endif
 
 
-int FunapiSessionOption::GetDelayedAckIntervalMillisecond() {
-  return impl_->GetDelayedAckIntervalMillisecond();
+int FunapiSessionOption::GetDelayedAckIntervalMillisecond()
+{
+    return impl_->GetDelayedAckIntervalMillisecond();
 }
 
 }  // namespace fun

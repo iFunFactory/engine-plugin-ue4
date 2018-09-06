@@ -212,26 +212,30 @@ class FUNAPI_API FunapiError : public std::enable_shared_from_this<FunapiError> 
 
 
 class FunapiSessionOptionImpl;
-class FUNAPI_API FunapiSessionOption : public std::enable_shared_from_this<FunapiSessionOption> {
- public:
-  FunapiSessionOption();
-  virtual ~FunapiSessionOption() = default;
+class FUNAPI_API FunapiSessionOption : public std::enable_shared_from_this<FunapiSessionOption>
+{
+public:
+    FunapiSessionOption();
+    virtual ~FunapiSessionOption() = default;
 
-  static std::shared_ptr<FunapiSessionOption> Create();
+    static std::shared_ptr<FunapiSessionOption> Create();
 
-  void SetSessionReliability(const bool reliability);
-  bool GetSessionReliability();
+    void SetSessionReliability(const bool reliability);
+    bool GetSessionReliability();
 
 #if FUNAPI_HAVE_DELAYED_ACK
-  void SetDelayedAckIntervalMillisecond(const int millisecond);
+    void SetDelayedAckIntervalMillisecond(const int millisecond);
 #endif
-  int GetDelayedAckIntervalMillisecond();
+    int GetDelayedAckIntervalMillisecond();
 
-  void SetSendSessionIdOnlyOnce(const bool once);
-  bool GetSendSessionIdOnlyOnce();
+    void SetSendSessionIdOnlyOnce(const bool once);
+    bool GetSendSessionIdOnlyOnce();
 
- private:
-  std::shared_ptr<FunapiSessionOptionImpl> impl_;
+    void SetUseRedirectQueue(const bool use);
+    bool GetUseRedirectQueue();
+
+private:
+    std::shared_ptr<FunapiSessionOptionImpl> impl_;
 };
 
 }  // namespace fun

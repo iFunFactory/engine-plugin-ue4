@@ -352,6 +352,38 @@ class FUNAPI_API FunRedirectMessage : public ::google::protobuf::Message {
   inline ::std::string* release_flavor();
   inline void set_allocated_flavor(::std::string* flavor);
 
+  // repeated string target_tags = 5;
+  inline int target_tags_size() const;
+  inline void clear_target_tags();
+  static const int kTargetTagsFieldNumber = 5;
+  inline const ::std::string& target_tags(int index) const;
+  inline ::std::string* mutable_target_tags(int index);
+  inline void set_target_tags(int index, const ::std::string& value);
+  inline void set_target_tags(int index, const char* value);
+  inline void set_target_tags(int index, const char* value, size_t size);
+  inline ::std::string* add_target_tags();
+  inline void add_target_tags(const ::std::string& value);
+  inline void add_target_tags(const char* value);
+  inline void add_target_tags(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& target_tags() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_target_tags();
+
+  // repeated string current_tags = 6;
+  inline int current_tags_size() const;
+  inline void clear_current_tags();
+  static const int kCurrentTagsFieldNumber = 6;
+  inline const ::std::string& current_tags(int index) const;
+  inline ::std::string* mutable_current_tags(int index);
+  inline void set_current_tags(int index, const ::std::string& value);
+  inline void set_current_tags(int index, const char* value);
+  inline void set_current_tags(int index, const char* value, size_t size);
+  inline ::std::string* add_current_tags();
+  inline void add_current_tags(const ::std::string& value);
+  inline void add_current_tags(const char* value);
+  inline void add_current_tags(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& current_tags() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_current_tags();
+
   // @@protoc_insertion_point(class_scope:FunRedirectMessage)
  private:
   inline void set_has_host();
@@ -369,6 +401,8 @@ class FUNAPI_API FunRedirectMessage : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::FunRedirectMessage_ServerPort > ports_;
   ::std::string* token_;
   ::std::string* flavor_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> target_tags_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> current_tags_;
   friend void FUNAPI_API protobuf_AddDesc_funapi_2fservice_2fredirect_5fmessage_2eproto();
   friend void protobuf_AssignDesc_funapi_2fservice_2fredirect_5fmessage_2eproto();
   friend void protobuf_ShutdownFile_funapi_2fservice_2fredirect_5fmessage_2eproto();
@@ -1039,6 +1073,114 @@ inline void FunRedirectMessage::set_allocated_flavor(::std::string* flavor) {
     flavor_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:FunRedirectMessage.flavor)
+}
+
+// repeated string target_tags = 5;
+inline int FunRedirectMessage::target_tags_size() const {
+  return target_tags_.size();
+}
+inline void FunRedirectMessage::clear_target_tags() {
+  target_tags_.Clear();
+}
+inline const ::std::string& FunRedirectMessage::target_tags(int index) const {
+  // @@protoc_insertion_point(field_get:FunRedirectMessage.target_tags)
+  return target_tags_.Get(index);
+}
+inline ::std::string* FunRedirectMessage::mutable_target_tags(int index) {
+  // @@protoc_insertion_point(field_mutable:FunRedirectMessage.target_tags)
+  return target_tags_.Mutable(index);
+}
+inline void FunRedirectMessage::set_target_tags(int index, const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:FunRedirectMessage.target_tags)
+  target_tags_.Mutable(index)->assign(value);
+}
+inline void FunRedirectMessage::set_target_tags(int index, const char* value) {
+  target_tags_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:FunRedirectMessage.target_tags)
+}
+inline void FunRedirectMessage::set_target_tags(int index, const char* value, size_t size) {
+  target_tags_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:FunRedirectMessage.target_tags)
+}
+inline ::std::string* FunRedirectMessage::add_target_tags() {
+  return target_tags_.Add();
+}
+inline void FunRedirectMessage::add_target_tags(const ::std::string& value) {
+  target_tags_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:FunRedirectMessage.target_tags)
+}
+inline void FunRedirectMessage::add_target_tags(const char* value) {
+  target_tags_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:FunRedirectMessage.target_tags)
+}
+inline void FunRedirectMessage::add_target_tags(const char* value, size_t size) {
+  target_tags_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:FunRedirectMessage.target_tags)
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+FunRedirectMessage::target_tags() const {
+  // @@protoc_insertion_point(field_list:FunRedirectMessage.target_tags)
+  return target_tags_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+FunRedirectMessage::mutable_target_tags() {
+  // @@protoc_insertion_point(field_mutable_list:FunRedirectMessage.target_tags)
+  return &target_tags_;
+}
+
+// repeated string current_tags = 6;
+inline int FunRedirectMessage::current_tags_size() const {
+  return current_tags_.size();
+}
+inline void FunRedirectMessage::clear_current_tags() {
+  current_tags_.Clear();
+}
+inline const ::std::string& FunRedirectMessage::current_tags(int index) const {
+  // @@protoc_insertion_point(field_get:FunRedirectMessage.current_tags)
+  return current_tags_.Get(index);
+}
+inline ::std::string* FunRedirectMessage::mutable_current_tags(int index) {
+  // @@protoc_insertion_point(field_mutable:FunRedirectMessage.current_tags)
+  return current_tags_.Mutable(index);
+}
+inline void FunRedirectMessage::set_current_tags(int index, const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:FunRedirectMessage.current_tags)
+  current_tags_.Mutable(index)->assign(value);
+}
+inline void FunRedirectMessage::set_current_tags(int index, const char* value) {
+  current_tags_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:FunRedirectMessage.current_tags)
+}
+inline void FunRedirectMessage::set_current_tags(int index, const char* value, size_t size) {
+  current_tags_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:FunRedirectMessage.current_tags)
+}
+inline ::std::string* FunRedirectMessage::add_current_tags() {
+  return current_tags_.Add();
+}
+inline void FunRedirectMessage::add_current_tags(const ::std::string& value) {
+  current_tags_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:FunRedirectMessage.current_tags)
+}
+inline void FunRedirectMessage::add_current_tags(const char* value) {
+  current_tags_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:FunRedirectMessage.current_tags)
+}
+inline void FunRedirectMessage::add_current_tags(const char* value, size_t size) {
+  current_tags_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:FunRedirectMessage.current_tags)
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+FunRedirectMessage::current_tags() const {
+  // @@protoc_insertion_point(field_list:FunRedirectMessage.current_tags)
+  return current_tags_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+FunRedirectMessage::mutable_current_tags() {
+  // @@protoc_insertion_point(field_mutable_list:FunRedirectMessage.current_tags)
+  return &current_tags_;
 }
 
 // -------------------------------------------------------------------

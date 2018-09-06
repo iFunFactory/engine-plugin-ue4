@@ -30,6 +30,8 @@ message FunRedirectMessage {
   repeated ServerPort ports = 2;
   required string token = 3;
   required string flavor = 4;
+  repeated string target_tags = 5;
+  repeated string current_tags = 6;
 }
 
 

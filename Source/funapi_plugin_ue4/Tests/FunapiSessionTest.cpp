@@ -2320,7 +2320,7 @@ bool FFunapiSessionTestEncProtobufAes128::RunTest(const FString& Parameters)
   return is_ok;
 }
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMultithread, 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMultithread,
   "Funapi.Multithread.MT_Session",
   EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 

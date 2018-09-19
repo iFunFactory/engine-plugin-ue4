@@ -15,8 +15,11 @@
 #include "funapi_tasks.h"
 #include "curl/curl.h"
 
-namespace fun {
+#include<iomanip>
 
+
+namespace fun
+{
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiHttpImpl implementation.
 
@@ -63,6 +66,8 @@ class FunapiHttpImpl : public std::enable_shared_from_this<FunapiHttpImpl> {
   // https://curl.haxx.se/ca/cacert.pem
   std::string cert_file_path_;
 
+  const std::string UrlEncode(const std::string& url);
+
   static size_t OnResponse(void *data, size_t size, size_t count, void *cb);
   void OnResponseHeader(void *data, const size_t len, std::vector<std::string> &headers);
   void OnResponseBody(void *data, const size_t len, std::vector<uint8_t> &receiving);
@@ -103,83 +108,131 @@ void FunapiHttpImpl::Cleanup() {
 }
 
 
+//
+// This code is written with reference to https://stackoverflow.com/a/17708801.
+//
+const std::string FunapiHttpImpl::UrlEncode(const std::string& url)
+{
+    std::ostringstream escaped;
+    escaped.fill('0');
+    escaped << std::hex;
+
+    for (std::string::const_iterator i = url.begin(), n = url.end(); i != n; ++i) {
+        std::string::value_type c = (*i);
+
+        // Keep alphanumeric and other accepted characters intact
+        if (isalnum(c) || c == ':' || c == '/' || c == '.' || c == '-' || c == '_' || c == '~') {
+            escaped << c;
+            continue;
+        }
+
+        // Any other characters are percent-encoded
+        escaped << std::uppercase;
+        escaped << '%' << std::setw(2) << int((unsigned char)c);
+        escaped << std::nouppercase;
+    }
+
+    return escaped.str();
+}
+
+
 void FunapiHttpImpl::DownloadRequest(const std::string &url,
                                      const std::string &path,
                                      const HeaderFields &header,
                                      const ErrorHandler &error_handler,
                                      const ProgressHandler &progress_handler,
-                                     const DownloadCompletionHandler &download_completion_handler) {
-  std::vector<std::string> header_receiving;
-  std::vector<uint8_t> body_receiving;
+                                     const DownloadCompletionHandler &download_completion_handler)
+{
+    if (url.empty())
+    {
+        errno = EINVAL;
+        error_handler(errno, strerror(errno));
+        return;
+    }
 
-  FILE *fp = fopen(path.c_str(), "wb");
-  if (fp == NULL) {
-    error_handler(errno, strerror(errno));
-    return;
-  }
-  uint64_t bytes = 0;
+    std::vector<std::string> header_receiving;
+    std::vector<uint8_t> body_receiving;
 
-  ResponseCallback receive_header_cb = [this, &header_receiving](void* data, const size_t len){
-    OnResponseHeader(data, len, header_receiving);
-  };
-  ResponseCallback receive_body_cb = [this, &fp, &bytes, &progress_handler, &url, &path](void* data, const size_t len){
-    OnResponseFile(data, len, fp);
-    bytes += len;
-    progress_handler(url, path, bytes);
-  };
+    FILE *fp = fopen(path.c_str(), "wb");
+    if (fp == NULL)
+    {
+        error_handler(errno, strerror(errno));
+        return;
+    }
 
-  CURL *curl = curl_easy_init();
-  struct curl_slist *chunk = NULL;
-  for (auto it : header) {
-    std::stringstream ss;
-    ss << it.first << ": " << it.second;
-    chunk = curl_slist_append(chunk, ss.str().c_str());
-  }
+    uint64_t bytes = 0;
+    ResponseCallback receive_header_cb = [this, &header_receiving](void* data, const size_t len)
+    {
+        OnResponseHeader(data, len, header_receiving);
+    };
+    ResponseCallback receive_body_cb = [this, &fp, &bytes, &progress_handler, &url, &path](void* data, const size_t len)
+    {
+        OnResponseFile(data, len, fp);
+        bytes += len;
+        progress_handler(url, path, bytes);
+    };
 
-  if (chunk) {
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
-  }
+    CURL *curl = curl_easy_init();
+    struct curl_slist *chunk = NULL;
+    for (auto it : header)
+    {
+        std::stringstream ss;
+        ss << it.first << ": " << it.second;
+        chunk = curl_slist_append(chunk, ss.str().c_str());
+    }
 
-  curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    if (chunk)
+    {
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
+    }
 
-  curl_easy_setopt(curl, CURLOPT_TIMEOUT, connect_timeout_seconds_);
+    const std::string& encoded_url = UrlEncode(url);
+    curl_easy_setopt(curl, CURLOPT_URL, encoded_url.c_str());
 
-#ifdef DEBUG_LOG
-  /* Switch on full protocol/debug output while testing */
-  curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-  /* disable progress meter, set to 0L to enable and disable debug output */
-  curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
-#endif // DEBUG_LOG
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, connect_timeout_seconds_);
 
-  curl_easy_setopt(curl, CURLOPT_HEADERDATA, &receive_header_cb);
-  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &receive_body_cb);
-  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &FunapiHttpImpl::OnResponse);
+    #ifdef DEBUG_LOG
+    /* Switch on full protocol/debug output while testing */
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+    /* disable progress meter, set to 0L to enable and disable debug output */
+    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
+    #endif // DEBUG_LOG
 
-  if (cert_file_path_.empty()) {
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-  } else {
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
-    curl_easy_setopt(curl, CURLOPT_CAINFO, cert_file_path_.c_str());
-  }
+    curl_easy_setopt(curl, CURLOPT_HEADERDATA, &receive_header_cb);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &receive_body_cb);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &FunapiHttpImpl::OnResponse);
 
-  CURLcode res = curl_easy_perform(curl);
+    if (cert_file_path_.empty())
+    {
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+    }
+    else
+    {
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
+        curl_easy_setopt(curl, CURLOPT_CAINFO, cert_file_path_.c_str());
+    }
 
-  fclose(fp);
+    CURLcode res = curl_easy_perform(curl);
 
-  if (res != CURLE_OK) {
-    error_handler(res, curl_easy_strerror(res));
-  }
-  else {
-    download_completion_handler(url, path, header_receiving);
-  }
+    fclose(fp);
 
-  if (chunk) {
-    curl_slist_free_all(chunk);
-  }
+    if (res != CURLE_OK)
+    {
+        error_handler(res, curl_easy_strerror(res));
+    }
+    else
+    {
+        download_completion_handler(url, path, header_receiving);
+    }
 
-  curl_easy_cleanup(curl);
+    if (chunk)
+    {
+        curl_slist_free_all(chunk);
+    }
+
+    curl_easy_cleanup(curl);
 }
 
 

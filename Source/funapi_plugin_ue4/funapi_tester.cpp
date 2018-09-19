@@ -464,56 +464,68 @@ bool Afunapi_tester::LeaveMulticastAllChannels()
   return true;
 }
 
+
 bool Afunapi_tester::DownloaderTest()
 {
-  UE_LOG(LogFunapiExample, Log, TEXT("Download button clicked."));
+    UE_LOG(LogFunapiExample, Log, TEXT("Download button clicked."));
 
-  if (!downloader_) {
-    std::stringstream ss_download_url;
-    ss_download_url << "http://" << kDownloadServer << ":" << kDownloadServerPort;
+    if (!downloader_)
+    {
+        std::stringstream ss_download_url;
+        ss_download_url << "http://" << kDownloadServer << ":" << kDownloadServerPort;
 
-    downloader_ = fun::FunapiHttpDownloader::Create(ss_download_url.str(),
-                                                    TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir())));
+        downloader_ = fun::FunapiHttpDownloader::Create(ss_download_url.str(),
+                                                        TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir())));
 
-    downloader_->AddReadyCallback([](const std::shared_ptr<fun::FunapiHttpDownloader>&downloader,
-                                     const std::vector<std::shared_ptr<fun::FunapiDownloadFileInfo>>&info) {
-       for (auto i : info) {
-         std::stringstream ss_temp;
-         ss_temp << i->GetUrl() << std::endl;
-         UE_LOG(LogFunapiExample, Log, TEXT("%s"), *FString(ss_temp.str().c_str()));
-       }
-    });
+        downloader_->AddReadyCallback([](const std::shared_ptr<fun::FunapiHttpDownloader>&downloader,
+                                         const std::vector<std::shared_ptr<fun::FunapiDownloadFileInfo>>&info)
+        {
+            for (auto i : info)
+            {
+                std::stringstream ss_temp;
+                ss_temp << i->GetUrl() << std::endl;
+                UE_LOG(LogFunapiExample, Log, TEXT("%s"), *FString(ss_temp.str().c_str()));
+            }
+        });
 
-    downloader_->AddProgressCallback([](const std::shared_ptr<fun::FunapiHttpDownloader> &downloader,
-                                        const std::vector<std::shared_ptr<fun::FunapiDownloadFileInfo>>&info,
-                                        const int index,
-                                        const int max_index,
-                                        const uint64_t received_bytes,
-                                        const uint64_t expected_bytes) {
-      auto i = info[index];
+        downloader_->AddProgressCallback([](const std::shared_ptr<fun::FunapiHttpDownloader> &downloader,
+                                            const std::vector<std::shared_ptr<fun::FunapiDownloadFileInfo>>&info,
+                                            const int index,
+                                            const int max_index,
+                                            const uint64_t received_bytes,
+                                            const uint64_t expected_bytes)
+        {
+            auto i = info[index];
 
-      std::stringstream ss_temp;
-      ss_temp << index << "/" << max_index << " " << received_bytes << "/" << expected_bytes << " " << i->GetUrl() << std::endl;
-      UE_LOG(LogFunapiExample, Log, TEXT("%s"), *FString(ss_temp.str().c_str()));
-    });
+            std::stringstream ss_temp;
+            ss_temp << index << "/" << max_index << " " << received_bytes << "/" << expected_bytes << " " << i->GetUrl() << std::endl;
+            UE_LOG(LogFunapiExample, Log, TEXT("%s"), *FString(ss_temp.str().c_str()));
+        });
 
-    downloader_->AddCompletionCallback([this](const std::shared_ptr<fun::FunapiHttpDownloader>&downloader,
-                                              const std::vector<std::shared_ptr<fun::FunapiDownloadFileInfo>>&info,
-                                              const fun::FunapiHttpDownloader::ResultCode result_code) {
-      if (result_code == fun::FunapiHttpDownloader::ResultCode::kSucceed) {
-        for (auto i : info) {
-          UE_LOG(LogFunapiExample, Log, TEXT("file_path=%s"), *FString(i->GetPath().c_str()));
-        }
-      }
+        downloader_->AddCompletionCallback([this](const std::shared_ptr<fun::FunapiHttpDownloader>&downloader,
+                                                  const std::vector<std::shared_ptr<fun::FunapiDownloadFileInfo>>&info,
+                                                  const fun::FunapiHttpDownloader::ResultCode result_code)
+        {
+            if (result_code == fun::FunapiHttpDownloader::ResultCode::kSucceed)
+            {
+                for (auto i : info)
+                {
+                    UE_LOG(LogFunapiExample, Log, TEXT("file_path=%s"), *FString(i->GetPath().c_str()));
+                }
+            }
 
-      downloader_ = nullptr;
-    });
+            downloader_ = nullptr;
+            UE_LOG(LogFunapiExample, Log, TEXT("Download ended."));
+        });
 
-    downloader_->Start();
-  }
+        downloader_->SetTimeoutPerFile(5);
+
+        downloader_->Start();
+    }
 
   return true;
 }
+
 
 bool Afunapi_tester::RequestAnnouncements()
 {
@@ -543,6 +555,7 @@ bool Afunapi_tester::RequestAnnouncements()
 
   return true;
 }
+
 
 FText Afunapi_tester::GetServerIP() {
   return FText::FromString(FString(kServer.c_str()));

@@ -55,7 +55,7 @@ class FunapiHttp : public std::enable_shared_from_this<FunapiHttp> {
                        const ProgressHandler &progress_handler,
                        const DownloadCompletionHandler &download_completion_handler);
 
-  void SetConnectTimeout(const long seconds);
+  void SetTimeout(const long seconds);
 
  private:
   std::shared_ptr<FunapiHttpImpl> impl_;

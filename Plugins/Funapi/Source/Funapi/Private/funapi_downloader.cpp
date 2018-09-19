@@ -169,6 +169,8 @@ class FunapiHttpDownloaderImpl : public std::enable_shared_from_this<FunapiHttpD
   void AddProgressCallback(const ProgressHandler &handler);
   void AddCompletionCallback(const CompletionHandler &handler);
 
+  void SetTimeoutPerFile(long timeout_in_seconds);
+
   void Start(std::weak_ptr<FunapiHttpDownloader> d);
   void Update();
 
@@ -204,6 +206,7 @@ class FunapiHttpDownloaderImpl : public std::enable_shared_from_this<FunapiHttpD
   std::shared_ptr<FunapiThread> thread_;
 
   int max_index_;
+  long timeout_seconds_ = 30;
 };
 
 
@@ -285,6 +288,7 @@ bool FunapiHttpDownloaderImpl::DownloadFile(int index, std::shared_ptr<FunapiDow
 
     bool is_ok = true;
     std::shared_ptr<FunapiHttp> http = FunapiHttp::Create();
+    http->SetTimeout(timeout_seconds_);
     http->DownloadRequest(info->GetUrl(), info->GetPath(), FunapiHttp::HeaderFields(),
         [&is_ok,&info](const int error_code, const std::string error_string)
         {
@@ -385,6 +389,7 @@ void FunapiHttpDownloaderImpl::OnDownloadInfoList(const std::string &json_string
 void FunapiHttpDownloaderImpl::GetDownloadList(const std::string &download_url, const std::string &target_path)
 {
     std::shared_ptr<FunapiHttp> http = FunapiHttp::Create();
+    http->SetTimeout(timeout_seconds_);
     http->PostRequest(download_url, FunapiHttp::HeaderFields(), std::vector<uint8_t>(),
         [this](int code, const std::string error_string)
         {
@@ -447,6 +452,12 @@ void FunapiHttpDownloaderImpl::AddProgressCallback(const ProgressHandler &handle
 
 void FunapiHttpDownloaderImpl::AddCompletionCallback(const CompletionHandler &handler) {
   on_completion_ += handler;
+}
+
+
+void FunapiHttpDownloaderImpl::SetTimeoutPerFile(long timeout_in_seconds)
+{
+    timeout_seconds_ = timeout_in_seconds;
 }
 
 
@@ -533,6 +544,12 @@ void FunapiHttpDownloader::AddProgressCallback(const ProgressHandler &handler) {
 
 void FunapiHttpDownloader::AddCompletionCallback(const CompletionHandler &handler) {
   impl_->AddCompletionCallback(handler);
+}
+
+
+void FunapiHttpDownloader::SetTimeoutPerFile(long timeout_in_seconds)
+{
+    impl_->SetTimeoutPerFile(timeout_in_seconds);
 }
 
 

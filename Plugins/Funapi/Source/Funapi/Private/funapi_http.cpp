@@ -54,7 +54,7 @@ class FunapiHttpImpl : public std::enable_shared_from_this<FunapiHttpImpl> {
                        const ProgressHandler &progress_handler,
                        const DownloadCompletionHandler &download_completion_handler);
 
-  void SetConnectTimeout(const long seconds);
+  void SetTimeout(const long seconds);
 
  private:
   void Init();
@@ -73,7 +73,8 @@ class FunapiHttpImpl : public std::enable_shared_from_this<FunapiHttpImpl> {
   void OnResponseBody(void *data, const size_t len, std::vector<uint8_t> &receiving);
   void OnResponseFile(void *data, const size_t len, FILE *fp);
 
-  long connect_timeout_seconds_ = 5;
+  // Maximum time allowed for DNS lookup and TCP connect and receive.
+  long timeout_seconds_ = 30;
 };
 
 
@@ -189,7 +190,7 @@ void FunapiHttpImpl::DownloadRequest(const std::string &url,
     const std::string& encoded_url = UrlEncode(url);
     curl_easy_setopt(curl, CURLOPT_URL, encoded_url.c_str());
 
-    curl_easy_setopt(curl, CURLOPT_TIMEOUT, connect_timeout_seconds_);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout_seconds_);
 
     #ifdef DEBUG_LOG
     /* Switch on full protocol/debug output while testing */
@@ -263,7 +264,7 @@ void FunapiHttpImpl::GetRequest(const std::string &url,
 
   curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
-  curl_easy_setopt(curl, CURLOPT_TIMEOUT, connect_timeout_seconds_);
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout_seconds_);
 
   curl_easy_setopt(curl, CURLOPT_HEADERDATA, &receive_header_cb);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &receive_body_cb);
@@ -325,7 +326,7 @@ void FunapiHttpImpl::PostRequest(const std::string &url,
 
   curl_easy_setopt(curl_handle_, CURLOPT_URL, url.c_str());
 
-  curl_easy_setopt(curl_handle_, CURLOPT_TIMEOUT, connect_timeout_seconds_);
+  curl_easy_setopt(curl_handle_, CURLOPT_TIMEOUT, timeout_seconds_);
 
   /* enable TCP keep-alive for this transfer */
   curl_easy_setopt(curl_handle_, CURLOPT_TCP_KEEPALIVE, 1L);
@@ -400,9 +401,11 @@ size_t FunapiHttpImpl::OnResponse(void *data, size_t size, size_t count, void *c
 }
 
 
-void FunapiHttpImpl::SetConnectTimeout(const long seconds) {
-  connect_timeout_seconds_ = seconds;
+void FunapiHttpImpl::SetTimeout(const long seconds)
+{
+    timeout_seconds_ = seconds;
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiHttp implementation.
@@ -458,8 +461,9 @@ void FunapiHttp::DownloadRequest(const std::string &url,
 }
 
 
-void FunapiHttp::SetConnectTimeout(const long seconds) {
-  impl_->SetConnectTimeout(seconds);
+void FunapiHttp::SetTimeout(const long seconds)
+{
+    impl_->SetTimeout(seconds);
 }
 
 }  // namespace fun

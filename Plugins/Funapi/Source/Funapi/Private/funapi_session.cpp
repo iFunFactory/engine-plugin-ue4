@@ -2747,7 +2747,7 @@ void FunapiHttpTransport::Start() {
     http_thread_->Push([weak, this]()->bool {
       if (auto t = weak.lock()) {
         http_ = FunapiHttp::Create(cert_file_path_);
-        http_->SetConnectTimeout(static_cast<long>(connect_timeout_seconds_));
+        http_->SetTimeout(static_cast<long>(connect_timeout_seconds_));
 
         SetState(TransportState::kConnected);
 

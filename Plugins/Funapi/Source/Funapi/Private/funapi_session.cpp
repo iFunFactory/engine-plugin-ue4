@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2018 iFunFactory Inc. All Rights Reserved.
+﻿// Copyright (C) 2013-2018 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -43,6 +43,13 @@
 #define kCookieResponseHeaderField "SET-COOKIE"
 
 namespace fun {
+
+struct RedirectServerPortInfo {
+  int port;
+  int protocol;
+  int encoding;
+};
+
 
 static std::string EncodingToString(FunEncoding encoding) {
   std::string ret("");
@@ -3800,7 +3807,11 @@ void FunapiSessionImpl::OnTransportReceived(const TransportProtocol protocol,
         std::stringstream ss;
         ss << old_string << " -> " << new_string;
 
-        OnSessionEvent(protocol, encoding, SessionEventType::kChanged, ss.str(), nullptr);
+        OnSessionEvent(protocol,
+                       encoding,
+                       SessionEventType::kChanged,
+                       ss.str(),
+                       nullptr /*error*/);
       }
     }
   }
@@ -3836,7 +3847,11 @@ void FunapiSessionImpl::OnSessionOpen(const TransportProtocol protocol,
                                       const std::string &msg_type,
                                       const std::vector<uint8_t>&v_body,
                                       const std::shared_ptr<FunapiMessage> message) {
-  OnSessionEvent(protocol, GetEncoding(protocol), SessionEventType::kOpened, GetSessionId(FunEncoding::kJson), nullptr);
+  OnSessionEvent(protocol,
+                 GetEncoding(protocol),
+                 SessionEventType::kOpened,
+                 GetSessionId(FunEncoding::kJson),
+                 nullptr /*error*/);
 
   if (IsRedirecting()) {
     SendRedirectConenectMessage(protocol, token_);
@@ -3859,12 +3874,23 @@ void FunapiSessionImpl::OnSessionClose(const TransportProtocol protocol,
 {
     // DebugUtils::Log("Session timed out. Resetting my session id. The server will send me another one next time.");
 
+    // NOTE(sungjin) : 리다이렉션 상태 일떄는 세션 Close이벤트를 무시한다.
+    if (IsRedirecting())
+    {
+      DebugUtils::Log("The session close event is ignoring on redirection state");
+      return;
+    }
+
     ResetSession();
 
     auto encoding = GetEncoding(protocol);
     std::string temp_session_id = GetSessionId(FunEncoding::kJson);
 
-    OnSessionEvent(protocol, encoding, SessionEventType::kClosed, temp_session_id, nullptr);
+    OnSessionEvent(protocol,
+                   encoding,
+                   SessionEventType::kClosed,
+                   temp_session_id,
+                   nullptr /*error*/);
 }
 
 
@@ -3945,12 +3971,15 @@ void FunapiSessionImpl::OnRedirect()
     fun::FunEncoding encoding = message->GetEncoding();
     assert(encoding!=FunEncoding::kNone);
 
-    auto msg = message->GetProtobufMessage();
-    FunRedirectMessage *redirect_message = nullptr;
+    std::string flavor;
+    std::vector<RedirectServerPortInfo> server_ports_info;
+
+    redirect_cur_tags_.clear();
+    redirect_target_tags_.clear();
+    redirect_encodings_.clear();
 
     if (encoding == FunEncoding::kJson)
     {
-        redirect_message = msg->MutableExtension(_sc_redirect);
 
         // log
         // std::string temp_string(v_body.begin(), v_body.end());
@@ -3958,159 +3987,193 @@ void FunapiSessionImpl::OnRedirect()
         // //
 
         auto document = message->GetJsonDocumenet();
+        assert(document);
 
-        if (document->HasMember("token"))
-        {
-            redirect_message->set_token((*document)["token"].GetString());
+        // 내부 통신이므로 외부 침입이 아닌 이상 발생하면 안된다.
+        if (!document->HasMember("token")  ||
+            !document->HasMember("host")   ||
+            !document->HasMember("flavor") ||
+            !document->HasMember("ports")) {
+          DebugUtils::Log("Invalid redirect json message");
+          assert(false);
         }
 
-        if (document->HasMember("host"))
+        token_ = (*document)["token"].GetString();
+        hostname_or_ip_ = (*document)["host"].GetString();
+        flavor = (*document)["flavor"].GetString();
+
+        rapidjson::Value &ports = (*document)["ports"];
+
+        const size_t port_size = ports.Size();
+        assert((port_size >= 1));
+
+        server_ports_info.reserve(port_size);
+
+        for (size_t i = 0; i < port_size; ++i)
         {
-            redirect_message->set_host((*document)["host"].GetString());
+          rapidjson::Value &v = ports[i];
+
+          // 내부 통신이므로 외부 침입이 아닌 이상 발생하면 안된다.
+          if (!v.HasMember("port") || !v.HasMember("protocol") ||
+              !v.HasMember("encoding")) {
+            DebugUtils::Log("Invalid redirect port message");
+            assert(false);
+          }
+
+          RedirectServerPortInfo server_port_info;
+          server_port_info.port = v["port"].GetInt();
+          server_port_info.protocol = static_cast<FunRedirectMessage_Protocol>(v["protocol"].GetInt());
+          server_port_info.encoding = static_cast<FunRedirectMessage_Encoding>(v["encoding"].GetInt());
+          server_ports_info.push_back(server_port_info);
         }
 
-        if (document->HasMember("flavor"))
-        {
-            redirect_message->set_flavor((*document)["flavor"].GetString());
-        }
-
+        // NOTE(sungjin) : iFun Engine(experimental) : v1.0.0.-3474
+        //                 iFun Engine(stable)       : v1.0.0.-3624
+        // 이전 버전과 호환성을 위해 current_tag가 메세지에 포함되어 있는지 확인한다.
         if (document->HasMember("current_tags"))
         {
             rapidjson::Value &tags = (*document)["current_tags"];
-            const size_t count = tags.Size();
-
-            for (size_t i = 0; i < count; ++i)
+            const size_t tags_size = tags.Size();
+            redirect_cur_tags_.reserve(tags_size);
+            for (size_t i = 0; i < tags_size; ++i)
             {
-                redirect_message->add_current_tags(tags[i].GetString());
+              redirect_cur_tags_.push_back(tags[i].GetString());
             }
         }
 
+        // NOTE(sungjin) : iFun Engine(experimental) : v1.0.0.-3474
+        //                 iFun Engine(stable)       : v1.0.0.-3624
+        // 이전 버전과 호환성을 위해 target_tags가 메세지가 있는지 확인한다.
         if (document->HasMember("target_tags"))
         {
             rapidjson::Value &tags = (*document)["target_tags"];
-            const size_t count = tags.Size();
-
-            for (size_t i = 0; i<count; ++i)
+            const size_t tags_size = tags.Size();
+            redirect_target_tags_.reserve(tags_size);
+            for (size_t i = 0; i < tags_size; ++i)
             {
-                redirect_message->add_target_tags(tags[i].GetString());
-            }
-        }
-
-        if (document->HasMember("ports"))
-        {
-            rapidjson::Value &ports = (*document)["ports"];
-            const size_t count = ports.Size();
-
-            for (size_t i = 0; i < count; ++i)
-            {
-                rapidjson::Value &v = ports[i];
-                FunRedirectMessage_ServerPort *server_port = redirect_message->add_ports();
-
-                if (v.HasMember("port"))
-                {
-                    server_port->set_port(v["port"].GetInt());
-                }
-
-                if (v.HasMember("protocol"))
-                {
-                    server_port->set_protocol(static_cast<FunRedirectMessage_Protocol>(v["protocol"].GetInt()));
-                }
-
-                if (v.HasMember("encoding"))
-                {
-                    server_port->set_encoding(static_cast<FunRedirectMessage_Encoding>(v["encoding"].GetInt()));
-                }
+              redirect_target_tags_.push_back(tags[i].GetString());
             }
         }
     }
 
     if (encoding == FunEncoding::kProtobuf)
     {
-        redirect_message = msg->MutableExtension(_sc_redirect);
+        auto msg = message->GetProtobufMessage();
+        assert(msg);
+
+        FunRedirectMessage* redirect_message = msg->MutableExtension(_sc_redirect);
+        assert(redirect_message);
+
+        if (!redirect_message->has_token() ||
+            !redirect_message->has_host() ||
+            !redirect_message->has_token() ||
+            !(redirect_message->ports_size() >= 1)) {
+          DebugUtils::Log("Invalid redirect protobuf message");
+          assert(false);
+        }
+
+        token_ = redirect_message->token();
+        hostname_or_ip_ = redirect_message->host();
+        flavor = redirect_message->flavor();
+
+        size_t ports_size = redirect_message->ports_size();
+        server_ports_info.reserve(ports_size);
+        for (size_t i = 0; i < ports_size; ++i)
+        {
+          FunRedirectMessage_ServerPort server_prot = redirect_message->ports(i);
+
+          RedirectServerPortInfo server_port_info;
+          server_port_info.port = static_cast<int>(server_prot.port());
+          server_port_info.encoding = static_cast<int>(server_prot.encoding());
+          server_port_info.protocol = static_cast<int>(server_prot.protocol());
+
+          server_ports_info.push_back(server_port_info);
+        }
+
+        // NOTE(sungjin) : iFun Engine(experimental) : v1.0.0.-3474
+        //                 iFun Engine(stable)       : v1.0.0.-3624
+        // 이전 버전과 호환성을 위해 current_tag가 메세지에 포함되어 있는지 확인한다.
+        size_t cur_tags_size = redirect_message->current_tags_size();
+        redirect_cur_tags_.reserve(cur_tags_size);
+        for (size_t i = 0; i < cur_tags_size; ++i)
+        {
+          redirect_cur_tags_.push_back(redirect_message->current_tags(i));
+        }
+
+        // NOTE(sungjin) : iFun Engine(experimental) : v1.0.0.-3474
+        //                 iFun Engine(stable)       : v1.0.0.-3624
+        // 이전 버전과 호환성을 위해 target_tag가 메세지에 포함되어 있는지 확인한다.
+        size_t target_tags_size = redirect_message->target_tags_size();
+        redirect_target_tags_.reserve(target_tags_size);
+        for (size_t i = 0; i < target_tags_size; ++i)
+        {
+          redirect_target_tags_.push_back(redirect_message->target_tags(i));
+        }
     }
 
     std::string old_session_id = GetSessionId(FunEncoding::kJson);
 
+    // NOTE(sungjin) : 이전 서버와 통신에 사용되었지만 남아있는
+    // transports, send_queues, tasks, session_id_를 제거 하고 재생성 합니다.
     ResetSession();
-
-    token_ = redirect_message->token();
-
-    hostname_or_ip_ = redirect_message->host();
-    std::string flavor = redirect_message->flavor();
 
     std::vector<std::shared_ptr<FunapiTransportOption>> v_option(FunRedirectMessage_Protocol_Protocol_MAX + 1);
     v_option[FunRedirectMessage_Protocol_PROTO_TCP] = tcp_option_;
     v_option[FunRedirectMessage_Protocol_PROTO_UDP] = udp_option_;
     v_option[FunRedirectMessage_Protocol_PROTO_HTTP] = http_option_;
 
-    redirect_encodings_.clear();
-    redirect_cur_tags_.clear();
-    redirect_target_tags_.clear();
-
-    size_t cur_tags_count = redirect_message->current_tags_size();
-    redirect_cur_tags_.reserve(cur_tags_count);
-    for (size_t i = 0; i < cur_tags_count; ++i)
+    for (auto itr = server_ports_info.begin(); itr != server_ports_info.end(); ++itr)
     {
-        redirect_cur_tags_.push_back(redirect_message->current_tags(i));
-    }
-
-    size_t target_tags_count = redirect_message->target_tags_size();
-    redirect_target_tags_.reserve(target_tags_count);
-    for (size_t i = 0; i < target_tags_count; ++i)
-    {
-        redirect_target_tags_.push_back(redirect_message->target_tags(i));
-    }
-
-    size_t ports_count = redirect_message->ports_size();
-    for (size_t i = 0; i < ports_count; ++i)
-    {
-        FunRedirectMessage_ServerPort server_port = redirect_message->ports(i);
-
-        int32_t port = server_port.port();
+        int32_t port = itr->port;
 
         FunEncoding connect_encoding = FunEncoding::kNone;
-        FunRedirectMessage_Encoding server_port_encoding = server_port.encoding();
+        int server_port_encoding = itr->encoding;
         if (server_port_encoding == FunRedirectMessage_Encoding_ENCODING_JSON)
         {
-            connect_encoding = FunEncoding::kJson;
+          connect_encoding = FunEncoding::kJson;
         }
         else if (server_port_encoding == FunRedirectMessage_Encoding_ENCODING_PROTOBUF)
         {
-            connect_encoding = FunEncoding::kProtobuf;
+          connect_encoding = FunEncoding::kProtobuf;
         }
         else
         {
-            continue;
+          DebugUtils::Log("Invalid server port encoding");
+          assert(false);
+          continue;
         }
 
-        FunRedirectMessage::Protocol server_port_protocol = server_port.protocol();
+        int server_port_protocol = itr->protocol;
         TransportProtocol connect_protocol = TransportProtocol::kDefault;
         if (server_port_protocol == FunRedirectMessage_Protocol_PROTO_TCP)
         {
-            connect_protocol = TransportProtocol::kTcp;
+          connect_protocol = TransportProtocol::kTcp;
         }
         else if (server_port_protocol == FunRedirectMessage_Protocol_PROTO_UDP)
         {
-            connect_protocol = TransportProtocol::kUdp;
+          connect_protocol = TransportProtocol::kUdp;
         }
         else if (server_port_protocol == FunRedirectMessage_Protocol_PROTO_HTTP)
         {
-            connect_protocol = TransportProtocol::kHttp;
+          connect_protocol = TransportProtocol::kHttp;
         }
         else
         {
-            continue;
+          DebugUtils::Log("Invalid server port protocol");
+          assert(false);
+          continue;
         }
 
         std::shared_ptr<FunapiTransportOption> option = nullptr;
         if (transport_option_handler_)
         {
-            option = transport_option_handler_(connect_protocol, flavor);
+          option = transport_option_handler_(connect_protocol, flavor);
         }
         else if (auto o = v_option[static_cast<int>(server_port_protocol)])
         {
-            option = o;
+          option = o;
         }
+        assert(option);
 
         redirect_encodings_[connect_protocol] = connect_encoding;
 
@@ -4121,7 +4184,7 @@ void FunapiSessionImpl::OnRedirect()
                    GetEncoding(protocol_redirect_),
                    SessionEventType::kRedirectStarted,
                    old_session_id,
-                   nullptr);
+                   nullptr /*error*/);
 }
 
 
@@ -4151,13 +4214,10 @@ void FunapiSessionImpl::OnRedirectConnectMessage(const TransportProtocol protoco
     fun::FunEncoding encoding = GetEncoding(protocol);
     assert(encoding!=FunEncoding::kNone);
 
-    auto msg = message->GetProtobufMessage();
-    FunRedirectConnectMessage *redirect = nullptr;
-
+    FunRedirectConnectMessage_Result result =
+        FunRedirectConnectMessage_Result::FunRedirectConnectMessage_Result_AUTH_FAILED;
     if (encoding == FunEncoding::kJson)
     {
-        redirect = msg->MutableExtension(_cs_redirect_connect);
-
         // log
         // std::string temp_string(v_body.begin(), v_body.end());
         // DebugUtils::Log("json string = %s", temp_string.c_str());
@@ -4167,16 +4227,16 @@ void FunapiSessionImpl::OnRedirectConnectMessage(const TransportProtocol protoco
 
         if (document->HasMember("result"))
         {
-            redirect->set_result(static_cast<FunRedirectConnectMessage_Result>((*document)["result"].GetInt()));
+          result = static_cast<FunRedirectConnectMessage_Result>((*document)["result"].GetInt());
         }
     }
 
     if (encoding == FunEncoding::kProtobuf)
     {
-        redirect = msg->MutableExtension(_cs_redirect_connect);
+        auto msg = message->GetProtobufMessage();
+        FunRedirectConnectMessage* redirect_connect_msg = msg->MutableExtension(_cs_redirect_connect);
+        result = redirect_connect_msg->result();
     }
-
-    FunRedirectConnectMessage_Result result = redirect->result();
 
     if (result == FunRedirectConnectMessage_Result_OK)
     {
@@ -4189,7 +4249,7 @@ void FunapiSessionImpl::OnRedirectConnectMessage(const TransportProtocol protoco
                        GetEncoding(protocol),
                        SessionEventType::kRedirectSucceeded,
                        GetSessionId(FunEncoding::kJson),
-                       nullptr);
+                       nullptr /*error*/);
     }
     else
     {

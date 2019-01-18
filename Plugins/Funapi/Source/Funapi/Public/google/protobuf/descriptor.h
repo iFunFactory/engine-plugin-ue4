@@ -118,6 +118,10 @@ struct SourceLocation {
   string trailing_comments;
 };
 
+
+LIBPROTOBUF_EXPORT void RunProtobufRegistration();
+
+
 // Describes a type of protocol message, or a particular group within a
 // message.  To obtain the Descriptor for a given message object, call
 // Message::GetDescriptor().  Generated message classes also have a

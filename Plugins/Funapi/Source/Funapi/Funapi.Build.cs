@@ -53,11 +53,11 @@ public class Funapi : ModuleRules
 
     PublicIncludePaths.AddRange(
       new string[] {
-        // NOTE(sungjin): Path¸¦ ¹®ÀÚ¿­·Î ³Ñ°ÜÁÖÁö ¾Ê°í
-        // Path.Combine(ModuleDirectory,"Path") À» »ç¿ëÇÑ´Ù.
-        // ¿£ÁøÀÌ ÇÃ·¯±×ÀÎÀÇ Public, Private Æú´õ¸¦ ÀÚµ¿À¸·Î Ãß°¡ÇØ ÁÖÁö¸¸
-        // Àß¸øµÈ °æ·Î¸¦ Ãß°¡ÇÏ´Â Çö»óÀÌ ÀÖ¾î
-        // Path.Combine ÇÔ¼ö¸¦ ÅëÇØ ¸í½ÃÀûÀ¸·Î Ç¥ÇöÇÏµµ·Ï ÇÏ¿© ¿ìÈ¸ÇÑ´Ù.
+        // NOTE(sungjin): Pathë¥¼ ë¬¸ìì—´ë¡œ ë„˜ê²¨ì£¼ì§€ ì•Šê³ 
+        // Path.Combine(ModuleDirectory,"Path") ì„ ì‚¬ìš©í•œë‹¤.
+        // ì—”ì§„ì´ í”ŒëŸ¬ê·¸ì¸ì˜ Public, Private í´ë”ë¥¼ ìë™ìœ¼ë¡œ ì¶”ê°€í•´ ì£¼ì§€ë§Œ
+        // ì˜ëª»ëœ ê²½ë¡œë¥¼ ì¶”ê°€í•˜ëŠ” í˜„ìƒì´ ìˆì–´
+        // Path.Combine í•¨ìˆ˜ë¥¼ í†µí•´ ëª…ì‹œì ìœ¼ë¡œ í‘œí˜„í•˜ë„ë¡ í•˜ì—¬ ìš°íšŒí•œë‹¤.
         Path.Combine(ModuleDirectory, "Public"),
         Path.Combine(ModuleDirectory, "Public/funapi"),
         Path.Combine(ModuleDirectory, "Public/funapi/management"),
@@ -174,7 +174,7 @@ public class Funapi : ModuleRules
     }
     else if (Target.Platform == UnrealTargetPlatform.IOS)
     {
-      PublicDefinitions.Add("WITH_HOT_RELOAD=0");
+      // PublicDefinitions.Add("WITH_HOT_RELOAD=0");
 
       PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include", "iOS"));
 

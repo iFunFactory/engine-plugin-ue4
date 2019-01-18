@@ -59,6 +59,10 @@
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 
+#include <Runtime/Core/Public/HAL/PlatformAtomics.h>
+#include <Runtime/Core/Public/HAL/PlatformMisc.h>
+//#include <Runtime/Engine/Classes/Engine/Engine.h>
+
 #undef PACKAGE  // autoheader #defines this.  :(
 
 namespace google {
@@ -953,8 +957,10 @@ bool DescriptorPool::InternalIsFileLoaded(const string& filename) const {
 
 // generated_pool ====================================================
 
-namespace {
+static std::pair<const void*, int> g_descriptor_queue[1024] = { {nullptr, 0x00},};
+static volatile int32 g_desc_queue_index = 0;
 
+namespace {
 
 EncodedDescriptorDatabase* generated_database_ = NULL;
 DescriptorPool* generated_pool_ = NULL;
@@ -965,11 +971,18 @@ void DeleteGeneratedPool() {
   generated_database_ = NULL;
   delete generated_pool_;
   generated_pool_ = NULL;
+
+  // NOTE(sungjin) g_descriptor_queue.first 는 리터럴 값을 가르키는 포인터.
+  for (int i = 0; i < g_desc_queue_index; ++i) {
+    g_descriptor_queue[i].first = nullptr;
+    g_descriptor_queue[i].second = 0;
+  }
 }
 
 static void InitGeneratedPool() {
   generated_database_ = new EncodedDescriptorDatabase;
   generated_pool_ = new DescriptorPool(generated_database_);
+  g_desc_queue_index = 0;
 
   internal::OnShutdown(&DeleteGeneratedPool);
 }
@@ -1017,11 +1030,32 @@ void DescriptorPool::InternalAddGeneratedFile(
   InitGeneratedPoolOnce();
 
 #if WITH_HOT_RELOAD
+  FPlatformMisc::LowLevelOutputDebugStringf(TEXT("Hot reloading google protobuf descriptor size=%d\n"), size);
+  //UE_LOG(LogTemp, Warning, TEXT("Hot reloading google protobuf descriptor size=%d\n"), size);
   generated_database_->Add(encoded_file_descriptor, size);
 #else
-  GOOGLE_CHECK(generated_database_->Add(encoded_file_descriptor, size));
+  //GOOGLE_CHECK(generated_database_->Add(encoded_file_descriptor, size));
+  const int32 index = FPlatformAtomics::InterlockedIncrement(&g_desc_queue_index) - 1;
+
+  FPlatformMisc::LowLevelOutputDebugStringf(TEXT("Queueing google protobuf descriptor index=%d, size=%d \n"), index, size);
+  //UE_LOG(LogTemp, Warning, TEXT("Queueing google protobuf descriptor index=%d, size=%d \n"), index, size);
+  g_descriptor_queue[index].first = encoded_file_descriptor;
+  g_descriptor_queue[index].second = size;
 #endif
 }
+
+
+void RunProtobufRegistration() {
+  for (int i = 0; i < g_desc_queue_index; ++i) {
+#if !WITH_HOT_RELOAD
+    FPlatformMisc::LowLevelOutputDebugStringf(TEXT("Loading google protobuf descriptor index=%d, size=%d\n"), i, g_descriptor_queue[i].second);
+    //UE_LOG(LogTemp, Warning, TEXT("Loading google protobuf descriptor index=%d, size=%d\n"), i, g_descriptor_queue[i].second);
+    GOOGLE_CHECK(generated_database_->Add(
+        g_descriptor_queue[i].first, g_descriptor_queue[i].second));
+#endif
+  }
+}
+
 
 
 // Find*By* methods ==================================================

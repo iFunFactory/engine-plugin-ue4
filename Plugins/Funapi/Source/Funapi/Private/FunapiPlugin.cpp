@@ -6,6 +6,9 @@
 
 #include "FunapiPrivatePCH.h"
 #include "IFunapiPlugin.h"
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/stubs/common.h>
+
 
 DEFINE_LOG_CATEGORY(LogFunapi);
 
@@ -22,7 +25,8 @@ IMPLEMENT_MODULE( FFunapi, Funapi )
 void FFunapi::StartupModule()
 {
 	// This code will execute after your module is loaded into memory (but after global variables are initialized, of course.)
-  // UE_LOG(LogTemp, Log, TEXT("StartupModule"));
+  FPlatformMisc::LowLevelOutputDebugStringf(TEXT("Funapi module startup\n"));
+  google::protobuf::RunProtobufRegistration();
 }
 
 
@@ -30,5 +34,6 @@ void FFunapi::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
-  // UE_LOG(LogTemp, Log, TEXT("ShutdownModule"));
+  google::protobuf::ShutdownProtobufLibrary();
+  FPlatformMisc::LowLevelOutputDebugStringf(TEXT("Funapi module shutdown \n"));
 }

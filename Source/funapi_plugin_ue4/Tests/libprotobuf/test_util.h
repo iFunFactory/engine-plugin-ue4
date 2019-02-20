@@ -110,7 +110,7 @@ class TestUtil {
   // Check that the passed-in serialization is the canonical serialization we
   // expect for a TestFieldOrderings message filled in by
   // SetAllFieldsAndExtensions().
-  static void ExpectAllFieldsAndExtensionsInOrder(const string& serialized);
+  static void ExpectAllFieldsAndExtensionsInOrder(const fun::string& serialized);
 
   // Check that all repeated fields have had their last elements removed.
   static void ExpectLastRepeatedsRemoved(
@@ -175,7 +175,7 @@ class TestUtil {
     static void ExpectOneofSetViaReflection(const Message& message);
 
    private:
-    const FieldDescriptor* F(const string& name);
+    const FieldDescriptor* F(const fun::string& name);
 
     const Descriptor* base_descriptor_;
 

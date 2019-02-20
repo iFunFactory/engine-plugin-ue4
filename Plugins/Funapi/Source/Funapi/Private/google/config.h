@@ -7,7 +7,7 @@
 
 #ifndef _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 #define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
-#endif 
+#endif
 
 /* the location of <hash_map> */
 #define HASH_MAP_H <hash_map>
@@ -16,7 +16,7 @@
 // Apparently Microsoft decided to move hash_map *back* to the std namespace
 // in MSVC 2010:
 //   http://blogs.msdn.com/vcblog/archive/2009/05/25/stl-breaking-changes-in-visual-studio-2010-beta-1.aspx
-// TODO(kenton):  Use unordered_map instead, which is available in MSVC 2010.
+// TODO(kenton):  Use fun::unordered_map instead, which is available in MSVC 2010.
 #if _MSC_VER < 1310 || _MSC_VER >= 1600
 #define HASH_NAMESPACE std
 #else
@@ -105,7 +105,7 @@
 /* Define to 1 if you have the <strings.h> header file. */
 #define HAVE_STRINGS_H 1
 
-/* Define to 1 if you have the <string.h> header file. */
+/* Define to 1 if you have the <fun::string.h> header file. */
 #define HAVE_STRING_H 1
 
 /* Define to 1 if you have the `strtol' function. */

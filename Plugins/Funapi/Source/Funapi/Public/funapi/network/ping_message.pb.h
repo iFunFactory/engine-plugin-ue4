@@ -100,13 +100,13 @@ class FUNAPI_API FunPingMessage : public ::google::protobuf::Message {
   inline bool has_data() const;
   inline void clear_data();
   static const int kDataFieldNumber = 2;
-  inline const ::std::string& data() const;
-  inline void set_data(const ::std::string& value);
+  inline const ::fun::string& data() const;
+  inline void set_data(const ::fun::string& value);
   inline void set_data(const char* value);
   inline void set_data(const void* value, size_t size);
-  inline ::std::string* mutable_data();
-  inline ::std::string* release_data();
-  inline void set_allocated_data(::std::string* data);
+  inline ::fun::string* mutable_data();
+  inline ::fun::string* release_data();
+  inline void set_allocated_data(::fun::string* data);
 
   // @@protoc_insertion_point(class_scope:FunPingMessage)
  private:
@@ -120,7 +120,7 @@ class FUNAPI_API FunPingMessage : public ::google::protobuf::Message {
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
   ::google::protobuf::int64 timestamp_;
-  ::std::string* data_;
+  ::fun::string* data_;
   friend void FUNAPI_API protobuf_AddDesc_funapi_2fnetwork_2fping_5fmessage_2eproto();
   friend void protobuf_AssignDesc_funapi_2fnetwork_2fping_5fmessage_2eproto();
   friend void protobuf_ShutdownFile_funapi_2fnetwork_2fping_5fmessage_2eproto();
@@ -179,14 +179,14 @@ inline void FunPingMessage::clear_data() {
   }
   clear_has_data();
 }
-inline const ::std::string& FunPingMessage::data() const {
+inline const ::fun::string& FunPingMessage::data() const {
   // @@protoc_insertion_point(field_get:FunPingMessage.data)
   return *data_;
 }
-inline void FunPingMessage::set_data(const ::std::string& value) {
+inline void FunPingMessage::set_data(const ::fun::string& value) {
   set_has_data();
   if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    data_ = new ::std::string;
+    data_ = new ::fun::string;
   }
   data_->assign(value);
   // @@protoc_insertion_point(field_set:FunPingMessage.data)
@@ -194,7 +194,7 @@ inline void FunPingMessage::set_data(const ::std::string& value) {
 inline void FunPingMessage::set_data(const char* value) {
   set_has_data();
   if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    data_ = new ::std::string;
+    data_ = new ::fun::string;
   }
   data_->assign(value);
   // @@protoc_insertion_point(field_set_char:FunPingMessage.data)
@@ -202,30 +202,30 @@ inline void FunPingMessage::set_data(const char* value) {
 inline void FunPingMessage::set_data(const void* value, size_t size) {
   set_has_data();
   if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    data_ = new ::std::string;
+    data_ = new ::fun::string;
   }
   data_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:FunPingMessage.data)
 }
-inline ::std::string* FunPingMessage::mutable_data() {
+inline ::fun::string* FunPingMessage::mutable_data() {
   set_has_data();
   if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    data_ = new ::std::string;
+    data_ = new ::fun::string;
   }
   // @@protoc_insertion_point(field_mutable:FunPingMessage.data)
   return data_;
 }
-inline ::std::string* FunPingMessage::release_data() {
+inline ::fun::string* FunPingMessage::release_data() {
   clear_has_data();
   if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::std::string* temp = data_;
-    data_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::fun::string* temp = data_;
+    data_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void FunPingMessage::set_allocated_data(::std::string* data) {
+inline void FunPingMessage::set_allocated_data(::fun::string* data) {
   if (data_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete data_;
   }
@@ -234,7 +234,7 @@ inline void FunPingMessage::set_allocated_data(::std::string* data) {
     data_ = data;
   } else {
     clear_has_data();
-    data_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    data_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:FunPingMessage.data)
 }

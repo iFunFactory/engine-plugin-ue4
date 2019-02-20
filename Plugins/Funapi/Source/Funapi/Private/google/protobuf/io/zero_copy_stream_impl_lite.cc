@@ -147,7 +147,7 @@ int64 ArrayOutputStream::ByteCount() const {
 
 // ===================================================================
 
-StringOutputStream::StringOutputStream(string* target)
+StringOutputStream::StringOutputStream(fun::string* target)
   : target_(target) {
 }
 
@@ -157,9 +157,9 @@ StringOutputStream::~StringOutputStream() {
 bool StringOutputStream::Next(void** data, int* size) {
   int old_size = target_->size();
 
-  // Grow the string.
+  // Grow the fun::string.
   if (old_size < (int)target_->capacity()) {
-    // Resize the string to match its capacity, since we can get away
+    // Resize the fun::string to match its capacity, since we can get away
     // without a memory allocation this way.
     STLStringResizeUninitialized(target_, target_->capacity());
   } else {

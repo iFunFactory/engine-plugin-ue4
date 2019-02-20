@@ -107,9 +107,9 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
 
       case FD::CPPTYPE_STRING:
         switch (field->options().ctype()) {
-          default:  // TODO(kenton):  Support other string reps.
+          default:  // TODO(kenton):  Support other fun::string reps.
           case FieldOptions::STRING:
-            return sizeof(RepeatedPtrField<string>);
+            return sizeof(RepeatedPtrField<fun::string>);
         }
         break;
     }
@@ -129,9 +129,9 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
 
       case FD::CPPTYPE_STRING:
         switch (field->options().ctype()) {
-          default:  // TODO(kenton):  Support other string reps.
+          default:  // TODO(kenton):  Support other fun::string reps.
           case FieldOptions::STRING:
-            return sizeof(string*);
+            return sizeof(fun::string*);
         }
         break;
     }
@@ -162,7 +162,7 @@ int OneofFieldSpaceUsed(const FieldDescriptor* field) {
       switch (field->options().ctype()) {
         default:
         case FieldOptions::STRING:
-          return sizeof(string*);
+          return sizeof(fun::string*);
       }
       break;
   }
@@ -269,7 +269,7 @@ class DynamicMessage : public Message {
 DynamicMessage::DynamicMessage(const TypeInfo* type_info)
   : type_info_(type_info),
     cached_byte_size_(0) {
-  // We need to call constructors for various fields manually and set
+  // We need to call constructors for various fields manually and fun::set
   // default values where appropriate.  We use placement new to call
   // constructors.  If you haven't heard of placement new, I suggest Googling
   // it now.  We use placement new even for primitive types that don't have
@@ -327,20 +327,20 @@ DynamicMessage::DynamicMessage(const TypeInfo* type_info)
 
       case FieldDescriptor::CPPTYPE_STRING:
         switch (field->options().ctype()) {
-          default:  // TODO(kenton):  Support other string reps.
+          default:  // TODO(kenton):  Support other fun::string reps.
           case FieldOptions::STRING:
             if (!field->is_repeated()) {
               if (is_prototype()) {
-                new(field_ptr) const string*(&field->default_value_string());
+                new(field_ptr) const fun::string*(&field->default_value_string());
               } else {
-                string* default_value =
-                  *reinterpret_cast<string* const*>(
+                fun::string* default_value =
+                  *reinterpret_cast<fun::string* const*>(
                     type_info_->prototype->OffsetToPointer(
                       type_info_->offsets[i]));
-                new(field_ptr) string*(default_value);
+                new(field_ptr) fun::string*(default_value);
               }
             } else {
-              new(field_ptr) RepeatedPtrField<string>();
+              new(field_ptr) RepeatedPtrField<fun::string>();
             }
             break;
         }
@@ -371,7 +371,7 @@ DynamicMessage::~DynamicMessage() {
 
   // We need to manually run the destructors for repeated fields and strings,
   // just as we ran their constructors in the the DynamicMessage constructor.
-  // We also need to manually delete oneof fields if it is set and is string
+  // We also need to manually delete oneof fields if it is fun::set and is fun::string
   // or message.
   // Additionally, if any singular embedded messages have been allocated, we
   // need to delete them, UNLESS we are the prototype message of this type,
@@ -391,7 +391,7 @@ DynamicMessage::~DynamicMessage() {
           switch (field->options().ctype()) {
             default:
             case FieldOptions::STRING:
-              delete *reinterpret_cast<string**>(field_ptr);
+              delete *reinterpret_cast<fun::string**>(field_ptr);
               break;
           }
         } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
@@ -422,10 +422,10 @@ DynamicMessage::~DynamicMessage() {
 
         case FieldDescriptor::CPPTYPE_STRING:
           switch (field->options().ctype()) {
-            default:  // TODO(kenton):  Support other string reps.
+            default:  // TODO(kenton):  Support other fun::string reps.
             case FieldOptions::STRING:
-              reinterpret_cast<RepeatedPtrField<string>*>(field_ptr)
-                  ->~RepeatedPtrField<string>();
+              reinterpret_cast<RepeatedPtrField<fun::string>*>(field_ptr)
+                  ->~RepeatedPtrField<fun::string>();
               break;
           }
           break;
@@ -438,9 +438,9 @@ DynamicMessage::~DynamicMessage() {
 
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
       switch (field->options().ctype()) {
-        default:  // TODO(kenton):  Support other string reps.
+        default:  // TODO(kenton):  Support other fun::string reps.
         case FieldOptions::STRING: {
-          string* ptr = *reinterpret_cast<string**>(field_ptr);
+          fun::string* ptr = *reinterpret_cast<fun::string**>(field_ptr);
           if (ptr != &field->default_value_string()) {
             delete ptr;
           }
@@ -570,7 +570,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   // - An array of integers indicating the byte offset of each field within
   //   this block.
   // - A big bitfield containing a bit for each field indicating whether
-  //   or not that field is set.
+  //   or not that field is set
 
   // Compute size and offsets.
   int* offsets = new int[type->field_count() + type->oneof_decl_count()];
@@ -724,10 +724,10 @@ void DynamicMessageFactory::ConstructDefaultOneofInstance(
             default:
             case FieldOptions::STRING:
               if (field->has_default_value()) {
-                new(field_ptr) const string*(&field->default_value_string());
+                new(field_ptr) const fun::string*(&field->default_value_string());
               } else {
-                new(field_ptr) string*(
-                    const_cast<string*>(&internal::GetEmptyString()));
+                new(field_ptr) fun::string*(
+                    const_cast<fun::string*>(&internal::GetEmptyString()));
               }
               break;
           }

@@ -102,7 +102,7 @@ inline void protobuf_AssignDescriptorsOnce() {
                  &protobuf_AssignDesc_funapi_2fservice_2fmulticast_5fmessage_2eproto);
 }
 
-void protobuf_RegisterTypes(const ::std::string&) {
+void protobuf_RegisterTypes(const ::fun::string&) {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     FunMulticastChannelListMessage_descriptor_, &FunMulticastChannelListMessage::default_instance());
@@ -200,7 +200,7 @@ FunMulticastChannelListMessage::FunMulticastChannelListMessage(const FunMulticas
 void FunMulticastChannelListMessage::SharedCtor() {
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
-  channel_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  channel_name_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   num_members_ = 0u;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -262,7 +262,7 @@ bool FunMulticastChannelListMessage::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // required string channel_name = 1;
+      // required fun::string channel_name = 1;
       case 1: {
         if (tag == 10) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
@@ -318,7 +318,7 @@ failure:
 void FunMulticastChannelListMessage::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:FunMulticastChannelListMessage)
-  // required string channel_name = 1;
+  // required fun::string channel_name = 1;
   if (has_channel_name()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->channel_name().data(), this->channel_name().length(),
@@ -343,7 +343,7 @@ void FunMulticastChannelListMessage::SerializeWithCachedSizes(
 ::google::protobuf::uint8* FunMulticastChannelListMessage::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:FunMulticastChannelListMessage)
-  // required string channel_name = 1;
+  // required fun::string channel_name = 1;
   if (has_channel_name()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->channel_name().data(), this->channel_name().length(),
@@ -371,7 +371,7 @@ int FunMulticastChannelListMessage::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required string channel_name = 1;
+    // required fun::string channel_name = 1;
     if (has_channel_name()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -520,13 +520,13 @@ FunMulticastMessage::FunMulticastMessage(const FunMulticastMessage& from)
 void FunMulticastMessage::SharedCtor() {
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
-  channel_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  channel_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   join_ = false;
   leave_ = false;
   bounce_ = false;
-  sender_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  sender_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   error_code_ = 1;
-  token_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  token_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -620,7 +620,7 @@ bool FunMulticastMessage::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional string channel = 1;
+      // optional fun::string channel = 1;
       case 1: {
         if (tag == 10) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
@@ -681,7 +681,7 @@ bool FunMulticastMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional string sender = 5;
+      // optional fun::string sender = 5;
       case 5: {
         if (tag == 42) {
          parse_sender:
@@ -732,7 +732,7 @@ bool FunMulticastMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional string token = 8;
+      // optional fun::string token = 8;
       case 8: {
         if (tag == 66) {
          parse_token:
@@ -779,7 +779,7 @@ failure:
 void FunMulticastMessage::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:FunMulticastMessage)
-  // optional string channel = 1;
+  // optional fun::string channel = 1;
   if (has_channel()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->channel().data(), this->channel().length(),
@@ -804,7 +804,7 @@ void FunMulticastMessage::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(4, this->bounce(), output);
   }
 
-  // optional string sender = 5;
+  // optional fun::string sender = 5;
   if (has_sender()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->sender().data(), this->sender().length(),
@@ -826,7 +826,7 @@ void FunMulticastMessage::SerializeWithCachedSizes(
       7, this->channels(i), output);
   }
 
-  // optional string token = 8;
+  // optional fun::string token = 8;
   if (has_token()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->token().data(), this->token().length(),
@@ -850,7 +850,7 @@ void FunMulticastMessage::SerializeWithCachedSizes(
 ::google::protobuf::uint8* FunMulticastMessage::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:FunMulticastMessage)
-  // optional string channel = 1;
+  // optional fun::string channel = 1;
   if (has_channel()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->channel().data(), this->channel().length(),
@@ -876,7 +876,7 @@ void FunMulticastMessage::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(4, this->bounce(), target);
   }
 
-  // optional string sender = 5;
+  // optional fun::string sender = 5;
   if (has_sender()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->sender().data(), this->sender().length(),
@@ -900,7 +900,7 @@ void FunMulticastMessage::SerializeWithCachedSizes(
         7, this->channels(i), target);
   }
 
-  // optional string token = 8;
+  // optional fun::string token = 8;
   if (has_token()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->token().data(), this->token().length(),
@@ -927,7 +927,7 @@ int FunMulticastMessage::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional string channel = 1;
+    // optional fun::string channel = 1;
     if (has_channel()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -949,7 +949,7 @@ int FunMulticastMessage::ByteSize() const {
       total_size += 1 + 1;
     }
 
-    // optional string sender = 5;
+    // optional fun::string sender = 5;
     if (has_sender()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -962,7 +962,7 @@ int FunMulticastMessage::ByteSize() const {
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->error_code());
     }
 
-    // optional string token = 8;
+    // optional fun::string token = 8;
     if (has_token()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -1103,7 +1103,7 @@ FunChatMessage::FunChatMessage(const FunChatMessage& from)
 void FunChatMessage::SharedCtor() {
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
-  text_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  text_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -1161,7 +1161,7 @@ bool FunChatMessage::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional string text = 1;
+      // optional fun::string text = 1;
       case 1: {
         if (tag == 10) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
@@ -1202,7 +1202,7 @@ failure:
 void FunChatMessage::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:FunChatMessage)
-  // optional string text = 1;
+  // optional fun::string text = 1;
   if (has_text()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->text().data(), this->text().length(),
@@ -1222,7 +1222,7 @@ void FunChatMessage::SerializeWithCachedSizes(
 ::google::protobuf::uint8* FunChatMessage::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:FunChatMessage)
-  // optional string text = 1;
+  // optional fun::string text = 1;
   if (has_text()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->text().data(), this->text().length(),
@@ -1245,7 +1245,7 @@ int FunChatMessage::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional string text = 1;
+    // optional fun::string text = 1;
     if (has_text()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(

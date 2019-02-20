@@ -249,7 +249,7 @@ void ImportMessageLite::Swap(ImportMessageLite* other) {
   }
 }
 
-::std::string ImportMessageLite::GetTypeName() const {
+::fun::string ImportMessageLite::GetTypeName() const {
   return "protobuf_unittest_import.ImportMessageLite";
 }
 

@@ -31,44 +31,44 @@ class FunapiDownloadFileInfoImpl : public std::enable_shared_from_this<FunapiDow
 {
 public:
     FunapiDownloadFileInfoImpl() = delete;
-    FunapiDownloadFileInfoImpl(const std::string &url, const std::string &path,
-                               const uint64_t size, const std::string &hash, const std::string &hash_front);
+    FunapiDownloadFileInfoImpl(const fun::string &url, const fun::string &path,
+                               const uint64_t size, const fun::string &hash, const fun::string &hash_front);
     virtual ~FunapiDownloadFileInfoImpl() = default;
 
-    const std::string& GetUrl();
-    const std::string& GetPath();
+    const fun::string& GetUrl();
+    const fun::string& GetPath();
     uint64_t GetSize();
-    const std::string& GetHash();
-    const std::string& GetHashFront();
+    const fun::string& GetHash();
+    const fun::string& GetHashFront();
 
     const FunapiHttpDownloader::ResultCode GetResultCode();
     void SetResultCode(FunapiHttpDownloader::ResultCode r);
 
 private:
-    std::string url_;          // file url
-    std::string path_;         // save file path
+    fun::string url_;          // file url
+    fun::string path_;         // save file path
     uint64_t size_;            // file size
-    std::string hash_;         // md5 hash
-    std::string hash_front_;   // front part of file (1MB)
+    fun::string hash_;         // md5 hash
+    fun::string hash_front_;   // front part of file (1MB)
 
     FunapiHttpDownloader::ResultCode result_code_;
 };
 
 
-FunapiDownloadFileInfoImpl::FunapiDownloadFileInfoImpl(const std::string &url, const std::string &path,
-                                                       const uint64_t size, const std::string &hash, const std::string &hash_front)
+FunapiDownloadFileInfoImpl::FunapiDownloadFileInfoImpl(const fun::string &url, const fun::string &path,
+                                                       const uint64_t size, const fun::string &hash, const fun::string &hash_front)
 : url_(url), path_(path), size_(size), hash_(hash), hash_front_(hash_front), result_code_(FunapiHttpDownloader::ResultCode::kNone)
 {
 }
 
 
-const std::string& FunapiDownloadFileInfoImpl::GetUrl()
+const fun::string& FunapiDownloadFileInfoImpl::GetUrl()
 {
     return url_;
 }
 
 
-const std::string& FunapiDownloadFileInfoImpl::GetPath()
+const fun::string& FunapiDownloadFileInfoImpl::GetPath()
 {
     return path_;
 }
@@ -80,13 +80,13 @@ uint64_t FunapiDownloadFileInfoImpl::GetSize()
 }
 
 
-const std::string& FunapiDownloadFileInfoImpl::GetHash()
+const fun::string& FunapiDownloadFileInfoImpl::GetHash()
 {
     return hash_;
 }
 
 
-const std::string& FunapiDownloadFileInfoImpl::GetHashFront()
+const fun::string& FunapiDownloadFileInfoImpl::GetHashFront()
 {
     return hash_front_;
 }
@@ -107,7 +107,7 @@ void FunapiDownloadFileInfoImpl::SetResultCode(FunapiHttpDownloader::ResultCode 
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiDownloadFileInfo implementation.
 
-FunapiDownloadFileInfo::FunapiDownloadFileInfo(const std::string &url, const std::string &path, const uint64_t size, const std::string &hash, const std::string &hash_front)
+FunapiDownloadFileInfo::FunapiDownloadFileInfo(const fun::string &url, const fun::string &path, const uint64_t size, const fun::string &hash, const fun::string &hash_front)
 : impl_(std::make_shared<FunapiDownloadFileInfoImpl>(url, path, size, hash, hash_front))
 {
 }
@@ -116,12 +116,12 @@ FunapiDownloadFileInfo::~FunapiDownloadFileInfo() {
 }
 
 
-const std::string& FunapiDownloadFileInfo::GetUrl() {
+const fun::string& FunapiDownloadFileInfo::GetUrl() {
   return impl_->GetUrl();
 }
 
 
-const std::string& FunapiDownloadFileInfo::GetPath() {
+const fun::string& FunapiDownloadFileInfo::GetPath() {
   return impl_->GetPath();
 }
 
@@ -131,12 +131,12 @@ uint64_t FunapiDownloadFileInfo::GetSize() {
 }
 
 
-const std::string& FunapiDownloadFileInfo::GetHash() {
+const fun::string& FunapiDownloadFileInfo::GetHash() {
   return impl_->GetHash();
 }
 
 
-const std::string& FunapiDownloadFileInfo::GetHashFront() {
+const fun::string& FunapiDownloadFileInfo::GetHashFront() {
   return impl_->GetHashFront();
 }
 
@@ -162,7 +162,7 @@ class FunapiHttpDownloaderImpl : public std::enable_shared_from_this<FunapiHttpD
   typedef FunapiHttpDownloader::CompletionHandler CompletionHandler;
 
   FunapiHttpDownloaderImpl() = delete;
-  FunapiHttpDownloaderImpl(const std::string &url, const std::string &path);
+  FunapiHttpDownloaderImpl(const fun::string &url, const fun::string &path);
   virtual ~FunapiHttpDownloaderImpl();
 
   void AddReadyCallback(const ReadyHandler &handler);
@@ -177,8 +177,8 @@ class FunapiHttpDownloaderImpl : public std::enable_shared_from_this<FunapiHttpD
   static std::shared_ptr<FunapiTasks> GetFunapiTasks();
 
  private:
-  void GetDownloadList(const std::string &download_url, const std::string &target_path);
-  void OnDownloadInfoList(const std::string &json_string);
+  void GetDownloadList(const fun::string &download_url, const fun::string &target_path);
+  void OnDownloadInfoList(const fun::string &json_string);
   void DownloadFiles();
   bool DownloadFile(int index, std::shared_ptr<FunapiDownloadFileInfo> &info);
 
@@ -194,14 +194,14 @@ class FunapiHttpDownloaderImpl : public std::enable_shared_from_this<FunapiHttpD
 
   std::shared_ptr<FunapiTasks> tasks_;
 
-  std::vector<std::shared_ptr<FunapiDownloadFileInfo>> info_list_;
+  fun::vector<std::shared_ptr<FunapiDownloadFileInfo>> info_list_;
 
   bool IsDownloadFile(std::shared_ptr<FunapiDownloadFileInfo> info);
   bool MD5Compare(std::shared_ptr<FunapiDownloadFileInfo> info);
-  bool CheckDirectory(const std::string& path);
+  bool CheckDirectory(const fun::string& path);
 
-  std::string url_;
-  std::string path_;
+  fun::string url_;
+  fun::string path_;
 
   std::shared_ptr<FunapiThread> thread_;
 
@@ -210,7 +210,7 @@ class FunapiHttpDownloaderImpl : public std::enable_shared_from_this<FunapiHttpD
 };
 
 
-FunapiHttpDownloaderImpl::FunapiHttpDownloaderImpl(const std::string &url, const std::string &path)
+FunapiHttpDownloaderImpl::FunapiHttpDownloaderImpl(const fun::string &url, const fun::string &path)
 : url_(url), path_(path) {
   tasks_ = FunapiHttpDownloaderImpl::GetFunapiTasks();
   thread_ = FunapiThread::Get("_file");
@@ -235,38 +235,39 @@ void FunapiHttpDownloaderImpl::Start(std::weak_ptr<FunapiHttpDownloader> d) {
 }
 
 
-bool FunapiHttpDownloaderImpl::CheckDirectory(const std::string& file_path)
+bool FunapiHttpDownloaderImpl::CheckDirectory(const fun::string& file_path)
 {
     // Gets directory from file path.
     const size_t pos = file_path.rfind('/');
-    if (pos == std::string::npos)
+    if (pos == fun::string::npos)
     {
         DebugUtils::Log("Error: Invalid path. path: %s", file_path.c_str());
         return false;
     }
 
-    std::string dir_path = file_path.substr(0, pos);
-    if (access(dir_path.c_str(), 0) == F_OK)
+    fun::string dir_path = file_path.substr(0, pos);
+    IPlatformFile& platform_file = FPlatformFileManager::Get().GetPlatformFile();
+    if (platform_file.DirectoryExists(UTF8_TO_TCHAR(dir_path.c_str()))) {
         return true;
+    }
 
     // Gets folders name.
     size_t len = path_.size();
-    std::string dirs = dir_path.substr(len, dir_path.size() - len);
+    fun::string dirs = dir_path.substr(len, dir_path.size() - len);
 
-    std::istringstream iss(dirs);
-    std::stringstream ss;
+    fun::istringstream iss(dirs);
+    fun::stringstream ss;
     ss << path_;
 
     // Makes folders.
-    std::string dirname;
+    fun::string dirname;
     while (std::getline(iss, dirname, '/'))
     {
         ss << dirname << "/";
-
-        const std::string& path = ss.str();
-        if (access(path.c_str(), 0) != F_OK)
+        const fun::string& path = ss.str();
+        if (!platform_file.DirectoryExists(UTF8_TO_TCHAR(path.c_str())))
         {
-            if (mkdir(path.c_str(), 644) != F_OK)
+            if (!platform_file.CreateDirectory(UTF8_TO_TCHAR(path.c_str())))
             {
                 DebugUtils::Log("Error: Failed to create directory. path: %s", path.c_str());
                 return false;
@@ -290,17 +291,17 @@ bool FunapiHttpDownloaderImpl::DownloadFile(int index, std::shared_ptr<FunapiDow
     std::shared_ptr<FunapiHttp> http = FunapiHttp::Create();
     http->SetTimeout(timeout_seconds_);
     http->DownloadRequest(info->GetUrl(), info->GetPath(), FunapiHttp::HeaderFields(),
-        [&is_ok,&info](const int error_code, const std::string error_string)
+        [&is_ok,&info](const int error_code, const fun::string error_string)
         {
             DebugUtils::Log("Error from cURL: %d, %s", error_code, error_string.c_str());
             info->SetResultCode(FunapiHttpDownloader::ResultCode::kFailed);
             is_ok = false;
         },
-        [this, index](const std::string &url, const std::string &path, const uint64_t recv_bytes)
+        [this, index](const fun::string &url, const fun::string &path, const uint64_t recv_bytes)
         {
             OnProgress(index, recv_bytes);
         },
-        [&info](const std::string &url, const std::string &path, const std::vector<std::string> &headers)
+        [&info](const fun::string &url, const fun::string &path, const fun::vector<fun::string> &headers)
         {
             info->SetResultCode(FunapiHttpDownloader::ResultCode::kSucceed);
         }
@@ -335,7 +336,7 @@ void FunapiHttpDownloaderImpl::DownloadFiles() {
 }
 
 
-void FunapiHttpDownloaderImpl::OnDownloadInfoList(const std::string &json_string) {
+void FunapiHttpDownloaderImpl::OnDownloadInfoList(const fun::string &json_string) {
   rapidjson::Document document;
   document.Parse<0>(json_string.c_str());
 
@@ -351,10 +352,10 @@ void FunapiHttpDownloaderImpl::OnDownloadInfoList(const std::string &json_string
       for (int i=0;i<=max_index_;++i) {
         rapidjson::Value &v = d[i];
 
-        std::string url;
-        std::string path;
-        std::string md5;
-        std::string md5_front;
+        fun::string url;
+        fun::string path;
+        fun::string md5;
+        fun::string md5_front;
 
         uint64_t size = 0;
 
@@ -386,19 +387,19 @@ void FunapiHttpDownloaderImpl::OnDownloadInfoList(const std::string &json_string
 }
 
 
-void FunapiHttpDownloaderImpl::GetDownloadList(const std::string &download_url, const std::string &target_path)
+void FunapiHttpDownloaderImpl::GetDownloadList(const fun::string &download_url, const fun::string &target_path)
 {
     std::shared_ptr<FunapiHttp> http = FunapiHttp::Create();
     http->SetTimeout(timeout_seconds_);
-    http->PostRequest(download_url, FunapiHttp::HeaderFields(), std::vector<uint8_t>(),
-        [this](int code, const std::string error_string)
+    http->PostRequest(download_url, FunapiHttp::HeaderFields(), fun::vector<uint8_t>(),
+        [this](int code, const fun::string error_string)
         {
             DebugUtils::Log("Error from cURL: %d, %s", code, error_string.c_str());
             OnCompletion(FunapiHttpDownloader::ResultCode::kFailed);
         },
-        [this](const std::vector<std::string> &v_header, const std::vector<uint8_t> &v_body)
+        [this](const fun::vector<fun::string> &v_header, const fun::vector<uint8_t> &v_body)
         {
-            OnDownloadInfoList(std::string(v_body.begin(), v_body.end()));
+            OnDownloadInfoList(fun::string(v_body.begin(), v_body.end()));
         }
     );
 }
@@ -423,14 +424,14 @@ bool FunapiHttpDownloaderImpl::IsDownloadFile(std::shared_ptr<FunapiDownloadFile
 
 bool FunapiHttpDownloaderImpl::MD5Compare(std::shared_ptr<FunapiDownloadFileInfo> info) {
   if (info->GetHashFront().length() > 0) {
-    std::string md5_string = FunapiUtil::MD5String(info->GetPath(), true);
+    fun::string md5_string = FunapiUtil::MD5String(info->GetPath(), true);
     if (info->GetHashFront().compare(md5_string) == 0) {
       return true;
     }
   }
 
   if (info->GetHash().length() > 0) {
-    std::string md5_string = FunapiUtil::MD5String(info->GetPath(), false);
+    fun::string md5_string = FunapiUtil::MD5String(info->GetPath(), false);
     if (info->GetHash().compare(md5_string) == 0) {
       return true;
     }
@@ -518,7 +519,7 @@ std::shared_ptr<FunapiTasks> FunapiHttpDownloaderImpl::GetFunapiTasks() {
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiHttpDownloader implementation.
 
-FunapiHttpDownloader::FunapiHttpDownloader(const std::string &url, const std::string &path)
+FunapiHttpDownloader::FunapiHttpDownloader(const fun::string &url, const fun::string &path)
   : impl_(std::make_shared<FunapiHttpDownloaderImpl>(url, path)) {
 }
 
@@ -527,7 +528,7 @@ FunapiHttpDownloader::~FunapiHttpDownloader() {
 }
 
 
-std::shared_ptr<FunapiHttpDownloader> FunapiHttpDownloader::Create(const std::string &url, const std::string &path) {
+std::shared_ptr<FunapiHttpDownloader> FunapiHttpDownloader::Create(const fun::string &url, const fun::string &path) {
   return std::make_shared<FunapiHttpDownloader>(url, path);
 }
 

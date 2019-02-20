@@ -46,8 +46,8 @@
 //
 // CodedOutputStream example:
 //   // Write some data to "myfile".  First we write a 4-byte "magic number"
-//   // to identify the file type, then write a length-delimited string.  The
-//   // string is composed of a varint giving the length followed by the raw
+//   // to identify the file type, then write a length-delimited fun::string.  The
+//   // fun::string is composed of a varint giving the length followed by the raw
 //   // bytes.
 //   int fd = open("myfile", O_WRONLY);
 //   ZeroCopyOutputStream* raw_output = new FileOutputStream(fd);
@@ -103,7 +103,7 @@
 // bytes as "10101011 00101100".
 //
 // In theory, varint could be used to encode integers of any length.
-// However, for practicality we set a limit at 64 bits.  The maximum encoded
+// However, for practicality we fun::set a limit at 64 bits.  The maximum encoded
 // length of a number is thus 10 bytes.
 
 #ifndef GOOGLE_PROTOBUF_IO_CODED_STREAM_H__
@@ -116,7 +116,7 @@
     #define PROTOBUF_LITTLE_ENDIAN 1
   #endif
   #if _MSC_VER >= 1300
-    // If MSVC has "/RTCc" set, it will complain about truncating casts at
+    // If MSVC has "/RTCc" fun::set, it will complain about truncating casts at
     // runtime.  This file contains some intentional truncating casts.
     #pragma runtime_checks("c", off)
   #endif
@@ -195,17 +195,17 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // Read raw bytes, copying them into the given buffer.
   bool ReadRaw(void* buffer, int size);
 
-  // Like ReadRaw, but reads into a string.
+  // Like ReadRaw, but reads into a fun::string.
   //
-  // Implementation Note:  ReadString() grows the string gradually as it
+  // Implementation Note:  ReadString() grows the fun::string gradually as it
   // reads in the data, rather than allocating the entire requested size
   // upfront.  This prevents denial-of-service attacks in which a client
-  // could claim that a string is going to be MAX_INT bytes long in order to
+  // could claim that a fun::string is going to be MAX_INT bytes long in order to
   // crash the server because it can't allocate this much space at once.
-  bool ReadString(string* buffer, int size);
+  bool ReadString(fun::string* buffer, int size);
   // Like the above, with inlined optimizations. This should only be used
   // by the protobuf implementation.
-  inline bool InternalReadStringInline(string* buffer,
+  inline bool InternalReadStringInline(fun::string* buffer,
                                        int size) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
 
 
@@ -342,7 +342,7 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // maximum message length should be limited to the shortest length that
   // will not harm usability.  The theoretical shortest message that could
   // cause integer overflows is 512MB.  The default limit is 64MB.  Apps
-  // should set shorter limits if possible.  If warning_threshold is not -1,
+  // should fun::set shorter limits if possible.  If warning_threshold is not -1,
   // a warning will be printed to stderr after warning_threshold bytes are
   // read.  For backwards compatibility all negative values get squashed to -1,
   // as other negative values might have special internal meanings.
@@ -358,7 +358,7 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   //   messages rather than a single large one.  If this is infeasible,
   //   you will need to increase the limit.  Chances are, though, that
   //   your code never constructs a CodedInputStream on which the limit
-  //   can be set.  You probably parse messages by calling things like
+  //   can be set  You probably parse messages by calling things like
   //   Message::ParseFromString().  In this case, you will need to change
   //   your code to instead construct some sort of ZeroCopyInputStream
   //   (e.g. an ArrayInputStream), construct a CodedInputStream around
@@ -459,11 +459,11 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   void SetExtensionRegistry(const DescriptorPool* pool,
                             MessageFactory* factory);
 
-  // Get the DescriptorPool set via SetExtensionRegistry(), or NULL if no pool
+  // Get the DescriptorPool fun::set via SetExtensionRegistry(), or NULL if no pool
   // has been provided.
   const DescriptorPool* GetExtensionPool();
 
-  // Get the MessageFactory set via SetExtensionRegistry(), or NULL if no
+  // Get the MessageFactory fun::set via SetExtensionRegistry(), or NULL if no
   // factory has been provided.
   MessageFactory* GetExtensionFactory();
 
@@ -483,7 +483,7 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // LastTagWas() stuff.
   uint32 last_tag_;         // result of last ReadTag() or ReadTagWithCutoff().
 
-  // This is set true by ReadTag{Fallback/Slow}() if it is called when exactly
+  // This is fun::set true by ReadTag{Fallback/Slow}() if it is called when exactly
   // at EOF, or by ExpectAtEnd() when it returns true.  This happens when we
   // reach the end of a message and attempt to read another tag.
   bool legitimate_message_end_;
@@ -509,14 +509,14 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
 
   // If positive/0: Limit for bytes read after which a warning due to size
   // should be logged.
-  // If -1: Printing of warning disabled. Can be set by client.
+  // If -1: Printing of warning disabled. Can be fun::set by client.
   // If -2: Internal: Limit has been reached, print full size when destructing.
   int total_bytes_warning_threshold_;
 
   // Current recursion depth, controlled by IncrementRecursionDepth() and
   // DecrementRecursionDepth().
   int recursion_depth_;
-  // Recursion depth limit, set by SetRecursionLimit().
+  // Recursion depth limit, fun::set by SetRecursionLimit().
   int recursion_limit_;
 
   // See SetExtensionRegistry().
@@ -556,11 +556,11 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   bool ReadLittleEndian32Fallback(uint32* value);
   bool ReadLittleEndian64Fallback(uint64* value);
   // Fallback/slow methods for reading tags. These do not update last_tag_,
-  // but will set legitimate_message_end_ if we are at the end of the input
+  // but will fun::set legitimate_message_end_ if we are at the end of the input
   // stream.
   uint32 ReadTagFallback();
   uint32 ReadTagSlow();
-  bool ReadStringFallback(string* buffer, int size);
+  bool ReadStringFallback(fun::string* buffer, int size);
 
   // Return the size of the buffer.
   int BufferSize() const;
@@ -658,17 +658,17 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   void WriteRawMaybeAliased(const void* data, int size);
   // Like WriteRaw()  but writing directly to the target array.
   // This is _not_ inlined, as the compiler often optimizes memcpy into inline
-  // copy loops. Since this gets called by every field with string or bytes
+  // copy loops. Since this gets called by every field with fun::string or bytes
   // type, inlining may lead to a significant amount of code bloat, with only a
   // minor performance gain.
   static uint8* WriteRawToArray(const void* buffer, int size, uint8* target);
 
   // Equivalent to WriteRaw(str.data(), str.size()).
-  void WriteString(const string& str);
+  void WriteString(const fun::string& str);
   // Like WriteString()  but writing directly to the target array.
-  static uint8* WriteStringToArray(const string& str, uint8* target);
+  static uint8* WriteStringToArray(const fun::string& str, uint8* target);
   // Write the varint-encoded size of str followed by str.
-  static uint8* WriteStringWithSizeToArray(const string& str, uint8* target);
+  static uint8* WriteStringWithSizeToArray(const fun::string& str, uint8* target);
 
 
   // Instructs the CodedOutputStream to allow the underlying
@@ -1100,7 +1100,7 @@ inline int CodedOutputStream::VarintSize32SignExtended(int32 value) {
   }
 }
 
-inline void CodedOutputStream::WriteString(const string& str) {
+inline void CodedOutputStream::WriteString(const fun::string& str) {
   WriteRaw(str.data(), static_cast<int>(str.size()));
 }
 
@@ -1114,7 +1114,7 @@ inline void CodedOutputStream::WriteRawMaybeAliased(
 }
 
 inline uint8* CodedOutputStream::WriteStringToArray(
-    const string& str, uint8* target) {
+    const fun::string& str, uint8* target) {
   return WriteRawToArray(str.data(), static_cast<int>(str.size()), target);
 }
 

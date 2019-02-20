@@ -24,18 +24,18 @@ enum class FUNAPI_API EncryptionType : int {
 class FunapiEncryptionImpl;
 class FUNAPI_API FunapiEncryption : public std::enable_shared_from_this<FunapiEncryption> {
  public:
-  typedef std::map<std::string, std::string> HeaderFields;
+  typedef fun::map<fun::string, fun::string> HeaderFields;
 
   FunapiEncryption();
   virtual ~FunapiEncryption();
 
   void SetEncryptionType(EncryptionType type);
-  void SetEncryptionType(EncryptionType type, const std::string &key);
+  void SetEncryptionType(EncryptionType type, const fun::string &key);
 
   bool Encrypt(HeaderFields &header_fields,
-               std::vector<uint8_t> &body,
+               fun::vector<uint8_t> &body,
                const EncryptionType encryption_type = EncryptionType::kDefaultEncryption);
-  bool Decrypt(HeaderFields &header_fields, std::vector<uint8_t> &body, std::vector<EncryptionType>& encryption_types);
+  bool Decrypt(HeaderFields &header_fields, fun::vector<uint8_t> &body, fun::vector<EncryptionType>& encryption_types);
 
   void SetHeaderFieldsForHttpSend (HeaderFields &header_fields);
   void SetHeaderFieldsForHttpRecv (HeaderFields &header_fields);

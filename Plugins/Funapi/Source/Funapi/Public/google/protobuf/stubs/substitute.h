@@ -48,22 +48,22 @@ namespace strings {
 //   Kind of like StringPrintf, but different.
 //
 //   Example:
-//     string GetMessage(string first_name, string last_name, int age) {
+//     fun::string GetMessage(fun::string first_name, fun::string last_name, int age) {
 //       return strings::Substitute("My name is $0 $1 and I am $2 years old.",
 //                                  first_name, last_name, age);
 //     }
 //
 //   Differences from StringPrintf:
-//   * The format string does not identify the types of arguments.
+//   * The format fun::string does not identify the types of arguments.
 //     Instead, the magic of C++ deals with this for us.  See below
 //     for a list of accepted types.
-//   * Substitutions in the format string are identified by a '$'
+//   * Substitutions in the format fun::string are identified by a '$'
 //     followed by a digit.  So, you can use arguments out-of-order and
 //     use the same argument multiple times.
 //   * It's much faster than StringPrintf.
 //
 //   Supported types:
-//   * Strings (const char*, const string&)
+//   * Strings (const char*, const fun::string&)
 //     * Note that this means you do not have to add .c_str() to all of
 //       your strings.  In fact, you shouldn't; it will be slower.
 //   * int32, int64, uint32, uint64:  Formatted using SimpleItoa().
@@ -73,7 +73,7 @@ namespace strings {
 //   SubstituteAndAppend() is like Substitute() but appends the result to
 //   *output.  Example:
 //
-//     string str;
+//     fun::string str;
 //     strings::SubstituteAndAppend(&str,
 //                                  "My name is $0 $1 and I am $2 years old.",
 //                                  first_name, last_name, age);
@@ -88,7 +88,7 @@ class SubstituteArg {
  public:
   inline SubstituteArg(const char* value)
     : text_(value), size_(strlen(text_)) {}
-  inline SubstituteArg(const string& value)
+  inline SubstituteArg(const fun::string& value)
     : text_(value.data()), size_(value.size()) {}
 
   // Indicates that no argument was given.
@@ -137,7 +137,7 @@ class SubstituteArg {
 
 }  // namespace internal
 
-LIBPROTOBUF_EXPORT string Substitute(
+LIBPROTOBUF_EXPORT fun::string Substitute(
   const char* format,
   const internal::SubstituteArg& arg0 = internal::SubstituteArg(),
   const internal::SubstituteArg& arg1 = internal::SubstituteArg(),
@@ -151,7 +151,7 @@ LIBPROTOBUF_EXPORT string Substitute(
   const internal::SubstituteArg& arg9 = internal::SubstituteArg());
 
 LIBPROTOBUF_EXPORT void SubstituteAndAppend(
-  string* output, const char* format,
+  fun::string* output, const char* format,
   const internal::SubstituteArg& arg0 = internal::SubstituteArg(),
   const internal::SubstituteArg& arg1 = internal::SubstituteArg(),
   const internal::SubstituteArg& arg2 = internal::SubstituteArg(),

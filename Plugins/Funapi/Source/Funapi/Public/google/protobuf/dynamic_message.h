@@ -61,7 +61,7 @@ class DescriptorPool;    // descriptor.h
 // As it turns out, a DynamicMessage needs to construct extra
 // information about its type in order to operate.  Most of this information
 // can be shared between all DynamicMessages of the same type.  But, caching
-// this information in some sort of global map would be a bad idea, since
+// this information in some sort of global fun::map would be a bad idea, since
 // the cached information for a particular descriptor could outlive the
 // descriptor itself.  To avoid this problem, DynamicMessageFactory
 // encapsulates this "cache".  All DynamicMessages of the same type created

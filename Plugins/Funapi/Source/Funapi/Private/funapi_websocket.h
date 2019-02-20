@@ -16,19 +16,19 @@ class FunapiWebsocket : public std::enable_shared_from_this<FunapiWebsocket> {
  public:
   typedef std::function<void(const bool is_failed,
                              const int error_code,
-                             const std::string &error_string)> ConnectCompletionHandler;
+                             const fun::string &error_string)> ConnectCompletionHandler;
 
   typedef std::function<void(const int error_code,
-                             const std::string &error_string)> CloseHandler;
+                             const fun::string &error_string)> CloseHandler;
 
   typedef std::function<void(const int read_length,
-                             std::vector<uint8_t> &receiving)> RecvHandler;
+                             fun::vector<uint8_t> &receiving)> RecvHandler;
 
   typedef std::function<void()> SendHandler;
 
   typedef std::function<void(const bool is_failed,
                              const int error_code,
-                             const std::string &error_string,
+                             const fun::string &error_string,
                              const int sent_length)> SendCompletionHandler;
 
   FunapiWebsocket();
@@ -46,13 +46,13 @@ class FunapiWebsocket : public std::enable_shared_from_this<FunapiWebsocket> {
   void Connect(const char* hostname_or_ip,
                const int sever_port,
                const bool use_wss,
-               const std::string &ca_file_path,
+               const fun::string &ca_file_path,
                const ConnectCompletionHandler &connect_completion_handler,
                const CloseHandler &close_handler,
                const SendHandler &send_handler,
                const RecvHandler &recv_handler);
 
-  bool Send(const std::vector<uint8_t> &body,
+  bool Send(const fun::vector<uint8_t> &body,
             const bool is_binary,
             const SendCompletionHandler &send_completion_handler);
 

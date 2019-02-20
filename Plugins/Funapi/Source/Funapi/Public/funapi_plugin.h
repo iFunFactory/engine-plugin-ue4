@@ -54,6 +54,8 @@
 #include <unordered_map>
 #include <assert.h>
 
+#include "funapi_std_allocator.h"
+
 #ifdef FUNAPI_COCOS2D
 #include "json/stringbuffer.h"
 #include "json/writer.h"

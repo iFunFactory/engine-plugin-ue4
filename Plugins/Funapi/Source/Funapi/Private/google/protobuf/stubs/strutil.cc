@@ -75,7 +75,7 @@ inline bool IsNaN(double value) {
 #undef isprint
 
 // The definitions of these in ctype.h change based on locale.  Since our
-// string manipulation is all in relation to the protocol buffer and C++
+// fun::string manipulation is all in relation to the protocol buffer and C++
 // languages, we always want to use the C locale.  So, we re-define these
 // exactly as we want them.
 inline bool isxdigit(char c) {
@@ -93,7 +93,7 @@ inline bool isprint(char c) {
 //    Replaces any occurrence of the character 'remove' (or the characters
 //    in 'remove') with the character 'replacewith'.
 // ----------------------------------------------------------------------
-void StripString(string* s, const char* remove, char replacewith) {
+void StripString(fun::string* s, const char* remove, char replacewith) {
   const char * str_start = s->c_str();
   const char * str = str_start;
   for (str = strpbrk(str, remove);
@@ -105,24 +105,24 @@ void StripString(string* s, const char* remove, char replacewith) {
 
 // ----------------------------------------------------------------------
 // StringReplace()
-//    Replace the "old" pattern with the "new" pattern in a string,
+//    Replace the "old" pattern with the "new" pattern in a fun::string,
 //    and append the result to "res".  If replace_all is false,
 //    it only replaces the first instance of "old."
 // ----------------------------------------------------------------------
 
-void StringReplace(const string& s, const string& oldsub,
-                   const string& newsub, bool replace_all,
-                   string* res) {
+void StringReplace(const fun::string& s, const fun::string& oldsub,
+                   const fun::string& newsub, bool replace_all,
+                   fun::string* res) {
   if (oldsub.empty()) {
-    res->append(s);  // if empty, append the given string.
+    res->append(s);  // if empty, append the given fun::string.
     return;
   }
 
-  string::size_type start_pos = 0;
-  string::size_type pos;
+  fun::string::size_type start_pos = 0;
+  fun::string::size_type pos;
   do {
     pos = s.find(oldsub, start_pos);
-    if (pos == string::npos) {
+    if (pos == fun::string::npos) {
       break;
     }
     res->append(s, start_pos, pos - start_pos);
@@ -134,31 +134,31 @@ void StringReplace(const string& s, const string& oldsub,
 
 // ----------------------------------------------------------------------
 // StringReplace()
-//    Give me a string and two patterns "old" and "new", and I replace
-//    the first instance of "old" in the string with "new", if it
+//    Give me a fun::string and two patterns "old" and "new", and I replace
+//    the first instance of "old" in the fun::string with "new", if it
 //    exists.  If "global" is true; call this repeatedly until it
-//    fails.  RETURN a new string, regardless of whether the replacement
+//    fails.  RETURN a new fun::string, regardless of whether the replacement
 //    happened or not.
 // ----------------------------------------------------------------------
 
-string StringReplace(const string& s, const string& oldsub,
-                     const string& newsub, bool replace_all) {
-  string ret;
+fun::string StringReplace(const fun::string& s, const fun::string& oldsub,
+                     const fun::string& newsub, bool replace_all) {
+  fun::string ret;
   StringReplace(s, oldsub, newsub, replace_all, &ret);
   return ret;
 }
 
 // ----------------------------------------------------------------------
 // SplitStringUsing()
-//    Split a string using a character delimiter. Append the components
+//    Split a fun::string using a character delimiter. Append the components
 //    to 'result'.
 //
 // Note: For multi-character delimiters, this routine will split on *ANY* of
-// the characters in the string, not the entire string as a single delimiter.
+// the characters in the fun::string, not the entire fun::string as a single delimiter.
 // ----------------------------------------------------------------------
 template <typename ITR>
 static inline
-void SplitStringToIteratorUsing(const string& full,
+void SplitStringToIteratorUsing(const fun::string& full,
                                 const char* delim,
                                 ITR& result) {
   // Optimize the common case where delim is a single character.
@@ -172,17 +172,17 @@ void SplitStringToIteratorUsing(const string& full,
       } else {
         const char* start = p;
         while (++p != end && *p != c);
-        *result++ = string(start, p - start);
+        *result++ = fun::string(start, p - start);
       }
     }
     return;
   }
 
-  string::size_type begin_index, end_index;
+  fun::string::size_type begin_index, end_index;
   begin_index = full.find_first_not_of(delim);
-  while (begin_index != string::npos) {
+  while (begin_index != fun::string::npos) {
     end_index = full.find_first_of(delim, begin_index);
-    if (end_index == string::npos) {
+    if (end_index == fun::string::npos) {
       *result++ = full.substr(begin_index);
       return;
     }
@@ -191,23 +191,23 @@ void SplitStringToIteratorUsing(const string& full,
   }
 }
 
-void SplitStringUsing(const string& full,
+void SplitStringUsing(const fun::string& full,
                       const char* delim,
-                      vector<string>* result) {
-  back_insert_iterator< vector<string> > it(*result);
+                      fun::vector<fun::string>* result) {
+  back_insert_iterator< fun::vector<fun::string> > it(*result);
   SplitStringToIteratorUsing(full, delim, it);
 }
 
-// Split a string using a character delimiter. Append the components
+// Split a fun::string using a character delimiter. Append the components
 // to 'result'.  If there are consecutive delimiters, this function
-// will return corresponding empty strings. The string is split into
+// will return corresponding empty strings. The fun::string is split into
 // at most the specified number of pieces greedily. This means that the
 // last piece may possibly be split further. To split into as many pieces
 // as possible, specify 0 as the number of pieces.
 //
-// If "full" is the empty string, yields an empty string as the only value.
+// If "full" is the empty fun::string, yields an empty fun::string as the only value.
 //
-// If "pieces" is negative for some reason, it returns the whole string
+// If "pieces" is negative for some reason, it returns the whole fun::string
 // ----------------------------------------------------------------------
 template <typename StringType, typename ITR>
 static inline
@@ -215,12 +215,12 @@ void SplitStringToIteratorAllowEmpty(const StringType& full,
                                      const char* delim,
                                      int pieces,
                                      ITR& result) {
-  string::size_type begin_index, end_index;
+  fun::string::size_type begin_index, end_index;
   begin_index = 0;
 
   for (int i = 0; (i < pieces-1) || (pieces == 0); i++) {
     end_index = full.find_first_of(delim, begin_index);
-    if (end_index == string::npos) {
+    if (end_index == fun::string::npos) {
       *result++ = full.substr(begin_index);
       return;
     }
@@ -230,15 +230,15 @@ void SplitStringToIteratorAllowEmpty(const StringType& full,
   *result++ = full.substr(begin_index);
 }
 
-void SplitStringAllowEmpty(const string& full, const char* delim,
-                           vector<string>* result) {
-  back_insert_iterator<vector<string> > it(*result);
+void SplitStringAllowEmpty(const fun::string& full, const char* delim,
+                           fun::vector<fun::string>* result) {
+  back_insert_iterator<fun::vector<fun::string> > it(*result);
   SplitStringToIteratorAllowEmpty(full, delim, 0, it);
 }
 
 // ----------------------------------------------------------------------
 // JoinStrings()
-//    This merges a vector of string components with delim inserted
+//    This merges a fun::vector of fun::string components with delim inserted
 //    as separaters between components.
 //
 // ----------------------------------------------------------------------
@@ -246,7 +246,7 @@ template <class ITERATOR>
 static void JoinStringsIterator(const ITERATOR& start,
                                 const ITERATOR& end,
                                 const char* delim,
-                                string* result) {
+                                fun::string* result) {
   GOOGLE_CHECK(result != NULL);
   result->clear();
   int delim_length = strlen(delim);
@@ -270,22 +270,22 @@ static void JoinStringsIterator(const ITERATOR& start,
   }
 }
 
-void JoinStrings(const vector<string>& components,
+void JoinStrings(const fun::vector<fun::string>& components,
                  const char* delim,
-                 string * result) {
+                 fun::string * result) {
   JoinStringsIterator(components.begin(), components.end(), delim, result);
 }
 
 // ----------------------------------------------------------------------
 // UnescapeCEscapeSequences()
 //    This does all the unescaping that C does: \ooo, \r, \n, etc
-//    Returns length of resulting string.
+//    Returns length of resulting fun::string.
 //    The implementation of \x parses any positive number of hex digits,
 //    but it is an error if the value requires more than 8 bits, and the
 //    result is truncated to 8 bits.
 //
-//    The second call stores its errors in a supplied string vector.
-//    If the string vector pointer is NULL, it reports the errors with LOG().
+//    The second call stores its errors in a supplied fun::string fun::vector.
+//    If the fun::string fun::vector pointer is NULL, it reports the errors with LOG().
 // ----------------------------------------------------------------------
 
 #define IS_OCTAL_DIGIT(c) (((c) >= '0') && ((c) <= '7'))
@@ -310,7 +310,7 @@ int UnescapeCEscapeSequences(const char* source, char* dest) {
 }
 
 int UnescapeCEscapeSequences(const char* source, char* dest,
-                             vector<string> *errors) {
+                             fun::vector<fun::string> *errors) {
   GOOGLE_DCHECK(errors == NULL) << "Error reporting not implemented.";
 
   char* d = dest;
@@ -366,7 +366,7 @@ int UnescapeCEscapeSequences(const char* source, char* dest,
             ch = (ch << 4) + hex_digit_to_int(*++p);
           if (ch > 0xFF)
             LOG_STRING(ERROR, errors) << "Value of " <<
-              "\\" << string(hex_start, p+1-hex_start) << " exceeds 8 bits";
+              "\\" << fun::string(hex_start, p+1-hex_start) << " exceeds 8 bits";
           *d++ = ch;
           break;
         }
@@ -381,7 +381,7 @@ int UnescapeCEscapeSequences(const char* source, char* dest,
             } else {
               LOG_STRING(ERROR, errors)
                 << "\\u must be followed by 4 hex digits: \\"
-                <<  string(hex_start, p+1-hex_start);
+                <<  fun::string(hex_start, p+1-hex_start);
               break;
             }
           }
@@ -400,7 +400,7 @@ int UnescapeCEscapeSequences(const char* source, char* dest,
               if (newrune > 0x10FFFF) {
                 LOG_STRING(ERROR, errors)
                   << "Value of \\"
-                  << string(hex_start, p + 1 - hex_start)
+                  << fun::string(hex_start, p + 1 - hex_start)
                   << " exceeds Unicode limit (0x10FFFF)";
                 break;
               } else {
@@ -409,7 +409,7 @@ int UnescapeCEscapeSequences(const char* source, char* dest,
             } else {
               LOG_STRING(ERROR, errors)
                 << "\\U must be followed by 8 hex digits: \\"
-                <<  string(hex_start, p+1-hex_start);
+                <<  fun::string(hex_start, p+1-hex_start);
               break;
             }
           }
@@ -430,23 +430,23 @@ int UnescapeCEscapeSequences(const char* source, char* dest,
 // ----------------------------------------------------------------------
 // UnescapeCEscapeString()
 //    This does the same thing as UnescapeCEscapeSequences, but creates
-//    a new string. The caller does not need to worry about allocating
+//    a new fun::string. The caller does not need to worry about allocating
 //    a dest buffer. This should be used for non performance critical
 //    tasks such as printing debug messages. It is safe for src and dest
 //    to be the same.
 //
-//    The second call stores its errors in a supplied string vector.
-//    If the string vector pointer is NULL, it reports the errors with LOG().
+//    The second call stores its errors in a supplied fun::string fun::vector.
+//    If the fun::string fun::vector pointer is NULL, it reports the errors with LOG().
 //
 //    In the first and second calls, the length of dest is returned. In the
-//    the third call, the new string is returned.
+//    the third call, the new fun::string is returned.
 // ----------------------------------------------------------------------
-int UnescapeCEscapeString(const string& src, string* dest) {
+int UnescapeCEscapeString(const fun::string& src, fun::string* dest) {
   return UnescapeCEscapeString(src, dest, NULL);
 }
 
-int UnescapeCEscapeString(const string& src, string* dest,
-                          vector<string> *errors) {
+int UnescapeCEscapeString(const fun::string& src, fun::string* dest,
+                          fun::vector<fun::string> *errors) {
   scoped_array<char> unescaped(new char[src.size() + 1]);
   int len = UnescapeCEscapeSequences(src.c_str(), unescaped.get(), errors);
   GOOGLE_CHECK(dest);
@@ -454,10 +454,10 @@ int UnescapeCEscapeString(const string& src, string* dest,
   return len;
 }
 
-string UnescapeCEscapeString(const string& src) {
+fun::string UnescapeCEscapeString(const fun::string& src) {
   scoped_array<char> unescaped(new char[src.size() + 1]);
   int len = UnescapeCEscapeSequences(src.c_str(), unescaped.get(), NULL);
-  return string(unescaped.get(), len);
+  return fun::string(unescaped.get(), len);
 }
 
 // ----------------------------------------------------------------------
@@ -531,33 +531,33 @@ int CEscapeString(const char* src, int src_len, char* dest, int dest_len) {
 //
 //    Currently only \n, \r, \t, ", ', \ and !isprint() chars are escaped.
 // ----------------------------------------------------------------------
-string CEscape(const string& src) {
+fun::string CEscape(const fun::string& src) {
   const int dest_length = src.size() * 4 + 1; // Maximum possible expansion
   scoped_array<char> dest(new char[dest_length]);
   const int len = CEscapeInternal(src.data(), src.size(),
                                   dest.get(), dest_length, false, false);
   GOOGLE_DCHECK_GE(len, 0);
-  return string(dest.get(), len);
+  return fun::string(dest.get(), len);
 }
 
 namespace strings {
 
-string Utf8SafeCEscape(const string& src) {
+fun::string Utf8SafeCEscape(const fun::string& src) {
   const int dest_length = src.size() * 4 + 1; // Maximum possible expansion
   scoped_array<char> dest(new char[dest_length]);
   const int len = CEscapeInternal(src.data(), src.size(),
                                   dest.get(), dest_length, false, true);
   GOOGLE_DCHECK_GE(len, 0);
-  return string(dest.get(), len);
+  return fun::string(dest.get(), len);
 }
 
-string CHexEscape(const string& src) {
+fun::string CHexEscape(const fun::string& src) {
   const int dest_length = src.size() * 4 + 1; // Maximum possible expansion
   scoped_array<char> dest(new char[dest_length]);
   const int len = CEscapeInternal(src.data(), src.size(),
                                   dest.get(), dest_length, true, false);
   GOOGLE_DCHECK_GE(len, 0);
-  return string(dest.get(), len);
+  return fun::string(dest.get(), len);
 }
 
 }  // namespace strings
@@ -605,7 +605,7 @@ uint32 strtou32_adaptor(const char *nptr, char **endptr, int base) {
   return static_cast<uint32>(result);
 }
 
-inline bool safe_parse_sign(string* text  /*inout*/,
+inline bool safe_parse_sign(fun::string* text  /*inout*/,
                             bool* negative_ptr  /*output*/) {
   const char* start = text->data();
   const char* end = start + text->size();
@@ -634,7 +634,7 @@ inline bool safe_parse_sign(string* text  /*inout*/,
 }
 
 inline bool safe_parse_positive_int(
-    string text, int32* value_p) {
+    fun::string text, int32* value_p) {
   int base = 10;
   int32 value = 0;
   const int32 vmax = std::numeric_limits<int32>::max();
@@ -667,7 +667,7 @@ inline bool safe_parse_positive_int(
 }
 
 inline bool safe_parse_negative_int(
-    string text, int32* value_p) {
+    fun::string text, int32* value_p) {
   int base = 10;
   int32 value = 0;
   const int32 vmin = std::numeric_limits<int32>::min();
@@ -706,7 +706,7 @@ inline bool safe_parse_negative_int(
   return true;
 }
 
-bool safe_int(string text, int32* value_p) {
+bool safe_int(fun::string text, int32* value_p) {
   *value_p = 0;
   bool negative;
   if (!safe_parse_sign(&text, &negative)) {
@@ -727,7 +727,7 @@ bool safe_int(string text, int32* value_p) {
 // FastHex32ToBuffer()
 // ----------------------------------------------------------------------
 
-// Offset into buffer where FastInt64ToBuffer places the end of string
+// Offset into buffer where FastInt64ToBuffer places the end of fun::string
 // null character.  Also used by FastInt64ToBufferLeft.
 static const int kFastInt64ToBufferOffset = 21;
 
@@ -769,7 +769,7 @@ char *FastInt64ToBuffer(int64 i, char* buffer) {
   }
 }
 
-// Offset into buffer where FastInt32ToBuffer places the end of string
+// Offset into buffer where FastInt32ToBuffer places the end of fun::string
 // null character.  Also used by FastInt32ToBufferLeft
 static const int kFastInt32ToBufferOffset = 11;
 
@@ -871,7 +871,7 @@ static inline char* PlaceNum(char* p, int num, char prev_sep) {
 // output is left-aligned).  The caller is responsible for ensuring that
 // the buffer has enough space to hold the output.
 //
-// Returns a pointer to the end of the string (i.e. the null character
+// Returns a pointer to the end of the fun::string (i.e. the null character
 // terminating the string).
 // ----------------------------------------------------------------------
 
@@ -1042,49 +1042,49 @@ char* FastInt64ToBufferLeft(int64 i, char* buffer) {
 
 // ----------------------------------------------------------------------
 // SimpleItoa()
-//    Description: converts an integer to a string.
+//    Description: converts an integer to a fun::string.
 //
-//    Return value: string
+//    Return value: fun::string
 // ----------------------------------------------------------------------
 
-string SimpleItoa(int i) {
+fun::string SimpleItoa(int i) {
   char buffer[kFastToBufferSize];
   return (sizeof(i) == 4) ?
     FastInt32ToBuffer(i, buffer) :
     FastInt64ToBuffer(i, buffer);
 }
 
-string SimpleItoa(unsigned int i) {
+fun::string SimpleItoa(unsigned int i) {
   char buffer[kFastToBufferSize];
-  return string(buffer, (sizeof(i) == 4) ?
+  return fun::string(buffer, (sizeof(i) == 4) ?
     FastUInt32ToBufferLeft(i, buffer) :
     FastUInt64ToBufferLeft(i, buffer));
 }
 
-string SimpleItoa(long i) {
+fun::string SimpleItoa(long i) {
   char buffer[kFastToBufferSize];
   return (sizeof(i) == 4) ?
     FastInt32ToBuffer(i, buffer) :
     FastInt64ToBuffer(i, buffer);
 }
 
-string SimpleItoa(unsigned long i) {
+fun::string SimpleItoa(unsigned long i) {
   char buffer[kFastToBufferSize];
-  return string(buffer, (sizeof(i) == 4) ?
+  return fun::string(buffer, (sizeof(i) == 4) ?
     FastUInt32ToBufferLeft(i, buffer) :
     FastUInt64ToBufferLeft(i, buffer));
 }
 
-string SimpleItoa(long long i) {
+fun::string SimpleItoa(long long i) {
   char buffer[kFastToBufferSize];
   return (sizeof(i) == 4) ?
     FastInt32ToBuffer(i, buffer) :
     FastInt64ToBuffer(i, buffer);
 }
 
-string SimpleItoa(unsigned long long i) {
+fun::string SimpleItoa(unsigned long long i) {
   char buffer[kFastToBufferSize];
-  return string(buffer, (sizeof(i) == 4) ?
+  return fun::string(buffer, (sizeof(i) == 4) ?
     FastUInt32ToBufferLeft(i, buffer) :
     FastUInt64ToBufferLeft(i, buffer));
 }
@@ -1099,7 +1099,7 @@ string SimpleItoa(unsigned long long i) {
 //    trickier than it sounds.  Numbers like 0.2 cannot be represented
 //    exactly in binary.  If we print 0.2 with a very large precision,
 //    e.g. "%.50g", we get "0.2000000000000000111022302462515654042363167".
-//    On the other hand, if we set the precision too low, we lose
+//    On the other hand, if we fun::set the precision too low, we lose
 //    significant digits when printing numbers that actually need them.
 //    It turns out there is no precision value that does the right thing
 //    for all numbers.
@@ -1123,19 +1123,19 @@ string SimpleItoa(unsigned long long i) {
 //    one in that it makes guesses and then uses strtod() to check them.
 //    Their implementation is faster because they use their own code to
 //    generate the digits in the first place rather than use snprintf(),
-//    thus avoiding format string parsing overhead.  However, this makes
+//    thus avoiding format fun::string parsing overhead.  However, this makes
 //    it considerably more complicated than the following implementation,
 //    and it is embedded in a larger library.  If speed turns out to be
 //    an issue, we could re-implement this in terms of their
 //    implementation.
 // ----------------------------------------------------------------------
 
-string SimpleDtoa(double value) {
+fun::string SimpleDtoa(double value) {
   char buffer[kDoubleToBufferSize];
   return DoubleToBuffer(value, buffer);
 }
 
-string SimpleFtoa(float value) {
+fun::string SimpleFtoa(float value) {
   char buffer[kFloatToBufferSize];
   return FloatToBuffer(value, buffer);
 }
@@ -1219,7 +1219,7 @@ char* DoubleToBuffer(double value, char* buffer) {
 
 bool safe_strtof(const char* str, float* value) {
   char* endptr;
-  errno = 0;  // errno only gets set on errors
+  errno = 0;  // errno only gets fun::set on errors
 #if defined(_WIN32) || defined (__hpux)  // has no strtof()
   *value = strtod(str, &endptr);
 #else
@@ -1266,9 +1266,9 @@ char* FloatToBuffer(float value, char* buffer) {
   return buffer;
 }
 
-string ToHex(uint64 num) {
+fun::string ToHex(uint64 num) {
   if (num == 0) {
-    return string("0");
+    return fun::string("0");
   }
 
   // Compute hex bytes in reverse order, writing to the back of the
@@ -1281,7 +1281,7 @@ string ToHex(uint64 num) {
     num >>= 4;
   }
 
-  return string(bufptr, buf + 16 - bufptr);
+  return fun::string(bufptr, buf + 16 - bufptr);
 }
 
 }  // namespace protobuf

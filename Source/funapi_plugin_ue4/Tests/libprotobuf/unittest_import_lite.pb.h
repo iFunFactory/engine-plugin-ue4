@@ -59,11 +59,11 @@ class ImportMessageLite : public ::google::protobuf::MessageLite {
     return *this;
   }
 
-  inline const ::std::string& unknown_fields() const {
+  inline const ::fun::string& unknown_fields() const {
     return _unknown_fields_;
   }
 
-  inline ::std::string* mutable_unknown_fields() {
+  inline ::fun::string* mutable_unknown_fields() {
     return &_unknown_fields_;
   }
 
@@ -102,7 +102,7 @@ class ImportMessageLite : public ::google::protobuf::MessageLite {
   void SharedDtor();
   void SetCachedSize(int size) const;
   public:
-  ::std::string GetTypeName() const;
+  ::fun::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -120,7 +120,7 @@ class ImportMessageLite : public ::google::protobuf::MessageLite {
   inline void set_has_d();
   inline void clear_has_d();
 
-  ::std::string _unknown_fields_;
+  ::fun::string _unknown_fields_;
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;

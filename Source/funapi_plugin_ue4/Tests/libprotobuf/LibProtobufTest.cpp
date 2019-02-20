@@ -121,7 +121,7 @@ bool FFunapiLibProtobufEncodedDescriptorDatabaseExtraTest::RunTest(const FString
       return &database_;
     }
     virtual bool AddToDatabase(const google::protobuf::FileDescriptorProto& file) {
-      std::string data;
+      fun::string data;
       file.SerializeToString(&data);
       return database_.AddCopy(data.data(), data.size());
     }
@@ -154,13 +154,13 @@ bool FFunapiLibProtobufEncodedDescriptorDatabaseExtraTest::RunTest(const FString
 
   auto ExpectContainsType = [](
     const google::protobuf::FileDescriptorProto& proto,
-    const std::string& type_name) ->bool
+    const fun::string& type_name) ->bool
   {
     for (int i = 0; i < proto.message_type_size(); i++) {
       if (proto.message_type(i).name() == type_name) return true;
     }
 
-    std::stringstream ss;
+    fun::stringstream ss;
     ss << "\"" << proto.name()
       << "\" did not contain expected type \""
       << type_name << "\".";
@@ -435,7 +435,7 @@ bool FFunapiLibProtobufEncodedDescriptorDatabaseExtraTest::RunTest(const FString
       "extension { name:\"waldo\"  extendee: \"Bar\"        number:56 } ");
 
     {
-      std::vector<int> numbers;
+      fun::vector<int> numbers;
       verify(database_->FindAllExtensionNumbers("Foo", &numbers));
       verify(2 == numbers.size());
       sort(numbers.begin(), numbers.end());
@@ -444,7 +444,7 @@ bool FFunapiLibProtobufEncodedDescriptorDatabaseExtraTest::RunTest(const FString
     }
 
     {
-      std::vector<int> numbers;
+      fun::vector<int> numbers;
       verify(database_->FindAllExtensionNumbers("corge.Bar", &numbers));
       // Note: won't find extension 56 due to the name not being fully qualified.
       verify(1 == numbers.size());
@@ -453,13 +453,13 @@ bool FFunapiLibProtobufEncodedDescriptorDatabaseExtraTest::RunTest(const FString
 
     {
       // Can't find extensions for non-existent types.
-      std::vector<int> numbers;
+      fun::vector<int> numbers;
       verify(false == database_->FindAllExtensionNumbers("NoSuchType", &numbers));
     }
 
     {
       // Can't find extensions for unqualified types.
-      std::vector<int> numbers;
+      fun::vector<int> numbers;
       verify(false == database_->FindAllExtensionNumbers("Bar", &numbers));
     }
     // // // //
@@ -513,10 +513,10 @@ bool FFunapiLibProtobufEncodedDescriptorDatabaseExtraTest::RunTest(const FString
   file2b.add_message_type()->set_name("Bar");
 
   // Normal serialization allows our optimization to kick in.
-  std::string data1 = file1.SerializeAsString();
+  fun::string data1 = file1.SerializeAsString();
 
   // Force out-of-order serialization to test slow path.
-  std::string data2 = file2b.SerializeAsString() + file2a.SerializeAsString();
+  fun::string data2 = file2b.SerializeAsString() + file2a.SerializeAsString();
 
   // Create EncodedDescriptorDatabase containing both files.
   google::protobuf::EncodedDescriptorDatabase db;
@@ -524,7 +524,7 @@ bool FFunapiLibProtobufEncodedDescriptorDatabaseExtraTest::RunTest(const FString
   db.Add(data2.data(), data2.size());
 
   // Test!
-  std::string filename;
+  fun::string filename;
   verify(db.FindNameOfFileContainingSymbol("foo.Foo", &filename));
   verify("foo.proto" == filename);
   verify(db.FindNameOfFileContainingSymbol("foo.Foo.Blah", &filename));
@@ -915,8 +915,8 @@ bool FFunapiLibProtobufReflectionOpsTest::RunTest(const FString& Parameters)
     verify(google::protobuf::internal::ReflectionOps::IsInitialized(message));
   }
 
-  auto FindInitializationErrors = [](const google::protobuf::Message& message) -> std::string {
-    std::vector<std::string> errors;
+  auto FindInitializationErrors = [](const google::protobuf::Message& message) -> fun::string {
+    fun::vector<fun::string> errors;
     google::protobuf::internal::ReflectionOps::FindInitializationErrors(message, "", &errors);
     return google::protobuf::Join(errors, ",");
   };
@@ -990,8 +990,8 @@ bool FFunapiLibProtobufRepeatedFieldReflectionTest::RunTest(const FString& Param
     return i * j;
   };
 
-  auto StrFunc = [&Func](int i, int j) -> std::string {
-    std::string str;
+  auto StrFunc = [&Func](int i, int j) -> fun::string {
+    fun::string str;
     google::protobuf::SStringPrintf(&str, "%d", Func(i, 4));
     return str;
   };
@@ -1032,8 +1032,8 @@ bool FFunapiLibProtobufRepeatedFieldReflectionTest::RunTest(const FString& Param
       refl->MutableRepeatedField<double>(&message, fd_repeated_double);
 
     // Get RepeatedPtrField objects for all fields of interest.
-    const google::protobuf::RepeatedPtrField<std::string>& rpf_string =
-      refl->GetRepeatedPtrField<std::string>(message, fd_repeated_string);
+    const google::protobuf::RepeatedPtrField<fun::string>& rpf_string =
+      refl->GetRepeatedPtrField<fun::string>(message, fd_repeated_string);
     const google::protobuf::RepeatedPtrField<ForeignMessage>& rpf_foreign_message =
       refl->GetRepeatedPtrField<ForeignMessage>(
         message, fd_repeated_foreign_message);
@@ -1042,8 +1042,8 @@ bool FFunapiLibProtobufRepeatedFieldReflectionTest::RunTest(const FString& Param
         message, fd_repeated_foreign_message);
 
     // Get mutable RepeatedPtrField objects for all fields of interest.
-    google::protobuf::RepeatedPtrField<std::string>* mrpf_string =
-      refl->MutableRepeatedPtrField<std::string>(&message, fd_repeated_string);
+    google::protobuf::RepeatedPtrField<fun::string>* mrpf_string =
+      refl->MutableRepeatedPtrField<fun::string>(&message, fd_repeated_string);
     google::protobuf::RepeatedPtrField<ForeignMessage>* mrpf_foreign_message =
       refl->MutableRepeatedPtrField<ForeignMessage>(
         &message, fd_repeated_foreign_message);
@@ -1126,7 +1126,7 @@ bool FFunapiLibProtobufUnknownFieldSetTest::RunTest(const FString& Parameters)
 
   const google::protobuf::Descriptor* descriptor_;
   google::protobuf::unittest::TestAllTypes all_fields_;
-  std::string all_fields_data_;
+  fun::string all_fields_data_;
 
   // An empty message that has been parsed from all_fields_data_.  So, it has
   // unknown fields of every type.
@@ -1146,7 +1146,7 @@ bool FFunapiLibProtobufUnknownFieldSetTest::RunTest(const FString& Parameters)
 
   SetUp();
 
-  auto GetField = [&descriptor_, &unknown_fields_](const std::string& name) -> const google::protobuf::UnknownField* {
+  auto GetField = [&descriptor_, &unknown_fields_](const fun::string& name) -> const google::protobuf::UnknownField* {
     const google::protobuf::FieldDescriptor* field = descriptor_->FindFieldByName(name);
     if (field == NULL) return NULL;
     for (int i = 0; i < unknown_fields_->field_count(); i++) {
@@ -1160,7 +1160,7 @@ bool FFunapiLibProtobufUnknownFieldSetTest::RunTest(const FString& Parameters)
   // Constructs a protocol buffer which contains fields with all the same
   // numbers as all_fields_data_ except that each field is some other wire
   // type.
-  auto GetBizarroData = [&unknown_fields_]() -> std::string
+  auto GetBizarroData = [&unknown_fields_]() -> fun::string
   {
     google::protobuf::unittest::TestEmptyMessage bizarro_message;
     google::protobuf::UnknownFieldSet* bizarro_unknown_fields =
@@ -1175,7 +1175,7 @@ bool FFunapiLibProtobufUnknownFieldSetTest::RunTest(const FString& Parameters)
       }
     }
 
-    std::string data;
+    fun::string data;
     verify(bizarro_message.SerializeToString(&data));
     return data;
   };
@@ -1192,7 +1192,7 @@ bool FFunapiLibProtobufUnknownFieldSetTest::RunTest(const FString& Parameters)
       const google::protobuf::FieldDescriptor* field = descriptor_->FindFieldByNumber(i);
       if (field != NULL) {
         verify(pos < unknown_fields_->field_count());
-        // Do not check oneof field if it is not set.
+        // Do not check oneof field if it is not set
         if (field->containing_oneof() == NULL) {
           verify(i == unknown_fields_->field(pos++).number());
         }
@@ -1267,8 +1267,8 @@ bool FFunapiLibProtobufUnknownFieldSetTest::RunTest(const FString& Parameters)
   {
     int size = WireFormat::ComputeUnknownFieldsSize(
       empty_message_.unknown_fields());
-    std::string slow_buffer;
-    std::string fast_buffer;
+    fun::string slow_buffer;
+    fun::string fast_buffer;
     slow_buffer.resize(size);
     fast_buffer.resize(size);
 
@@ -1292,7 +1292,7 @@ bool FFunapiLibProtobufUnknownFieldSetTest::RunTest(const FString& Parameters)
     // Check that serializing the UnknownFieldSet produces the original data
     // again.
 
-    std::string data;
+    fun::string data;
     empty_message_.SerializeToString(&data);
 
     // Don't use EXPECT_EQ because we don't want to dump raw binary data to
@@ -1319,7 +1319,7 @@ bool FFunapiLibProtobufUnknownFieldSetTest::RunTest(const FString& Parameters)
     // Make sure fields are properly written from the UnknownFieldSet when
     // serializing via reflection.
 
-    std::string data;
+    fun::string data;
 
     {
       google::protobuf::io::StringOutputStream raw_output(&data);
@@ -1350,8 +1350,8 @@ bool FFunapiLibProtobufUnknownFieldSetTest::RunTest(const FString& Parameters)
 
     verify(empty_message_.unknown_fields().field_count() > 0);
     verify(other_message.unknown_fields().field_count() > 0);
-    const std::string debug_string = empty_message_.DebugString();
-    const std::string other_debug_string = other_message.DebugString();
+    const fun::string debug_string = empty_message_.DebugString();
+    const fun::string other_debug_string = other_message.DebugString();
     verify(debug_string != other_debug_string);
 
     empty_message_.Swap(&other_message);
@@ -1361,7 +1361,7 @@ bool FFunapiLibProtobufUnknownFieldSetTest::RunTest(const FString& Parameters)
 
   // TEST_F(UnknownFieldSetTest, SwapWithSelf)
   {
-    const std::string debug_string = empty_message_.DebugString();
+    const fun::string debug_string = empty_message_.DebugString();
     verify(empty_message_.unknown_fields().field_count() > 0);
 
     empty_message_.Swap(&empty_message_);
@@ -1394,7 +1394,7 @@ bool FFunapiLibProtobufUnknownFieldSetTest::RunTest(const FString& Parameters)
   // TEST_F(UnknownFieldSetTest, Clear)
   SetUp();
   {
-    // Clear the set.
+    // Clear the set
     empty_message_.Clear();
     verify(0 == unknown_fields_->field_count());
   }
@@ -1416,7 +1416,7 @@ bool FFunapiLibProtobufUnknownFieldSetTest::RunTest(const FString& Parameters)
 
     google::protobuf::unittest::TestEmptyMessage source;
     source.mutable_unknown_fields()->AddVarint(123456, 654321);
-    std::string data;
+    fun::string data;
     verify(source.SerializeToString(&data));
 
     google::protobuf::unittest::TestAllTypes destination;
@@ -1437,7 +1437,7 @@ bool FFunapiLibProtobufUnknownFieldSetTest::RunTest(const FString& Parameters)
 
     google::protobuf::unittest::TestAllTypes all_types_message;
     google::protobuf::unittest::TestEmptyMessage empty_message;
-    std::string bizarro_data = GetBizarroData();
+    fun::string bizarro_data = GetBizarroData();
     verify(all_types_message.ParseFromString(bizarro_data));
     verify(empty_message.ParseFromString(bizarro_data));
 
@@ -1453,7 +1453,7 @@ bool FFunapiLibProtobufUnknownFieldSetTest::RunTest(const FString& Parameters)
 
     google::protobuf::unittest::TestAllTypes all_types_message;
     google::protobuf::unittest::TestEmptyMessage empty_message;
-    std::string bizarro_data = GetBizarroData();
+    fun::string bizarro_data = GetBizarroData();
     google::protobuf::io::ArrayInputStream raw_input(bizarro_data.data(), bizarro_data.size());
     google::protobuf::io::CodedInputStream input(&raw_input);
     verify(WireFormat::ParseAndMergePartial(&input, &all_types_message));
@@ -1496,7 +1496,7 @@ bool FFunapiLibProtobufUnknownFieldSetTest::RunTest(const FString& Parameters)
 
     google::protobuf::unittest::TestAllExtensions all_extensions_message;
     google::protobuf::unittest::TestEmptyMessage empty_message;
-    std::string bizarro_data = GetBizarroData();
+    fun::string bizarro_data = GetBizarroData();
     verify(all_extensions_message.ParseFromString(bizarro_data));
     verify(empty_message.ParseFromString(bizarro_data));
 
@@ -1519,7 +1519,7 @@ bool FFunapiLibProtobufUnknownFieldSetTest::RunTest(const FString& Parameters)
     verify(singular_field != NULL);
     verify(repeated_field != NULL);
 
-    std::string data;
+    fun::string data;
 
     {
       TestEmptyMessage empty_message;
@@ -1593,22 +1593,22 @@ bool FFunapiLibProtobufUnknownFieldSetTest::RunTest(const FString& Parameters)
   {
     google::protobuf::unittest::TestEmptyMessage empty_message;
 
-    // Make sure an unknown field set has zero space used until a field is
+    // Make sure an unknown field fun::set has zero space used until a field is
     // actually added.
     int base_size = empty_message.SpaceUsed();
     google::protobuf::UnknownFieldSet* unknown_fields = empty_message.mutable_unknown_fields();
     verify(base_size == empty_message.SpaceUsed());
 
-    // Make sure each thing we add to the set increases the SpaceUsed().
+    // Make sure each thing we add to the fun::set increases the SpaceUsed().
     unknown_fields->AddVarint(1, 0);
     verify(base_size < empty_message.SpaceUsed());
     base_size = empty_message.SpaceUsed();
 
-    std::string* str = unknown_fields->AddLengthDelimited(1);
+    fun::string* str = unknown_fields->AddLengthDelimited(1);
     verify(base_size < empty_message.SpaceUsed());
     base_size = empty_message.SpaceUsed();
 
-    str->assign(sizeof(std::string) + 1, 'x');
+    str->assign(sizeof(fun::string) + 1, 'x');
     verify(base_size < empty_message.SpaceUsed());
     base_size = empty_message.SpaceUsed();
 
@@ -1640,7 +1640,7 @@ bool FFunapiLibProtobufUnknownFieldSetTest::RunTest(const FString& Parameters)
     for (int size = 0; size < 10; ++size) {
       for (int num = 0; num <= size; ++num) {
         for (int start = 0; start < size - num; ++start) {
-          // Create a set with "size" fields.
+          // Create a fun::set with "size" fields.
           google::protobuf::UnknownFieldSet unknown;
           for (int i = 0; i < size; ++i) {
             unknown.AddFixed32(i, i);
@@ -1662,8 +1662,8 @@ bool FFunapiLibProtobufUnknownFieldSetTest::RunTest(const FString& Parameters)
     }
   }
 
-  auto CheckDeleteByNumber = [](const std::vector<int>& field_numbers, int deleted_number,
-    const std::vector<int>& expected_field_nubmers) {
+  auto CheckDeleteByNumber = [](const fun::vector<int>& field_numbers, int deleted_number,
+    const fun::vector<int>& expected_field_nubmers) {
     google::protobuf::UnknownFieldSet unknown_fields;
     for (int i = 0; i < (int)field_numbers.size(); ++i) {
       unknown_fields.AddFixed32(field_numbers[i], i);
@@ -1676,11 +1676,11 @@ bool FFunapiLibProtobufUnknownFieldSetTest::RunTest(const FString& Parameters)
     }
   };
 
-#define MAKE_VECTOR(x) std::vector<int>(x, x + GOOGLE_ARRAYSIZE(x))
+#define MAKE_VECTOR(x) fun::vector<int>(x, x + GOOGLE_ARRAYSIZE(x))
   // TEST_F(UnknownFieldSetTest, DeleteByNumber)
   SetUp();
   {
-    CheckDeleteByNumber(std::vector<int>(), 1, std::vector<int>());
+    CheckDeleteByNumber(fun::vector<int>(), 1, fun::vector<int>());
     static const int kTestFieldNumbers1[] = { 1, 2, 3 };
     static const int kFieldNumberToDelete1 = 1;
     static const int kExpectedFieldNumbers1[] = { 2, 3 };
@@ -1715,8 +1715,8 @@ bool FFunapiLibProtobufUnknownFieldSetTest::RunTest(const FString& Parameters)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiLibProtobufWireFormatUnitTest, "LibProtobuf.WireFormatUnitTest", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
-// Test differences between string and bytes.
-// Value of a string type must be valid UTF-8 string.  When UTF-8
+// Test differences between fun::string and bytes.
+// Value of a fun::string type must be valid UTF-8 fun::string.  When UTF-8
 // validation is enabled (GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED):
 // WriteInvalidUTF8String:  see error message.
 // ReadInvalidUTF8String:  see error message.
@@ -1730,7 +1730,7 @@ const char * kInvalidUTF8String = "Invalid UTF-8: \xA0\xB0\xC0\xD0";
 const char * kValidUTF8String = "Valid UTF-8: \x01\x02\350\260\267\346\255\214";
 
 template<typename T>
-bool WriteMessage(const char *value, T *message, std::string *wire_buffer) {
+bool WriteMessage(const char *value, T *message, fun::string *wire_buffer) {
   message->set_data(value);
   wire_buffer->clear();
   message->AppendToString(wire_buffer);
@@ -1738,7 +1738,7 @@ bool WriteMessage(const char *value, T *message, std::string *wire_buffer) {
 }
 
 template<typename T>
-bool ReadMessage(const std::string &wire_buffer, T *message) {
+bool ReadMessage(const fun::string &wire_buffer, T *message) {
   return message->ParseFromArray(wire_buffer.data(), wire_buffer.size());
 }
 
@@ -1775,7 +1775,7 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
   // TEST(WireFormatTest, Parse)
   {
     google::protobuf::unittest::TestAllTypes source, dest;
-    std::string data;
+    fun::string data;
 
     // Serialize using the generated code.
     google::protobuf::TestUtil::SetAllFields(&source);
@@ -1793,7 +1793,7 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
   // TEST(WireFormatTest, ParseExtensions)
   {
     google::protobuf::unittest::TestAllExtensions source, dest;
-    std::string data;
+    fun::string data;
 
     // Serialize using the generated code.
     google::protobuf::TestUtil::SetAllExtensions(&source);
@@ -1811,7 +1811,7 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
   // TEST(WireFormatTest, ParsePacked)
   {
     google::protobuf::unittest::TestPackedTypes source, dest;
-    std::string data;
+    fun::string data;
 
     // Serialize using the generated code.
     google::protobuf::TestUtil::SetPackedFields(&source);
@@ -1831,7 +1831,7 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
     // Serialize using the generated code.
     google::protobuf::unittest::TestUnpackedTypes source;
     google::protobuf::TestUtil::SetUnpackedFields(&source);
-    std::string data = source.SerializeAsString();
+    fun::string data = source.SerializeAsString();
 
     // Parse using WireFormat.
     google::protobuf::unittest::TestPackedTypes dest;
@@ -1848,7 +1848,7 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
     // Serialize using the generated code.
     google::protobuf::unittest::TestPackedTypes source;
     google::protobuf::TestUtil::SetPackedFields(&source);
-    std::string data = source.SerializeAsString();
+    fun::string data = source.SerializeAsString();
 
     // Parse using WireFormat.
     google::protobuf::unittest::TestUnpackedTypes dest;
@@ -1863,7 +1863,7 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
   // TEST(WireFormatTest, ParsePackedExtensions)
   {
     google::protobuf::unittest::TestPackedExtensions source, dest;
-    std::string data;
+    fun::string data;
 
     // Serialize using the generated code.
     google::protobuf::TestUtil::SetPackedExtensions(&source);
@@ -1881,7 +1881,7 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
   // TEST(WireFormatTest, ParseOneof)
   {
     google::protobuf::unittest::TestOneof2 source, dest;
-    std::string data;
+    fun::string data;
 
     // Serialize using the generated code.
     google::protobuf::TestUtil::SetOneof1(&source);
@@ -1900,7 +1900,7 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
   {
     google::protobuf::unittest::TestOneofBackwardsCompatible source;
     google::protobuf::unittest::TestOneof oneof_dest;
-    std::string data;
+    fun::string data;
 
     // Set two fields
     source.set_foo_int(100);
@@ -1912,7 +1912,7 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
     google::protobuf::io::CodedInputStream input(&raw_input);
     google::protobuf::internal::WireFormat::ParseAndMergePartial(&input, &oneof_dest);
 
-    // Only the last field is set.
+    // Only the last field is set
     verify(false == oneof_dest.has_foo_int());
     verify(oneof_dest.has_foo_string());
   }
@@ -1979,8 +1979,8 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
   // TEST(WireFormatTest, Serialize)
   {
     google::protobuf::unittest::TestAllTypes message;
-    std::string generated_data;
-    std::string dynamic_data;
+    fun::string generated_data;
+    fun::string dynamic_data;
 
     google::protobuf::TestUtil::SetAllFields(&message);
     int size = message.ByteSize();
@@ -2010,8 +2010,8 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
   // TEST(WireFormatTest, SerializeExtensions)
   {
     google::protobuf::unittest::TestAllExtensions message;
-    std::string generated_data;
-    std::string dynamic_data;
+    fun::string generated_data;
+    fun::string dynamic_data;
 
     google::protobuf::TestUtil::SetAllExtensions(&message);
     int size = message.ByteSize();
@@ -2041,8 +2041,8 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
   // TEST(WireFormatTest, SerializeFieldsAndExtensions)
   {
     google::protobuf::unittest::TestFieldOrderings message;
-    std::string generated_data;
-    std::string dynamic_data;
+    fun::string generated_data;
+    fun::string dynamic_data;
 
     google::protobuf::TestUtil::SetAllFieldsAndExtensions(&message);
     int size = message.ByteSize();
@@ -2076,8 +2076,8 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
   // TEST(WireFormatTest, SerializeOneof)
   {
     google::protobuf::unittest::TestOneof2 message;
-    std::string generated_data;
-    std::string dynamic_data;
+    fun::string generated_data;
+    fun::string dynamic_data;
 
     google::protobuf::TestUtil::SetOneof1(&message);
     int size = message.ByteSize();
@@ -2108,7 +2108,7 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
   {
     // Make sure we can parse a message that contains multiple extensions ranges.
     google::protobuf::unittest::TestFieldOrderings source;
-    std::string data;
+    fun::string data;
 
     google::protobuf::TestUtil::SetAllFieldsAndExtensions(&source);
     source.SerializeToString(&data);
@@ -2142,7 +2142,7 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
     message_set.mutable_unknown_fields()->AddLengthDelimited(
       kUnknownTypeId, "bar");
 
-    std::string data;
+    fun::string data;
     verify(message_set.SerializeToString(&data));
 
     // Parse back using RawMessageSet and check the contents.
@@ -2190,9 +2190,9 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
     verify(size == message_set.GetCachedSize());
     verify(size == WireFormat::ByteSize(message_set));
 
-    std::string flat_data;
-    std::string stream_data;
-    std::string dynamic_data;
+    fun::string flat_data;
+    fun::string stream_data;
+    fun::string dynamic_data;
     flat_data.resize(size);
     stream_data.resize(size);
 
@@ -2252,7 +2252,7 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
       item->set_message("bar");
     }
 
-    std::string data;
+    fun::string data;
     verify(raw.SerializeToString(&data));
 
     // Parse as a TestMessageSet and check the contents.
@@ -2279,7 +2279,7 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
 
   // TEST(WireFormatTest, ParseMessageSetWithReverseTagOrder)
   {
-    std::string data;
+    fun::string data;
     {
       google::protobuf::unittest::TestMessageSetExtension1 message;
       message.set_i(123);
@@ -2323,7 +2323,7 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
   // TEST(WireFormatTest, ParseBrokenMessageSet)
   {
     google::protobuf::unittest::TestMessageSet message_set;
-    std::string input("goodbye");  // Invalid wire format data.
+    fun::string input("goodbye");  // Invalid wire format data.
     verify(false == message_set.ParseFromString(input));
   }
 
@@ -2331,7 +2331,7 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
   {
     google::protobuf::unittest::TestRecursiveMessage message;
     message.mutable_a()->mutable_a()->mutable_a()->mutable_a()->set_i(1);
-    std::string data;
+    fun::string data;
     message.SerializeToString(&data);
 
     {
@@ -2360,7 +2360,7 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
       ->AddGroup(1234)
       ->AddGroup(1234)
       ->AddVarint(1234, 123);
-    std::string data;
+    fun::string data;
     message.SerializeToString(&data);
 
     {
@@ -2495,7 +2495,7 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
     const int64 data = 0x100000000;
     google::protobuf::unittest::Int64Message msg1;
     msg1.set_data(data);
-    std::string serialized;
+    fun::string serialized;
     msg1.SerializeToString(&serialized);
 
     // Test int64 is compatible with bool
@@ -2525,19 +2525,19 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
 
   // Make a serialized TestAllTypes in which the field optional_nested_message
   // contains exactly the given bytes, which may be invalid.
-  auto MakeInvalidEmbeddedMessage = [](const char* bytes, int size) -> std::string {
+  auto MakeInvalidEmbeddedMessage = [](const char* bytes, int size) -> fun::string {
     const google::protobuf::FieldDescriptor* field =
       google::protobuf::unittest::TestAllTypes::descriptor()->FindFieldByName(
         "optional_nested_message");
     GOOGLE_CHECK(field != NULL);
 
-    std::string result;
+    fun::string result;
 
     {
       google::protobuf::io::StringOutputStream raw_output(&result);
       google::protobuf::io::CodedOutputStream output(&raw_output);
 
-      google::protobuf::internal::WireFormatLite::WriteBytes(field->number(), std::string(bytes, size), &output);
+      google::protobuf::internal::WireFormatLite::WriteBytes(field->number(), fun::string(bytes, size), &output);
     }
 
     return result;
@@ -2546,20 +2546,20 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
   // Make a serialized TestAllTypes in which the field optionalgroup
   // contains exactly the given bytes -- which may be invalid -- and
   // possibly no end tag.
-  auto MakeInvalidGroup = [](const char* bytes, int size, bool include_end_tag) -> std::string {
+  auto MakeInvalidGroup = [](const char* bytes, int size, bool include_end_tag) -> fun::string {
     const google::protobuf::FieldDescriptor* field =
       google::protobuf::unittest::TestAllTypes::descriptor()->FindFieldByName(
         "optionalgroup");
     GOOGLE_CHECK(field != NULL);
 
-    std::string result;
+    fun::string result;
 
     {
       google::protobuf::io::StringOutputStream raw_output(&result);
       google::protobuf::io::CodedOutputStream output(&raw_output);
 
       output.WriteVarint32(WireFormat::MakeTag(field));
-      output.WriteString(std::string(bytes, size));
+      output.WriteString(fun::string(bytes, size));
       if (include_end_tag) {
         output.WriteVarint32(google::protobuf::internal::WireFormatLite::MakeTag(
           field->number(), google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP));
@@ -2639,12 +2639,12 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
 
   // TEST_F(WireFormatInvalidInputTest, InvalidStringInUnknownGroup)
   {
-    // Test a bug fix:  SkipMessage should fail if the message contains a string
+    // Test a bug fix:  SkipMessage should fail if the message contains a fun::string
     // whose length would extend beyond the message end.
 
     google::protobuf::unittest::TestAllTypes message;
     message.set_optional_string("foo foo foo foo");
-    std::string data;
+    fun::string data;
     message.SerializeToString(&data);
 
     // Chop some bytes off the end.
@@ -2666,15 +2666,15 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
 #define GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
 #endif
 
-  auto StartsWith = [](const std::string& s, const std::string& prefix) -> bool {
+  auto StartsWith = [](const fun::string& s, const fun::string& prefix) -> bool {
     return s.substr(0, prefix.length()) == prefix;
   };
 
   // TEST_F(Utf8ValidationTest, WriteInvalidUTF8String)
   {
-    std::string wire_buffer;
+    fun::string wire_buffer;
     protobuf_unittest::OneString input;
-    std::vector<std::string> errors;
+    fun::vector<fun::string> errors;
     {
       google::protobuf::ScopedMemoryLog log;
       WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
@@ -2694,11 +2694,11 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
 
   // TEST_F(Utf8ValidationTest, ReadInvalidUTF8String)
   {
-    std::string wire_buffer;
+    fun::string wire_buffer;
     protobuf_unittest::OneString input;
     WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
     protobuf_unittest::OneString output;
-    std::vector<std::string> errors;
+    fun::vector<fun::string> errors;
     {
       google::protobuf::ScopedMemoryLog log;
       ReadMessage(wire_buffer, &output);
@@ -2719,9 +2719,9 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
 
   // TEST_F(Utf8ValidationTest, WriteValidUTF8String)
   {
-    std::string wire_buffer;
+    fun::string wire_buffer;
     protobuf_unittest::OneString input;
-    std::vector<std::string> errors;
+    fun::vector<fun::string> errors;
     {
       google::protobuf::ScopedMemoryLog log;
       WriteMessage(kValidUTF8String, &input, &wire_buffer);
@@ -2732,11 +2732,11 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
 
   // TEST_F(Utf8ValidationTest, ReadValidUTF8String)
   {
-    std::string wire_buffer;
+    fun::string wire_buffer;
     protobuf_unittest::OneString input;
     WriteMessage(kValidUTF8String, &input, &wire_buffer);
     protobuf_unittest::OneString output;
-    std::vector<std::string> errors;
+    fun::vector<fun::string> errors;
     {
       google::protobuf::ScopedMemoryLog log;
       ReadMessage(wire_buffer, &output);
@@ -2746,12 +2746,12 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
     verify(input.data() == output.data());
   }
 
-  // Bytes: anything can pass as bytes, use invalid UTF-8 string to test
+  // Bytes: anything can pass as bytes, use invalid UTF-8 fun::string to test
   // TEST_F(Utf8ValidationTest, WriteArbitraryBytes)
   {
-    std::string wire_buffer;
+    fun::string wire_buffer;
     protobuf_unittest::OneBytes input;
-    std::vector<std::string> errors;
+    fun::vector<fun::string> errors;
     {
       google::protobuf::ScopedMemoryLog log;
       WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
@@ -2762,11 +2762,11 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
 
   // TEST_F(Utf8ValidationTest, ReadArbitraryBytes)
   {
-    std::string wire_buffer;
+    fun::string wire_buffer;
     protobuf_unittest::OneBytes input;
     WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
     protobuf_unittest::OneBytes output;
-    std::vector<std::string> errors;
+    fun::vector<fun::string> errors;
     {
       google::protobuf::ScopedMemoryLog log;
       ReadMessage(wire_buffer, &output);
@@ -2782,10 +2782,10 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
     input.add_data(kValidUTF8String);
     input.add_data(kInvalidUTF8String);
     input.add_data(kInvalidUTF8String);
-    std::string wire_buffer = input.SerializeAsString();
+    fun::string wire_buffer = input.SerializeAsString();
 
     protobuf_unittest::MoreString output;
-    std::vector<std::string> errors;
+    fun::vector<fun::string> errors;
     {
       google::protobuf::ScopedMemoryLog log;
       ReadMessage(wire_buffer, &output);
@@ -2804,9 +2804,9 @@ bool FFunapiLibProtobufWireFormatUnitTest::RunTest(const FString& Parameters)
   // generated code.
   // TEST_F(Utf8ValidationTest, OldVerifyUTF8String)
   {
-    std::string data(kInvalidUTF8String);
+    fun::string data(kInvalidUTF8String);
 
-    std::vector<std::string> errors;
+    fun::vector<fun::string> errors;
     {
       google::protobuf::ScopedMemoryLog log;
       WireFormat::VerifyUTF8String(data.data(), data.size(),

@@ -141,12 +141,12 @@ void Afunapi_tester::SendRedirectTestMessage()
       return;
     }
 
-    std::stringstream ss_temp;
+    fun::stringstream ss_temp;
     std::random_device rd;
     std::default_random_engine re(rd());
     std::uniform_int_distribution<int> dist(1,0xffff);
     ss_temp << "name" << dist(re);
-    std::string name = ss_temp.str();
+    fun::string name = ss_temp.str();
 
     if (encoding == fun::FunEncoding::kProtobuf)
     {
@@ -167,11 +167,11 @@ void Afunapi_tester::SendRedirectTestMessage()
       TSharedRef<FJsonObject> json_object = MakeShareable(new FJsonObject);
       json_object->SetStringField(FString("name"), FString(name.c_str()));
 
-      // Convert JSON document to string
+      // Convert JSON document to fun::string
       FString ouput_fstring;
       TSharedRef<TJsonWriter<TCHAR>> writer = TJsonWriterFactory<TCHAR>::Create(&ouput_fstring);
       FJsonSerializer::Serialize(json_object, writer);
-      std::string json_string = TCHAR_TO_ANSI(*ouput_fstring);
+      fun::string json_string = TCHAR_TO_ANSI(*ouput_fstring);
 
       session_->SendMessage("hello", json_string);
     }
@@ -224,10 +224,10 @@ bool Afunapi_tester::SendEchoMessage()
     if (encoding == fun::FunEncoding::kProtobuf)
     {
       for (int i = 0; i < 10; ++i) {
-        // std::to_string is not supported on android, using std::stringstream instead.
-        std::stringstream ss_temp;
+        // std::to_string is not supported on android, using fun::stringstream instead.
+        fun::stringstream ss_temp;
         ss_temp << "hello proto - " << static_cast<int>(i);
-        std::string temp_string = ss_temp.str();
+        fun::string temp_string = ss_temp.str();
 
         FunMessage msg;
         msg.set_msgtype("pbuf_echo");
@@ -241,19 +241,19 @@ bool Afunapi_tester::SendEchoMessage()
     if (encoding == fun::FunEncoding::kJson)
     {
       for (int i = 0; i < 10; ++i) {
-        // std::to_string is not supported on android, using std::stringstream instead.
-        std::stringstream ss_temp;
+        // std::to_string is not supported on android, using fun::stringstream instead.
+        fun::stringstream ss_temp;
         ss_temp <<  "hello world - " << static_cast<int>(i);
-        std::string temp_string = ss_temp.str();
+        fun::string temp_string = ss_temp.str();
 
         TSharedRef<FJsonObject> json_object = MakeShareable(new FJsonObject);
         json_object->SetStringField(FString("message"), FString(temp_string.c_str()));
 
-        // Convert JSON document to string
+        // Convert JSON document to fun::string
         FString ouput_fstring;
         TSharedRef<TJsonWriter<TCHAR>> writer = TJsonWriterFactory<TCHAR>::Create(&ouput_fstring);
         FJsonSerializer::Serialize(json_object, writer);
-        std::string json_stiring = TCHAR_TO_ANSI(*ouput_fstring);
+        fun::string json_stiring = TCHAR_TO_ANSI(*ouput_fstring);
 
         session_->SendMessage("echo", json_stiring);
       }
@@ -269,12 +269,12 @@ bool Afunapi_tester::CreateMulticast()
 
   if (!multicast_) {
     // random sender id
-    std::stringstream ss_temp;
+    fun::stringstream ss_temp;
     std::random_device rd;
     std::default_random_engine re(rd());
     std::uniform_int_distribution<int> dist(1, 100);
     ss_temp << "player" << dist(re);
-    std::string sender = ss_temp.str();
+    fun::string sender = ss_temp.str();
 
     UE_LOG(LogFunapiExample, Log, TEXT("sender = %s"), *FString(sender.c_str()));
 
@@ -288,12 +288,12 @@ bool Afunapi_tester::CreateMulticast()
     multicast_ = fun::FunapiMulticast::Create(sender.c_str(), kServer.c_str(), port, encoding, with_session_reliability_);
 
     multicast_->AddJoinedCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
-      const std::string &channel_id, const std::string &multicast_sender) {
+      const fun::string &channel_id, const fun::string &multicast_sender) {
       UE_LOG(LogFunapiExample, Log, TEXT("JoinedCallback called. channel_id:%s player:%s"), *FString(channel_id.c_str()), *FString(multicast_sender.c_str()));
     });
     multicast_->AddLeftCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
-                                   const std::string &channel_id,
-                                   const std::string &multicast_sender) {
+                                   const fun::string &channel_id,
+                                   const fun::string &multicast_sender) {
       UE_LOG(LogFunapiExample, Log, TEXT("LeftCallback called. channel_id:%s player:%s"), *FString(channel_id.c_str()), *FString(multicast_sender.c_str()));
     });
     multicast_->AddErrorCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
@@ -306,14 +306,14 @@ bool Afunapi_tester::CreateMulticast()
       // EC_CANNOT_CREATE_CHANNEL
     });
     multicast_->AddChannelListCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
-                                          const std::map<std::string, int> &cl) {
+                                          const fun::map<fun::string, int> &cl) {
       for (auto i : cl) {
         UE_LOG(LogFunapiExample, Log, TEXT("%s - %d"), *FString(i.first.c_str()), i.second);
       }
     });
     multicast_->AddSessionEventCallback([](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
                                            const fun::SessionEventType type,
-                                           const std::string &session_id,
+                                           const fun::string &session_id,
                                            const std::shared_ptr<fun::FunapiError> &error) {
      /*
      if (type == fun::SessionEventType::kOpened) {
@@ -352,9 +352,9 @@ bool Afunapi_tester::CreateMulticast()
     multicast_->AddJsonChannelMessageCallback(kMulticastTestChannel,
       [this](
         const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
-        const std::string &channel_id,
-        const std::string &sender_string,
-        const std::string &json_string)
+        const fun::string &channel_id,
+        const fun::string &sender_string,
+        const fun::string &json_string)
     {
       UE_LOG(LogFunapiExample, Log, TEXT("channel_id = %s, sender = %s, body = %s"), *FString(channel_id.c_str()), *FString(sender_string.c_str()), *FString(json_string.c_str()));
     });
@@ -362,13 +362,13 @@ bool Afunapi_tester::CreateMulticast()
     multicast_->AddProtobufChannelMessageCallback(kMulticastTestChannel,
       [this](
         const std::shared_ptr<fun::FunapiMulticast> &funapi_multicast,
-        const std::string &channel_id,
-        const std::string &sender_string,
+        const fun::string &channel_id,
+        const fun::string &sender_string,
         const FunMessage& message)
     {
       FunMulticastMessage mcast_msg = message.GetExtension(multicast);
       FunChatMessage chat_msg = mcast_msg.GetExtension(chat);
-      std::string text = chat_msg.text();
+      fun::string text = chat_msg.text();
 
       UE_LOG(LogFunapiExample, Log, TEXT("channel_id = %s, sender = %s, message = %s"), *FString(channel_id.c_str()), *FString(sender_string.c_str()), *FString(text.c_str()));
     });
@@ -399,16 +399,16 @@ bool Afunapi_tester::SendMulticastMessage()
   if (multicast_) {
     if (multicast_->IsConnected() && multicast_->IsInChannel(kMulticastTestChannel)) {
       if (multicast_->GetEncoding() == fun::FunEncoding::kJson) {
-        std::string temp_messsage = "multicast test message";
+        fun::string temp_messsage = "multicast test message";
 
         TSharedRef<FJsonObject> json_object = MakeShareable(new FJsonObject);
         json_object->SetStringField(FString("message"), FString(temp_messsage.c_str()));
 
-        // Convert JSON document to string
+        // Convert JSON document to fun::string
         FString ouput_fstring;
         TSharedRef<TJsonWriter<TCHAR>> writer = TJsonWriterFactory<TCHAR>::Create(&ouput_fstring);
         FJsonSerializer::Serialize(json_object, writer);
-        std::string json_string = TCHAR_TO_ANSI(*ouput_fstring);
+        fun::string json_string = TCHAR_TO_ANSI(*ouput_fstring);
 
         multicast_->SendToChannel(kMulticastTestChannel, json_string);
       }
@@ -471,25 +471,25 @@ bool Afunapi_tester::DownloaderTest()
 
     if (!downloader_)
     {
-        std::stringstream ss_download_url;
+        fun::stringstream ss_download_url;
         ss_download_url << "http://" << kDownloadServer << ":" << kDownloadServerPort;
 
         downloader_ = fun::FunapiHttpDownloader::Create(ss_download_url.str(),
                                                         TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir())));
 
         downloader_->AddReadyCallback([](const std::shared_ptr<fun::FunapiHttpDownloader>&downloader,
-                                         const std::vector<std::shared_ptr<fun::FunapiDownloadFileInfo>>&info)
+                                         const fun::vector<std::shared_ptr<fun::FunapiDownloadFileInfo>>&info)
         {
             for (auto i : info)
             {
-                std::stringstream ss_temp;
+                fun::stringstream ss_temp;
                 ss_temp << i->GetUrl() << std::endl;
                 UE_LOG(LogFunapiExample, Log, TEXT("%s"), *FString(ss_temp.str().c_str()));
             }
         });
 
         downloader_->AddProgressCallback([](const std::shared_ptr<fun::FunapiHttpDownloader> &downloader,
-                                            const std::vector<std::shared_ptr<fun::FunapiDownloadFileInfo>>&info,
+                                            const fun::vector<std::shared_ptr<fun::FunapiDownloadFileInfo>>&info,
                                             const int index,
                                             const int max_index,
                                             const uint64_t received_bytes,
@@ -497,13 +497,13 @@ bool Afunapi_tester::DownloaderTest()
         {
             auto i = info[index];
 
-            std::stringstream ss_temp;
+            fun::stringstream ss_temp;
             ss_temp << index << "/" << max_index << " " << received_bytes << "/" << expected_bytes << " " << i->GetUrl() << std::endl;
             UE_LOG(LogFunapiExample, Log, TEXT("%s"), *FString(ss_temp.str().c_str()));
         });
 
         downloader_->AddCompletionCallback([this](const std::shared_ptr<fun::FunapiHttpDownloader>&downloader,
-                                                  const std::vector<std::shared_ptr<fun::FunapiDownloadFileInfo>>&info,
+                                                  const fun::vector<std::shared_ptr<fun::FunapiDownloadFileInfo>>&info,
                                                   const fun::FunapiHttpDownloader::ResultCode result_code)
         {
             if (result_code == fun::FunapiHttpDownloader::ResultCode::kSucceed)
@@ -532,14 +532,14 @@ bool Afunapi_tester::RequestAnnouncements()
   UE_LOG(LogFunapiExample, Log, TEXT("Request announcements button clicked."));
 
   if (announcement_ == nullptr) {
-    std::stringstream ss_url;
+    fun::stringstream ss_url;
     ss_url << "http://" << kAnnouncementServer << ":" << kAnnouncementServerPort;
 
     announcement_ = fun::FunapiAnnouncement::Create(ss_url.str(),
                                                     TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir())));
 
     announcement_->AddCompletionCallback([this](const std::shared_ptr<fun::FunapiAnnouncement> &announcement,
-                                                const std::vector<std::shared_ptr<fun::FunapiAnnouncementInfo>>&info,
+                                                const fun::vector<std::shared_ptr<fun::FunapiAnnouncementInfo>>&info,
                                                 const fun::FunapiAnnouncement::ResultCode result){
       if (result == fun::FunapiAnnouncement::ResultCode::kSucceed) {
         for (auto i : info) {
@@ -647,7 +647,7 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
     session_->AddSessionEventCallback([this](const std::shared_ptr<fun::FunapiSession> &session,
                                              const fun::TransportProtocol transport_protocol,
                                              const fun::SessionEventType type,
-                                             const std::string &session_id,
+                                             const fun::string &session_id,
                                              const std::shared_ptr<fun::FunapiError> &error) {
       if (type == fun::SessionEventType::kOpened) {
         OnSessionInitiated(session_id);
@@ -685,8 +685,8 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
 
     session_->AddJsonRecvCallback([](const std::shared_ptr<fun::FunapiSession> &session,
                                      const fun::TransportProtocol transport_protocol,
-                                     const std::string &msg_type,
-                                     const std::string &json_string) {
+                                     const fun::string &msg_type,
+                                     const fun::string &json_string) {
       if (msg_type.compare("echo") == 0) {
         UE_LOG(LogFunapiExample, Log, TEXT("msg '%s' arrived."), *FString(msg_type.c_str()));
         UE_LOG(LogFunapiExample, Log, TEXT("json: %s"), *FString(json_string.c_str()));
@@ -714,9 +714,9 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
         UE_LOG(LogFunapiExample, Log, TEXT("proto: %s"), *FString(echo.msg().c_str()));
 
         MaintenanceMessage maintenance = fun_message.GetExtension(pbuf_maintenance);
-        std::string date_start = maintenance.date_start();
-        std::string date_end = maintenance.date_end();
-        std::string message_text = maintenance.messages();
+        fun::string date_start = maintenance.date_start();
+        fun::string date_end = maintenance.date_end();
+        fun::string message_text = maintenance.messages();
 
         UE_LOG(LogFunapiExample, Log, TEXT("Maintenance message:\nstart: %s\nend: %s\nmessage: %s"), *FString(date_start.c_str()), *FString(date_end.c_str()), *FString(message_text.c_str()));
       }
@@ -724,7 +724,7 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
 
     /*
     session_->SetTransportOptionCallback([](const fun::TransportProtocol protocol,
-                                            const std::string &flavor) -> std::shared_ptr<fun::FunapiTransportOption> {
+                                            const fun::string &flavor) -> std::shared_ptr<fun::FunapiTransportOption> {
       if (protocol == fun::TransportProtocol::kTcp) {
         auto option = fun::FunapiTcpTransportOption::Create();
         option->SetDisableNagle(true);
@@ -789,7 +789,7 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
   session_->SetDefaultProtocol(protocol);
 }
 
-void Afunapi_tester::OnSessionInitiated(const std::string &session_id)
+void Afunapi_tester::OnSessionInitiated(const fun::string &session_id)
 {
   UE_LOG(LogFunapiExample, Log, TEXT("Session initiated: %s"), *FString(session_id.c_str()));
 }
@@ -802,14 +802,14 @@ void Afunapi_tester::OnSessionClosed()
 bool Afunapi_tester::TestRpc()
 {
 #if FUNAPI_HAVE_RPC
-  std::string server_ip = kServer;
+  fun::string server_ip = kServer;
   uint16_t port = 8015;
 
   rpc_ = fun::FunapiRpc::Create();
 
   rpc_->SetHandler
   ("echo",
-   [](const std::string &type,
+   [](const fun::string &type,
       const FunDedicatedServerRpcMessage &request_message,
       const fun::FunapiRpc::ResponseHandler &response_handler)
   {
@@ -852,7 +852,7 @@ bool Afunapi_tester::ConnectWithCompression()
   session_->AddSessionEventCallback([this](const std::shared_ptr<fun::FunapiSession> &session,
     const fun::TransportProtocol transport_protocol,
     const fun::SessionEventType type,
-    const std::string &session_id,
+    const fun::string &session_id,
     const std::shared_ptr<fun::FunapiError> &error) {
   });
 
@@ -864,8 +864,8 @@ bool Afunapi_tester::ConnectWithCompression()
 
   session_->AddJsonRecvCallback([](const std::shared_ptr<fun::FunapiSession> &session,
     const fun::TransportProtocol transport_protocol,
-    const std::string &msg_type,
-    const std::string &json_string) {
+    const fun::string &msg_type,
+    const fun::string &json_string) {
   });
 
   session_->AddProtobufRecvCallback([](const std::shared_ptr<fun::FunapiSession> &session,

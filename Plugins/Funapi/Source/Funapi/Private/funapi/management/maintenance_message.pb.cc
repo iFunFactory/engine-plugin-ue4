@@ -58,7 +58,7 @@ inline void protobuf_AssignDescriptorsOnce() {
                  &protobuf_AssignDesc_funapi_2fmanagement_2fmaintenance_5fmessage_2eproto);
 }
 
-void protobuf_RegisterTypes(const ::std::string&) {
+void protobuf_RegisterTypes(const ::fun::string&) {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     MaintenanceMessage_descriptor_, &MaintenanceMessage::default_instance());
@@ -130,9 +130,9 @@ MaintenanceMessage::MaintenanceMessage(const MaintenanceMessage& from)
 void MaintenanceMessage::SharedCtor() {
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
-  date_start_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  date_end_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  messages_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  date_start_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  date_end_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  messages_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -208,7 +208,7 @@ bool MaintenanceMessage::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional string date_start = 1;
+      // optional fun::string date_start = 1;
       case 1: {
         if (tag == 10) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
@@ -224,7 +224,7 @@ bool MaintenanceMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional string date_end = 2;
+      // optional fun::string date_end = 2;
       case 2: {
         if (tag == 18) {
          parse_date_end:
@@ -241,7 +241,7 @@ bool MaintenanceMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional string messages = 3;
+      // optional fun::string messages = 3;
       case 3: {
         if (tag == 26) {
          parse_messages:
@@ -283,7 +283,7 @@ failure:
 void MaintenanceMessage::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:MaintenanceMessage)
-  // optional string date_start = 1;
+  // optional fun::string date_start = 1;
   if (has_date_start()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->date_start().data(), this->date_start().length(),
@@ -293,7 +293,7 @@ void MaintenanceMessage::SerializeWithCachedSizes(
       1, this->date_start(), output);
   }
 
-  // optional string date_end = 2;
+  // optional fun::string date_end = 2;
   if (has_date_end()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->date_end().data(), this->date_end().length(),
@@ -303,7 +303,7 @@ void MaintenanceMessage::SerializeWithCachedSizes(
       2, this->date_end(), output);
   }
 
-  // optional string messages = 3;
+  // optional fun::string messages = 3;
   if (has_messages()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->messages().data(), this->messages().length(),
@@ -323,7 +323,7 @@ void MaintenanceMessage::SerializeWithCachedSizes(
 ::google::protobuf::uint8* MaintenanceMessage::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:MaintenanceMessage)
-  // optional string date_start = 1;
+  // optional fun::string date_start = 1;
   if (has_date_start()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->date_start().data(), this->date_start().length(),
@@ -334,7 +334,7 @@ void MaintenanceMessage::SerializeWithCachedSizes(
         1, this->date_start(), target);
   }
 
-  // optional string date_end = 2;
+  // optional fun::string date_end = 2;
   if (has_date_end()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->date_end().data(), this->date_end().length(),
@@ -345,7 +345,7 @@ void MaintenanceMessage::SerializeWithCachedSizes(
         2, this->date_end(), target);
   }
 
-  // optional string messages = 3;
+  // optional fun::string messages = 3;
   if (has_messages()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->messages().data(), this->messages().length(),
@@ -368,21 +368,21 @@ int MaintenanceMessage::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional string date_start = 1;
+    // optional fun::string date_start = 1;
     if (has_date_start()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->date_start());
     }
 
-    // optional string date_end = 2;
+    // optional fun::string date_end = 2;
     if (has_date_end()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->date_end());
     }
 
-    // optional string messages = 3;
+    // optional fun::string messages = 3;
     if (has_messages()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(

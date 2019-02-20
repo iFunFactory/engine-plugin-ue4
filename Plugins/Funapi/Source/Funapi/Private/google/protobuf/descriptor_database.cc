@@ -65,7 +65,7 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddFile(
   // We must be careful here -- calling file.package() if file.has_package() is
   // false could access an uninitialized static-storage variable if we are being
   // run at startup time.
-  string path = file.has_package() ? file.package() : string();
+  fun::string path = file.has_package() ? file.package() : fun::string();
   if (!path.empty()) path += '.';
 
   for (int i = 0; i < file.message_type_size(); i++) {
@@ -88,8 +88,8 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddFile(
 
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
-    const string& name, Value value) {
-  // We need to make sure not to violate our map invariant.
+    const fun::string& name, Value value) {
+  // We need to make sure not to violate our fun::map invariant.
 
   // If the symbol name is invalid it could break our lookup algorithm (which
   // relies on the fact that '.' sorts before all other characters that are
@@ -101,11 +101,11 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
 
   // Try to look up the symbol to make sure a super-symbol doesn't already
   // exist.
-  typename map<string, Value>::iterator iter = FindLastLessOrEqual(name);
+  typename fun::map<fun::string, Value>::iterator iter = FindLastLessOrEqual(name);
 
   if (iter == by_symbol_.end()) {
-    // Apparently the map is currently empty.  Just insert and be done with it.
-    by_symbol_.insert(typename map<string, Value>::value_type(name, value));
+    // Apparently the fun::map is currently empty.  Just insert and be done with it.
+    by_symbol_.insert(typename fun::map<fun::string, Value>::value_type(name, value));
     return true;
   }
 
@@ -115,7 +115,7 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
     return false;
   }
 
-  // OK, that worked.  Now we have to make sure that no symbol in the map is
+  // OK, that worked.  Now we have to make sure that no symbol in the fun::map is
   // a sub-symbol of the one we are inserting.  The only symbol which could
   // be so is the first symbol that is greater than the new symbol.  Since
   // |iter| points at the last symbol that is less than or equal, we just have
@@ -132,7 +132,7 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
 
   // Insert the new symbol using the iterator as a hint, the new entry will
   // appear immediately before the one the iterator is pointing at.
-  by_symbol_.insert(iter, typename map<string, Value>::value_type(name, value));
+  by_symbol_.insert(iter, typename fun::map<fun::string, Value>::value_type(name, value));
 
   return true;
 }
@@ -182,14 +182,14 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddExtension(
 
 template <typename Value>
 Value SimpleDescriptorDatabase::DescriptorIndex<Value>::FindFile(
-    const string& filename) {
+    const fun::string& filename) {
   return FindWithDefault(by_name_, filename, Value());
 }
 
 template <typename Value>
 Value SimpleDescriptorDatabase::DescriptorIndex<Value>::FindSymbol(
-    const string& name) {
-  typename map<string, Value>::iterator iter = FindLastLessOrEqual(name);
+    const fun::string& name) {
+  typename fun::map<fun::string, Value>::iterator iter = FindLastLessOrEqual(name);
 
   return (iter != by_symbol_.end() && IsSubSymbol(iter->first, name)) ?
          iter->second : Value();
@@ -197,7 +197,7 @@ Value SimpleDescriptorDatabase::DescriptorIndex<Value>::FindSymbol(
 
 template <typename Value>
 Value SimpleDescriptorDatabase::DescriptorIndex<Value>::FindExtension(
-    const string& containing_type,
+    const fun::string& containing_type,
     int field_number) {
   return FindWithDefault(by_extension_,
                          make_pair(containing_type, field_number),
@@ -206,9 +206,9 @@ Value SimpleDescriptorDatabase::DescriptorIndex<Value>::FindExtension(
 
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::FindAllExtensionNumbers(
-    const string& containing_type,
-    vector<int>* output) {
-  typename map<pair<string, int>, Value >::const_iterator it =
+    const fun::string& containing_type,
+    fun::vector<int>* output) {
+  typename fun::map<pair<fun::string, int>, Value >::const_iterator it =
       by_extension_.lower_bound(make_pair(containing_type, 0));
   bool success = false;
 
@@ -222,20 +222,20 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::FindAllExtensionNumbers(
 }
 
 template <typename Value>
-typename map<string, Value>::iterator
+typename fun::map<fun::string, Value>::iterator
 SimpleDescriptorDatabase::DescriptorIndex<Value>::FindLastLessOrEqual(
-    const string& name) {
-  // Find the last key in the map which sorts less than or equal to the
+    const fun::string& name) {
+  // Find the last key in the fun::map which sorts less than or equal to the
   // symbol name.  Since upper_bound() returns the *first* key that sorts
   // *greater* than the input, we want the element immediately before that.
-  typename map<string, Value>::iterator iter = by_symbol_.upper_bound(name);
+  typename fun::map<fun::string, Value>::iterator iter = by_symbol_.upper_bound(name);
   if (iter != by_symbol_.begin()) --iter;
   return iter;
 }
 
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::IsSubSymbol(
-    const string& sub_symbol, const string& super_symbol) {
+    const fun::string& sub_symbol, const fun::string& super_symbol) {
   return sub_symbol == super_symbol ||
          (HasPrefixString(super_symbol, sub_symbol) &&
              super_symbol[sub_symbol.size()] == '.');
@@ -243,7 +243,7 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::IsSubSymbol(
 
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::ValidateSymbolName(
-    const string& name) {
+    const fun::string& name) {
   for (int i = 0; i < (int)name.size(); i++) {
     // I don't trust ctype.h due to locales.  :(
     if (name[i] != '.' && name[i] != '_' &&
@@ -275,27 +275,27 @@ bool SimpleDescriptorDatabase::AddAndOwn(const FileDescriptorProto* file) {
 }
 
 bool SimpleDescriptorDatabase::FindFileByName(
-    const string& filename,
+    const fun::string& filename,
     FileDescriptorProto* output) {
   return MaybeCopy(index_.FindFile(filename), output);
 }
 
 bool SimpleDescriptorDatabase::FindFileContainingSymbol(
-    const string& symbol_name,
+    const fun::string& symbol_name,
     FileDescriptorProto* output) {
   return MaybeCopy(index_.FindSymbol(symbol_name), output);
 }
 
 bool SimpleDescriptorDatabase::FindFileContainingExtension(
-    const string& containing_type,
+    const fun::string& containing_type,
     int field_number,
     FileDescriptorProto* output) {
   return MaybeCopy(index_.FindExtension(containing_type, field_number), output);
 }
 
 bool SimpleDescriptorDatabase::FindAllExtensionNumbers(
-    const string& extendee_type,
-    vector<int>* output) {
+    const fun::string& extendee_type,
+    fun::vector<int>* output) {
   return index_.FindAllExtensionNumbers(extendee_type, output);
 }
 
@@ -337,20 +337,20 @@ bool EncodedDescriptorDatabase::AddCopy(
 }
 
 bool EncodedDescriptorDatabase::FindFileByName(
-    const string& filename,
+    const fun::string& filename,
     FileDescriptorProto* output) {
   return MaybeParse(index_.FindFile(filename), output);
 }
 
 bool EncodedDescriptorDatabase::FindFileContainingSymbol(
-    const string& symbol_name,
+    const fun::string& symbol_name,
     FileDescriptorProto* output) {
   return MaybeParse(index_.FindSymbol(symbol_name), output);
 }
 
 bool EncodedDescriptorDatabase::FindNameOfFileContainingSymbol(
-    const string& symbol_name,
-    string* output) {
+    const fun::string& symbol_name,
+    fun::string* output) {
   pair<const void*, int> encoded_file = index_.FindSymbol(symbol_name);
   if (encoded_file.first == NULL) return false;
 
@@ -378,7 +378,7 @@ bool EncodedDescriptorDatabase::FindNameOfFileContainingSymbol(
 }
 
 bool EncodedDescriptorDatabase::FindFileContainingExtension(
-    const string& containing_type,
+    const fun::string& containing_type,
     int field_number,
     FileDescriptorProto* output) {
   return MaybeParse(index_.FindExtension(containing_type, field_number),
@@ -386,8 +386,8 @@ bool EncodedDescriptorDatabase::FindFileContainingExtension(
 }
 
 bool EncodedDescriptorDatabase::FindAllExtensionNumbers(
-    const string& extendee_type,
-    vector<int>* output) {
+    const fun::string& extendee_type,
+    fun::vector<int>* output) {
   return index_.FindAllExtensionNumbers(extendee_type, output);
 }
 
@@ -405,7 +405,7 @@ DescriptorPoolDatabase::DescriptorPoolDatabase(const DescriptorPool& pool)
 DescriptorPoolDatabase::~DescriptorPoolDatabase() {}
 
 bool DescriptorPoolDatabase::FindFileByName(
-    const string& filename,
+    const fun::string& filename,
     FileDescriptorProto* output) {
   const FileDescriptor* file = pool_.FindFileByName(filename);
   if (file == NULL) return false;
@@ -415,7 +415,7 @@ bool DescriptorPoolDatabase::FindFileByName(
 }
 
 bool DescriptorPoolDatabase::FindFileContainingSymbol(
-    const string& symbol_name,
+    const fun::string& symbol_name,
     FileDescriptorProto* output) {
   const FileDescriptor* file = pool_.FindFileContainingSymbol(symbol_name);
   if (file == NULL) return false;
@@ -425,7 +425,7 @@ bool DescriptorPoolDatabase::FindFileContainingSymbol(
 }
 
 bool DescriptorPoolDatabase::FindFileContainingExtension(
-    const string& containing_type,
+    const fun::string& containing_type,
     int field_number,
     FileDescriptorProto* output) {
   const Descriptor* extendee = pool_.FindMessageTypeByName(containing_type);
@@ -441,12 +441,12 @@ bool DescriptorPoolDatabase::FindFileContainingExtension(
 }
 
 bool DescriptorPoolDatabase::FindAllExtensionNumbers(
-    const string& extendee_type,
-    vector<int>* output) {
+    const fun::string& extendee_type,
+    fun::vector<int>* output) {
   const Descriptor* extendee = pool_.FindMessageTypeByName(extendee_type);
   if (extendee == NULL) return false;
 
-  vector<const FieldDescriptor*> extensions;
+  fun::vector<const FieldDescriptor*> extensions;
   pool_.FindAllExtensions(extendee, &extensions);
 
   for (int i = 0; i < (int)extensions.size(); ++i) {
@@ -465,12 +465,12 @@ MergedDescriptorDatabase::MergedDescriptorDatabase(
   sources_.push_back(source2);
 }
 MergedDescriptorDatabase::MergedDescriptorDatabase(
-    const vector<DescriptorDatabase*>& sources)
+    const fun::vector<DescriptorDatabase*>& sources)
   : sources_(sources) {}
 MergedDescriptorDatabase::~MergedDescriptorDatabase() {}
 
 bool MergedDescriptorDatabase::FindFileByName(
-    const string& filename,
+    const fun::string& filename,
     FileDescriptorProto* output) {
   for (int i = 0; i < (int)sources_.size(); i++) {
     if (sources_[i]->FindFileByName(filename, output)) {
@@ -481,7 +481,7 @@ bool MergedDescriptorDatabase::FindFileByName(
 }
 
 bool MergedDescriptorDatabase::FindFileContainingSymbol(
-    const string& symbol_name,
+    const fun::string& symbol_name,
     FileDescriptorProto* output) {
   for (int i = 0; i < (int)sources_.size(); i++) {
     if (sources_[i]->FindFileContainingSymbol(symbol_name, output)) {
@@ -503,7 +503,7 @@ bool MergedDescriptorDatabase::FindFileContainingSymbol(
 }
 
 bool MergedDescriptorDatabase::FindFileContainingExtension(
-    const string& containing_type,
+    const fun::string& containing_type,
     int field_number,
     FileDescriptorProto* output) {
   for (int i = 0; i < (int)sources_.size(); i++) {
@@ -527,23 +527,23 @@ bool MergedDescriptorDatabase::FindFileContainingExtension(
 }
 
 bool MergedDescriptorDatabase::FindAllExtensionNumbers(
-    const string& extendee_type,
-    vector<int>* output) {
-  set<int> merged_results;
-  vector<int> results;
+    const fun::string& extendee_type,
+    fun::vector<int>* output) {
+  fun::set<int> merged_results;
+  fun::vector<int> results;
   bool success = false;
 
   for (int i = 0; i < (int)sources_.size(); i++) {
     if (sources_[i]->FindAllExtensionNumbers(extendee_type, &results)) {
       copy(results.begin(), results.end(),
-           insert_iterator<set<int> >(merged_results, merged_results.begin()));
+           insert_iterator<fun::set<int> >(merged_results, merged_results.begin()));
       success = true;
     }
     results.clear();
   }
 
   copy(merged_results.begin(), merged_results.end(),
-       insert_iterator<vector<int> >(*output, output->end()));
+       insert_iterator<fun::vector<int> >(*output, output->end()));
 
   return success;
 }

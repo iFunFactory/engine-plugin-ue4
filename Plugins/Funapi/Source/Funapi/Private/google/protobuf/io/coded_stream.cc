@@ -246,12 +246,12 @@ bool CodedInputStream::ReadRaw(void* buffer, int size) {
   return true;
 }
 
-bool CodedInputStream::ReadString(string* buffer, int size) {
+bool CodedInputStream::ReadString(fun::string* buffer, int size) {
   if (size < 0) return false;  // security: size is often user-supplied
   return InternalReadStringInline(buffer, size);
 }
 
-bool CodedInputStream::ReadStringFallback(string* buffer, int size) {
+bool CodedInputStream::ReadStringFallback(fun::string* buffer, int size) {
   if (!buffer->empty()) {
     buffer->clear();
   }
@@ -593,7 +593,7 @@ CodedOutputStream::CodedOutputStream(ZeroCopyOutputStream* output)
   Refresh();
   // The Refresh() may have failed. If the client doesn't write any data,
   // though, don't consider this an error. If the client does write data, then
-  // another Refresh() will be attempted and it will set the error once again.
+  // another Refresh() will be attempted and it will fun::set the error once again.
   had_error_ = false;
 }
 
@@ -902,7 +902,7 @@ int CodedOutputStream::VarintSize64(uint64 value) {
   }
 }
 
-uint8* CodedOutputStream::WriteStringWithSizeToArray(const string& str,
+uint8* CodedOutputStream::WriteStringWithSizeToArray(const fun::string& str,
                                                      uint8* target) {
   GOOGLE_DCHECK_LE(str.size(), kuint32max);
   target = WriteVarint32ToArray(str.size(), target);

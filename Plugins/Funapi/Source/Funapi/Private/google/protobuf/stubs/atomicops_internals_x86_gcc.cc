@@ -81,7 +81,7 @@ void AtomicOps_Internalx86CPUFeaturesInit() {
   uint32_t ecx;
   uint32_t edx;
 
-  // Get vendor string (issue CPUID with eax = 0)
+  // Get vendor fun::string (issue CPUID with eax = 0)
   cpuid(eax, ebx, ecx, edx, 0);
   char vendor[13];
   memcpy(vendor, &ebx, 4);

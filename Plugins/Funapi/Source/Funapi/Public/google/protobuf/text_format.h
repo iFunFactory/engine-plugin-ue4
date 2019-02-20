@@ -71,24 +71,24 @@ class LIBPROTOBUF_EXPORT TextFormat {
   static bool PrintUnknownFields(const UnknownFieldSet& unknown_fields,
                                  io::ZeroCopyOutputStream* output);
 
-  // Like Print(), but outputs directly to a string.
-  static bool PrintToString(const Message& message, string* output);
+  // Like Print(), but outputs directly to a fun::string.
+  static bool PrintToString(const Message& message, fun::string* output);
 
-  // Like PrintUnknownFields(), but outputs directly to a string.
+  // Like PrintUnknownFields(), but outputs directly to a fun::string.
   static bool PrintUnknownFieldsToString(const UnknownFieldSet& unknown_fields,
-                                         string* output);
+                                         fun::string* output);
 
   // Outputs a textual representation of the value of the field supplied on
   // the message supplied. For non-repeated fields, an index of -1 must
   // be supplied. Note that this method will print the default value for a
-  // field if it is not set.
+  // field if it is not set
   static void PrintFieldValueToString(const Message& message,
                                       const FieldDescriptor* field,
                                       int index,
-                                      string* output);
+                                      fun::string* output);
 
   // The default printer that converts scalar values from fields into
-  // their string representation.
+  // their fun::string representation.
   // You can derive from this FieldValuePrinter if you want to have
   // fields to be printed in a different way and register it at the
   // Printer.
@@ -96,24 +96,24 @@ class LIBPROTOBUF_EXPORT TextFormat {
    public:
     FieldValuePrinter();
     virtual ~FieldValuePrinter();
-    virtual string PrintBool(bool val) const;
-    virtual string PrintInt32(int32 val) const;
-    virtual string PrintUInt32(uint32 val) const;
-    virtual string PrintInt64(int64 val) const;
-    virtual string PrintUInt64(uint64 val) const;
-    virtual string PrintFloat(float val) const;
-    virtual string PrintDouble(double val) const;
-    virtual string PrintString(const string& val) const;
-    virtual string PrintBytes(const string& val) const;
-    virtual string PrintEnum(int32 val, const string& name) const;
-    virtual string PrintFieldName(const Message& message,
+    virtual fun::string PrintBool(bool val) const;
+    virtual fun::string PrintInt32(int32 val) const;
+    virtual fun::string PrintUInt32(uint32 val) const;
+    virtual fun::string PrintInt64(int64 val) const;
+    virtual fun::string PrintUInt64(uint64 val) const;
+    virtual fun::string PrintFloat(float val) const;
+    virtual fun::string PrintDouble(double val) const;
+    virtual fun::string PrintString(const fun::string& val) const;
+    virtual fun::string PrintBytes(const fun::string& val) const;
+    virtual fun::string PrintEnum(int32 val, const fun::string& name) const;
+    virtual fun::string PrintFieldName(const Message& message,
                                   const Reflection* reflection,
                                   const FieldDescriptor* field) const;
-    virtual string PrintMessageStart(const Message& message,
+    virtual fun::string PrintMessageStart(const Message& message,
                                      int field_index,
                                      int field_count,
                                      bool single_line_mode) const;
-    virtual string PrintMessageEnd(const Message& message,
+    virtual fun::string PrintMessageEnd(const Message& message,
                                    int field_index,
                                    int field_count,
                                    bool single_line_mode) const;
@@ -135,15 +135,15 @@ class LIBPROTOBUF_EXPORT TextFormat {
     bool PrintUnknownFields(const UnknownFieldSet& unknown_fields,
                             io::ZeroCopyOutputStream* output) const;
     // Like TextFormat::PrintToString
-    bool PrintToString(const Message& message, string* output) const;
+    bool PrintToString(const Message& message, fun::string* output) const;
     // Like TextFormat::PrintUnknownFieldsToString
     bool PrintUnknownFieldsToString(const UnknownFieldSet& unknown_fields,
-                                    string* output) const;
+                                    fun::string* output) const;
     // Like TextFormat::PrintFieldValueToString
     void PrintFieldValueToString(const Message& message,
                                  const FieldDescriptor* field,
                                  int index,
-                                 string* output) const;
+                                 fun::string* output) const;
 
     // Adjust the initial indent level of all output.  Each indent level is
     // equal to two spaces.
@@ -176,7 +176,7 @@ class LIBPROTOBUF_EXPORT TextFormat {
     }
 
     // Set true to output UTF-8 instead of ASCII.  The only difference
-    // is that bytes >= 0x80 in string fields will not be escaped,
+    // is that bytes >= 0x80 in fun::string fields will not be escaped,
     // because they are assumed to be part of UTF-8 multi-byte
     // sequences. This will change the default FieldValuePrinter.
     void SetUseUtf8StringEscaping(bool as_utf8);
@@ -243,7 +243,7 @@ class LIBPROTOBUF_EXPORT TextFormat {
                         TextGenerator& generator) const;
 
     // Outputs a textual representation of the value of the field supplied on
-    // the message supplied or the default value if not set.
+    // the message supplied or the default value if not set
     void PrintFieldValue(const Message& message,
                          const Reflection* reflection,
                          const FieldDescriptor* field,
@@ -269,7 +269,7 @@ class LIBPROTOBUF_EXPORT TextFormat {
     bool print_message_fields_in_index_order_;
 
     scoped_ptr<const FieldValuePrinter> default_field_value_printer_;
-    typedef map<const FieldDescriptor*,
+    typedef fun::map<const FieldDescriptor*,
                 const FieldValuePrinter*> CustomPrinterMap;
     CustomPrinterMap custom_printers_;
   };
@@ -278,19 +278,19 @@ class LIBPROTOBUF_EXPORT TextFormat {
   // the given message object.  This function parses the format written
   // by Print().
   static bool Parse(io::ZeroCopyInputStream* input, Message* output);
-  // Like Parse(), but reads directly from a string.
-  static bool ParseFromString(const string& input, Message* output);
+  // Like Parse(), but reads directly from a fun::string.
+  static bool ParseFromString(const fun::string& input, Message* output);
 
   // Like Parse(), but the data is merged into the given message, as if
   // using Message::MergeFrom().
   static bool Merge(io::ZeroCopyInputStream* input, Message* output);
-  // Like Merge(), but reads directly from a string.
-  static bool MergeFromString(const string& input, Message* output);
+  // Like Merge(), but reads directly from a fun::string.
+  static bool MergeFromString(const fun::string& input, Message* output);
 
   // Parse the given text as a single field value and store it into the
   // given field of the given message. If the field is a repeated field,
   // the new value will be added to the end
-  static bool ParseFieldValueFromString(const string& input,
+  static bool ParseFieldValueFromString(const fun::string& input,
                                         const FieldDescriptor* field,
                                         Message* message);
 
@@ -305,7 +305,7 @@ class LIBPROTOBUF_EXPORT TextFormat {
     // name.  Returns NULL if no extension is known for this name or number.
     virtual const FieldDescriptor* FindExtension(
         Message* message,
-        const string& name) const = 0;
+        const fun::string& name) const = 0;
   };
 
   // A location in the parsed text.
@@ -346,12 +346,12 @@ class LIBPROTOBUF_EXPORT TextFormat {
     // Create and records a nested tree for a nested message field.
     ParseInfoTree* CreateNested(const FieldDescriptor* field);
 
-    // Defines the map from the index-th field descriptor to its parse location.
-    typedef map<const FieldDescriptor*, vector<ParseLocation> > LocationMap;
+    // Defines the fun::map from the index-th field descriptor to its parse location.
+    typedef fun::map<const FieldDescriptor*, fun::vector<ParseLocation> > LocationMap;
 
-    // Defines the map from the index-th field descriptor to the nested parse
+    // Defines the fun::map from the index-th field descriptor to the nested parse
     // info tree.
-    typedef map<const FieldDescriptor*, vector<ParseInfoTree*> > NestedMap;
+    typedef fun::map<const FieldDescriptor*, fun::vector<ParseInfoTree*> > NestedMap;
 
     LocationMap locations_;
     NestedMap nested_;
@@ -368,11 +368,11 @@ class LIBPROTOBUF_EXPORT TextFormat {
     // Like TextFormat::Parse().
     bool Parse(io::ZeroCopyInputStream* input, Message* output);
     // Like TextFormat::ParseFromString().
-    bool ParseFromString(const string& input, Message* output);
+    bool ParseFromString(const fun::string& input, Message* output);
     // Like TextFormat::Merge().
     bool Merge(io::ZeroCopyInputStream* input, Message* output);
     // Like TextFormat::MergeFromString().
-    bool MergeFromString(const string& input, Message* output);
+    bool MergeFromString(const fun::string& input, Message* output);
 
     // Set where to report parse errors.  If NULL (the default), errors will
     // be printed to stderr.
@@ -408,7 +408,7 @@ class LIBPROTOBUF_EXPORT TextFormat {
     }
 
     // Like TextFormat::ParseFieldValueFromString
-    bool ParseFieldValueFromString(const string& input,
+    bool ParseFieldValueFromString(const fun::string& input,
                                    const FieldDescriptor* field,
                                    Message* output);
 

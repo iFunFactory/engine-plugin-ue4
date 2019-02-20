@@ -22,24 +22,24 @@ class FUNAPI_API FunapiHttpDownloader : public std::enable_shared_from_this<Funa
   };
 
   typedef std::function<void(const std::shared_ptr<FunapiHttpDownloader>&,
-                             const std::vector<std::shared_ptr<FunapiDownloadFileInfo>>&)> ReadyHandler;
+                             const fun::vector<std::shared_ptr<FunapiDownloadFileInfo>>&)> ReadyHandler;
 
   typedef std::function<void(const std::shared_ptr<FunapiHttpDownloader>&,
-                             const std::vector<std::shared_ptr<FunapiDownloadFileInfo>>&,
+                             const fun::vector<std::shared_ptr<FunapiDownloadFileInfo>>&,
                              const int index,
                              const int max_index,
                              const uint64_t received_bytes,
                              const uint64_t expected_bytes)> ProgressHandler;
 
   typedef std::function<void(const std::shared_ptr<FunapiHttpDownloader>&,
-                             const std::vector<std::shared_ptr<FunapiDownloadFileInfo>>&,
+                             const fun::vector<std::shared_ptr<FunapiDownloadFileInfo>>&,
                              const ResultCode)> CompletionHandler;
 
   FunapiHttpDownloader() = delete;
-  FunapiHttpDownloader(const std::string &url, const std::string &path);
+  FunapiHttpDownloader(const fun::string &url, const fun::string &path);
   virtual ~FunapiHttpDownloader();
 
-  static std::shared_ptr<FunapiHttpDownloader> Create(const std::string &url, const std::string &path);
+  static std::shared_ptr<FunapiHttpDownloader> Create(const fun::string &url, const fun::string &path);
 
   void AddReadyCallback(const ReadyHandler &handler);
   void AddProgressCallback(const ProgressHandler &handler);
@@ -59,18 +59,18 @@ class FunapiDownloadFileInfoImpl;
 class FUNAPI_API FunapiDownloadFileInfo : public std::enable_shared_from_this<FunapiDownloadFileInfo> {
  public:
   FunapiDownloadFileInfo() = delete;
-  FunapiDownloadFileInfo(const std::string &url,
-                         const std::string &path,
+  FunapiDownloadFileInfo(const fun::string &url,
+                         const fun::string &path,
                          const uint64_t size,
-                         const std::string &hash,
-                         const std::string &hash_front);
+                         const fun::string &hash,
+                         const fun::string &hash_front);
   virtual ~FunapiDownloadFileInfo();
 
-  const std::string& GetUrl();
-  const std::string& GetPath();
+  const fun::string& GetUrl();
+  const fun::string& GetPath();
   uint64_t GetSize();
-  const std::string& GetHash();
-  const std::string& GetHashFront();
+  const fun::string& GetHash();
+  const fun::string& GetHashFront();
 
   const FunapiHttpDownloader::ResultCode GetResultCode();
   void SetResultCode(FunapiHttpDownloader::ResultCode r);

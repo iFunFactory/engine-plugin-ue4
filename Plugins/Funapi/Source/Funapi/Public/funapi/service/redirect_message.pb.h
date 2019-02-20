@@ -50,12 +50,12 @@ const FunRedirectMessage_Protocol FunRedirectMessage_Protocol_Protocol_MAX = Fun
 const int FunRedirectMessage_Protocol_Protocol_ARRAYSIZE = FunRedirectMessage_Protocol_Protocol_MAX + 1;
 
 FUNAPI_API const ::google::protobuf::EnumDescriptor* FunRedirectMessage_Protocol_descriptor();
-inline const ::std::string& FunRedirectMessage_Protocol_Name(FunRedirectMessage_Protocol value) {
+inline const ::fun::string& FunRedirectMessage_Protocol_Name(FunRedirectMessage_Protocol value) {
   return ::google::protobuf::internal::NameOfEnum(
     FunRedirectMessage_Protocol_descriptor(), value);
 }
 inline bool FunRedirectMessage_Protocol_Parse(
-    const ::std::string& name, FunRedirectMessage_Protocol* value) {
+    const ::fun::string& name, FunRedirectMessage_Protocol* value) {
   return ::google::protobuf::internal::ParseNamedEnum<FunRedirectMessage_Protocol>(
     FunRedirectMessage_Protocol_descriptor(), name, value);
 }
@@ -69,12 +69,12 @@ const FunRedirectMessage_Encoding FunRedirectMessage_Encoding_Encoding_MAX = Fun
 const int FunRedirectMessage_Encoding_Encoding_ARRAYSIZE = FunRedirectMessage_Encoding_Encoding_MAX + 1;
 
 FUNAPI_API const ::google::protobuf::EnumDescriptor* FunRedirectMessage_Encoding_descriptor();
-inline const ::std::string& FunRedirectMessage_Encoding_Name(FunRedirectMessage_Encoding value) {
+inline const ::fun::string& FunRedirectMessage_Encoding_Name(FunRedirectMessage_Encoding value) {
   return ::google::protobuf::internal::NameOfEnum(
     FunRedirectMessage_Encoding_descriptor(), value);
 }
 inline bool FunRedirectMessage_Encoding_Parse(
-    const ::std::string& name, FunRedirectMessage_Encoding* value) {
+    const ::fun::string& name, FunRedirectMessage_Encoding* value) {
   return ::google::protobuf::internal::ParseNamedEnum<FunRedirectMessage_Encoding>(
     FunRedirectMessage_Encoding_descriptor(), name, value);
 }
@@ -90,12 +90,12 @@ const FunRedirectConnectMessage_Result FunRedirectConnectMessage_Result_Result_M
 const int FunRedirectConnectMessage_Result_Result_ARRAYSIZE = FunRedirectConnectMessage_Result_Result_MAX + 1;
 
 FUNAPI_API const ::google::protobuf::EnumDescriptor* FunRedirectConnectMessage_Result_descriptor();
-inline const ::std::string& FunRedirectConnectMessage_Result_Name(FunRedirectConnectMessage_Result value) {
+inline const ::fun::string& FunRedirectConnectMessage_Result_Name(FunRedirectConnectMessage_Result value) {
   return ::google::protobuf::internal::NameOfEnum(
     FunRedirectConnectMessage_Result_descriptor(), value);
 }
 inline bool FunRedirectConnectMessage_Result_Parse(
-    const ::std::string& name, FunRedirectConnectMessage_Result* value) {
+    const ::fun::string& name, FunRedirectConnectMessage_Result* value) {
   return ::google::protobuf::internal::ParseNamedEnum<FunRedirectConnectMessage_Result>(
     FunRedirectConnectMessage_Result_descriptor(), name, value);
 }
@@ -270,10 +270,10 @@ class FUNAPI_API FunRedirectMessage : public ::google::protobuf::Message {
   Protocol_descriptor() {
     return FunRedirectMessage_Protocol_descriptor();
   }
-  static inline const ::std::string& Protocol_Name(Protocol value) {
+  static inline const ::fun::string& Protocol_Name(Protocol value) {
     return FunRedirectMessage_Protocol_Name(value);
   }
-  static inline bool Protocol_Parse(const ::std::string& name,
+  static inline bool Protocol_Parse(const ::fun::string& name,
       Protocol* value) {
     return FunRedirectMessage_Protocol_Parse(name, value);
   }
@@ -294,27 +294,27 @@ class FUNAPI_API FunRedirectMessage : public ::google::protobuf::Message {
   Encoding_descriptor() {
     return FunRedirectMessage_Encoding_descriptor();
   }
-  static inline const ::std::string& Encoding_Name(Encoding value) {
+  static inline const ::fun::string& Encoding_Name(Encoding value) {
     return FunRedirectMessage_Encoding_Name(value);
   }
-  static inline bool Encoding_Parse(const ::std::string& name,
+  static inline bool Encoding_Parse(const ::fun::string& name,
       Encoding* value) {
     return FunRedirectMessage_Encoding_Parse(name, value);
   }
 
   // accessors -------------------------------------------------------
 
-  // required string host = 1;
+  // required fun::string host = 1;
   inline bool has_host() const;
   inline void clear_host();
   static const int kHostFieldNumber = 1;
-  inline const ::std::string& host() const;
-  inline void set_host(const ::std::string& value);
+  inline const ::fun::string& host() const;
+  inline void set_host(const ::fun::string& value);
   inline void set_host(const char* value);
   inline void set_host(const char* value, size_t size);
-  inline ::std::string* mutable_host();
-  inline ::std::string* release_host();
-  inline void set_allocated_host(::std::string* host);
+  inline ::fun::string* mutable_host();
+  inline ::fun::string* release_host();
+  inline void set_allocated_host(::fun::string* host);
 
   // repeated .FunRedirectMessage.ServerPort ports = 2;
   inline int ports_size() const;
@@ -328,61 +328,61 @@ class FUNAPI_API FunRedirectMessage : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::FunRedirectMessage_ServerPort >*
       mutable_ports();
 
-  // required string token = 3;
+  // required fun::string token = 3;
   inline bool has_token() const;
   inline void clear_token();
   static const int kTokenFieldNumber = 3;
-  inline const ::std::string& token() const;
-  inline void set_token(const ::std::string& value);
+  inline const ::fun::string& token() const;
+  inline void set_token(const ::fun::string& value);
   inline void set_token(const char* value);
   inline void set_token(const char* value, size_t size);
-  inline ::std::string* mutable_token();
-  inline ::std::string* release_token();
-  inline void set_allocated_token(::std::string* token);
+  inline ::fun::string* mutable_token();
+  inline ::fun::string* release_token();
+  inline void set_allocated_token(::fun::string* token);
 
-  // required string flavor = 4;
+  // required fun::string flavor = 4;
   inline bool has_flavor() const;
   inline void clear_flavor();
   static const int kFlavorFieldNumber = 4;
-  inline const ::std::string& flavor() const;
-  inline void set_flavor(const ::std::string& value);
+  inline const ::fun::string& flavor() const;
+  inline void set_flavor(const ::fun::string& value);
   inline void set_flavor(const char* value);
   inline void set_flavor(const char* value, size_t size);
-  inline ::std::string* mutable_flavor();
-  inline ::std::string* release_flavor();
-  inline void set_allocated_flavor(::std::string* flavor);
+  inline ::fun::string* mutable_flavor();
+  inline ::fun::string* release_flavor();
+  inline void set_allocated_flavor(::fun::string* flavor);
 
-  // repeated string target_tags = 5;
+  // repeated fun::string target_tags = 5;
   inline int target_tags_size() const;
   inline void clear_target_tags();
   static const int kTargetTagsFieldNumber = 5;
-  inline const ::std::string& target_tags(int index) const;
-  inline ::std::string* mutable_target_tags(int index);
-  inline void set_target_tags(int index, const ::std::string& value);
+  inline const ::fun::string& target_tags(int index) const;
+  inline ::fun::string* mutable_target_tags(int index);
+  inline void set_target_tags(int index, const ::fun::string& value);
   inline void set_target_tags(int index, const char* value);
   inline void set_target_tags(int index, const char* value, size_t size);
-  inline ::std::string* add_target_tags();
-  inline void add_target_tags(const ::std::string& value);
+  inline ::fun::string* add_target_tags();
+  inline void add_target_tags(const ::fun::string& value);
   inline void add_target_tags(const char* value);
   inline void add_target_tags(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& target_tags() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_target_tags();
+  inline const ::google::protobuf::RepeatedPtrField< ::fun::string>& target_tags() const;
+  inline ::google::protobuf::RepeatedPtrField< ::fun::string>* mutable_target_tags();
 
-  // repeated string current_tags = 6;
+  // repeated fun::string current_tags = 6;
   inline int current_tags_size() const;
   inline void clear_current_tags();
   static const int kCurrentTagsFieldNumber = 6;
-  inline const ::std::string& current_tags(int index) const;
-  inline ::std::string* mutable_current_tags(int index);
-  inline void set_current_tags(int index, const ::std::string& value);
+  inline const ::fun::string& current_tags(int index) const;
+  inline ::fun::string* mutable_current_tags(int index);
+  inline void set_current_tags(int index, const ::fun::string& value);
   inline void set_current_tags(int index, const char* value);
   inline void set_current_tags(int index, const char* value, size_t size);
-  inline ::std::string* add_current_tags();
-  inline void add_current_tags(const ::std::string& value);
+  inline ::fun::string* add_current_tags();
+  inline void add_current_tags(const ::fun::string& value);
   inline void add_current_tags(const char* value);
   inline void add_current_tags(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& current_tags() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_current_tags();
+  inline const ::google::protobuf::RepeatedPtrField< ::fun::string>& current_tags() const;
+  inline ::google::protobuf::RepeatedPtrField< ::fun::string>* mutable_current_tags();
 
   // @@protoc_insertion_point(class_scope:FunRedirectMessage)
  private:
@@ -397,12 +397,12 @@ class FUNAPI_API FunRedirectMessage : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::std::string* host_;
+  ::fun::string* host_;
   ::google::protobuf::RepeatedPtrField< ::FunRedirectMessage_ServerPort > ports_;
-  ::std::string* token_;
-  ::std::string* flavor_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> target_tags_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> current_tags_;
+  ::fun::string* token_;
+  ::fun::string* flavor_;
+  ::google::protobuf::RepeatedPtrField< ::fun::string> target_tags_;
+  ::google::protobuf::RepeatedPtrField< ::fun::string> current_tags_;
   friend void FUNAPI_API protobuf_AddDesc_funapi_2fservice_2fredirect_5fmessage_2eproto();
   friend void protobuf_AssignDesc_funapi_2fservice_2fredirect_5fmessage_2eproto();
   friend void protobuf_ShutdownFile_funapi_2fservice_2fredirect_5fmessage_2eproto();
@@ -481,27 +481,27 @@ class FUNAPI_API FunRedirectConnectMessage : public ::google::protobuf::Message 
   Result_descriptor() {
     return FunRedirectConnectMessage_Result_descriptor();
   }
-  static inline const ::std::string& Result_Name(Result value) {
+  static inline const ::fun::string& Result_Name(Result value) {
     return FunRedirectConnectMessage_Result_Name(value);
   }
-  static inline bool Result_Parse(const ::std::string& name,
+  static inline bool Result_Parse(const ::fun::string& name,
       Result* value) {
     return FunRedirectConnectMessage_Result_Parse(name, value);
   }
 
   // accessors -------------------------------------------------------
 
-  // optional string token = 1;
+  // optional fun::string token = 1;
   inline bool has_token() const;
   inline void clear_token();
   static const int kTokenFieldNumber = 1;
-  inline const ::std::string& token() const;
-  inline void set_token(const ::std::string& value);
+  inline const ::fun::string& token() const;
+  inline void set_token(const ::fun::string& value);
   inline void set_token(const char* value);
   inline void set_token(const char* value, size_t size);
-  inline ::std::string* mutable_token();
-  inline ::std::string* release_token();
-  inline void set_allocated_token(::std::string* token);
+  inline ::fun::string* mutable_token();
+  inline ::fun::string* release_token();
+  inline void set_allocated_token(::fun::string* token);
 
   // optional .FunRedirectConnectMessage.Result result = 2;
   inline bool has_result() const;
@@ -521,7 +521,7 @@ class FUNAPI_API FunRedirectConnectMessage : public ::google::protobuf::Message 
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::std::string* token_;
+  ::fun::string* token_;
   int result_;
   friend void FUNAPI_API protobuf_AddDesc_funapi_2fservice_2fredirect_5fmessage_2eproto();
   friend void protobuf_AssignDesc_funapi_2fservice_2fredirect_5fmessage_2eproto();
@@ -585,17 +585,17 @@ class FUNAPI_API FunDedicatedServerRedirectMessage : public ::google::protobuf::
 
   // accessors -------------------------------------------------------
 
-  // required string host = 1;
+  // required fun::string host = 1;
   inline bool has_host() const;
   inline void clear_host();
   static const int kHostFieldNumber = 1;
-  inline const ::std::string& host() const;
-  inline void set_host(const ::std::string& value);
+  inline const ::fun::string& host() const;
+  inline void set_host(const ::fun::string& value);
   inline void set_host(const char* value);
   inline void set_host(const char* value, size_t size);
-  inline ::std::string* mutable_host();
-  inline ::std::string* release_host();
-  inline void set_allocated_host(::std::string* host);
+  inline ::fun::string* mutable_host();
+  inline ::fun::string* release_host();
+  inline void set_allocated_host(::fun::string* host);
 
   // required int32 port = 2;
   inline bool has_port() const;
@@ -604,17 +604,17 @@ class FUNAPI_API FunDedicatedServerRedirectMessage : public ::google::protobuf::
   inline ::google::protobuf::int32 port() const;
   inline void set_port(::google::protobuf::int32 value);
 
-  // required string token = 3;
+  // required fun::string token = 3;
   inline bool has_token() const;
   inline void clear_token();
   static const int kTokenFieldNumber = 3;
-  inline const ::std::string& token() const;
-  inline void set_token(const ::std::string& value);
+  inline const ::fun::string& token() const;
+  inline void set_token(const ::fun::string& value);
   inline void set_token(const char* value);
   inline void set_token(const char* value, size_t size);
-  inline ::std::string* mutable_token();
-  inline ::std::string* release_token();
-  inline void set_allocated_token(::std::string* token);
+  inline ::fun::string* mutable_token();
+  inline ::fun::string* release_token();
+  inline void set_allocated_token(::fun::string* token);
 
   // @@protoc_insertion_point(class_scope:FunDedicatedServerRedirectMessage)
  private:
@@ -629,8 +629,8 @@ class FUNAPI_API FunDedicatedServerRedirectMessage : public ::google::protobuf::
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::std::string* host_;
-  ::std::string* token_;
+  ::fun::string* host_;
+  ::fun::string* token_;
   ::google::protobuf::int32 port_;
   friend void FUNAPI_API protobuf_AddDesc_funapi_2fservice_2fredirect_5fmessage_2eproto();
   friend void protobuf_AssignDesc_funapi_2fservice_2fredirect_5fmessage_2eproto();
@@ -817,7 +817,7 @@ inline void FunRedirectMessage_ServerPort::set_encoding(::FunRedirectMessage_Enc
 
 // FunRedirectMessage
 
-// required string host = 1;
+// required fun::string host = 1;
 inline bool FunRedirectMessage::has_host() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -833,14 +833,14 @@ inline void FunRedirectMessage::clear_host() {
   }
   clear_has_host();
 }
-inline const ::std::string& FunRedirectMessage::host() const {
+inline const ::fun::string& FunRedirectMessage::host() const {
   // @@protoc_insertion_point(field_get:FunRedirectMessage.host)
   return *host_;
 }
-inline void FunRedirectMessage::set_host(const ::std::string& value) {
+inline void FunRedirectMessage::set_host(const ::fun::string& value) {
   set_has_host();
   if (host_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    host_ = new ::std::string;
+    host_ = new ::fun::string;
   }
   host_->assign(value);
   // @@protoc_insertion_point(field_set:FunRedirectMessage.host)
@@ -848,7 +848,7 @@ inline void FunRedirectMessage::set_host(const ::std::string& value) {
 inline void FunRedirectMessage::set_host(const char* value) {
   set_has_host();
   if (host_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    host_ = new ::std::string;
+    host_ = new ::fun::string;
   }
   host_->assign(value);
   // @@protoc_insertion_point(field_set_char:FunRedirectMessage.host)
@@ -856,30 +856,30 @@ inline void FunRedirectMessage::set_host(const char* value) {
 inline void FunRedirectMessage::set_host(const char* value, size_t size) {
   set_has_host();
   if (host_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    host_ = new ::std::string;
+    host_ = new ::fun::string;
   }
   host_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:FunRedirectMessage.host)
 }
-inline ::std::string* FunRedirectMessage::mutable_host() {
+inline ::fun::string* FunRedirectMessage::mutable_host() {
   set_has_host();
   if (host_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    host_ = new ::std::string;
+    host_ = new ::fun::string;
   }
   // @@protoc_insertion_point(field_mutable:FunRedirectMessage.host)
   return host_;
 }
-inline ::std::string* FunRedirectMessage::release_host() {
+inline ::fun::string* FunRedirectMessage::release_host() {
   clear_has_host();
   if (host_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::std::string* temp = host_;
-    host_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::fun::string* temp = host_;
+    host_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void FunRedirectMessage::set_allocated_host(::std::string* host) {
+inline void FunRedirectMessage::set_allocated_host(::fun::string* host) {
   if (host_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete host_;
   }
@@ -888,7 +888,7 @@ inline void FunRedirectMessage::set_allocated_host(::std::string* host) {
     host_ = host;
   } else {
     clear_has_host();
-    host_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    host_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:FunRedirectMessage.host)
 }
@@ -923,7 +923,7 @@ FunRedirectMessage::mutable_ports() {
   return &ports_;
 }
 
-// required string token = 3;
+// required fun::string token = 3;
 inline bool FunRedirectMessage::has_token() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -939,14 +939,14 @@ inline void FunRedirectMessage::clear_token() {
   }
   clear_has_token();
 }
-inline const ::std::string& FunRedirectMessage::token() const {
+inline const ::fun::string& FunRedirectMessage::token() const {
   // @@protoc_insertion_point(field_get:FunRedirectMessage.token)
   return *token_;
 }
-inline void FunRedirectMessage::set_token(const ::std::string& value) {
+inline void FunRedirectMessage::set_token(const ::fun::string& value) {
   set_has_token();
   if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    token_ = new ::std::string;
+    token_ = new ::fun::string;
   }
   token_->assign(value);
   // @@protoc_insertion_point(field_set:FunRedirectMessage.token)
@@ -954,7 +954,7 @@ inline void FunRedirectMessage::set_token(const ::std::string& value) {
 inline void FunRedirectMessage::set_token(const char* value) {
   set_has_token();
   if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    token_ = new ::std::string;
+    token_ = new ::fun::string;
   }
   token_->assign(value);
   // @@protoc_insertion_point(field_set_char:FunRedirectMessage.token)
@@ -962,30 +962,30 @@ inline void FunRedirectMessage::set_token(const char* value) {
 inline void FunRedirectMessage::set_token(const char* value, size_t size) {
   set_has_token();
   if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    token_ = new ::std::string;
+    token_ = new ::fun::string;
   }
   token_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:FunRedirectMessage.token)
 }
-inline ::std::string* FunRedirectMessage::mutable_token() {
+inline ::fun::string* FunRedirectMessage::mutable_token() {
   set_has_token();
   if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    token_ = new ::std::string;
+    token_ = new ::fun::string;
   }
   // @@protoc_insertion_point(field_mutable:FunRedirectMessage.token)
   return token_;
 }
-inline ::std::string* FunRedirectMessage::release_token() {
+inline ::fun::string* FunRedirectMessage::release_token() {
   clear_has_token();
   if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::std::string* temp = token_;
-    token_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::fun::string* temp = token_;
+    token_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void FunRedirectMessage::set_allocated_token(::std::string* token) {
+inline void FunRedirectMessage::set_allocated_token(::fun::string* token) {
   if (token_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete token_;
   }
@@ -994,12 +994,12 @@ inline void FunRedirectMessage::set_allocated_token(::std::string* token) {
     token_ = token;
   } else {
     clear_has_token();
-    token_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    token_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:FunRedirectMessage.token)
 }
 
-// required string flavor = 4;
+// required fun::string flavor = 4;
 inline bool FunRedirectMessage::has_flavor() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
@@ -1015,14 +1015,14 @@ inline void FunRedirectMessage::clear_flavor() {
   }
   clear_has_flavor();
 }
-inline const ::std::string& FunRedirectMessage::flavor() const {
+inline const ::fun::string& FunRedirectMessage::flavor() const {
   // @@protoc_insertion_point(field_get:FunRedirectMessage.flavor)
   return *flavor_;
 }
-inline void FunRedirectMessage::set_flavor(const ::std::string& value) {
+inline void FunRedirectMessage::set_flavor(const ::fun::string& value) {
   set_has_flavor();
   if (flavor_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    flavor_ = new ::std::string;
+    flavor_ = new ::fun::string;
   }
   flavor_->assign(value);
   // @@protoc_insertion_point(field_set:FunRedirectMessage.flavor)
@@ -1030,7 +1030,7 @@ inline void FunRedirectMessage::set_flavor(const ::std::string& value) {
 inline void FunRedirectMessage::set_flavor(const char* value) {
   set_has_flavor();
   if (flavor_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    flavor_ = new ::std::string;
+    flavor_ = new ::fun::string;
   }
   flavor_->assign(value);
   // @@protoc_insertion_point(field_set_char:FunRedirectMessage.flavor)
@@ -1038,30 +1038,30 @@ inline void FunRedirectMessage::set_flavor(const char* value) {
 inline void FunRedirectMessage::set_flavor(const char* value, size_t size) {
   set_has_flavor();
   if (flavor_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    flavor_ = new ::std::string;
+    flavor_ = new ::fun::string;
   }
   flavor_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:FunRedirectMessage.flavor)
 }
-inline ::std::string* FunRedirectMessage::mutable_flavor() {
+inline ::fun::string* FunRedirectMessage::mutable_flavor() {
   set_has_flavor();
   if (flavor_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    flavor_ = new ::std::string;
+    flavor_ = new ::fun::string;
   }
   // @@protoc_insertion_point(field_mutable:FunRedirectMessage.flavor)
   return flavor_;
 }
-inline ::std::string* FunRedirectMessage::release_flavor() {
+inline ::fun::string* FunRedirectMessage::release_flavor() {
   clear_has_flavor();
   if (flavor_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::std::string* temp = flavor_;
-    flavor_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::fun::string* temp = flavor_;
+    flavor_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void FunRedirectMessage::set_allocated_flavor(::std::string* flavor) {
+inline void FunRedirectMessage::set_allocated_flavor(::fun::string* flavor) {
   if (flavor_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete flavor_;
   }
@@ -1070,27 +1070,27 @@ inline void FunRedirectMessage::set_allocated_flavor(::std::string* flavor) {
     flavor_ = flavor;
   } else {
     clear_has_flavor();
-    flavor_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    flavor_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:FunRedirectMessage.flavor)
 }
 
-// repeated string target_tags = 5;
+// repeated fun::string target_tags = 5;
 inline int FunRedirectMessage::target_tags_size() const {
   return target_tags_.size();
 }
 inline void FunRedirectMessage::clear_target_tags() {
   target_tags_.Clear();
 }
-inline const ::std::string& FunRedirectMessage::target_tags(int index) const {
+inline const ::fun::string& FunRedirectMessage::target_tags(int index) const {
   // @@protoc_insertion_point(field_get:FunRedirectMessage.target_tags)
   return target_tags_.Get(index);
 }
-inline ::std::string* FunRedirectMessage::mutable_target_tags(int index) {
+inline ::fun::string* FunRedirectMessage::mutable_target_tags(int index) {
   // @@protoc_insertion_point(field_mutable:FunRedirectMessage.target_tags)
   return target_tags_.Mutable(index);
 }
-inline void FunRedirectMessage::set_target_tags(int index, const ::std::string& value) {
+inline void FunRedirectMessage::set_target_tags(int index, const ::fun::string& value) {
   // @@protoc_insertion_point(field_set:FunRedirectMessage.target_tags)
   target_tags_.Mutable(index)->assign(value);
 }
@@ -1103,10 +1103,10 @@ inline void FunRedirectMessage::set_target_tags(int index, const char* value, si
     reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:FunRedirectMessage.target_tags)
 }
-inline ::std::string* FunRedirectMessage::add_target_tags() {
+inline ::fun::string* FunRedirectMessage::add_target_tags() {
   return target_tags_.Add();
 }
-inline void FunRedirectMessage::add_target_tags(const ::std::string& value) {
+inline void FunRedirectMessage::add_target_tags(const ::fun::string& value) {
   target_tags_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:FunRedirectMessage.target_tags)
 }
@@ -1118,33 +1118,33 @@ inline void FunRedirectMessage::add_target_tags(const char* value, size_t size) 
   target_tags_.Add()->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:FunRedirectMessage.target_tags)
 }
-inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+inline const ::google::protobuf::RepeatedPtrField< ::fun::string>&
 FunRedirectMessage::target_tags() const {
   // @@protoc_insertion_point(field_list:FunRedirectMessage.target_tags)
   return target_tags_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+inline ::google::protobuf::RepeatedPtrField< ::fun::string>*
 FunRedirectMessage::mutable_target_tags() {
   // @@protoc_insertion_point(field_mutable_list:FunRedirectMessage.target_tags)
   return &target_tags_;
 }
 
-// repeated string current_tags = 6;
+// repeated fun::string current_tags = 6;
 inline int FunRedirectMessage::current_tags_size() const {
   return current_tags_.size();
 }
 inline void FunRedirectMessage::clear_current_tags() {
   current_tags_.Clear();
 }
-inline const ::std::string& FunRedirectMessage::current_tags(int index) const {
+inline const ::fun::string& FunRedirectMessage::current_tags(int index) const {
   // @@protoc_insertion_point(field_get:FunRedirectMessage.current_tags)
   return current_tags_.Get(index);
 }
-inline ::std::string* FunRedirectMessage::mutable_current_tags(int index) {
+inline ::fun::string* FunRedirectMessage::mutable_current_tags(int index) {
   // @@protoc_insertion_point(field_mutable:FunRedirectMessage.current_tags)
   return current_tags_.Mutable(index);
 }
-inline void FunRedirectMessage::set_current_tags(int index, const ::std::string& value) {
+inline void FunRedirectMessage::set_current_tags(int index, const ::fun::string& value) {
   // @@protoc_insertion_point(field_set:FunRedirectMessage.current_tags)
   current_tags_.Mutable(index)->assign(value);
 }
@@ -1157,10 +1157,10 @@ inline void FunRedirectMessage::set_current_tags(int index, const char* value, s
     reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:FunRedirectMessage.current_tags)
 }
-inline ::std::string* FunRedirectMessage::add_current_tags() {
+inline ::fun::string* FunRedirectMessage::add_current_tags() {
   return current_tags_.Add();
 }
-inline void FunRedirectMessage::add_current_tags(const ::std::string& value) {
+inline void FunRedirectMessage::add_current_tags(const ::fun::string& value) {
   current_tags_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:FunRedirectMessage.current_tags)
 }
@@ -1172,12 +1172,12 @@ inline void FunRedirectMessage::add_current_tags(const char* value, size_t size)
   current_tags_.Add()->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:FunRedirectMessage.current_tags)
 }
-inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+inline const ::google::protobuf::RepeatedPtrField< ::fun::string>&
 FunRedirectMessage::current_tags() const {
   // @@protoc_insertion_point(field_list:FunRedirectMessage.current_tags)
   return current_tags_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+inline ::google::protobuf::RepeatedPtrField< ::fun::string>*
 FunRedirectMessage::mutable_current_tags() {
   // @@protoc_insertion_point(field_mutable_list:FunRedirectMessage.current_tags)
   return &current_tags_;
@@ -1187,7 +1187,7 @@ FunRedirectMessage::mutable_current_tags() {
 
 // FunRedirectConnectMessage
 
-// optional string token = 1;
+// optional fun::string token = 1;
 inline bool FunRedirectConnectMessage::has_token() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -1203,14 +1203,14 @@ inline void FunRedirectConnectMessage::clear_token() {
   }
   clear_has_token();
 }
-inline const ::std::string& FunRedirectConnectMessage::token() const {
+inline const ::fun::string& FunRedirectConnectMessage::token() const {
   // @@protoc_insertion_point(field_get:FunRedirectConnectMessage.token)
   return *token_;
 }
-inline void FunRedirectConnectMessage::set_token(const ::std::string& value) {
+inline void FunRedirectConnectMessage::set_token(const ::fun::string& value) {
   set_has_token();
   if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    token_ = new ::std::string;
+    token_ = new ::fun::string;
   }
   token_->assign(value);
   // @@protoc_insertion_point(field_set:FunRedirectConnectMessage.token)
@@ -1218,7 +1218,7 @@ inline void FunRedirectConnectMessage::set_token(const ::std::string& value) {
 inline void FunRedirectConnectMessage::set_token(const char* value) {
   set_has_token();
   if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    token_ = new ::std::string;
+    token_ = new ::fun::string;
   }
   token_->assign(value);
   // @@protoc_insertion_point(field_set_char:FunRedirectConnectMessage.token)
@@ -1226,30 +1226,30 @@ inline void FunRedirectConnectMessage::set_token(const char* value) {
 inline void FunRedirectConnectMessage::set_token(const char* value, size_t size) {
   set_has_token();
   if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    token_ = new ::std::string;
+    token_ = new ::fun::string;
   }
   token_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:FunRedirectConnectMessage.token)
 }
-inline ::std::string* FunRedirectConnectMessage::mutable_token() {
+inline ::fun::string* FunRedirectConnectMessage::mutable_token() {
   set_has_token();
   if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    token_ = new ::std::string;
+    token_ = new ::fun::string;
   }
   // @@protoc_insertion_point(field_mutable:FunRedirectConnectMessage.token)
   return token_;
 }
-inline ::std::string* FunRedirectConnectMessage::release_token() {
+inline ::fun::string* FunRedirectConnectMessage::release_token() {
   clear_has_token();
   if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::std::string* temp = token_;
-    token_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::fun::string* temp = token_;
+    token_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void FunRedirectConnectMessage::set_allocated_token(::std::string* token) {
+inline void FunRedirectConnectMessage::set_allocated_token(::fun::string* token) {
   if (token_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete token_;
   }
@@ -1258,7 +1258,7 @@ inline void FunRedirectConnectMessage::set_allocated_token(::std::string* token)
     token_ = token;
   } else {
     clear_has_token();
-    token_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    token_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:FunRedirectConnectMessage.token)
 }
@@ -1292,7 +1292,7 @@ inline void FunRedirectConnectMessage::set_result(::FunRedirectConnectMessage_Re
 
 // FunDedicatedServerRedirectMessage
 
-// required string host = 1;
+// required fun::string host = 1;
 inline bool FunDedicatedServerRedirectMessage::has_host() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -1308,14 +1308,14 @@ inline void FunDedicatedServerRedirectMessage::clear_host() {
   }
   clear_has_host();
 }
-inline const ::std::string& FunDedicatedServerRedirectMessage::host() const {
+inline const ::fun::string& FunDedicatedServerRedirectMessage::host() const {
   // @@protoc_insertion_point(field_get:FunDedicatedServerRedirectMessage.host)
   return *host_;
 }
-inline void FunDedicatedServerRedirectMessage::set_host(const ::std::string& value) {
+inline void FunDedicatedServerRedirectMessage::set_host(const ::fun::string& value) {
   set_has_host();
   if (host_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    host_ = new ::std::string;
+    host_ = new ::fun::string;
   }
   host_->assign(value);
   // @@protoc_insertion_point(field_set:FunDedicatedServerRedirectMessage.host)
@@ -1323,7 +1323,7 @@ inline void FunDedicatedServerRedirectMessage::set_host(const ::std::string& val
 inline void FunDedicatedServerRedirectMessage::set_host(const char* value) {
   set_has_host();
   if (host_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    host_ = new ::std::string;
+    host_ = new ::fun::string;
   }
   host_->assign(value);
   // @@protoc_insertion_point(field_set_char:FunDedicatedServerRedirectMessage.host)
@@ -1331,30 +1331,30 @@ inline void FunDedicatedServerRedirectMessage::set_host(const char* value) {
 inline void FunDedicatedServerRedirectMessage::set_host(const char* value, size_t size) {
   set_has_host();
   if (host_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    host_ = new ::std::string;
+    host_ = new ::fun::string;
   }
   host_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:FunDedicatedServerRedirectMessage.host)
 }
-inline ::std::string* FunDedicatedServerRedirectMessage::mutable_host() {
+inline ::fun::string* FunDedicatedServerRedirectMessage::mutable_host() {
   set_has_host();
   if (host_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    host_ = new ::std::string;
+    host_ = new ::fun::string;
   }
   // @@protoc_insertion_point(field_mutable:FunDedicatedServerRedirectMessage.host)
   return host_;
 }
-inline ::std::string* FunDedicatedServerRedirectMessage::release_host() {
+inline ::fun::string* FunDedicatedServerRedirectMessage::release_host() {
   clear_has_host();
   if (host_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::std::string* temp = host_;
-    host_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::fun::string* temp = host_;
+    host_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void FunDedicatedServerRedirectMessage::set_allocated_host(::std::string* host) {
+inline void FunDedicatedServerRedirectMessage::set_allocated_host(::fun::string* host) {
   if (host_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete host_;
   }
@@ -1363,7 +1363,7 @@ inline void FunDedicatedServerRedirectMessage::set_allocated_host(::std::string*
     host_ = host;
   } else {
     clear_has_host();
-    host_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    host_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:FunDedicatedServerRedirectMessage.host)
 }
@@ -1392,7 +1392,7 @@ inline void FunDedicatedServerRedirectMessage::set_port(::google::protobuf::int3
   // @@protoc_insertion_point(field_set:FunDedicatedServerRedirectMessage.port)
 }
 
-// required string token = 3;
+// required fun::string token = 3;
 inline bool FunDedicatedServerRedirectMessage::has_token() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -1408,14 +1408,14 @@ inline void FunDedicatedServerRedirectMessage::clear_token() {
   }
   clear_has_token();
 }
-inline const ::std::string& FunDedicatedServerRedirectMessage::token() const {
+inline const ::fun::string& FunDedicatedServerRedirectMessage::token() const {
   // @@protoc_insertion_point(field_get:FunDedicatedServerRedirectMessage.token)
   return *token_;
 }
-inline void FunDedicatedServerRedirectMessage::set_token(const ::std::string& value) {
+inline void FunDedicatedServerRedirectMessage::set_token(const ::fun::string& value) {
   set_has_token();
   if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    token_ = new ::std::string;
+    token_ = new ::fun::string;
   }
   token_->assign(value);
   // @@protoc_insertion_point(field_set:FunDedicatedServerRedirectMessage.token)
@@ -1423,7 +1423,7 @@ inline void FunDedicatedServerRedirectMessage::set_token(const ::std::string& va
 inline void FunDedicatedServerRedirectMessage::set_token(const char* value) {
   set_has_token();
   if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    token_ = new ::std::string;
+    token_ = new ::fun::string;
   }
   token_->assign(value);
   // @@protoc_insertion_point(field_set_char:FunDedicatedServerRedirectMessage.token)
@@ -1431,30 +1431,30 @@ inline void FunDedicatedServerRedirectMessage::set_token(const char* value) {
 inline void FunDedicatedServerRedirectMessage::set_token(const char* value, size_t size) {
   set_has_token();
   if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    token_ = new ::std::string;
+    token_ = new ::fun::string;
   }
   token_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:FunDedicatedServerRedirectMessage.token)
 }
-inline ::std::string* FunDedicatedServerRedirectMessage::mutable_token() {
+inline ::fun::string* FunDedicatedServerRedirectMessage::mutable_token() {
   set_has_token();
   if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    token_ = new ::std::string;
+    token_ = new ::fun::string;
   }
   // @@protoc_insertion_point(field_mutable:FunDedicatedServerRedirectMessage.token)
   return token_;
 }
-inline ::std::string* FunDedicatedServerRedirectMessage::release_token() {
+inline ::fun::string* FunDedicatedServerRedirectMessage::release_token() {
   clear_has_token();
   if (token_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::std::string* temp = token_;
-    token_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::fun::string* temp = token_;
+    token_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void FunDedicatedServerRedirectMessage::set_allocated_token(::std::string* token) {
+inline void FunDedicatedServerRedirectMessage::set_allocated_token(::fun::string* token) {
   if (token_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete token_;
   }
@@ -1463,7 +1463,7 @@ inline void FunDedicatedServerRedirectMessage::set_allocated_token(::std::string
     token_ = token;
   } else {
     clear_has_token();
-    token_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    token_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:FunDedicatedServerRedirectMessage.token)
 }

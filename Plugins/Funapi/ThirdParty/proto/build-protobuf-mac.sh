@@ -1,14 +1,107 @@
+#!/bin/bash -e
 # Copyright (C) 2019 iFunFactory Inc. All Rights Reserved.
 #
 # This work is confidential and proprietary to iFunFactory Inc. and
 # must not be used, disclosed, copied, or distributed without the prior
 # consent of iFunFactory Inc.
+set -e
+
 
 echo "Start build .proto files"
-
 # Setting user project name
 PROJECT_NAME=funapi_plugin_ue4
 PROJECT_SOURCE_DIR=../../../../Source
+
+#############################################
+# Replace funtion
+#############################################
+
+ReplaceStdToFun()
+{
+  set -e
+
+  RelaceFile=$1
+  mono replace.exe "\bstd::ostringstream" "FUN_OSTRINGSTREAM" $RelaceFile
+  mono replace.exe "\bostringstream" "FUN_OSTRINGSTREAM" $RelaceFile
+
+  # remove xx_ word
+  mono replace.exe "\bFUN_OSTRINGSTREAM_" "ostringstream_" $RelaceFile
+
+  mono replace.exe "\bstd::istringstream" "FUN_ISTRINGSTREAM" $RelaceFile
+  mono replace.exe "\bistringstream" "FUN_ISTRINGSTREAM" $RelaceFile
+  # remove xx_ word
+  mono replace.exe "\bFUN_ISTRINGSTREAM_" "istringstream_" $RelaceFile
+
+  mono replace.exe "\bstd::stringstream" "FUN_STRINGSTREAM" $RelaceFile
+  mono replace.exe "\bstringstream" "FUN_STRINGSTREAM" $RelaceFile
+  # remove xx_ word
+  mono replace.exe "\bFUN_STRINGSTREAM_" "stringstream_" $RelaceFile
+
+  mono replace.exe "\bstd::string" "FUN_STRING" $RelaceFile
+  mono replace.exe "\bstring" "FUN_STRING" $RelaceFile
+  # remove xx_ word
+  mono replace.exe "\bFUN_STRING_" "string_" $RelaceFile
+
+  mono replace.exe "\bstd::vector" "FUN_VECTOR" $RelaceFile
+  mono replace.exe "\bvector" "FUN_VECTOR" $RelaceFile
+  # remove xx_ word
+  mono replace.exe "\bFUN_VECTOR_" "vector_" $RelaceFile
+
+  mono replace.exe "\bstd::deque" "FUN_DEQUE" $RelaceFile
+  mono replace.exe "\bdeque" "FUN_DEQUE" $RelaceFile
+  # remove xx_ word
+  mono replace.exe "\bFUN_DEQUE_" "deque_" $RelaceFile
+
+  mono replace.exe "\bstd::queue" "FUN_QUEUE" $RelaceFile
+  mono replace.exe "\bqueue" "FUN_QUEUE" $RelaceFile
+  # remove xx_ word
+  mono replace.exe "\bFUN_QUEUE_" "queue_" $RelaceFile
+
+  mono replace.exe "\bstd::set" "FUN_SET" $RelaceFile
+  mono replace.exe "\bset" "FUN_SET" $RelaceFile
+  mono replace.exe "\bFUN_SET_" "set_" $RelaceFile
+
+  mono replace.exe "\bstd::unordered_set" "FUN_UNORDERED_SET" $RelaceFile
+  mono replace.exe "\bunordered_set" "FUN_UNORDERED_SET" $RelaceFile
+  mono replace.exe "\bFUN_UNORDERED_SET_" "unordered_set_" $RelaceFile
+
+  mono replace.exe "\bstd::map" "FUN_MAP" $RelaceFile
+  mono replace.exe "\bmap" "FUN_MAP" $RelaceFile
+  # remove xx_ word
+  mono replace.exe "\bFUN_MAP_" "map_" $RelaceFile
+
+  mono replace.exe "\bstd::unordered_map" "FUN_UNORDERED_MAP" $RelaceFile
+  mono replace.exe "\bunordered_map" "FUN_UNORDERED_MAP" $RelaceFile
+  # remove xx_ word
+  mono replace.exe "\bFUN_UNORDERED_MAP_" "unordered_map_" $RelaceFile
+
+  mono replace.exe "\bFUN_OSTRINGSTREAM" "fun::ostringstream" $RelaceFile
+  mono replace.exe "\bFUN_ISTRINGSTREAM" "fun::istringstream" $RelaceFile
+  mono replace.exe "\bFUN_STRINGSTREAM" "fun::stringstream" $RelaceFile
+  mono replace.exe "\bFUN_STRING" "fun::string" $RelaceFile
+
+  mono replace.exe "\bFUN_VECTOR" "fun::vector" $RelaceFile
+  mono replace.exe "\bFUN_DEQUE" "fun::deque" $RelaceFile
+  mono replace.exe "\bFUN_QUEUE" "fun::queue" $RelaceFile
+  mono replace.exe "\bFUN_SET" "fun::set" $RelaceFile
+  mono replace.exe "\bFUN_UNORDERED_SET" "fun::unordered_set" $RelaceFile
+  mono replace.exe "\bFUN_MAP" "fun::map" $RelaceFile
+  mono replace.exe "\bFUN_UNORDERED_MAP" "fun::unordered_map" $RelaceFile
+
+  mono replace.exe "#include <fun::ostringstream>" "#include <ostringstream>" $RelaceFile
+  mono replace.exe "#include <fun::istringstream>" "#include <istringstream>" $RelaceFile
+  mono replace.exe "#include <fun::stringstream>" "#include <stringstream>" $RelaceFile
+  mono replace.exe "#include <fun::string>" "#include <string>" $RelaceFile
+  mono replace.exe "#include <fun::vector>" "#include <vector>" $RelaceFile
+  mono replace.exe "#include <fun::deque>" "#include <deque>" $RelaceFile
+  mono replace.exe "#include <fun::queue>" "#include <queue>" $RelaceFile
+  mono replace.exe "#include <fun::set>" "#include <set>" $RelaceFile
+  mono replace.exe "#include <fun::map>" "#include <map>" $RelaceFile
+  mono replace.exe "#include <fun::unordered_map>" "#include <unordered_map>" $RelaceFile
+
+  echo "Replaced std container to fun container. FileName: $RelaceFile"
+}
+export -f ReplaceStdToFun
 
 #############################################
 # Build plugin's proto file. DO NOT EDIT!
@@ -46,9 +139,13 @@ mv -f ../../Source/Funapi/Public/funapi/distribution/fun_dedicated_server_rpc_me
 
 # Test echo message file build
 ./protoc --cpp_out=${PROJECT_SOURCE_DIR}/${PROJECT_NAME} test_messages.proto
+find ${PROJECT_SOURCE_DIR}/${PROJECT_NAME} -maxdepth 1 -name "test_messages.pb.*" \
+  -exec bash -c 'ReplaceStdToFun "$0"' {} \;
 
 # Test UE4 dedicated rpc file build
 ./protoc --cpp_out=${PROJECT_SOURCE_DIR}/${PROJECT_NAME} test_dedicated_server_rpc_messages.proto
+find ${PROJECT_SOURCE_DIR}/${PROJECT_NAME} -maxdepth 1 -name "test_dedicated_server_rpc_messages.pb.*" \
+  -exec bash -c 'ReplaceStdToFun "$0"' {} \;
 
 
 #############################################
@@ -58,22 +155,33 @@ mv -f ../../Source/Funapi/Public/funapi/distribution/fun_dedicated_server_rpc_me
 # NOTE(sungjin)
 # Build .proto files in {Project/Source} directory.
 
-## Build your custom .proto file, Please Edit Path
-#USER_PROTO_FILE_INPUT_PATH=${PROJECT_SOURCE_DIR}/${PROJECT_NAME}
-#USER_PROTO_FILE_OUT_PATH=${PROJECT_SOURCE_DIR}/${PROJECT_NAME}
+# Build your custom .proto file, Please Edit Path
+USER_PROTO_FILE_INPUT_PATH=${PROJECT_SOURCE_DIR}/${PROJECT_NAME}
+USER_PROTO_FILE_OUT_PATH=${PROJECT_SOURCE_DIR}/${PROJECT_NAME}
 
+FILE_LIST=(`find ${USER_PROTO_FILE_INPUT_PATH} -maxdepth 1 -name "*.proto"`)
 
-#FILE_LIST=(`find ${USER_PROTO_FILE_INPUT_PATH} -maxdepth 1 -name "*.proto"`)
+# Copy proto files to funapi plugin directory.
+find ${USER_PROTO_FILE_INPUT_PATH} -maxdepth 1 -name "*.proto" -exec cp {} . \;
 
-## Copy proto files to funapi plugin directory.
-#find ${USER_PROTO_FILE_INPUT_PATH} -maxdepth 1 -name "*.proto" -exec cp {} . \;
+# Build proto files to user directory
+find ./ -maxdepth 1 -name "*.proto" -exec ./protoc --cpp_out=${USER_PROTO_FILE_OUT_PATH} {} \;
 
-## Build proto files to user directory
-#find ./ -maxdepth 1 -name "*.proto" \
-#-exec ./protoc --cpp_out=${USER_PROTO_FILE_OUT_PATH} {} \;
+# Remove proto files
+for value in "${FILE_LIST[@]}"; do
+    name=$(basename "$value" ".proto")
+    rm -f $name.proto
+done
 
-## Remove proto files
-#for value in "${FILE_LIST[@]}"; do
-#    name=$(basename "$value" ".proto")
-#    rm -f $name.proto
-#done
+#############################################
+# Replace std container
+#############################################
+
+find ${USER_PROTO_FILE_OUT_PATH} -maxdepth 1 -name "*.pb.*" \
+  -exec bash -c 'ReplaceStdToFun "$0"' {} \;
+
+find ${PWD}/../../Source/Funapi/Public/funapi -name "*.pb.*" \
+  -exec bash -c 'ReplaceStdToFun "$0"' {} \;
+
+find ${PWD}/../../Source/Funapi/Private/funapi -name "*.pb.*" \
+  -exec bash -c 'ReplaceStdToFun "$0"' {} \;

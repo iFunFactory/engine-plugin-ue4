@@ -23,22 +23,22 @@ protoc.exe --cpp_out=dllexport_decl=FUNAPI_API:..\..\Source\Funapi\Public ^
     funapi\service\redirect_message.proto ^
     funapi\distribution\fun_dedicated_server_rpc_message.proto
 
-mv -f ..\..\Source\Funapi\Public\funapi\management\maintenance_message.pb.cc ^
+move /y ..\..\Source\Funapi\Public\funapi\management\maintenance_message.pb.cc ^
     ..\..\Source\Funapi\Private\funapi\management
 
-mv -f ..\..\Source\Funapi\Public\funapi\network\fun_message.pb.cc ^
+move /y ..\..\Source\Funapi\Public\funapi\network\fun_message.pb.cc ^
     ..\..\Source\Funapi\Private\funapi\network
 
-mv -f ..\..\Source\Funapi\Public\funapi\network\ping_message.pb.cc ^
+move /y ..\..\Source\Funapi\Public\funapi\network\ping_message.pb.cc ^
     ..\..\Source\Funapi\Private\funapi\network
 
-mv -f ..\..\Source\Funapi\Public\funapi\service\multicast_message.pb.cc ^
+move /y ..\..\Source\Funapi\Public\funapi\service\multicast_message.pb.cc ^
     ..\..\Source\Funapi\Private\funapi\service
 
-mv -f ..\..\Source\Funapi\Public\funapi\service\redirect_message.pb.cc ^
+move /y ..\..\Source\Funapi\Public\funapi\service\redirect_message.pb.cc ^
     ..\..\Source\Funapi\Private\funapi\service
 
-mv -f ..\..\Source\Funapi\Public\funapi\distribution\fun_dedicated_server_rpc_message.pb.cc  ^
+move /y ..\..\Source\Funapi\Public\funapi\distribution\fun_dedicated_server_rpc_message.pb.cc  ^
     ..\..\Source\Funapi\Private\funapi\distribution
 
 :::::::::::::::::::::::::::::::::::::::::::::
@@ -184,7 +184,7 @@ EXIT /B 0
     %~dp0replace.exe "\bFUN_DEQUE" "fun::deque" %~1
     %~dp0replace.exe "\bFUN_QUEUE" "fun::queue" %~1
     %~dp0replace.exe "\bFUN_SET" "fun::set" %~1
-    %~dp0replace.exe "\FUN_UNORDERED_SET" "fun::unordered_set" %~1
+    %~dp0replace.exe "\bFUN_UNORDERED_SET" "fun::unordered_set" %~1
     %~dp0replace.exe "\bFUN_MAP" "fun::map" %~1
     %~dp0replace.exe "\bFUN_UNORDERED_MAP" "fun::unordered_map" %~1
 

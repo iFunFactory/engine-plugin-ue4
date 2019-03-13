@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2018 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2019 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -129,6 +129,10 @@ static fun::string TransportEventTypeToString(TransportEventType type) {
 
     case TransportEventType::kDisconnected:
       ret = "Disconnected";
+      break;
+
+    case TransportEventType::kReconnecting:
+      ret = "Reconnecting";
       break;
 
     default:
@@ -797,6 +801,7 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
 
   void OnTransportConnectFailed(const TransportProtocol protocol, std::shared_ptr<FunapiError> error = nullptr);
   void OnTransportDisconnected(const TransportProtocol protocol, std::shared_ptr<FunapiError> error = nullptr);
+  void OnTransportReconnecting(const TransportProtocol protocol, std::shared_ptr<FunapiError> error = nullptr);
   void OnTransportConnectTimeout(const TransportProtocol protocol, std::shared_ptr<FunapiError> error = nullptr);
   void OnTransportStarted(const TransportProtocol protocol, std::shared_ptr<FunapiError> error = nullptr);
   void OnTransportClosed(const TransportProtocol protocol, std::shared_ptr<FunapiError> error = nullptr);
@@ -973,7 +978,7 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
   virtual ~FunapiTransport();
 
   bool IsStarted();
-  virtual void Start() = 0;
+  virtual void Start();
   virtual void Stop(bool use_force = false, std::shared_ptr<FunapiError> error = nullptr);
 
   void SendMessage(std::shared_ptr<FunapiMessage> message,
@@ -1002,6 +1007,8 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
   void SetSendSessionIdOnlyOnce(const bool once);
   void SetUseFirstSessionId(const bool use);
   void SetDelayedAckInterval(const int millisecond);
+
+  void SetReceivedRedirectionEvent(bool received_event);
 
  protected:
   void PushNetworkThreadTask(const FunapiThread::TaskHandler &handler);
@@ -1039,6 +1046,7 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
 
   void OnTransportStarted(const TransportProtocol protocol, std::shared_ptr<FunapiError> error = nullptr);
   void OnTransportClosed(const TransportProtocol protocol, std::shared_ptr<FunapiError> error = nullptr);
+  void OnTransportReconnecting(const TransportProtocol protocol, std::shared_ptr<FunapiError> error = nullptr);
   void OnTransportConnectFailed(const TransportProtocol protocol, std::shared_ptr<FunapiError> error = nullptr);
   void OnTransportConnectTimeout(const TransportProtocol protocol, std::shared_ptr<FunapiError> error = nullptr);
   void OnTransportDisconnected(const TransportProtocol protocol, std::shared_ptr<FunapiError> error = nullptr);
@@ -1105,6 +1113,8 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
   int next_decoding_offset_ = 0;
   bool header_decoded_ = false;
   HeaderFields header_fields_;
+
+  bool received_redirection_event_ = false;
 
  private:
   TransportState state_ = TransportState::kDisconnected;
@@ -1358,6 +1368,11 @@ bool FunapiTransport::UseSendSessionIdOnlyOnce() {
 
 void FunapiTransport::SetDelayedAckInterval(const int millisecond) {
   delayed_ack_interval_ = millisecond;
+}
+
+
+void FunapiTransport::SetReceivedRedirectionEvent(bool received_event) {
+  received_redirection_event_ = received_event;
 }
 
 
@@ -1646,6 +1661,13 @@ void FunapiTransport::OnTransportClosed(const TransportProtocol protocol, std::s
 }
 
 
+void FunapiTransport::OnTransportReconnecting(const TransportProtocol protocol, std::shared_ptr<FunapiError> error) {
+  if (auto s = session_impl_.lock()) {
+    s->OnTransportReconnecting(protocol, error);
+  }
+}
+
+
 void FunapiTransport::OnTransportConnectFailed(const TransportProtocol protocol, std::shared_ptr<FunapiError> error) {
   if (auto s = session_impl_.lock()) {
     s->OnTransportConnectFailed(protocol, error);
@@ -1912,6 +1934,11 @@ TransportState FunapiTransport::GetState() {
 }
 
 
+void FunapiTransport::Start() {
+  SetReceivedRedirectionEvent(false);
+}
+
+
 void FunapiTransport::Stop(bool use_force, std::shared_ptr<FunapiError> error) {
   if (GetState() == TransportState::kDisconnected)
     return;
@@ -1980,9 +2007,6 @@ class FunapiTcpTransport : public FunapiTransport {
   static const time_t kPingIntervalSecond = 3;
   static const time_t kPingTimeoutSeconds = 20;
 
-  static const int kMaxReconnectCount = 3;
-  static const time_t kMaxReconnectWaitSeconds = 10;
-
   enum class UpdateState : int {
     kNone = 0,
     kPing,
@@ -1996,10 +2020,10 @@ class FunapiTcpTransport : public FunapiTransport {
 
   void Ping();
   void WaitForAutoReconnect();
+  void StartReconnect();
 
-  int reconnect_count_ = 0;
   FunapiTimer reconnect_wait_timer_;
-  time_t reconnect_wait_seconds_;
+  time_t reconnect_wait_seconds_ = 1;
 
   int offset_ = 0;
   fun::vector<uint8_t> receiving_vector_;
@@ -2070,13 +2094,13 @@ void FunapiTcpTransport::Start() {
   SetUpdateState(UpdateState::kNone);
 
   PushNetworkThreadTask([this]()->bool {
-    reconnect_count_ = 0;
-    reconnect_wait_seconds_ = 1;
 
     Connect();
 
     return true;
   });
+
+  FunapiTransport::Start();
 }
 
 
@@ -2085,6 +2109,12 @@ void FunapiTcpTransport::OnDisconnecting(std::shared_ptr<FunapiError> error) {
 
   if (ack_receiving_) {
     reconnect_first_ack_receiving_ = true;
+  }
+
+  if (auto_reconnect_ && !received_redirection_event_) {
+    SetState(TransportState::kDisconnected);
+    StartReconnect();
+    return;
   }
 
   FunapiTransport::OnDisconnecting(error);
@@ -2113,14 +2143,31 @@ void FunapiTcpTransport::Ping() {
 void FunapiTcpTransport::WaitForAutoReconnect() {
   if (reconnect_wait_timer_.IsExpired()) {
     reconnect_wait_seconds_ *= 2;
-    if (kMaxReconnectWaitSeconds < reconnect_wait_seconds_) {
-      reconnect_wait_seconds_ = kMaxReconnectWaitSeconds;
+
+    if (auto s = session_impl_.lock()) {
+      s->Connect(GetProtocol());
     }
 
-    PushNetworkThreadTask([this]()->bool{
-      Connect(addrinfo_res_);
-      return true;
-    });
+    SetUpdateState(UpdateState::kNone);
+  }
+}
+
+void FunapiTcpTransport::StartReconnect() {
+  // auto reconnect 의 실행 조건은 다음과 같다.
+  // connection_timeout 보다 reconnect_wait_second 보다 작아야한다.
+  if (reconnect_wait_seconds_ < connect_timeout_seconds_) {
+    reconnect_wait_timer_.SetTimer(reconnect_wait_seconds_);
+
+    SetUpdateState(UpdateState::kWaitForAutoReconnect);
+    OnTransportReconnecting(GetProtocol());
+
+    DebugUtils::Log("Wait %d seconds for connect to Tcp transport.", static_cast<int>(reconnect_wait_seconds_));
+    return;
+  }
+  else {
+    reconnect_wait_seconds_ = 1;
+    DebugUtils::Log("Failed to reconnect automatically.");
+    OnTransportClosed(GetProtocol(), FunapiError::Create(FunapiError::ErrorType::kSocket,0, "Failed to reconnect automatically."));
   }
 }
 
@@ -2179,35 +2226,34 @@ void FunapiTcpTransport::OnConnectCompletion(const bool isFailed,
     SetUpdateState(UpdateState::kNone);
     SetState(TransportState::kDisconnected);
 
+    if (auto_reconnect_) {
+      // 로그만을 출력합니다.
+      // 이후 auto reconnect 실패시 transport event 가 세션으로 전달됩니다.
+      if (isTimedOut) {
+        DebugUtils::Log("TCP Connection Timeout: %s (%d) %s", hostname_or_ip.c_str(), error_code, error_string.c_str());
+      }
+      else {
+        DebugUtils::Log("TCP Disconnection detected: %s (%d) %s", hostname_or_ip.c_str(), error_code, error_string.c_str());
+      }
+
+      StartReconnect();
+      return;
+    }
+
     if (isTimedOut) {
-      DebugUtils::Log("Tcp connection timed out: %s (%d) %s", hostname_or_ip.c_str(), error_code, error_string.c_str());
+      DebugUtils::Log("TCP Connection Timeout: %s (%d) %s", hostname_or_ip.c_str(), error_code, error_string.c_str());
       OnTransportConnectTimeout(TransportProtocol::kTcp, FunapiError::Create(FunapiError::ErrorType::kSocket, error_code, error_string));
     }
     else
     {
-      DebugUtils::Log("Failed to tcp connection: %s (%d) %s", hostname_or_ip.c_str(), error_code, error_string.c_str());
+      DebugUtils::Log("TCP Disconnection detected: %s (%d) %s", hostname_or_ip.c_str(), error_code, error_string.c_str());
       OnTransportConnectFailed(TransportProtocol::kTcp, FunapiError::Create(FunapiError::ErrorType::kSocket, error_code, error_string));
-    }
-
-    if (auto_reconnect_) {
-      ++reconnect_count_;
-
-      if (kMaxReconnectCount < reconnect_count_) {
-        reconnect_count_ = 0;
-        reconnect_wait_seconds_ = 1;
-
-        Connect(addrinfo_res_);
-      }
-      else {
-        reconnect_wait_timer_.SetTimer(reconnect_wait_seconds_);
-        DebugUtils::Log("Wait %d seconds for connect to Tcp transport.", static_cast<int>(reconnect_wait_seconds_));
-        SetUpdateState(UpdateState::kWaitForAutoReconnect);
-      }
     }
   }
   else {
     client_ping_timeout_timer_.SetTimer(kPingIntervalSecond + kPingTimeoutSeconds);
     ping_send_timer_.SetTimer(kPingIntervalSecond);
+    reconnect_wait_seconds_ = 1;
 
     SetUpdateState(UpdateState::kPing);
     SetState(TransportState::kConnected);
@@ -2265,7 +2311,10 @@ void FunapiTcpTransport::Connect() {
         }
         */
         auto error = FunapiError::Create(FunapiError::ErrorType::kSocket, error_code, error_string);
-        OnTransportDisconnected(TransportProtocol::kTcp, error);
+        if (!auto_reconnect_) {
+          OnTransportDisconnected(TransportProtocol::kTcp, error);
+        }
+
         Stop(true, error);
       }
       else {
@@ -2449,7 +2498,9 @@ void FunapiTcpTransport::Send(bool send_all) {
           }
           */
           auto error = FunapiError::Create(FunapiError::ErrorType::kSocket, error_code, error_string);
-          OnTransportDisconnected(TransportProtocol::kTcp, error);
+          if (!auto_reconnect_) {
+            OnTransportDisconnected(TransportProtocol::kTcp, error);
+          }
           Stop(true, error);
         }
         else {
@@ -2582,6 +2633,8 @@ void FunapiUdpTransport::Start() {
 
     return true;
   });
+
+  FunapiTransport::Start();
 }
 
 
@@ -2765,6 +2818,8 @@ void FunapiHttpTransport::Start() {
       return true;
     });
   }
+
+  FunapiTransport::Start();
 }
 
 
@@ -4201,6 +4256,7 @@ void FunapiSessionImpl::OnRedirectMessage(const TransportProtocol protocol,
     {
         if (auto transport = GetTransport(i))
         {
+            transport->SetReceivedRedirectionEvent(true);
             transport->Stop(true);
         }
     }
@@ -4529,6 +4585,11 @@ void FunapiSessionImpl::OnTransportConnectTimeout(const TransportProtocol protoc
 
 void FunapiSessionImpl::OnTransportDisconnected(const TransportProtocol protocol, std::shared_ptr<FunapiError> error) {
   OnTransportEvent(protocol, GetEncoding(protocol), TransportEventType::kDisconnected, error);
+}
+
+
+void FunapiSessionImpl::OnTransportReconnecting(const TransportProtocol protocol, std::shared_ptr<FunapiError> error) {
+  OnTransportEvent(protocol, GetEncoding(protocol), TransportEventType::kReconnecting, error);
 }
 
 

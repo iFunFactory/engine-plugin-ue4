@@ -669,17 +669,19 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
       }
       else if (type == fun::TransportEventType::kStopped) {
         UE_LOG(LogFunapiExample, Log, TEXT("Transport Stopped called."));
+        session_ = nullptr;
       }
       else if (type == fun::TransportEventType::kConnectionFailed) {
         UE_LOG(LogFunapiExample, Log, TEXT("Transport Connection Failed (%s)"), *FString(fun::TransportProtocolToString(transport_protocol).c_str()));
-        session_ = nullptr;
       }
       else if (type == fun::TransportEventType::kConnectionTimedOut) {
         UE_LOG(LogFunapiExample, Log, TEXT("Transport Connection Timedout called"));
-        session_ = nullptr;
       }
       else if (type == fun::TransportEventType::kDisconnected) {
         UE_LOG(LogFunapiExample, Log, TEXT("Transport Disconnected called (%s)"), *FString(fun::TransportProtocolToString(transport_protocol).c_str()));
+      }
+      else if (type == fun::TransportEventType::kReconnecting) {
+        UE_LOG(LogFunapiExample, Log, TEXT("Transport Reconnecting called (%s)"), *FString(fun::TransportProtocolToString(transport_protocol).c_str()));
       }
     });
 

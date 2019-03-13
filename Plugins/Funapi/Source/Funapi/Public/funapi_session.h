@@ -64,6 +64,7 @@ enum class FUNAPI_API TransportEventType : int
 {
     kStarted,
     kStopped,
+    kReconnecting,
     kConnectionFailed,
     kConnectionTimedOut,
     kDisconnected,

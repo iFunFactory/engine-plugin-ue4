@@ -1169,8 +1169,10 @@ void FunapiTcp::Connect(const char* hostname_or_ip,
 
 void FunapiTcp::Connect(std::shared_ptr<FunapiAddrInfo> info,
                         const ConnectCompletionHandler &connect_completion_handler) {
-  auto addr_info_next = info->GetImpl()->GetAddrInfo()->ai_next;
-  impl_->Connect(addr_info_next, connect_completion_handler);
+  // TODO(sungjin): PS4 기능 테스트 시 아래 코드가 영향을 주는 지 확인
+  // auto addr_info_next = info->GetImpl()->GetAddrInfo()->ai_next;
+  auto addr_info = info->GetImpl()->GetAddrInfo();
+  impl_->Connect(addr_info, connect_completion_handler);
 }
 
 

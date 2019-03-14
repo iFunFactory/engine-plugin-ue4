@@ -1493,9 +1493,10 @@ bool FunapiTransport::TryToDecodeBody(fun::vector<uint8_t> &receiving,
   if (body_length > 0) {
     fun::vector<uint8_t> v(receiving.begin() + next_decoding_offset, receiving.begin() + next_decoding_offset + body_length);
 
-    compression_->Decompress(header_fields, v);
-
+    // TODO(sungjin): 복호화에 실패 했을때 압축해제 하지 않고 에러로 처리.
     encrytion_->Decrypt(header_fields, v, encryption_types);
+
+    compression_->Decompress(header_fields, v);
     v.push_back('\0');
 
     // Moves the read offset.

@@ -756,6 +756,24 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
 
   void AddSessionEventCallback(const SessionEventHandler &handler);
   void AddTransportEventCallback(const TransportEventHandler &handler);
+  void AddProtobufRecvCallback(const ProtobufRecvHandler &handler);
+  void AddJsonRecvCallback(const JsonRecvHandler &handler);
+  void AddRecvTimeoutCallback(const RecvTimeoutHandler &handler);
+  void AddRecvTimeoutCallback(const RecvTimeoutIntHandler &handler);
+
+  void SetTransportOptionCallback(const TransportOptionHandler &handler);
+  void SetRedirectQueueCallback(const RedirectQueueHandler &handler);
+
+  void RemoveSessionEventCallback();
+  void RemoveTransportEventCallback();
+  void RemoveProtobufRecvCallback();
+  void RemoveJsonRecvCallback();
+  void RemoveRecvTimeoutCallback();
+  void RemoveRecvTimeoutIntCallback();
+  void RemoveTransportOptionCallback();
+  void RemoveRedirectQueueCallback();
+
+  void RemoveAllCallbacks();
 
   bool IsConnected(const TransportProtocol protocol) const;
   bool IsConnected() const;
@@ -764,23 +782,15 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   std::shared_ptr<FunapiTransport> GetTransport(const TransportProtocol protocol) const;
   bool HasTransport(const TransportProtocol protocol) const;
 
-  void AddProtobufRecvCallback(const ProtobufRecvHandler &handler);
-  void AddJsonRecvCallback(const JsonRecvHandler &handler);
-
   TransportProtocol GetDefaultProtocol() const;
   void SetDefaultProtocol(const TransportProtocol protocol);
 
   FunEncoding GetEncoding(const TransportProtocol protocol) const;
 
-  void AddRecvTimeoutCallback(const RecvTimeoutHandler &handler);
-  void AddRecvTimeoutCallback(const RecvTimeoutIntHandler &handler);
   void SetRecvTimeout(const fun::string &msg_type, const int seconds);
   void SetRecvTimeout(const int32_t msg_type, const int seconds);
   void EraseRecvTimeout(const fun::string &msg_type);
   void EraseRecvTimeout(const int32_t msg_type);
-
-  void SetTransportOptionCallback(const TransportOptionHandler &handler);
-  void SetRedirectQueueCallback(const RedirectQueueHandler &handler);
 
   static void Add(std::shared_ptr<FunapiSessionImpl> s);
   static fun::vector<std::shared_ptr<FunapiSessionImpl>> GetSessionImpls();
@@ -930,6 +940,7 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
 
   TransportOptionHandler transport_option_handler_ = nullptr;
   RedirectQueueHandler redirect_queue_handler_ = nullptr;
+  std::mutex redirect_queue_handler_mutex_;
 
   std::shared_ptr<FunapiSessionId> session_id_ = nullptr;
 
@@ -4450,23 +4461,113 @@ void FunapiSessionImpl::PushTaskQueue(const std::function<bool()> &task)
 }
 
 
-void FunapiSessionImpl::AddProtobufRecvCallback(const ProtobufRecvHandler &handler) {
-  on_protobuf_recv_ += handler;
-}
-
-
-void FunapiSessionImpl::AddJsonRecvCallback(const JsonRecvHandler &handler) {
-  on_json_recv_ += handler;
-}
-
-
-void FunapiSessionImpl::AddSessionEventCallback(const SessionEventHandler &handler) {
+void FunapiSessionImpl::AddSessionEventCallback(const SessionEventHandler &handler)
+{
   on_session_event_ += handler;
 }
 
 
-void FunapiSessionImpl::AddTransportEventCallback(const TransportEventHandler &handler) {
+void FunapiSessionImpl::AddTransportEventCallback(const TransportEventHandler &handler)
+{
   on_transport_event_ += handler;
+}
+
+
+void FunapiSessionImpl::AddProtobufRecvCallback(const ProtobufRecvHandler &handler)
+{
+  on_protobuf_recv_ += handler;
+}
+
+
+void FunapiSessionImpl::AddJsonRecvCallback(const JsonRecvHandler &handler)
+{
+  on_json_recv_ += handler;
+}
+
+void FunapiSessionImpl::AddRecvTimeoutCallback(const RecvTimeoutHandler &handler)
+{
+  on_recv_timeout_ += handler;
+}
+
+
+void FunapiSessionImpl::AddRecvTimeoutCallback(const RecvTimeoutIntHandler &handler)
+{
+  on_recv_timeout_int_ += handler;
+}
+
+
+void FunapiSessionImpl::SetTransportOptionCallback(const TransportOptionHandler &handler)
+{
+  transport_option_handler_ = handler;
+}
+
+
+void FunapiSessionImpl::SetRedirectQueueCallback(const RedirectQueueHandler &handler)
+{
+  std::unique_lock<std::mutex> lock(redirect_queue_handler_mutex_);
+  redirect_queue_handler_ = handler;
+}
+
+
+void FunapiSessionImpl::RemoveSessionEventCallback()
+{
+  on_session_event_.clear();
+}
+
+
+void FunapiSessionImpl::RemoveTransportEventCallback()
+{
+  on_transport_event_.clear();
+}
+
+
+void FunapiSessionImpl::RemoveProtobufRecvCallback()
+{
+  on_protobuf_recv_.clear();
+}
+
+
+void FunapiSessionImpl::RemoveJsonRecvCallback()
+{
+  on_json_recv_.clear();
+}
+
+
+void FunapiSessionImpl::RemoveRecvTimeoutCallback()
+{
+  on_recv_timeout_.clear();
+}
+
+
+void FunapiSessionImpl::RemoveRecvTimeoutIntCallback()
+{
+  on_recv_timeout_int_.clear();
+}
+
+
+void FunapiSessionImpl::RemoveTransportOptionCallback()
+{
+  transport_option_handler_ = nullptr;
+}
+
+
+void FunapiSessionImpl::RemoveRedirectQueueCallback()
+{
+  std::unique_lock<std::mutex> lock(redirect_queue_handler_mutex_);
+  redirect_queue_handler_ = nullptr;
+}
+
+
+void FunapiSessionImpl::RemoveAllCallbacks()
+{
+  RemoveSessionEventCallback();
+  RemoveTransportEventCallback();
+  RemoveProtobufRecvCallback();
+  RemoveJsonRecvCallback();
+  RemoveRecvTimeoutCallback();
+  RemoveRecvTimeoutIntCallback();
+  RemoveTransportOptionCallback();
+  RemoveRedirectQueueCallback();
 }
 
 
@@ -4788,16 +4889,6 @@ bool FunapiSessionImpl::IsReliableSession() const {
 }
 
 
-void FunapiSessionImpl::AddRecvTimeoutCallback(const RecvTimeoutHandler &handler) {
-  on_recv_timeout_ += handler;
-}
-
-
-void FunapiSessionImpl::AddRecvTimeoutCallback(const RecvTimeoutIntHandler &handler) {
-  on_recv_timeout_int_ += handler;
-}
-
-
 void FunapiSessionImpl::SetRecvTimeout(const fun::string &msg_type, const int seconds) {
   std::unique_lock<std::mutex> lock(m_recv_timeout_mutex_);
   m_recv_timeout_[msg_type] = std::make_shared<FunapiTimer>(seconds);
@@ -4879,17 +4970,6 @@ void FunapiSessionImpl::OnRecvTimeout(const int32_t msg_type) {
     }
     return true;
   });
-}
-
-
-void FunapiSessionImpl::SetTransportOptionCallback(const TransportOptionHandler &handler) {
-  transport_option_handler_ = handler;
-}
-
-
-void FunapiSessionImpl::SetRedirectQueueCallback(const RedirectQueueHandler &handler)
-{
-    redirect_queue_handler_ = handler;
 }
 
 
@@ -5000,11 +5080,14 @@ void FunapiSessionImpl::SendUnsentQueueMessages()
         std::shared_ptr<FunapiTransport> transport = GetTransport(protocol);
         if (transport)
         {
-            // Fowards to user to check for queueing messages.
-            if (redirect_queue_handler_)
             {
-                DebugUtils::Log("%s calls fun::queue event callback.", str_protocol.c_str());
-                queue->UserVerification(protocol, redirect_cur_tags_, redirect_target_tags_, redirect_queue_handler_);
+              // Fowards to user to check for queueing messages.
+              std::unique_lock<std::mutex> lock(redirect_queue_handler_mutex_);
+              if (redirect_queue_handler_)
+              {
+                  DebugUtils::Log("%s calls fun::queue event callback.", str_protocol.c_str());
+                  queue->UserVerification(protocol, redirect_cur_tags_, redirect_target_tags_, redirect_queue_handler_);
+              }
             }
 
             int sending_count = 0;
@@ -5125,23 +5208,93 @@ void FunapiSession::Update() {
 }
 
 
-void FunapiSession::AddProtobufRecvCallback(const ProtobufRecvHandler &handler) {
-  impl_->AddProtobufRecvCallback(handler);
-}
-
-
-void FunapiSession::AddJsonRecvCallback(const JsonRecvHandler &handler) {
-  impl_->AddJsonRecvCallback(handler);
-}
-
-
-void FunapiSession::AddSessionEventCallback(const SessionEventHandler &handler) {
+void FunapiSession::AddSessionEventCallback(const SessionEventHandler &handler)
+{
   impl_->AddSessionEventCallback(handler);
 }
 
 
-void FunapiSession::AddTransportEventCallback(const TransportEventHandler &handler) {
+void FunapiSession::AddTransportEventCallback(const TransportEventHandler &handler)
+{
   impl_->AddTransportEventCallback(handler);
+}
+
+
+void FunapiSession::AddProtobufRecvCallback(const ProtobufRecvHandler &handler)
+{
+  impl_->AddProtobufRecvCallback(handler);
+}
+
+
+void FunapiSession::AddJsonRecvCallback(const JsonRecvHandler &handler)
+{
+  impl_->AddJsonRecvCallback(handler);
+}
+
+
+void FunapiSession::SetTransportOptionCallback(const TransportOptionHandler &handler)
+{
+  impl_->SetTransportOptionCallback(handler);
+}
+
+
+void FunapiSession::SetRedirectQueueCallback(const RedirectQueueHandler &handler)
+{
+  impl_->SetRedirectQueueCallback(handler);
+}
+
+
+void FunapiSession::RemoveProtobufRecvCallback()
+{
+  impl_->RemoveProtobufRecvCallback();
+}
+
+
+void FunapiSession::RemoveJsonRecvCallback()
+{
+  impl_->RemoveJsonRecvCallback();
+}
+
+
+void FunapiSession::RemoveSessionEventCallback()
+{
+  impl_->RemoveSessionEventCallback();
+}
+
+
+void FunapiSession::RemoveTransportEventCallback()
+{
+  impl_->RemoveTransportEventCallback();
+}
+
+
+void FunapiSession::RemoveRecvTimeoutCallback()
+{
+  impl_->RemoveRecvTimeoutCallback();
+}
+
+
+void FunapiSession::RemoveRecvTimeoutIntCallback()
+{
+  impl_->RemoveRecvTimeoutIntCallback();
+}
+
+
+void FunapiSession::RemoveTransportOptionCallback()
+{
+  impl_->RemoveTransportOptionCallback();
+}
+
+
+void FunapiSession::RemoveRedirectQueueCallback()
+{
+  impl_->RemoveRedirectQueueCallback();
+}
+
+
+void FunapiSession::RemoveAllCallbacks()
+{
+  impl_->RemoveAllCallbacks();
 }
 
 
@@ -5197,17 +5350,6 @@ void FunapiSession::SetRecvTimeout(const int32_t msg_type, const int seconds) {
 
 void FunapiSession::EraseRecvTimeout(const int32_t msg_type) {
   impl_->EraseRecvTimeout(msg_type);
-}
-
-
-void FunapiSession::SetTransportOptionCallback(const TransportOptionHandler &handler) {
-  impl_->SetTransportOptionCallback(handler);
-}
-
-
-void FunapiSession::SetRedirectQueueCallback(const RedirectQueueHandler &handler)
-{
-    impl_->SetRedirectQueueCallback(handler);
 }
 
 

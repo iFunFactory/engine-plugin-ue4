@@ -153,20 +153,30 @@ public:
 
     void AddSessionEventCallback(const SessionEventHandler &handler);
     void AddTransportEventCallback(const TransportEventHandler &handler);
-
     void AddProtobufRecvCallback(const ProtobufRecvHandler &handler);
     void AddJsonRecvCallback(const JsonRecvHandler &handler);
-
     void AddRecvTimeoutCallback(const RecvTimeoutHandler &handler);
-    void SetRecvTimeout(const fun::string &msg_type, const int seconds);
-    void EraseRecvTimeout(const fun::string &msg_type);
-
     void AddRecvTimeoutCallback(const RecvTimeoutIntHandler &handler);
-    void SetRecvTimeout(const int32_t msg_type, const int seconds);
-    void EraseRecvTimeout(const int32_t msg_type);
 
     void SetTransportOptionCallback(const TransportOptionHandler &handler);
     void SetRedirectQueueCallback(const RedirectQueueHandler &handler);
+
+    void RemoveSessionEventCallback();
+    void RemoveTransportEventCallback();
+    void RemoveProtobufRecvCallback();
+    void RemoveJsonRecvCallback();
+    void RemoveRecvTimeoutCallback();
+    void RemoveRecvTimeoutIntCallback();
+    void RemoveTransportOptionCallback();
+    void RemoveRedirectQueueCallback();
+
+    void RemoveAllCallbacks();
+
+    void SetRecvTimeout(const fun::string &msg_type, const int seconds);
+    void EraseRecvTimeout(const fun::string &msg_type);
+
+    void SetRecvTimeout(const int32_t msg_type, const int seconds);
+    void EraseRecvTimeout(const int32_t msg_type);
 
     static void UpdateAll();
 

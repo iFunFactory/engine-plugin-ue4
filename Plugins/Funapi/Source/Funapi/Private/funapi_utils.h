@@ -21,20 +21,29 @@ namespace fun {
 template <typename T> class FunapiEvent
 {
  public:
-  void operator+= (const T &handler) {
+  void operator+= (const T &handler)
+  {
     std::unique_lock<std::mutex> lock(mutex_);
     vector_.push_back(handler);
   }
 
   template <typename... ARGS>
-  void operator() (const ARGS&... args) {
+  void operator() (const ARGS&... args)
+  {
     std::unique_lock<std::mutex> lock(mutex_);
     for (const auto &f : vector_) f(args...);
   }
 
-  bool empty() {
+  bool empty()
+  {
     std::unique_lock<std::mutex> lock(mutex_);
     return vector_.empty();
+  }
+
+  void clear()
+  {
+    std::unique_lock<std::mutex> lock(mutex_);
+    vector_.clear();
   }
 
  private:

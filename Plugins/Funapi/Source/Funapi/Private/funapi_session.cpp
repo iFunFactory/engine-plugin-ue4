@@ -425,7 +425,11 @@ public:
     FunEncoding GetEncoding();
     EncryptionType GetEncryptionType();
 
+    bool IsInitialized();
+    void SetInitialized(bool initialized);
+
 private:
+    bool initialized_ = false;
     bool use_sent_queue_ = false;
     bool use_seq_ = false;
     uint32_t seq_ = 0;
@@ -566,6 +570,18 @@ FunEncoding FunapiMessage::GetEncoding()
 EncryptionType FunapiMessage::GetEncryptionType()
 {
     return encryption_type_;
+}
+
+
+bool FunapiMessage::IsInitialized()
+{
+  return initialized_;
+}
+
+
+void FunapiMessage::SetInitialized(bool initialized)
+{
+  initialized_ = initialized;
 }
 
 
@@ -1640,10 +1656,16 @@ void FunapiTransport::PushSendQueue(std::shared_ptr<FunapiMessage> message,
 }
 
 
-bool FunapiTransport::EncodeThenSendMessage(std::shared_ptr<FunapiMessage> message) {
-  SetSessionId(message);
-  SetSeq(message);
-  SetAck(message);
+bool FunapiTransport::EncodeThenSendMessage(std::shared_ptr<FunapiMessage> message)
+{
+  // 재사용되는 메세지는 초기화가 되어있다.
+  if (!message->IsInitialized())
+  {
+    SetSessionId(message);
+    SetSeq(message);
+    SetAck(message);
+    message->SetInitialized(true);
+  }
 
   return EncodeThenSendMessage(message, message->GetBody(), message->GetEncryptionType());
 }

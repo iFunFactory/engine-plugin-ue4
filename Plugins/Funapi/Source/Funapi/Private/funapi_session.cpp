@@ -1507,7 +1507,8 @@ bool FunapiTransport::TryToDecodeBody(fun::vector<uint8_t> &receiving,
   int body_length = atoi(it->second.c_str());
   // DebugUtils::Log("We need %d bytes for a message body.", body_length);
 
-  if (received_size - next_decoding_offset < body_length) {
+  if (received_size - next_decoding_offset < body_length)
+  {
     // Need more bytes.
     // DebugUtils::Log("We need more bytes for a message body. Waiting.");
     return false;
@@ -1532,7 +1533,8 @@ bool FunapiTransport::TryToDecodeBody(fun::vector<uint8_t> &receiving,
   }
 #endif
 
-  if (body_length > 0) {
+  if (body_length > 0)
+  {
     fun::vector<uint8_t> v(receiving.begin() + next_decoding_offset, receiving.begin() + next_decoding_offset + body_length);
 
     // TODO(sungjin): 복호화에 실패 했을때 압축해제 하지 않고 에러로 처리.
@@ -1552,9 +1554,22 @@ bool FunapiTransport::TryToDecodeBody(fun::vector<uint8_t> &receiving,
     // The network module eats the fields and invokes registered handler
     OnReceived(GetProtocol(), GetEncoding(), header_fields, v);
   }
-  else {
+  else
+  {
     // init encrytion
     encrytion_->Decrypt(header_fields, receiving, encryption_types);
+
+    // 다음 조건을 만족하는 경우는 다음과 같습니다.
+    // 서버가 시퀀스 정보를 받지 못했고 클라이언트가 재접속을 시도하는 경우.
+    if (IsReliableSession() && ack_receiving_ == false)
+    {
+      // 서버가 받지 못한 메세지들을 다시 재전송 한다.
+      while (!sent_queue_->Empty()) {
+        auto msg = sent_queue_->Front();
+        sent_queue_->PopFront();
+        send_priority_queue_->PushBack(msg);
+      }
+    }
   }
 
   if (GetProtocol() == TransportProtocol::kTcp && !encryption_types.empty()) {
@@ -2251,7 +2266,8 @@ void FunapiTcpTransport::OnConnectCompletion(const bool isFailed,
                                              const bool isTimedOut,
                                              const int error_code,
                                              const fun::string &error_string,
-                                             std::shared_ptr<FunapiAddrInfo> addrinfo_res) {
+                                             std::shared_ptr<FunapiAddrInfo> addrinfo_res)
+{
   addrinfo_res_ = addrinfo_res;
   fun::string hostname_or_ip = addrinfo_res->GetString();
 
@@ -2259,10 +2275,12 @@ void FunapiTcpTransport::OnConnectCompletion(const bool isFailed,
     SetUpdateState(UpdateState::kNone);
     SetState(TransportState::kDisconnected);
 
-    if (auto_reconnect_) {
+    if (auto_reconnect_)
+    {
       // 로그만을 출력합니다.
       // 이후 auto reconnect 실패시 transport event 가 세션으로 전달됩니다.
-      if (isTimedOut) {
+      if (isTimedOut)
+      {
         DebugUtils::Log("TCP Connection Timeout: %s (%d) %s", hostname_or_ip.c_str(), error_code, error_string.c_str());
       }
       else {
@@ -2273,7 +2291,8 @@ void FunapiTcpTransport::OnConnectCompletion(const bool isFailed,
       return;
     }
 
-    if (isTimedOut) {
+    if (isTimedOut)
+    {
       DebugUtils::Log("TCP Connection Timeout: %s (%d) %s", hostname_or_ip.c_str(), error_code, error_string.c_str());
       OnTransportConnectTimeout(TransportProtocol::kTcp, FunapiError::Create(FunapiError::ErrorType::kSocket, error_code, error_string));
     }
@@ -2283,7 +2302,8 @@ void FunapiTcpTransport::OnConnectCompletion(const bool isFailed,
       OnTransportConnectFailed(TransportProtocol::kTcp, FunapiError::Create(FunapiError::ErrorType::kSocket, error_code, error_string));
     }
   }
-  else {
+  else
+  {
     client_ping_timeout_timer_.SetTimer(kPingIntervalSecond + kPingTimeoutSeconds);
     ping_send_timer_.SetTimer(kPingIntervalSecond);
     reconnect_wait_seconds_ = 1;

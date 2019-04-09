@@ -159,7 +159,7 @@ public class Funapi : ModuleRules
     {
       PublicDefinitions.Add("FUNAPI_UE4_PLATFORM_ANDROID=1");
 
-      // toolchain will filter properly
+      // add static library path
       PublicIncludePaths.Add(LibPath + "include/Android/ARMv7");
       PublicLibraryPaths.Add(LibPath + "lib/Android/ARMv7");
       PublicIncludePaths.Add(LibPath + "include/Android/ARM64");
@@ -171,6 +171,10 @@ public class Funapi : ModuleRules
       PublicAdditionalLibraries.Add("crypto");
       PublicAdditionalLibraries.Add("websockets");
       PublicAdditionalLibraries.Add("zstd");
+
+      PublicAdditionalLibraries.Add(LibPath + "/lib/Android/ARMv7/openssl_wrapper.so");
+      PublicAdditionalLibraries.Add(LibPath + "/lib/Android/ARM64/openssl_wrapper.so");
+      AdditionalPropertiesForReceipt.Add(new ReceiptProperty("AndroidPlugin", Path.Combine(LibPath, "lib", "Android", "fun_APL.xml")));
     }
     else if (Target.Platform == UnrealTargetPlatform.IOS)
     {

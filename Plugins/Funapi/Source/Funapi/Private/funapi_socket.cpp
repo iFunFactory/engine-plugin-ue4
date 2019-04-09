@@ -23,8 +23,36 @@
 #define UI UI_ST
 #endif
 THIRD_PARTY_INCLUDES_START
+#if FUNAPI_UE4_PLATFORM_ANDROID == 0
 #include "openssl/ssl.h"
 #include "openssl/err.h"
+#else // FUNAPI_UE4_PLATFORM_ANDROID
+// 안드로이드 환경일떄 랩핑된 openssl 을 사용한다.
+#include "openssl/openssl_wrapper.h"
+
+#define SSL_CTX_new Fun_SSL_CTX_new
+#define SSL_new Fun_SSL_new
+#define SSL_set_fd Fun_SSL_set_fd
+#define SSL_library_init Fun_SSL_library_init
+#define SSL_shutdown Fun_SSL_shutdown
+#define SSL_free Fun_SSL_free
+#define SSL_CTX_free Fun_SSL_CTX_free
+#define SSL_connect Fun_SSL_connect
+#define SSL_write Fun_SSL_write
+#define SSL_read Fun_SSL_read
+#define SSLv23_client_method Fun_SSLv23_client_method
+#define SSL_get_current_cipher Fun_SSL_get_current_cipher
+#define SSL_CIPHER_get_name Fun_SSL_CIPHER_get_name
+#define SSL_CTX_load_verify_locations Fun_SSL_CTX_load_verify_locations
+#define SSL_CTX_set_verify Fun_SSL_CTX_set_verify
+#define SSL_CTX_set_verify_depth Fun_SSL_CTX_set_verify_depth
+#define SSL_get_verify_result Fun_SSL_get_verify_result
+#define SSL_get_peer_certificate Fun_SSL_get_peer_certificate
+#define SSL_get_error Fun_SSL_get_error
+#define ERR_error_string Fun_ERR_error_string
+#define SSL_load_error_strings Fun_SSL_load_error_strings
+#define ERR_get_error Fun_ERR_get_error
+#endif // FUNAPI_UE4_PLATFORM_ANDROID
 THIRD_PARTY_INCLUDES_END
 #ifdef UI
 #undef UI

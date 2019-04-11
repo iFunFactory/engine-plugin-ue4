@@ -43,6 +43,13 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/wire_format_lite_inl.h>
 
+// NOTE(sungjin): add ignore compiler option [-Werror -Wenum-compare-switch]
+#ifdef __clang__
+#if !defined(__has_warning) || __has_warning("-Wenum-compare-switch")
+#pragma clang diagnostic ignored "-Wenum-compare-switch"
+#endif
+#endif
+
 namespace google {
 
 namespace protobuf {

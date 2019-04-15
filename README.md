@@ -66,6 +66,16 @@ PrivateDependencyModuleNames.AddRange(new string[] { "Funapi" });
 
 자세한 사용방법은 샘플 프로젝트를 참고해 주세요.
 
+# 언리얼 엔진과 관련한 알려진 문제
+
+언리얼 엔진의 제약 사항이나 아직 수정되지 않은 문제로 인해서 Funapi 플러그인 사용 시 발생할 수 있는 문제들 대해서 아래 매뉴얼 페이지 링크를 참고 해 주시기 바랍니다.
+
+## 버전 4.21 : .cc 파일 컴파일 오류
+https://www.ifunfactory.com/engine/documents/reference/ko/client-plugin.html#cc
+
+## 버전 4.22 이전: iPhone XS 에서 크래시하는 문제
+https://www.ifunfactory.com/engine/documents/reference/ko/client-plugin.html#iphone-xs
+
 # 도움말
 
 클라이언트 플러그인의 도움말은 <https://www.ifunfactory.com/engine/documents/reference/ko/client-plugin.html> 를 참고해 주세요.

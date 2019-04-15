@@ -59,19 +59,19 @@ static bool IsNaN(double value) {
   return value != value;
 }
 
-// A basic fun::string with different escapable characters for testing.
-const fun::string kEscapeTestString =
-"\"A fun::string with ' characters \n and \r newlines and \t tabs and \001 "
+// A basic string with different escapable characters for testing.
+const std::string kEscapeTestString =
+"\"A string with ' characters \n and \r newlines and \t tabs and \001 "
 "slashes \\ and  multiple   spaces";
 
-// A representation of the above fun::string with all the characters escaped.
-const fun::string kEscapeTestStringEscaped =
-"\"\\\"A fun::string with \\' characters \\n and \\r newlines "
+// A representation of the above string with all the characters escaped.
+const std::string kEscapeTestStringEscaped =
+"\"\\\"A string with \\' characters \\n and \\r newlines "
 "and \\t tabs and \\001 slashes \\\\ and  multiple   spaces\"";
 
 // Some platforms (e.g. Windows) insist on padding the exponent to three
 // digits when one or two would be just fine.
-static fun::string RemoveRedundantZeros(fun::string text) {
+static std::string RemoveRedundantZeros(std::string text) {
   text = google::protobuf::StringReplace(text, "e+0", "e+", true);
   text = google::protobuf::StringReplace(text, "e-0", "e-", true);
   return text;
@@ -84,20 +84,20 @@ public:
   MockErrorCollector() {}
   ~MockErrorCollector() {}
 
-  fun::string text_;
+  std::string text_;
 
   // implements ErrorCollector -------------------------------------
-  void AddError(int line, int column, const fun::string& message) {
+  void AddError(int line, int column, const std::string& message) {
     google::protobuf::strings::SubstituteAndAppend(&text_, "$0:$1: $2\n",
       line + 1, column + 1, message);
   }
 
-  void AddWarning(int line, int column, const fun::string& message) {
+  void AddWarning(int line, int column, const std::string& message) {
     AddError(line, column, "WARNING:" + message);
   }
 };
 
-static void ExpectMessage(const fun::string& input, const fun::string& message, int line,
+static void ExpectMessage(const std::string& input, const std::string& message, int line,
   int col, google::protobuf::Message* proto, bool expected_result) {
   google::protobuf::TextFormat::Parser parser;
   MockErrorCollector error_collector;
@@ -108,19 +108,19 @@ static void ExpectMessage(const fun::string& input, const fun::string& message, 
     error_collector.text_);
 }
 
-static void ExpectFailure(const fun::string& input, const fun::string& message, int line,
+static void ExpectFailure(const std::string& input, const std::string& message, int line,
   int col, google::protobuf::Message* proto) {
   ExpectMessage(input, message, line, col, proto, false);
 }
 
-static void ExpectFailure(const fun::string& input, const fun::string& message, int line,
+static void ExpectFailure(const std::string& input, const std::string& message, int line,
   int col) {
   google::protobuf::scoped_ptr<google::protobuf::unittest::TestAllTypes> proto(new google::protobuf::unittest::TestAllTypes);
   ExpectFailure(input, message, line, col, proto.get());
 }
 
 
-void ExpectSuccessAndTree(const fun::string& input, google::protobuf::Message* proto,
+void ExpectSuccessAndTree(const std::string& input, google::protobuf::Message* proto,
   google::protobuf::TextFormat::ParseInfoTree* info_tree) {
   google::protobuf::TextFormat::Parser parser;
   MockErrorCollector error_collector;
@@ -131,7 +131,7 @@ void ExpectSuccessAndTree(const fun::string& input, google::protobuf::Message* p
 }
 
 void ExpectLocation(google::protobuf::TextFormat::ParseInfoTree* tree,
-  const google::protobuf::Descriptor* d, const fun::string& field_name,
+  const google::protobuf::Descriptor* d, const std::string& field_name,
   int index, int line, int column) {
   google::protobuf::TextFormat::ParseLocation location = tree->GetLocation(
     d->FindFieldByName(field_name), index);
@@ -139,8 +139,8 @@ void ExpectLocation(google::protobuf::TextFormat::ParseInfoTree* tree,
   verify(column == location.column);
 }
 
-static fun::string TestSourceDir() {
-  return fun::string(TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir()))) + "../ThirdParty";
+static std::string TestSourceDir() {
+  return std::string(TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir()))) + "../ThirdParty";
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiLibProtobufTextFormatUnitTest, "LibProtobuf.TextFormatUnitTest", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
@@ -150,25 +150,25 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
   // A printer that appends 'u' to all unsigned int32.
   class CustomUInt32FieldValuePrinter : public google::protobuf::TextFormat::FieldValuePrinter {
   public:
-    virtual fun::string PrintUInt32(uint32 val) const {
+    virtual std::string PrintUInt32(uint32 val) const {
       return google::protobuf::StrCat(google::protobuf::TextFormat::FieldValuePrinter::PrintUInt32(val), "u");
     }
   };
 
   class CustomInt32FieldValuePrinter : public google::protobuf::TextFormat::FieldValuePrinter {
   public:
-    virtual fun::string PrintInt32(int32 val) const {
+    virtual std::string PrintInt32(int32 val) const {
       return google::protobuf::StrCat("value-is(", FieldValuePrinter::PrintInt32(val), ")");
     }
   };
 
   class CustomMessageFieldValuePrinter : public google::protobuf::TextFormat::FieldValuePrinter {
   public:
-    virtual fun::string PrintInt32(int32 v) const {
+    virtual std::string PrintInt32(int32 v) const {
       return google::protobuf::StrCat(FieldValuePrinter::PrintInt32(v), "  # x", google::protobuf::ToHex(v));
     }
 
-    virtual fun::string PrintMessageStart(const google::protobuf::Message& message,
+    virtual std::string PrintMessageStart(const google::protobuf::Message& message,
       int field_index,
       int field_count,
       bool single_line_mode) const {
@@ -182,7 +182,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
 
   class CustomMultilineCommentPrinter : public google::protobuf::TextFormat::FieldValuePrinter {
   public:
-    virtual fun::string PrintMessageStart(const google::protobuf::Message& message,
+    virtual std::string PrintMessageStart(const google::protobuf::Message& message,
       int field_index,
       int field_count,
       bool single_line_comment) const {
@@ -193,9 +193,9 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
   // // // //
   // TextFormatTest
   {
-    fun::string static_proto_debug_string_;
+    std::string static_proto_debug_string_;
 
-    // Debug fun::string read from text_format_unittest_data.txt.
+    // Debug string read from text_format_unittest_data.txt.
     // google::protobuf::unittest::TestAllTypes proto_;
 
     // SetUpTestCase()
@@ -207,7 +207,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
         &static_proto_debug_string_, true));
     }
 
-    const fun::string proto_debug_string_(static_proto_debug_string_);
+    const std::string proto_debug_string_(static_proto_debug_string_);
 
     // TEST_F(TextFormatTest, Basic)
     {
@@ -247,7 +247,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
 
       google::protobuf::TextFormat::Printer printer;
       printer.SetUseShortRepeatedPrimitives(true);
-      fun::string text;
+      std::string text;
       printer.PrintToString(proto_, &text);
 
       verify("optional_int32: 123\n"
@@ -278,25 +278,25 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
     {
       google::protobuf::unittest::TestAllTypes proto_;
 
-      // Set the fun::string value to test.
+      // Set the string value to test.
       proto_.set_optional_string(kEscapeTestString);
 
       // Get the DebugString from the proto.
-      fun::string debug_string = proto_.DebugString();
-      fun::string utf8_debug_string = proto_.Utf8DebugString();
+      std::string debug_string = proto_.DebugString();
+      std::string utf8_debug_string = proto_.Utf8DebugString();
 
       // Hardcode a correct value to test against.
-      fun::string correct_string = "optional_string: "
+      std::string correct_string = "optional_string: "
         + kEscapeTestStringEscaped
         + "\n";
 
       // Compare.
       verify(correct_string == debug_string);
-      // UTF-8 fun::string is the same as non-UTF-8 because
+      // UTF-8 string is the same as non-UTF-8 because
       // the protocol buffer contains no UTF-8 text.
       verify(correct_string == utf8_debug_string);
 
-      fun::string expected_short_debug_string = "optional_string: "
+      std::string expected_short_debug_string = "optional_string: "
         + kEscapeTestStringEscaped;
       verify(expected_short_debug_string == proto_.ShortDebugString());
     }
@@ -305,23 +305,23 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
     {
       google::protobuf::unittest::TestAllTypes proto_;
 
-      // Set the fun::string value to test.
+      // Set the string value to test.
       proto_.set_optional_string("\350\260\267\346\255\214");
       proto_.set_optional_bytes("\350\260\267\346\255\214");
 
       // Get the DebugString from the proto.
-      fun::string debug_string = proto_.DebugString();
-      fun::string utf8_debug_string = proto_.Utf8DebugString();
+      std::string debug_string = proto_.DebugString();
+      std::string utf8_debug_string = proto_.Utf8DebugString();
 
       // Hardcode a correct value to test against.
-      fun::string correct_utf8_string =
+      std::string correct_utf8_string =
         "optional_string: "
         "\"\350\260\267\346\255\214\""
         "\n"
         "optional_bytes: "
         "\"\\350\\260\\267\\346\\255\\214\""
         "\n";
-      fun::string correct_string =
+      std::string correct_string =
         "optional_string: "
         "\"\\350\\260\\267\\346\\255\\214\""
         "\n"
@@ -385,7 +385,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
 
       google::protobuf::TextFormat::Printer printer;
       printer.SetHideUnknownFields(true);
-      fun::string output;
+      std::string output;
       printer.PrintToString(message, &output);
 
       verify("data: \"data\"\n" == output);
@@ -399,9 +399,9 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
 
       // Cases which should not be interpreted as sub-messages.
 
-      // 'a' is a valid FIXED64 tag, so for the fun::string to be parseable as a message
-      // it should be followed by 8 bytes.  Since this fun::string only has two
-      // subsequent bytes, it should be treated as a fun::string.
+      // 'a' is a valid FIXED64 tag, so for the string to be parseable as a message
+      // it should be followed by 8 bytes.  Since this string only has two
+      // subsequent bytes, it should be treated as a string.
       message.add_repeated_string("abc");
 
       // 'd' happens to be a valid ENDGROUP tag.  So,
@@ -409,7 +409,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
       // the ConsumedEntireMessage() check should fail.
       message.add_repeated_string("def");
 
-      // A zero-length fun::string should never be interpreted as a message even though
+      // A zero-length string should never be interpreted as a message even though
       // it is technically valid as one.
       message.add_repeated_string("");
 
@@ -419,10 +419,10 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
       // nested message.
       message.add_repeated_nested_message()->set_bb(123);
 
-      fun::string data;
+      std::string data;
       message.SerializeToString(&data);
 
-      fun::string text;
+      std::string text;
       google::protobuf::UnknownFieldSet unknown_fields;
       verify(unknown_fields.ParseFromString(data));
       verify(google::protobuf::TextFormat::PrintUnknownFieldsToString(unknown_fields, &text));
@@ -446,7 +446,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
       message.add_repeated_string("def");
       message.add_repeated_nested_message()->set_bb(123);
 
-      fun::string text;
+      std::string text;
       google::protobuf::TextFormat::Printer printer;
       printer.SetInitialIndentLevel(1);
       verify(printer.PrintToString(message, &text));
@@ -469,7 +469,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
       message.add_repeated_string("def");
       message.add_repeated_nested_message()->set_bb(123);
 
-      fun::string text;
+      std::string text;
       google::protobuf::TextFormat::Printer printer;
       printer.SetInitialIndentLevel(1);
       printer.SetSingleLineMode(true);
@@ -509,7 +509,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
       printer.SetDefaultFieldValuePrinter(new CustomUInt32FieldValuePrinter());
       // Let's see if that works well together with the repeated primitives:
       printer.SetUseShortRepeatedPrimitives(true);
-      fun::string text;
+      std::string text;
       printer.PrintToString(message, &text);
       verify("optional_uint32: 42u\nrepeated_uint32: [1u, 2u, 3u]\n" == text);
     }
@@ -525,7 +525,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
       verify(printer.RegisterFieldValuePrinter(
         message.GetDescriptor()->FindFieldByName("optional_int32"),
         new CustomInt32FieldValuePrinter()));
-      fun::string text;
+      std::string text;
       printer.PrintToString(message, &text);
       verify("optional_int32: value-is(42)\nrepeated_int32: 42\n" == text);
     }
@@ -556,7 +556,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
       google::protobuf::TextFormat::Printer printer;
       CustomMessageFieldValuePrinter my_field_printer;
       printer.SetDefaultFieldValuePrinter(new CustomMessageFieldValuePrinter());
-      fun::string text;
+      std::string text;
       printer.PrintToString(message, &text);
       verify(
         "optional_nested_message {  # NestedMessage: -1\n"
@@ -585,7 +585,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
       google::protobuf::TextFormat::Printer printer;
       CustomMessageFieldValuePrinter my_field_printer;
       printer.SetDefaultFieldValuePrinter(new CustomMultilineCommentPrinter());
-      fun::string text;
+      std::string text;
       printer.PrintToString(message, &text);
       verify(
         "optional_nested_message {  # 1\n"
@@ -612,8 +612,8 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
     {
       google::protobuf::unittest::TestAllTypes proto_;
 
-      // Create a parse fun::string with a numerical value for an enum field.
-      fun::string parse_string = google::protobuf::strings::Substitute("optional_nested_enum: $0",
+      // Create a parse string with a numerical value for an enum field.
+      std::string parse_string = google::protobuf::strings::Substitute("optional_nested_enum: $0",
         google::protobuf::unittest::TestAllTypes::BAZ);
       verify(google::protobuf::TextFormat::ParseFromString(parse_string, &proto_));
       verify(proto_.has_optional_nested_enum());
@@ -623,7 +623,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
     // TEST_F(TextFormatTest, ParseEnumFieldFromNegativeNumber)
     {
       verify(google::protobuf::unittest::SPARSE_E < 0);
-      fun::string parse_string = google::protobuf::strings::Substitute("sparse_enum: $0",
+      std::string parse_string = google::protobuf::strings::Substitute("sparse_enum: $0",
         google::protobuf::unittest::SPARSE_E);
       google::protobuf::unittest::SparseEnumMessage proto;
       verify(google::protobuf::TextFormat::ParseFromString(parse_string, &proto));
@@ -635,8 +635,8 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
     {
       google::protobuf::unittest::TestAllTypes proto_;
 
-      // Create a parse fun::string with escpaed characters in it.
-      fun::string parse_string = "optional_string: "
+      // Create a parse string with escpaed characters in it.
+      std::string parse_string = "optional_string: "
         + kEscapeTestStringEscaped
         + "\n";
 
@@ -652,8 +652,8 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
     {
       google::protobuf::unittest::TestAllTypes proto_;
 
-      // Create a parse fun::string with multiple parts on one line.
-      fun::string parse_string = "optional_string: \"foo\" \"bar\"\n";
+      // Create a parse string with multiple parts on one line.
+      std::string parse_string = "optional_string: \"foo\" \"bar\"\n";
 
       google::protobuf::io::ArrayInputStream input_stream1(parse_string.data(),
         parse_string.size());
@@ -662,7 +662,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
       // Compare.
       verify("foobar" == proto_.optional_string());
 
-      // Create a parse fun::string with multiple parts on seperate lines.
+      // Create a parse string with multiple parts on seperate lines.
       parse_string = "optional_string: \"foo\"\n"
         "\"bar\"\n";
 
@@ -682,7 +682,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
       // end.  This is needed for backwards-compatibility with proto1.
 
       // Have it parse a float with the 'f' suffix.
-      fun::string parse_string = "optional_float: 1.0f\n";
+      std::string parse_string = "optional_float: 1.0f\n";
 
       google::protobuf::io::ArrayInputStream input_stream(parse_string.data(),
         parse_string.size());
@@ -697,7 +697,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
     {
       google::protobuf::unittest::TestAllTypes proto_;
 
-      fun::string parse_string =
+      std::string parse_string =
         // Mixed short-form and long-form are simply concatenated.
         "repeated_int32: 1\n"
         "repeated_int32: [456, 789]\n"
@@ -743,7 +743,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
 
       // Test that comments are ignored.
 
-      fun::string parse_string = "optional_int32: 1  # a comment\n"
+      std::string parse_string = "optional_int32: 1  # a comment\n"
         "optional_int64: 2  # another comment";
 
       google::protobuf::io::ArrayInputStream input_stream(parse_string.data(),
@@ -763,7 +763,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
       // Test that we can place a ':' after the field name of a nested message,
       // even though we don't have to.
 
-      fun::string parse_string = "optional_nested_message: { bb: 1}\n";
+      std::string parse_string = "optional_nested_message: { bb: 1}\n";
 
       google::protobuf::io::ArrayInputStream input_stream(parse_string.data(),
         parse_string.size());
@@ -793,7 +793,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
       message.add_repeated_double(std::numeric_limits<double>::infinity());
       message.add_repeated_double(-std::numeric_limits<double>::infinity());
       message.add_repeated_double(std::numeric_limits<double>::quiet_NaN());
-      message.add_repeated_string(fun::string("\000\001\a\b\f\n\r\t\v\\\'\"", 12));
+      message.add_repeated_string(std::string("\000\001\a\b\f\n\r\t\v\\\'\"", 12));
 
       // Fun story:  We used to use 1.23e22 instead of 1.23e21 above, but this
       //   seemed to trigger an odd case on MinGW/GCC 3.4.5 where GCC's parsing of
@@ -987,10 +987,10 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
       verify(IsNaN(message.repeated_double(11)));
       verify(IsNaN(message.repeated_double(12)));
 
-      // Note:  Since these fun::string literals have \0's in them, we must explicitly
-      //   pass their sizes to fun::string's constructor.
+      // Note:  Since these string literals have \0's in them, we must explicitly
+      //   pass their sizes to string's constructor.
       verify(1 == message.repeated_string_size());
-      verify(fun::string("\000\001\a\b\f\n\r\t\v\\\'\"", 12) ==
+      verify(std::string("\000\001\a\b\f\n\r\t\v\\\'\"", 12) ==
         message.repeated_string(0));
     }
     */
@@ -1003,7 +1003,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
       message.set_my_int(12345);              // Field number 1
       message.set_my_float(0.999);            // Field number 101
       google::protobuf::TextFormat::Printer printer;
-      fun::string text;
+      std::string text;
 
       // By default, print in field number order.
       printer.PrintToString(message, &text);
@@ -1022,7 +1022,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
   // // // //
   // TextFormatExtensionsTest
   {
-    fun::string static_proto_debug_string_;
+    std::string static_proto_debug_string_;
 
     // SetUpTestCase()
     {
@@ -1032,7 +1032,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
         &static_proto_debug_string_, true));
     }
 
-    const fun::string proto_debug_string_(static_proto_debug_string_);
+    const std::string proto_debug_string_(static_proto_debug_string_);
 
     // TEST_F(TextFormatExtensionsTest, Extensions)
     {
@@ -1062,7 +1062,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
       google::protobuf::scoped_ptr<google::protobuf::unittest::TestAllTypes> message(new google::protobuf::unittest::TestAllTypes);
       const google::protobuf::Descriptor* d = message->GetDescriptor();
 
-      fun::string stringData =
+      std::string stringData =
         "optional_int32: 1\n"
         "optional_int64: 2\n"
         "  optional_double: 2.4\n"
@@ -1094,7 +1094,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
       ExpectLocation(&tree, d, "repeated_nested_message", 0, 8, 0);
       ExpectLocation(&tree, d, "repeated_nested_message", 1, 11, 0);
 
-      // Check for fields not set For an invalid field, the location returned
+      // Check for fields not set. For an invalid field, the location returned
       // should be -1, -1.
       ExpectLocation(&tree, d, "repeated_int64", 0, -1, -1);
       ExpectLocation(&tree, d, "repeated_int32", 6, -1, -1);
@@ -1231,7 +1231,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
       EXPECT_INVALID(double, "0xf");
       EXPECT_INVALID(double, "012");
 
-      // fun::string
+      // string
       EXPECT_FIELD(string, "hello", "\"hello\"");
       EXPECT_FIELD(string, "-1.87", "'-1.87'");
       EXPECT_INVALID(string, "hello");  // without quote for value
@@ -1263,7 +1263,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
         2, 1);
 
       ExpectFailure("optional_bool: true!\n", "Expected identifier.", 1, 20);
-      ExpectFailure("\"some fun::string\"", "Expected identifier.", 1, 1);
+      ExpectFailure("\"some string\"", "Expected identifier.", 1, 1);
     }
 
     // TEST_F(TextFormatParserTest, InvalidFieldName)
@@ -1364,11 +1364,11 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
       ExpectFailure("optional_bool {\n \n}\n", "Expected \":\", found \"{\".",
         1, 15);
 
-      // Invalid values for a fun::string field.
-      ExpectFailure("optional_string: true\n", "Expected fun::string.", 1, 18);
-      ExpectFailure("optional_string: 5\n", "Expected fun::string.", 1, 18);
-      ExpectFailure("optional_string: -7.5\n", "Expected fun::string.", 1, 18);
-      ExpectFailure("optional_string: !\n", "Expected fun::string.", 1, 18);
+      // Invalid values for a string field.
+      ExpectFailure("optional_string: true\n", "Expected string.", 1, 18);
+      ExpectFailure("optional_string: 5\n", "Expected string.", 1, 18);
+      ExpectFailure("optional_string: -7.5\n", "Expected string.", 1, 18);
+      ExpectFailure("optional_string: !\n", "Expected string.", 1, 18);
       ExpectFailure("optional_string {\n \n}\n", "Expected \":\", found \"{\".",
         1, 17);
 
@@ -1472,7 +1472,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
 
     // TEST_F(TextFormatParserTest, PrintErrorsToStderr)
     {
-      fun::vector<fun::string> errors;
+      std::vector<std::string> errors;
 
       {
         google::protobuf::ScopedMemoryLog log;
@@ -1490,7 +1490,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
 
     // TEST_F(TextFormatParserTest, FailsOnTokenizationError)
     {
-      fun::vector<fun::string> errors;
+      std::vector<std::string> errors;
 
       {
         google::protobuf::ScopedMemoryLog log;
@@ -1552,7 +1552,7 @@ bool FFunapiLibProtobufTextFormatUnitTest::RunTest(const FString& Parameters)
         protobuf_unittest::TestMessageSetExtension2::message_set_extension).str());
 
       // Ensure that these are the only entries present.
-      fun::vector<const google::protobuf::FieldDescriptor*> descriptors;
+      std::vector<const google::protobuf::FieldDescriptor*> descriptors;
       proto.message_set().GetReflection()->ListFields(
         proto.message_set(), &descriptors);
       verify(2 == descriptors.size());

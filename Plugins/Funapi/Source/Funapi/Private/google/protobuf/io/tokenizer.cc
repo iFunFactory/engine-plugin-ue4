@@ -49,12 +49,12 @@
 // use regular expressions.  And, indeed, I did.  I have code which
 // implements this same class using regular expressions.  It's about 200
 // lines shorter.  However:
-// - Rather than error messages telling you "This fun::string has an invalid
+// - Rather than error messages telling you "This string has an invalid
 //   escape sequence at line 5, column 45", you get error messages like
 //   "Parse error on line 5".  Giving more precise errors requires adding
 //   a lot of code that ends up basically as complex as the hand-coded
 //   version anyway.
-// - The regular expression to match a fun::string literal looks like this:
+// - The regular expression to match a string literal looks like this:
 //     kString  = new RE("(\"([^\"\\\\]|"              // non-escaped
 //                       "\\\\[abfnrtv?\"'\\\\0-7]|"   // normal escape
 //                       "\\\\x[0-9a-fA-F])*\"|"       // hex escape
@@ -80,7 +80,7 @@
 // On a similar but unrelated note, I'm even scared to use ctype.h.
 // Apparently functions like isalpha() are locale-dependent.  So, if we used
 // that, then if this code is being called from some program that doesn't
-// have its locale fun::set to "C", it would behave strangely.  We can't just fun::set
+// have its locale set to "C", it would behave strangely.  We can't just set
 // the locale to "C" ourselves since we might break the calling program that
 // way, particularly if it is multi-threaded.  WTF?  Someone please let me
 // (Kenton) know if I'm missing something here...
@@ -270,14 +270,14 @@ void Tokenizer::Refresh() {
   current_char_ = buffer_[0];
 }
 
-inline void Tokenizer::RecordTo(fun::string* target) {
+inline void Tokenizer::RecordTo(string* target) {
   record_target_ = target;
   record_start_ = buffer_pos_;
 }
 
 inline void Tokenizer::StopRecording() {
   // Note:  The if() is necessary because some STL implementations crash when
-  //   you call fun::string::append(NULL, 0), presumably because they are trying to
+  //   you call string::append(NULL, 0), presumably because they are trying to
   //   be helpful by detecting the NULL pointer, even though there's nothing
   //   wrong with reading zero bytes from NULL.
   if (buffer_pos_ != record_start_) {
@@ -353,7 +353,7 @@ void Tokenizer::ConsumeString(char delimiter) {
   while (true) {
     switch (current_char_) {
       case '\0':
-        AddError("Unexpected end of fun::string.");
+        AddError("Unexpected end of string.");
         return;
 
       case '\n': {
@@ -401,7 +401,7 @@ void Tokenizer::ConsumeString(char delimiter) {
                      "sequence");
           }
         } else {
-          AddError("Invalid escape sequence in fun::string literal.");
+          AddError("Invalid escape sequence in string literal.");
         }
         break;
       }
@@ -473,7 +473,7 @@ Tokenizer::TokenType Tokenizer::ConsumeNumber(bool started_with_zero,
   return is_float ? TYPE_FLOAT : TYPE_INTEGER;
 }
 
-void Tokenizer::ConsumeLineComment(fun::string* content) {
+void Tokenizer::ConsumeLineComment(string* content) {
   if (content != NULL) RecordTo(content);
 
   while (current_char_ != '\0' && current_char_ != '\n') {
@@ -484,7 +484,7 @@ void Tokenizer::ConsumeLineComment(fun::string* content) {
   if (content != NULL) StopRecording();
 }
 
-void Tokenizer::ConsumeBlockComment(fun::string* content) {
+void Tokenizer::ConsumeBlockComment(string* content) {
   int start_line = line_;
   int start_column = column_ - 2;
 
@@ -584,7 +584,7 @@ bool Tokenizer::Next() {
       AddError("Invalid control characters encountered in text.");
       NextChar();
       // Skip more unprintable characters, too.  But, remember that '\0' is
-      // also what current_char_ is fun::set to after EOF / read error.  We have
+      // also what current_char_ is set to after EOF / read error.  We have
       // to be careful not to go into an infinite loop of trying to consume
       // it, so make sure to check read_error_ explicitly before consuming
       // '\0'.
@@ -628,7 +628,7 @@ bool Tokenizer::Next() {
         ConsumeString('\'');
         current_.type = TYPE_STRING;
       } else {
-        // Check if the high order bit is set
+        // Check if the high order bit is set.
         if (current_char_ & 0x80) {
           error_collector_->AddError(line_, column_,
               StringPrintf("Interpreting non ascii codepoint %d.",
@@ -663,9 +663,9 @@ namespace {
 // next_leading_comments.
 class CommentCollector {
  public:
-  CommentCollector(fun::string* prev_trailing_comments,
-                   fun::vector<fun::string>* detached_comments,
-                   fun::string* next_leading_comments)
+  CommentCollector(string* prev_trailing_comments,
+                   vector<string>* detached_comments,
+                   string* next_leading_comments)
       : prev_trailing_comments_(prev_trailing_comments),
         detached_comments_(detached_comments),
         next_leading_comments_(next_leading_comments),
@@ -686,7 +686,7 @@ class CommentCollector {
 
   // About to read a line comment.  Get the comment buffer pointer in order to
   // read into it.
-  fun::string* GetBufferForLineComment() {
+  string* GetBufferForLineComment() {
     // We want to combine with previous line comments, but not block comments.
     if (has_comment_ && !is_line_comment_) {
       Flush();
@@ -698,7 +698,7 @@ class CommentCollector {
 
   // About to read a block comment.  Get the comment buffer pointer in order to
   // read into it.
-  fun::string* GetBufferForBlockComment() {
+  string* GetBufferForBlockComment() {
     if (has_comment_) {
       Flush();
     }
@@ -735,11 +735,11 @@ class CommentCollector {
   }
 
  private:
-  fun::string* prev_trailing_comments_;
-  fun::vector<fun::string>* detached_comments_;
-  fun::string* next_leading_comments_;
+  string* prev_trailing_comments_;
+  vector<string>* detached_comments_;
+  string* next_leading_comments_;
 
-  fun::string comment_buffer_;
+  string comment_buffer_;
 
   // True if any comments were read into comment_buffer_.  This can be true even
   // if comment_buffer_ is empty, namely if the comment was "/**/".
@@ -755,9 +755,9 @@ class CommentCollector {
 
 } // namespace
 
-bool Tokenizer::NextWithComments(fun::string* prev_trailing_comments,
-                                 fun::vector<fun::string>* detached_comments,
-                                 fun::string* next_leading_comments) {
+bool Tokenizer::NextWithComments(string* prev_trailing_comments,
+                                 vector<string>* detached_comments,
+                                 string* next_leading_comments) {
   CommentCollector collector(prev_trailing_comments, detached_comments,
                              next_leading_comments);
 
@@ -848,7 +848,7 @@ bool Tokenizer::NextWithComments(fun::string* prev_trailing_comments,
 // are given is text that the tokenizer actually parsed as a token
 // of the given type.
 
-bool Tokenizer::ParseInteger(const fun::string& text, uint64 max_value,
+bool Tokenizer::ParseInteger(const string& text, uint64 max_value,
                              uint64* output) {
   // Sadly, we can't just use strtoul() since it is only 32-bit and strtoull()
   // is non-standard.  I hate the C standard library.  :(
@@ -885,7 +885,7 @@ bool Tokenizer::ParseInteger(const fun::string& text, uint64 max_value,
   return true;
 }
 
-double Tokenizer::ParseFloat(const fun::string& text) {
+double Tokenizer::ParseFloat(const string& text) {
   const char* start = text.c_str();
   char* end;
   double result = NoLocaleStrtod(start, &end);
@@ -910,9 +910,9 @@ double Tokenizer::ParseFloat(const fun::string& text) {
   return result;
 }
 
-// Helper to append a Unicode code point to a fun::string as UTF8, without bringing
+// Helper to append a Unicode code point to a string as UTF8, without bringing
 // in any external dependencies.
-static void AppendUTF8(uint32 code_point, fun::string* output) {
+static void AppendUTF8(uint32 code_point, string* output) {
   uint32 tmp = 0;
   int len = 0;
   if (code_point <= 0x7f) {
@@ -1016,26 +1016,26 @@ static const char* FetchUnicodePoint(const char* ptr, uint32* code_point) {
       p += 6;
     }
     // If this failed, then we just emit the head surrogate as a code point.
-    // It's bogus, but so is the fun::string.
+    // It's bogus, but so is the string.
   }
 
   return p;
 }
 
-// The text fun::string must begin and end with single or double quote
+// The text string must begin and end with single or double quote
 // characters.
-void Tokenizer::ParseStringAppend(const fun::string& text, fun::string* output) {
+void Tokenizer::ParseStringAppend(const string& text, string* output) {
   // Reminder: text[0] is always a quote character.  (If text is
   // empty, it's invalid, so we'll just return).
   const size_t text_size = text.size();
   if (text_size == 0) {
     GOOGLE_LOG(DFATAL)
       << " Tokenizer::ParseStringAppend() passed text that could not"
-         " have been tokenized as a fun::string: " << CEscape(text);
+         " have been tokenized as a string: " << CEscape(text);
     return;
   }
 
-  // Reserve room for new fun::string. The branch is necessary because if
+  // Reserve room for new string. The branch is necessary because if
   // there is already space available the reserve() call might
   // downsize the output.
   const size_t new_len = text_size + output->size();
@@ -1043,7 +1043,7 @@ void Tokenizer::ParseStringAppend(const fun::string& text, fun::string* output) 
     output->reserve(new_len);
   }
 
-  // Loop through the fun::string copying characters to "output" and
+  // Loop through the string copying characters to "output" and
   // interpreting escape sequences.  Note that any invalid escape
   // sequences or other errors were already reported while tokenizing.
   // In this case we do not need to produce valid results.
@@ -1103,7 +1103,7 @@ void Tokenizer::ParseStringAppend(const fun::string& text, fun::string* output) 
 }
 
 template<typename CharacterClass>
-static bool AllInClass(const fun::string& s) {
+static bool AllInClass(const string& s) {
   for (int i = 0; i < (int)s.size(); ++i) {
     if (!CharacterClass::InClass(s[i]))
       return false;
@@ -1111,7 +1111,7 @@ static bool AllInClass(const fun::string& s) {
   return true;
 }
 
-bool Tokenizer::IsIdentifier(const fun::string& text) {
+bool Tokenizer::IsIdentifier(const string& text) {
   // Mirrors IDENTIFIER definition in Tokenizer::Next() above.
   if (text.size() == 0)
     return false;

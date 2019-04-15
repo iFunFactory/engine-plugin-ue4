@@ -76,7 +76,7 @@ inline void protobuf_AssignDescriptorsOnce() {
                  &protobuf_AssignDesc_funapi_2fdistribution_2ffun_5fdedicated_5fserver_5frpc_5fmessage_2eproto);
 }
 
-void protobuf_RegisterTypes(const ::fun::string&) {
+void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     FunDedicatedServerRpcMessage_descriptor_, &FunDedicatedServerRpcMessage::default_instance());
@@ -155,8 +155,8 @@ FunDedicatedServerRpcMessage::FunDedicatedServerRpcMessage(const FunDedicatedSer
 void FunDedicatedServerRpcMessage::SharedCtor() {
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
-  xid_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  type_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  xid_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  type_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   is_request_ = false;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -239,7 +239,7 @@ bool FunDedicatedServerRpcMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // required fun::string type = 2;
+      // required string type = 2;
       case 2: {
         if (tag == 18) {
          parse_type:
@@ -307,7 +307,7 @@ void FunDedicatedServerRpcMessage::SerializeWithCachedSizes(
       1, this->xid(), output);
   }
 
-  // required fun::string type = 2;
+  // required string type = 2;
   if (has_type()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->type().data(), this->type().length(),
@@ -343,7 +343,7 @@ void FunDedicatedServerRpcMessage::SerializeWithCachedSizes(
         1, this->xid(), target);
   }
 
-  // required fun::string type = 2;
+  // required string type = 2;
   if (has_type()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->type().data(), this->type().length(),
@@ -382,7 +382,7 @@ int FunDedicatedServerRpcMessage::ByteSize() const {
           this->xid());
     }
 
-    // required fun::string type = 2;
+    // required string type = 2;
     if (has_type()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -502,7 +502,7 @@ FunDedicatedServerRpcSystemMessage::FunDedicatedServerRpcSystemMessage(const Fun
 void FunDedicatedServerRpcSystemMessage::SharedCtor() {
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
-  data_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  data_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -560,7 +560,7 @@ bool FunDedicatedServerRpcSystemMessage::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional fun::string data = 1;
+      // optional string data = 1;
       case 1: {
         if (tag == 10) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
@@ -601,7 +601,7 @@ failure:
 void FunDedicatedServerRpcSystemMessage::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:FunDedicatedServerRpcSystemMessage)
-  // optional fun::string data = 1;
+  // optional string data = 1;
   if (has_data()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->data().data(), this->data().length(),
@@ -621,7 +621,7 @@ void FunDedicatedServerRpcSystemMessage::SerializeWithCachedSizes(
 ::google::protobuf::uint8* FunDedicatedServerRpcSystemMessage::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:FunDedicatedServerRpcSystemMessage)
-  // optional fun::string data = 1;
+  // optional string data = 1;
   if (has_data()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->data().data(), this->data().length(),
@@ -644,7 +644,7 @@ int FunDedicatedServerRpcSystemMessage::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional fun::string data = 1;
+    // optional string data = 1;
     if (has_data()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(

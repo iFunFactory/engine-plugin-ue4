@@ -57,7 +57,7 @@ inline void protobuf_AssignDescriptorsOnce() {
                  &protobuf_AssignDesc_funapi_2fnetwork_2fping_5fmessage_2eproto);
 }
 
-void protobuf_RegisterTypes(const ::fun::string&) {
+void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     FunPingMessage_descriptor_, &FunPingMessage::default_instance());
@@ -128,7 +128,7 @@ void FunPingMessage::SharedCtor() {
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
   timestamp_ = GOOGLE_LONGLONG(0);
-  data_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  data_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 

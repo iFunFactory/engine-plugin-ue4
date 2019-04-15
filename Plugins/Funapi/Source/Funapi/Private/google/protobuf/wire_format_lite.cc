@@ -175,8 +175,8 @@ bool WireFormatLite::SkipField(
       if (!input->ReadVarint32(&length)) return false;
       output->WriteVarint32(tag);
       output->WriteVarint32(length);
-      // TODO(mkilavuz): Provide API to prevent extra fun::string copying.
-      fun::string temp;
+      // TODO(mkilavuz): Provide API to prevent extra string copying.
+      string temp;
       if (!input->ReadString(&temp, length)) return false;
       output->WriteString(temp);
       return true;
@@ -370,7 +370,7 @@ void WireFormatLite::WriteEnum(int field_number, int value,
   WriteEnumNoTag(value, output);
 }
 
-void WireFormatLite::WriteString(int field_number, const fun::string& value,
+void WireFormatLite::WriteString(int field_number, const string& value,
                                  io::CodedOutputStream* output) {
   // String is for UTF-8 text only
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
@@ -379,7 +379,7 @@ void WireFormatLite::WriteString(int field_number, const fun::string& value,
   output->WriteString(value);
 }
 void WireFormatLite::WriteStringMaybeAliased(
-    int field_number, const fun::string& value,
+    int field_number, const string& value,
     io::CodedOutputStream* output) {
   // String is for UTF-8 text only
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
@@ -387,7 +387,7 @@ void WireFormatLite::WriteStringMaybeAliased(
   output->WriteVarint32(value.size());
   output->WriteRawMaybeAliased(value.data(), value.size());
 }
-void WireFormatLite::WriteBytes(int field_number, const fun::string& value,
+void WireFormatLite::WriteBytes(int field_number, const string& value,
                                 io::CodedOutputStream* output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
   GOOGLE_CHECK(value.size() <= kint32max);
@@ -395,7 +395,7 @@ void WireFormatLite::WriteBytes(int field_number, const fun::string& value,
   output->WriteString(value);
 }
 void WireFormatLite::WriteBytesMaybeAliased(
-    int field_number, const fun::string& value,
+    int field_number, const string& value,
     io::CodedOutputStream* output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
   GOOGLE_CHECK(value.size() <= kint32max);
@@ -452,7 +452,7 @@ void WireFormatLite::WriteMessageMaybeToArray(int field_number,
 }
 
 bool WireFormatLite::ReadString(io::CodedInputStream* input,
-                                fun::string* value) {
+                                string* value) {
   // String is for UTF-8 text only
   uint32 length;
   if (!input->ReadVarint32(&length)) return false;
@@ -460,7 +460,7 @@ bool WireFormatLite::ReadString(io::CodedInputStream* input,
   return true;
 }
 bool WireFormatLite::ReadBytes(io::CodedInputStream* input,
-                               fun::string* value) {
+                               string* value) {
   uint32 length;
   if (!input->ReadVarint32(&length)) return false;
   return input->InternalReadStringInline(value, length);

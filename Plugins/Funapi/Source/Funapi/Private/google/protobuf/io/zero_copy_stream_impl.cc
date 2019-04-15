@@ -251,7 +251,7 @@ bool FileOutputStream::CopyingFileOutputStream::Write(
       // FIXME(kenton):  According to the man page, if write() returns zero,
       //   there was no error; write() simply did not write anything.  It's
       //   unclear under what circumstances this might happen, but presumably
-      //   errno won't be fun::set in this case.  I am confused as to how such an
+      //   errno won't be set in this case.  I am confused as to how such an
       //   event should be handled.  For now I'm treating it as an error, since
       //   retrying seems like it could lead to an infinite loop.  I suspect
       //   this never actually happens anyway.

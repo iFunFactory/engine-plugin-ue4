@@ -71,19 +71,19 @@ inline bool ascii_isdigit(char c) {
 
 // ----------------------------------------------------------------------
 // HasPrefixString()
-//    Check if a fun::string begins with a given prefix.
+//    Check if a string begins with a given prefix.
 // StripPrefixString()
-//    Given a fun::string and a putative prefix, returns the fun::string minus the
-//    prefix fun::string if the prefix matches, otherwise the original
-//    fun::string.
+//    Given a string and a putative prefix, returns the string minus the
+//    prefix string if the prefix matches, otherwise the original
+//    string.
 // ----------------------------------------------------------------------
-inline bool HasPrefixString(const fun::string& str,
-                            const fun::string& prefix) {
+inline bool HasPrefixString(const string& str,
+                            const string& prefix) {
   return str.size() >= prefix.size() &&
          str.compare(0, prefix.size(), prefix) == 0;
 }
 
-inline fun::string StripPrefixString(const fun::string& str, const fun::string& prefix) {
+inline string StripPrefixString(const string& str, const string& prefix) {
   if (HasPrefixString(str, prefix)) {
     return str.substr(prefix.size());
   } else {
@@ -95,17 +95,17 @@ inline fun::string StripPrefixString(const fun::string& str, const fun::string& 
 // HasSuffixString()
 //    Return true if str ends in suffix.
 // StripSuffixString()
-//    Given a fun::string and a putative suffix, returns the fun::string minus the
-//    suffix fun::string if the suffix matches, otherwise the original
-//    fun::string.
+//    Given a string and a putative suffix, returns the string minus the
+//    suffix string if the suffix matches, otherwise the original
+//    string.
 // ----------------------------------------------------------------------
-inline bool HasSuffixString(const fun::string& str,
-                            const fun::string& suffix) {
+inline bool HasSuffixString(const string& str,
+                            const string& suffix) {
   return str.size() >= suffix.size() &&
          str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
-inline fun::string StripSuffixString(const fun::string& str, const fun::string& suffix) {
+inline string StripSuffixString(const string& str, const string& suffix) {
   if (HasSuffixString(str, suffix)) {
     return str.substr(0, str.size() - suffix.size());
   } else {
@@ -120,7 +120,7 @@ inline fun::string StripSuffixString(const fun::string& str, const fun::string& 
 //    Good for keeping html characters or protocol characters (\t) out
 //    of places where they might cause a problem.
 // ----------------------------------------------------------------------
-LIBPROTOBUF_EXPORT void StripString(fun::string* s, const char* remove,
+LIBPROTOBUF_EXPORT void StripString(string* s, const char* remove,
                                     char replacewith);
 
 // ----------------------------------------------------------------------
@@ -133,67 +133,67 @@ LIBPROTOBUF_EXPORT void StripString(fun::string* s, const char* remove,
 //    strings.
 // ----------------------------------------------------------------------
 
-inline void LowerString(fun::string * s) {
-  fun::string::iterator end = s->end();
-  for (fun::string::iterator i = s->begin(); i != end; ++i) {
+inline void LowerString(string * s) {
+  string::iterator end = s->end();
+  for (string::iterator i = s->begin(); i != end; ++i) {
     // tolower() changes based on locale.  We don't want this!
     if ('A' <= *i && *i <= 'Z') *i += 'a' - 'A';
   }
 }
 
-inline void UpperString(fun::string * s) {
-  fun::string::iterator end = s->end();
-  for (fun::string::iterator i = s->begin(); i != end; ++i) {
+inline void UpperString(string * s) {
+  string::iterator end = s->end();
+  for (string::iterator i = s->begin(); i != end; ++i) {
     // toupper() changes based on locale.  We don't want this!
     if ('a' <= *i && *i <= 'z') *i += 'A' - 'a';
   }
 }
 
-inline fun::string ToUpper(const fun::string& s) {
-  fun::string out = s;
+inline string ToUpper(const string& s) {
+  string out = s;
   UpperString(&out);
   return out;
 }
 
 // ----------------------------------------------------------------------
 // StringReplace()
-//    Give me a fun::string and two patterns "old" and "new", and I replace
-//    the first instance of "old" in the fun::string with "new", if it
-//    exists.  RETURN a new fun::string, regardless of whether the replacement
+//    Give me a string and two patterns "old" and "new", and I replace
+//    the first instance of "old" in the string with "new", if it
+//    exists.  RETURN a new string, regardless of whether the replacement
 //    happened or not.
 // ----------------------------------------------------------------------
 
-LIBPROTOBUF_EXPORT fun::string StringReplace(const fun::string& s, const fun::string& oldsub,
-                                        const fun::string& newsub, bool replace_all);
+LIBPROTOBUF_EXPORT string StringReplace(const string& s, const string& oldsub,
+                                        const string& newsub, bool replace_all);
 
 // ----------------------------------------------------------------------
 // SplitStringUsing()
-//    Split a fun::string using a character delimiter. Append the components
+//    Split a string using a character delimiter. Append the components
 //    to 'result'.  If there are consecutive delimiters, this function skips
 //    over all of them.
 // ----------------------------------------------------------------------
-LIBPROTOBUF_EXPORT void SplitStringUsing(const fun::string& full, const char* delim,
-                                         fun::vector<fun::string>* res);
+LIBPROTOBUF_EXPORT void SplitStringUsing(const string& full, const char* delim,
+                                         vector<string>* res);
 
-// Split a fun::string using one or more byte delimiters, presented
-// as a nul-terminated c fun::string. Append the components to 'result'.
+// Split a string using one or more byte delimiters, presented
+// as a nul-terminated c string. Append the components to 'result'.
 // If there are consecutive delimiters, this function will return
 // corresponding empty strings.  If you want to drop the empty
 // strings, try SplitStringUsing().
 //
-// If "full" is the empty fun::string, yields an empty fun::string as the only value.
+// If "full" is the empty string, yields an empty string as the only value.
 // ----------------------------------------------------------------------
-LIBPROTOBUF_EXPORT void SplitStringAllowEmpty(const fun::string& full,
+LIBPROTOBUF_EXPORT void SplitStringAllowEmpty(const string& full,
                                               const char* delim,
-                                              fun::vector<fun::string>* result);
+                                              vector<string>* result);
 
 // ----------------------------------------------------------------------
 // Split()
-//    Split a fun::string using a character delimiter.
+//    Split a string using a character delimiter.
 // ----------------------------------------------------------------------
-inline fun::vector<fun::string> Split(
-    const fun::string& full, const char* delim, bool skip_empty = true) {
-  fun::vector<fun::string> result;
+inline vector<string> Split(
+    const string& full, const char* delim, bool skip_empty = true) {
+  vector<string> result;
   if (skip_empty) {
     SplitStringUsing(full, delim, &result);
   } else {
@@ -204,18 +204,18 @@ inline fun::vector<fun::string> Split(
 
 // ----------------------------------------------------------------------
 // JoinStrings()
-//    These methods concatenate a fun::vector of strings into a C++ fun::string, using
-//    the C-fun::string "delim" as a separator between components. There are two
-//    flavors of the function, one flavor returns the concatenated fun::string,
-//    another takes a pointer to the target fun::string. In the latter case the
-//    target fun::string is cleared and overwritten.
+//    These methods concatenate a vector of strings into a C++ string, using
+//    the C-string "delim" as a separator between components. There are two
+//    flavors of the function, one flavor returns the concatenated string,
+//    another takes a pointer to the target string. In the latter case the
+//    target string is cleared and overwritten.
 // ----------------------------------------------------------------------
-LIBPROTOBUF_EXPORT void JoinStrings(const fun::vector<fun::string>& components,
-                                    const char* delim, fun::string* result);
+LIBPROTOBUF_EXPORT void JoinStrings(const vector<string>& components,
+                                    const char* delim, string* result);
 
-inline fun::string JoinStrings(const fun::vector<fun::string>& components,
+inline string JoinStrings(const vector<string>& components,
                           const char* delim) {
-  fun::string result;
+  string result;
   JoinStrings(components, delim, &result);
   return result;
 }
@@ -225,7 +225,7 @@ inline fun::string JoinStrings(const fun::vector<fun::string>& components,
 //    Copies "source" to "dest", rewriting C-style escape sequences
 //    -- '\n', '\r', '\\', '\ooo', etc -- to their ASCII
 //    equivalents.  "dest" must be sufficiently large to hold all
-//    the characters in the rewritten fun::string (i.e. at least as large
+//    the characters in the rewritten string (i.e. at least as large
 //    as strlen(source) + 1 should be safe, since the replacements
 //    are always shorter than the original escaped sequences).  It's
 //    safe for source and dest to be the same.  RETURNS the length
@@ -245,35 +245,35 @@ inline fun::string JoinStrings(const fun::vector<fun::string>& components,
 //
 //    Errors: In the first form of the call, errors are reported with
 //    LOG(ERROR). The same is true for the second form of the call if
-//    the pointer to the fun::string fun::vector is NULL; otherwise, error
-//    messages are stored in the fun::vector. In either case, the effect on
+//    the pointer to the string vector is NULL; otherwise, error
+//    messages are stored in the vector. In either case, the effect on
 //    the dest array is not defined, but rest of the source will be
 //    processed.
 //    ----------------------------------------------------------------------
 
 LIBPROTOBUF_EXPORT int UnescapeCEscapeSequences(const char* source, char* dest);
 LIBPROTOBUF_EXPORT int UnescapeCEscapeSequences(const char* source, char* dest,
-                                                fun::vector<fun::string> *errors);
+                                                vector<string> *errors);
 
 // ----------------------------------------------------------------------
 // UnescapeCEscapeString()
 //    This does the same thing as UnescapeCEscapeSequences, but creates
-//    a new fun::string. The caller does not need to worry about allocating
+//    a new string. The caller does not need to worry about allocating
 //    a dest buffer. This should be used for non performance critical
 //    tasks such as printing debug messages. It is safe for src and dest
 //    to be the same.
 //
-//    The second call stores its errors in a supplied fun::string fun::vector.
-//    If the fun::string fun::vector pointer is NULL, it reports the errors with LOG().
+//    The second call stores its errors in a supplied string vector.
+//    If the string vector pointer is NULL, it reports the errors with LOG().
 //
 //    In the first and second calls, the length of dest is returned. In the
-//    the third call, the new fun::string is returned.
+//    the third call, the new string is returned.
 // ----------------------------------------------------------------------
 
-LIBPROTOBUF_EXPORT int UnescapeCEscapeString(const fun::string& src, fun::string* dest);
-LIBPROTOBUF_EXPORT int UnescapeCEscapeString(const fun::string& src, fun::string* dest,
-                                             fun::vector<fun::string> *errors);
-LIBPROTOBUF_EXPORT fun::string UnescapeCEscapeString(const fun::string& src);
+LIBPROTOBUF_EXPORT int UnescapeCEscapeString(const string& src, string* dest);
+LIBPROTOBUF_EXPORT int UnescapeCEscapeString(const string& src, string* dest,
+                                             vector<string> *errors);
+LIBPROTOBUF_EXPORT string UnescapeCEscapeString(const string& src);
 
 // ----------------------------------------------------------------------
 // CEscapeString()
@@ -290,19 +290,19 @@ LIBPROTOBUF_EXPORT int CEscapeString(const char* src, int src_len,
 
 // ----------------------------------------------------------------------
 // CEscape()
-//    More convenient form of CEscapeString: returns result as a "fun::string".
+//    More convenient form of CEscapeString: returns result as a "string".
 //    This version is slower than CEscapeString() because it does more
 //    allocation.  However, it is much more convenient to use in
 //    non-speed-critical code like logging messages etc.
 // ----------------------------------------------------------------------
-LIBPROTOBUF_EXPORT fun::string CEscape(const fun::string& src);
+LIBPROTOBUF_EXPORT string CEscape(const string& src);
 
 namespace strings {
-// Like CEscape() but does not escape bytes with the upper bit set
-LIBPROTOBUF_EXPORT fun::string Utf8SafeCEscape(const fun::string& src);
+// Like CEscape() but does not escape bytes with the upper bit set.
+LIBPROTOBUF_EXPORT string Utf8SafeCEscape(const string& src);
 
 // Like CEscape() but uses hex (\x) escapes instead of octals.
-LIBPROTOBUF_EXPORT fun::string CHexEscape(const fun::string& src);
+LIBPROTOBUF_EXPORT string CHexEscape(const string& src);
 }  // namespace strings
 
 // ----------------------------------------------------------------------
@@ -351,9 +351,9 @@ inline uint64 strtou64(const char *nptr, char **endptr, int base) {
 // ----------------------------------------------------------------------
 // safe_strto32()
 // ----------------------------------------------------------------------
-LIBPROTOBUF_EXPORT bool safe_int(fun::string text, int32* value_p);
+LIBPROTOBUF_EXPORT bool safe_int(string text, int32* value_p);
 
-inline bool safe_strto32(fun::string text, int32* value) {
+inline bool safe_strto32(string text, int32* value) {
   return safe_int(text, value);
 }
 
@@ -421,7 +421,7 @@ inline char* FastULongToBuffer(unsigned long i, char* buffer) {
 // output is left-aligned).  The caller is responsible for ensuring that
 // the buffer has enough space to hold the output.
 //
-// Returns a pointer to the end of the fun::string (i.e. the null character
+// Returns a pointer to the end of the string (i.e. the null character
 // terminating the string).
 // ----------------------------------------------------------------------
 
@@ -442,26 +442,26 @@ inline char* FastUInt64ToBuffer(uint64 i, char* buffer) {
 
 // ----------------------------------------------------------------------
 // SimpleItoa()
-//    Description: converts an integer to a fun::string.
+//    Description: converts an integer to a string.
 //
-//    Return value: fun::string
+//    Return value: string
 // ----------------------------------------------------------------------
-LIBPROTOBUF_EXPORT fun::string SimpleItoa(int i);
-LIBPROTOBUF_EXPORT fun::string SimpleItoa(unsigned int i);
-LIBPROTOBUF_EXPORT fun::string SimpleItoa(long i);
-LIBPROTOBUF_EXPORT fun::string SimpleItoa(unsigned long i);
-LIBPROTOBUF_EXPORT fun::string SimpleItoa(long long i);
-LIBPROTOBUF_EXPORT fun::string SimpleItoa(unsigned long long i);
+LIBPROTOBUF_EXPORT string SimpleItoa(int i);
+LIBPROTOBUF_EXPORT string SimpleItoa(unsigned int i);
+LIBPROTOBUF_EXPORT string SimpleItoa(long i);
+LIBPROTOBUF_EXPORT string SimpleItoa(unsigned long i);
+LIBPROTOBUF_EXPORT string SimpleItoa(long long i);
+LIBPROTOBUF_EXPORT string SimpleItoa(unsigned long long i);
 
 // ----------------------------------------------------------------------
 // SimpleDtoa()
 // SimpleFtoa()
 // DoubleToBuffer()
 // FloatToBuffer()
-//    Description: converts a double or float to a fun::string which, if
+//    Description: converts a double or float to a string which, if
 //    passed to NoLocaleStrtod(), will produce the exact same original double
 //    (except in case of NaN; all NaNs are considered the same value).
-//    We try to keep the fun::string short but it's not guaranteed to be as
+//    We try to keep the string short but it's not guaranteed to be as
 //    short as possible.
 //
 //    DoubleToBuffer() and FloatToBuffer() write the text to the given
@@ -470,10 +470,10 @@ LIBPROTOBUF_EXPORT fun::string SimpleItoa(unsigned long long i);
 //    bytes for floats.  kFastToBufferSize is also guaranteed to be large
 //    enough to hold either.
 //
-//    Return value: fun::string
+//    Return value: string
 // ----------------------------------------------------------------------
-LIBPROTOBUF_EXPORT fun::string SimpleDtoa(double value);
-LIBPROTOBUF_EXPORT fun::string SimpleFtoa(float value);
+LIBPROTOBUF_EXPORT string SimpleDtoa(double value);
+LIBPROTOBUF_EXPORT string SimpleFtoa(float value);
 
 LIBPROTOBUF_EXPORT char* DoubleToBuffer(double i, char* buffer);
 LIBPROTOBUF_EXPORT char* FloatToBuffer(float i, char* buffer);
@@ -488,11 +488,11 @@ static const int kFloatToBufferSize = 24;
 // ToString() are internal help methods used in StrCat() and Join()
 // ----------------------------------------------------------------------
 namespace internal {
-inline fun::string ToString(int i) {
+inline string ToString(int i) {
   return SimpleItoa(i);
 }
 
-inline fun::string ToString(fun::string a) {
+inline string ToString(string a) {
   return a;
 }
 }  // namespace internal
@@ -502,38 +502,38 @@ inline fun::string ToString(fun::string a) {
 //    These methods join some strings together.
 // ----------------------------------------------------------------------
 template <typename T1, typename T2, typename T3, typename T4, typename T5>
-fun::string StrCat(
+string StrCat(
     const T1& a, const T2& b, const T3& c, const T4& d, const T5& e) {
   return internal::ToString(a) + internal::ToString(b) +
       internal::ToString(c) + internal::ToString(d) + internal::ToString(e);
 }
 
 template <typename T1, typename T2, typename T3, typename T4>
-fun::string StrCat(
+string StrCat(
     const T1& a, const T2& b, const T3& c, const T4& d) {
   return internal::ToString(a) + internal::ToString(b) +
       internal::ToString(c) + internal::ToString(d);
 }
 
 template <typename T1, typename T2, typename T3>
-fun::string StrCat(const T1& a, const T2& b, const T3& c) {
+string StrCat(const T1& a, const T2& b, const T3& c) {
   return internal::ToString(a) + internal::ToString(b) +
       internal::ToString(c);
 }
 
 template <typename T1, typename T2>
-fun::string StrCat(const T1& a, const T2& b) {
+string StrCat(const T1& a, const T2& b) {
   return internal::ToString(a) + internal::ToString(b);
 }
 
 // ----------------------------------------------------------------------
 // Join()
-//    These methods concatenate a range of components into a C++ fun::string, using
-//    the C-fun::string "delim" as a separator between components.
+//    These methods concatenate a range of components into a C++ string, using
+//    the C-string "delim" as a separator between components.
 // ----------------------------------------------------------------------
 template <typename Iterator>
 void Join(Iterator start, Iterator end,
-          const char* delim, fun::string* result) {
+          const char* delim, string* result) {
   for (Iterator it = start; it != end; ++it) {
     if (it != start) {
       result->append(delim);
@@ -543,18 +543,18 @@ void Join(Iterator start, Iterator end,
 }
 
 template <typename Range>
-fun::string Join(const Range& components,
+string Join(const Range& components,
             const char* delim) {
-  fun::string result;
+  string result;
   Join(components.begin(), components.end(), delim, &result);
   return result;
 }
 
 // ----------------------------------------------------------------------
 // ToHex()
-//    Return a lower-case hex fun::string representation of the given integer.
+//    Return a lower-case hex string representation of the given integer.
 // ----------------------------------------------------------------------
-LIBPROTOBUF_EXPORT fun::string ToHex(uint64 num);
+LIBPROTOBUF_EXPORT string ToHex(uint64 num);
 
 }  // namespace protobuf
 }  // namespace google

@@ -19,28 +19,28 @@ class FunapiMulticastImpl;
 class FUNAPI_API FunapiMulticast : public std::enable_shared_from_this<FunapiMulticast> {
 public:
   typedef std::function<void(const std::shared_ptr<FunapiMulticast>&,
-                             const fun::string &,
-                             const fun::string &)> ChannelNotify;
+                             const std::string &,
+                             const std::string &)> ChannelNotify;
 
   typedef std::function<void(const std::shared_ptr<FunapiMulticast>&,
                              const int)> ErrorNotify;
 
   typedef std::function<void(const std::shared_ptr<FunapiMulticast>&,
-                             const fun::map<fun::string, int> &)> ChannelListNotify;
+                             const std::map<std::string, int> &)> ChannelListNotify;
 
   typedef std::function<void(const std::shared_ptr<FunapiMulticast>&,
-                             const fun::string&,
-                             const fun::string&,
-                             const fun::string&)> JsonChannelMessageHandler;
+                             const std::string&,
+                             const std::string&,
+                             const std::string&)> JsonChannelMessageHandler;
 
   typedef std::function<void(const std::shared_ptr<FunapiMulticast>&,
-                             const fun::string&,
-                             const fun::string&,
+                             const std::string&,
+                             const std::string&,
                              const FunMessage&)> ProtobufChannelMessageHandler;
 
   typedef std::function<void(const std::shared_ptr<FunapiMulticast>&,
                              const SessionEventType,
-                             const fun::string&,
+                             const std::string&,
                              const std::shared_ptr<FunapiError> &error)> SessionEventHandler;
 
   typedef std::function<void(const std::shared_ptr<FunapiMulticast>&,
@@ -65,21 +65,21 @@ public:
   void AddLeftCallback(const ChannelNotify &handler);
   void AddErrorCallback(const ErrorNotify &handler);
   void AddChannelListCallback(const ChannelListNotify &handler);
-  void AddProtobufChannelMessageCallback(const fun::string &channel_id, const ProtobufChannelMessageHandler &handler);
-  void AddJsonChannelMessageCallback(const fun::string &channel_id, const JsonChannelMessageHandler &handler);
+  void AddProtobufChannelMessageCallback(const std::string &channel_id, const ProtobufChannelMessageHandler &handler);
+  void AddJsonChannelMessageCallback(const std::string &channel_id, const JsonChannelMessageHandler &handler);
   void AddSessionEventCallback(const FunapiMulticast::SessionEventHandler &handler);
   void AddTransportEventCallback(const FunapiMulticast::TransportEventHandler &handler);
 
   bool IsConnected() const;
-  bool IsInChannel(const fun::string &channel_id) const;
+  bool IsInChannel(const std::string &channel_id) const;
 
-  bool JoinChannel(const fun::string &channel_id, const fun::string &token = "");
+  bool JoinChannel(const std::string &channel_id, const std::string &token = "");
 
-  bool LeaveChannel(const fun::string &channel_id);
+  bool LeaveChannel(const std::string &channel_id);
   bool LeaveAllChannels();
 
-  bool SendToChannel(const fun::string &channel_id, FunMessage &msg, const bool bounce = true);
-  bool SendToChannel(const fun::string &channel_id, fun::string &json_string, const bool bounce = true);
+  bool SendToChannel(const std::string &channel_id, FunMessage &msg, const bool bounce = true);
+  bool SendToChannel(const std::string &channel_id, std::string &json_string, const bool bounce = true);
 
   bool RequestChannelList();
 

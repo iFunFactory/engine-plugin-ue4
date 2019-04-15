@@ -192,7 +192,7 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   //   message MessageSet {
   //     repeated group Item = 1 {
   //       required int32 type_id = 2;
-  //       required fun::string message = 3;
+  //       required string message = 3;
   //     }
   //   }
   static const int kMessageSetItemNumber = 1;
@@ -297,8 +297,8 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
                                      bool (*is_valid)(int),
                                      RepeatedField<int>* value);
 
-  static bool ReadString(input, fun::string* value);
-  static bool ReadBytes (input, fun::string* value);
+  static bool ReadString(input, string* value);
+  static bool ReadBytes (input, string* value);
 
   static inline bool ReadGroup  (field_number, input, MessageLite* value);
   static inline bool ReadMessage(input, MessageLite* value);
@@ -349,12 +349,12 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   static void WriteBool    (field_number,   bool value, output);
   static void WriteEnum    (field_number,    int value, output);
 
-  static void WriteString(field_number, const fun::string& value, output);
-  static void WriteBytes (field_number, const fun::string& value, output);
+  static void WriteString(field_number, const string& value, output);
+  static void WriteBytes (field_number, const string& value, output);
   static void WriteStringMaybeAliased(
-      field_number, const fun::string& value, output);
+      field_number, const string& value, output);
   static void WriteBytesMaybeAliased(
-      field_number, const fun::string& value, output);
+      field_number, const string& value, output);
 
   static void WriteGroup(
     field_number, const MessageLite& value, output);
@@ -430,9 +430,9 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
     field_number, int value, output) INL;
 
   static inline uint8* WriteStringToArray(
-    field_number, const fun::string& value, output) INL;
+    field_number, const string& value, output) INL;
   static inline uint8* WriteBytesToArray(
-    field_number, const fun::string& value, output) INL;
+    field_number, const string& value, output) INL;
 
   static inline uint8* WriteGroupToArray(
       field_number, const MessageLite& value, output) INL;
@@ -476,8 +476,8 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   static const int kDoubleSize   = 8;
   static const int kBoolSize     = 1;
 
-  static inline int StringSize(const fun::string& value);
-  static inline int BytesSize (const fun::string& value);
+  static inline int StringSize(const string& value);
+  static inline int BytesSize (const string& value);
 
   static inline int GroupSize  (const MessageLite& value);
   static inline int MessageSize(const MessageLite& value);

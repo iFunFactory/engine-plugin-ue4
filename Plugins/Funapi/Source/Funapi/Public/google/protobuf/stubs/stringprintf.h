@@ -30,10 +30,10 @@
 
 // from google3/base/stringprintf.h
 //
-// Printf variants that place their output in a C++ fun::string.
+// Printf variants that place their output in a C++ string.
 //
 // Usage:
-//      fun::string result = StringPrintf("%d %s\n", 10, "hello");
+//      string result = StringPrintf("%d %s\n", 10, "hello");
 //      SStringPrintf(&result, "%d %s\n", 10, "hello");
 //      StringAppendF(&result, "%d %s\n", 20, "there");
 
@@ -49,18 +49,18 @@
 namespace google {
 namespace protobuf {
 
-// Return a C++ fun::string
-LIBPROTOBUF_EXPORT extern fun::string StringPrintf(const char* format, ...);
+// Return a C++ string
+LIBPROTOBUF_EXPORT extern string StringPrintf(const char* format, ...);
 
-// Store result into a supplied fun::string and return it
-LIBPROTOBUF_EXPORT extern const fun::string& SStringPrintf(fun::string* dst, const char* format, ...);
+// Store result into a supplied string and return it
+LIBPROTOBUF_EXPORT extern const string& SStringPrintf(string* dst, const char* format, ...);
 
-// Append result to a supplied fun::string
-LIBPROTOBUF_EXPORT extern void StringAppendF(fun::string* dst, const char* format, ...);
+// Append result to a supplied string
+LIBPROTOBUF_EXPORT extern void StringAppendF(string* dst, const char* format, ...);
 
 // Lower-level routine that takes a va_list and appends to a specified
-// fun::string.  All other routines are just convenience wrappers around it.
-LIBPROTOBUF_EXPORT extern void StringAppendV(fun::string* dst, const char* format, va_list ap);
+// string.  All other routines are just convenience wrappers around it.
+LIBPROTOBUF_EXPORT extern void StringAppendV(string* dst, const char* format, va_list ap);
 
 // The max arguments supported by StringPrintfVector
 LIBPROTOBUF_EXPORT extern const int kStringPrintfVectorMaxArgs;
@@ -68,7 +68,7 @@ LIBPROTOBUF_EXPORT extern const int kStringPrintfVectorMaxArgs;
 // You can use this version when all your arguments are strings, but
 // you don't know how many arguments you'll have at compile time.
 // StringPrintfVector will LOG(FATAL) if v.size() > kStringPrintfVectorMaxArgs
-LIBPROTOBUF_EXPORT extern fun::string StringPrintfVector(const char* format, const fun::vector<fun::string>& v);
+LIBPROTOBUF_EXPORT extern string StringPrintfVector(const char* format, const vector<string>& v);
 
 }  // namespace protobuf
 }  // namespace google

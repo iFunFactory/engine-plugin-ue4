@@ -75,12 +75,12 @@ class ExtensionSet;             // extension_set.h
 //
 // A GeneratedMessageReflection is an implementation of Reflection
 // which expects all fields to be backed by simple variables located in
-// memory.  The locations are given using a base pointer and a fun::set of
+// memory.  The locations are given using a base pointer and a set of
 // offsets.
 //
 // It is required that the user represents fields of each type in a standard
 // way, so that GeneratedMessageReflection can cast the void* pointer to
-// the appropriate type.  For primitive fields and fun::string fields, each field
+// the appropriate type.  For primitive fields and string fields, each field
 // should be represented using the obvious C++ primitive type.  Enums and
 // Messages are different:
 //  - Singular Message fields are stored as a pointer to a Message.  These
@@ -155,10 +155,10 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
   //                  struct holding the default value of all oneof fields
   //                  for this message. It is only used to obtain pointers
   //                  to default instances of oneof fields, which Get
-  //                  methods will return if the field is not set
+  //                  methods will return if the field is not set.
   //   oneof_case_offset:  Offset in the message of an array of uint32s of
   //                  size descriptor->oneof_decl_count().  Each uint32
-  //                  indicates what field is fun::set for each oneof.
+  //                  indicates what field is set for each oneof.
   //   other parameters are the same with the construction above.
   GeneratedMessageReflection(const Descriptor* descriptor,
                              const Message* default_instance,
@@ -190,11 +190,11 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
   Message* ReleaseLast(Message* message, const FieldDescriptor* field) const;
   void Swap(Message* message1, Message* message2) const;
   void SwapFields(Message* message1, Message* message2,
-                  const fun::vector<const FieldDescriptor*>& fields) const;
+                  const vector<const FieldDescriptor*>& fields) const;
   void SwapElements(Message* message, const FieldDescriptor* field,
                     int index1, int index2) const;
   void ListFields(const Message& message,
-                  fun::vector<const FieldDescriptor*>* output) const;
+                  vector<const FieldDescriptor*>* output) const;
 
   int32  GetInt32 (const Message& message,
                    const FieldDescriptor* field) const;
@@ -210,11 +210,11 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
                    const FieldDescriptor* field) const;
   bool   GetBool  (const Message& message,
                    const FieldDescriptor* field) const;
-  fun::string GetString(const Message& message,
+  string GetString(const Message& message,
                    const FieldDescriptor* field) const;
-  const fun::string& GetStringReference(const Message& message,
+  const string& GetStringReference(const Message& message,
                                    const FieldDescriptor* field,
-                                   fun::string* scratch) const;
+                                   string* scratch) const;
   const EnumValueDescriptor* GetEnum(const Message& message,
                                      const FieldDescriptor* field) const;
   const Message& GetMessage(const Message& message,
@@ -242,7 +242,7 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
                  const FieldDescriptor* field, bool   value) const;
   void SetString(Message* message,
                  const FieldDescriptor* field,
-                 const fun::string& value) const;
+                 const string& value) const;
   void SetEnum  (Message* message, const FieldDescriptor* field,
                  const EnumValueDescriptor* value) const;
   Message* MutableMessage(Message* message, const FieldDescriptor* field,
@@ -267,11 +267,11 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
                            const FieldDescriptor* field, int index) const;
   bool   GetRepeatedBool  (const Message& message,
                            const FieldDescriptor* field, int index) const;
-  fun::string GetRepeatedString(const Message& message,
+  string GetRepeatedString(const Message& message,
                            const FieldDescriptor* field, int index) const;
-  const fun::string& GetRepeatedStringReference(const Message& message,
+  const string& GetRepeatedStringReference(const Message& message,
                                            const FieldDescriptor* field,
-                                           int index, fun::string* scratch) const;
+                                           int index, string* scratch) const;
   const EnumValueDescriptor* GetRepeatedEnum(const Message& message,
                                              const FieldDescriptor* field,
                                              int index) const;
@@ -296,7 +296,7 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
                          const FieldDescriptor* field, int index, bool   value) const;
   void SetRepeatedString(Message* message,
                          const FieldDescriptor* field, int index,
-                         const fun::string& value) const;
+                         const string& value) const;
   void SetRepeatedEnum(Message* message, const FieldDescriptor* field,
                        int index, const EnumValueDescriptor* value) const;
   // Get a mutable pointer to a field with a message type.
@@ -319,14 +319,14 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
   void AddBool  (Message* message,
                  const FieldDescriptor* field, bool   value) const;
   void AddString(Message* message,
-                 const FieldDescriptor* field, const fun::string& value) const;
+                 const FieldDescriptor* field, const string& value) const;
   void AddEnum(Message* message,
                const FieldDescriptor* field,
                const EnumValueDescriptor* value) const;
   Message* AddMessage(Message* message, const FieldDescriptor* field,
                       MessageFactory* factory = NULL) const;
 
-  const FieldDescriptor* FindKnownExtensionByName(const fun::string& name) const;
+  const FieldDescriptor* FindKnownExtensionByName(const string& name) const;
   const FieldDescriptor* FindKnownExtensionByNumber(int number) const;
 
  protected:

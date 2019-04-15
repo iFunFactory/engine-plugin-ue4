@@ -65,7 +65,7 @@ class LIBPROTOBUF_EXPORT ArrayInputStream : public ZeroCopyInputStream {
   // the stream is destroyed.  If a block_size is given, calls to Next()
   // will return data blocks no larger than the given size.  Otherwise, the
   // first call to Next() returns the entire array.  block_size is mainly
-  // useful for testing; in production you would probably never want to fun::set
+  // useful for testing; in production you would probably never want to set
   // it.
   ArrayInputStream(const void* data, int size, int block_size = -1);
   ~ArrayInputStream();
@@ -99,7 +99,7 @@ class LIBPROTOBUF_EXPORT ArrayOutputStream : public ZeroCopyOutputStream {
   // the stream is destroyed.  If a block_size is given, calls to Next()
   // will return data blocks no larger than the given size.  Otherwise, the
   // first call to Next() returns the entire array.  block_size is mainly
-  // useful for testing; in production you would probably never want to fun::set
+  // useful for testing; in production you would probably never want to set
   // it.
   ArrayOutputStream(void* data, int size, int block_size = -1);
   ~ArrayOutputStream();
@@ -123,17 +123,17 @@ class LIBPROTOBUF_EXPORT ArrayOutputStream : public ZeroCopyOutputStream {
 
 // ===================================================================
 
-// A ZeroCopyOutputStream which appends bytes to a fun::string.
+// A ZeroCopyOutputStream which appends bytes to a string.
 class LIBPROTOBUF_EXPORT StringOutputStream : public ZeroCopyOutputStream {
  public:
-  // Create a StringOutputStream which appends bytes to the given fun::string.
-  // The fun::string remains property of the caller, but it MUST NOT be accessed
+  // Create a StringOutputStream which appends bytes to the given string.
+  // The string remains property of the caller, but it MUST NOT be accessed
   // in any way until the stream is destroyed.
   //
   // Hint:  If you call target->reserve(n) before creating the stream,
   //   the first call to Next() will return at least n bytes of buffer
   //   space.
-  explicit StringOutputStream(fun::string* target);
+  explicit StringOutputStream(string* target);
   ~StringOutputStream();
 
   // implements ZeroCopyOutputStream ---------------------------------
@@ -144,7 +144,7 @@ class LIBPROTOBUF_EXPORT StringOutputStream : public ZeroCopyOutputStream {
  private:
   static const int kMinimumSize = 16;
 
-  fun::string* target_;
+  string* target_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StringOutputStream);
 };
@@ -334,10 +334,10 @@ class LIBPROTOBUF_EXPORT CopyingOutputStreamAdaptor : public ZeroCopyOutputStrea
 
 // ===================================================================
 
-// Return a pointer to mutable characters underlying the given fun::string.  The
-// return value is valid until the next time the fun::string is resized.  We
+// Return a pointer to mutable characters underlying the given string.  The
+// return value is valid until the next time the string is resized.  We
 // trust the caller to treat the return value as an array of length s->size().
-inline char* mutable_string_data(fun::string* s) {
+inline char* mutable_string_data(string* s) {
 #ifdef LANG_CXX11
   // This should be simpler & faster than string_as_array() because the latter
   // is guaranteed to return NULL when *s is empty, so it has to check for that.

@@ -331,17 +331,17 @@ class TestMessageSetExtension2 : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional fun::string str = 25;
+  // optional string str = 25;
   inline bool has_str() const;
   inline void clear_str();
   static const int kStrFieldNumber = 25;
-  inline const ::fun::string& str() const;
-  inline void set_str(const ::fun::string& value);
+  inline const ::std::string& str() const;
+  inline void set_str(const ::std::string& value);
   inline void set_str(const char* value);
   inline void set_str(const char* value, size_t size);
-  inline ::fun::string* mutable_str();
-  inline ::fun::string* release_str();
-  inline void set_allocated_str(::fun::string* str);
+  inline ::std::string* mutable_str();
+  inline ::std::string* release_str();
+  inline void set_allocated_str(::std::string* str);
 
   static const int kMessageSetExtensionFieldNumber = 1547769;
   static ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestMessageSet,
@@ -356,7 +356,7 @@ class TestMessageSetExtension2 : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::fun::string* str_;
+  ::std::string* str_;
   friend void  protobuf_AddDesc_google_2fprotobuf_2funittest_5fmset_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2funittest_5fmset_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2funittest_5fmset_2eproto();
@@ -430,13 +430,13 @@ class RawMessageSet_Item : public ::google::protobuf::Message {
   inline bool has_message() const;
   inline void clear_message();
   static const int kMessageFieldNumber = 3;
-  inline const ::fun::string& message() const;
-  inline void set_message(const ::fun::string& value);
+  inline const ::std::string& message() const;
+  inline void set_message(const ::std::string& value);
   inline void set_message(const char* value);
   inline void set_message(const void* value, size_t size);
-  inline ::fun::string* mutable_message();
-  inline ::fun::string* release_message();
-  inline void set_allocated_message(::fun::string* message);
+  inline ::std::string* mutable_message();
+  inline ::std::string* release_message();
+  inline void set_allocated_message(::std::string* message);
 
   // @@protoc_insertion_point(class_scope:protobuf_unittest.RawMessageSet.Item)
  private:
@@ -449,7 +449,7 @@ class RawMessageSet_Item : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::fun::string* message_;
+  ::std::string* message_;
   ::google::protobuf::int32 type_id_;
   friend void  protobuf_AddDesc_google_2fprotobuf_2funittest_5fmset_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2funittest_5fmset_2eproto();
@@ -626,7 +626,7 @@ inline void TestMessageSetExtension1::set_i(::google::protobuf::int32 value) {
 
 // TestMessageSetExtension2
 
-// optional fun::string str = 25;
+// optional string str = 25;
 inline bool TestMessageSetExtension2::has_str() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -642,14 +642,14 @@ inline void TestMessageSetExtension2::clear_str() {
   }
   clear_has_str();
 }
-inline const ::fun::string& TestMessageSetExtension2::str() const {
+inline const ::std::string& TestMessageSetExtension2::str() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestMessageSetExtension2.str)
   return *str_;
 }
-inline void TestMessageSetExtension2::set_str(const ::fun::string& value) {
+inline void TestMessageSetExtension2::set_str(const ::std::string& value) {
   set_has_str();
   if (str_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    str_ = new ::fun::string;
+    str_ = new ::std::string;
   }
   str_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestMessageSetExtension2.str)
@@ -657,7 +657,7 @@ inline void TestMessageSetExtension2::set_str(const ::fun::string& value) {
 inline void TestMessageSetExtension2::set_str(const char* value) {
   set_has_str();
   if (str_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    str_ = new ::fun::string;
+    str_ = new ::std::string;
   }
   str_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestMessageSetExtension2.str)
@@ -665,30 +665,30 @@ inline void TestMessageSetExtension2::set_str(const char* value) {
 inline void TestMessageSetExtension2::set_str(const char* value, size_t size) {
   set_has_str();
   if (str_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    str_ = new ::fun::string;
+    str_ = new ::std::string;
   }
   str_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestMessageSetExtension2.str)
 }
-inline ::fun::string* TestMessageSetExtension2::mutable_str() {
+inline ::std::string* TestMessageSetExtension2::mutable_str() {
   set_has_str();
   if (str_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    str_ = new ::fun::string;
+    str_ = new ::std::string;
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestMessageSetExtension2.str)
   return str_;
 }
-inline ::fun::string* TestMessageSetExtension2::release_str() {
+inline ::std::string* TestMessageSetExtension2::release_str() {
   clear_has_str();
   if (str_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::fun::string* temp = str_;
-    str_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::std::string* temp = str_;
+    str_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void TestMessageSetExtension2::set_allocated_str(::fun::string* str) {
+inline void TestMessageSetExtension2::set_allocated_str(::std::string* str) {
   if (str_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete str_;
   }
@@ -697,7 +697,7 @@ inline void TestMessageSetExtension2::set_allocated_str(::fun::string* str) {
     str_ = str;
   } else {
     clear_has_str();
-    str_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    str_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestMessageSetExtension2.str)
 }
@@ -746,14 +746,14 @@ inline void RawMessageSet_Item::clear_message() {
   }
   clear_has_message();
 }
-inline const ::fun::string& RawMessageSet_Item::message() const {
+inline const ::std::string& RawMessageSet_Item::message() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.RawMessageSet.Item.message)
   return *message_;
 }
-inline void RawMessageSet_Item::set_message(const ::fun::string& value) {
+inline void RawMessageSet_Item::set_message(const ::std::string& value) {
   set_has_message();
   if (message_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    message_ = new ::fun::string;
+    message_ = new ::std::string;
   }
   message_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.RawMessageSet.Item.message)
@@ -761,7 +761,7 @@ inline void RawMessageSet_Item::set_message(const ::fun::string& value) {
 inline void RawMessageSet_Item::set_message(const char* value) {
   set_has_message();
   if (message_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    message_ = new ::fun::string;
+    message_ = new ::std::string;
   }
   message_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.RawMessageSet.Item.message)
@@ -769,30 +769,30 @@ inline void RawMessageSet_Item::set_message(const char* value) {
 inline void RawMessageSet_Item::set_message(const void* value, size_t size) {
   set_has_message();
   if (message_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    message_ = new ::fun::string;
+    message_ = new ::std::string;
   }
   message_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.RawMessageSet.Item.message)
 }
-inline ::fun::string* RawMessageSet_Item::mutable_message() {
+inline ::std::string* RawMessageSet_Item::mutable_message() {
   set_has_message();
   if (message_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    message_ = new ::fun::string;
+    message_ = new ::std::string;
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.RawMessageSet.Item.message)
   return message_;
 }
-inline ::fun::string* RawMessageSet_Item::release_message() {
+inline ::std::string* RawMessageSet_Item::release_message() {
   clear_has_message();
   if (message_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::fun::string* temp = message_;
-    message_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::std::string* temp = message_;
+    message_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void RawMessageSet_Item::set_allocated_message(::fun::string* message) {
+inline void RawMessageSet_Item::set_allocated_message(::std::string* message) {
   if (message_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete message_;
   }
@@ -801,7 +801,7 @@ inline void RawMessageSet_Item::set_allocated_message(::fun::string* message) {
     message_ = message;
   } else {
     clear_has_message();
-    message_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    message_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.RawMessageSet.Item.message)
 }

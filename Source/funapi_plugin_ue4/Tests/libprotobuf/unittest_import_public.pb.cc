@@ -58,7 +58,7 @@ inline void protobuf_AssignDescriptorsOnce() {
                  &protobuf_AssignDesc_google_2fprotobuf_2funittest_5fimport_5fpublic_2eproto);
 }
 
-void protobuf_RegisterTypes(const ::fun::string&) {
+void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     PublicImportMessage_descriptor_, &PublicImportMessage::default_instance());

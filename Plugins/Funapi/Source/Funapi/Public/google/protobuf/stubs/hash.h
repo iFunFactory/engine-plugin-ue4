@@ -53,8 +53,8 @@ namespace protobuf {
 
 #ifdef MISSING_HASH
 
-// This system doesn't have hash_map or hash_set.  Emulate them using fun::map and
-// set
+// This system doesn't have hash_map or hash_set.  Emulate them using map and
+// set.
 
 // Make hash<T> be the same as less<T>.  Note that everywhere where custom
 // hash functions are defined in the protobuf code, they are also defined such
@@ -89,7 +89,7 @@ struct hash<const char*> {
 template <typename Key, typename Data,
           typename HashFcn = hash<Key>,
           typename EqualKey = int >
-class hash_map : public fun::map<Key, Data, HashFcn> {
+class hash_map : public std::map<Key, Data, HashFcn> {
  public:
   hash_map(int = 0) {}
 };
@@ -97,7 +97,7 @@ class hash_map : public fun::map<Key, Data, HashFcn> {
 template <typename Key,
           typename HashFcn = hash<Key>,
           typename EqualKey = int >
-class hash_set : public fun::set<Key, HashFcn> {
+class hash_set : public std::set<Key, HashFcn> {
  public:
   hash_set(int = 0) {}
 };
@@ -108,8 +108,8 @@ template <typename Key>
 struct hash : public HASH_NAMESPACE::hash_compare<Key> {
 };
 
-// MSVC's hash_compare<const char*> hashes based on the fun::string contents but
-// compares based on the fun::string pointer.  WTF?
+// MSVC's hash_compare<const char*> hashes based on the string contents but
+// compares based on the string pointer.  WTF?
 class CstringLess {
  public:
   inline bool operator()(const char* a, const char* b) const {
@@ -187,14 +187,14 @@ class hash_set : public HASH_NAMESPACE::HASH_SET_CLASS<
 #endif
 
 template <>
-struct hash<fun::string> {
-  inline size_t operator()(const fun::string& key) const {
+struct hash<string> {
+  inline size_t operator()(const string& key) const {
     return hash<const char*>()(key.c_str());
   }
 
   static const size_t bucket_size = 4;
   static const size_t min_buckets = 8;
-  inline size_t operator()(const fun::string& a, const fun::string& b) const {
+  inline size_t operator()(const string& a, const string& b) const {
     return a < b;
   }
 };

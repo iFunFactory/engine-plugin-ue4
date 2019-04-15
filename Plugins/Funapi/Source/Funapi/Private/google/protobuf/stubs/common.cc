@@ -83,7 +83,7 @@ void VerifyVersion(int headerVersion,
   }
 }
 
-fun::string VersionString(int version) {
+string VersionString(int version) {
   int major = version / 1000000;
   int minor = (version / 1000) % 1000;
   int micro = version % 1000;
@@ -107,7 +107,7 @@ fun::string VersionString(int version) {
 namespace internal {
 
 void DefaultLogHandler(LogLevel level, const char* filename, int line,
-                       const fun::string& message) {
+                       const string& message) {
   static const char* level_names[] = { "INFO", "WARNING", "ERROR", "FATAL" };
 
   // We use fprintf() instead of cerr because we want this to work at static
@@ -118,7 +118,7 @@ void DefaultLogHandler(LogLevel level, const char* filename, int line,
 }
 
 void NullLogHandler(LogLevel /* level */, const char* /* filename */,
-                    int /* line */, const fun::string& /* message */) {
+                    int /* line */, const string& /* message */) {
   // Nothing.
 }
 
@@ -140,7 +140,7 @@ void InitLogSilencerCountOnce() {
   GoogleOnceInit(&log_silencer_count_init_, &InitLogSilencerCount);
 }
 
-LogMessage& LogMessage::operator<<(const fun::string& value) {
+LogMessage& LogMessage::operator<<(const string& value) {
   message_ += value;
   return *this;
 }
@@ -345,12 +345,12 @@ uint32 ghtonl(uint32 x) {
 namespace internal {
 
 typedef void OnShutdownFunc();
-fun::vector<void (*)()>* shutdown_functions = NULL;
+vector<void (*)()>* shutdown_functions = NULL;
 Mutex* shutdown_functions_mutex = NULL;
 GOOGLE_PROTOBUF_DECLARE_ONCE(shutdown_functions_init);
 
 void InitShutdownFunctions() {
-  shutdown_functions = new fun::vector<void (*)()>;
+  shutdown_functions = new vector<void (*)()>;
   shutdown_functions_mutex = new Mutex;
 }
 

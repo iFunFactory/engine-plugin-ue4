@@ -62,13 +62,13 @@ class LIBPROTOBUF_EXPORT ErrorCollector {
   // Indicates that there was an error in the input at the given line and
   // column numbers.  The numbers are zero-based, so you may want to add
   // 1 to each before printing them.
-  virtual void AddError(int line, int column, const fun::string& message) = 0;
+  virtual void AddError(int line, int column, const string& message) = 0;
 
   // Indicates that there was a warning in the input at the given line and
   // column numbers.  The numbers are zero-based, so you may want to add
   // 1 to each before printing them.
   virtual void AddWarning(int /* line */, int /* column */,
-                          const fun::string& /* message */) { }
+                          const string& /* message */) { }
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ErrorCollector);
@@ -107,7 +107,7 @@ class LIBPROTOBUF_EXPORT Tokenizer {
                       // negative.
     TYPE_STRING,      // A quoted sequence of escaped characters.  Either single
                       // or double quotes can be used, but they must match.
-                      // A fun::string literal cannot cross a line break.
+                      // A string literal cannot cross a line break.
     TYPE_SYMBOL,      // Any other printable character, like '!' or '+'.
                       // Symbols are always a single character, so "!+$%" is
                       // four tokens.
@@ -116,7 +116,7 @@ class LIBPROTOBUF_EXPORT Tokenizer {
   // Structure representing a token read from the token stream.
   struct Token {
     TokenType type;
-    fun::string text;       // The exact text of the token as it appeared in
+    string text;       // The exact text of the token as it appeared in
                        // the input.  e.g. tokens of TYPE_STRING will still
                        // be escaped and in quotes.
 
@@ -163,7 +163,7 @@ class LIBPROTOBUF_EXPORT Tokenizer {
   //   // Comment attached to bar.
   //   optional int32 bar = 2;
   //
-  //   optional fun::string baz = 3;
+  //   optional string baz = 3;
   //   // Comment attached to baz.
   //   // Another line attached to baz.
   //
@@ -175,38 +175,38 @@ class LIBPROTOBUF_EXPORT Tokenizer {
   //   // Detached comment.  This is not attached to qux or corge
   //   // because there are blank lines separating it from both.
   //
-  //   optional fun::string corge = 5;
+  //   optional string corge = 5;
   //   /* Block comment attached
   //    * to corge.  Leading asterisks
   //    * will be removed. */
   //   /* Block comment attached to
   //    * grault. */
   //   optional int32 grault = 6;
-  bool NextWithComments(fun::string* prev_trailing_comments,
-                        fun::vector<fun::string>* detached_comments,
-                        fun::string* next_leading_comments);
+  bool NextWithComments(string* prev_trailing_comments,
+                        vector<string>* detached_comments,
+                        string* next_leading_comments);
 
   // Parse helpers ---------------------------------------------------
 
   // Parses a TYPE_FLOAT token.  This never fails, so long as the text actually
   // comes from a TYPE_FLOAT token parsed by Tokenizer.  If it doesn't, the
   // result is undefined (possibly an assert failure).
-  static double ParseFloat(const fun::string& text);
+  static double ParseFloat(const string& text);
 
   // Parses a TYPE_STRING token.  This never fails, so long as the text actually
   // comes from a TYPE_STRING token parsed by Tokenizer.  If it doesn't, the
   // result is undefined (possibly an assert failure).
-  static void ParseString(const fun::string& text, fun::string* output);
+  static void ParseString(const string& text, string* output);
 
   // Identical to ParseString, but appends to output.
-  static void ParseStringAppend(const fun::string& text, fun::string* output);
+  static void ParseStringAppend(const string& text, string* output);
 
   // Parses a TYPE_INTEGER token.  Returns false if the result would be
   // greater than max_value.  Otherwise, returns true and sets *output to the
   // result.  If the text is not from a Token of type TYPE_INTEGER originally
   // parsed by a Tokenizer, the result is undefined (possibly an assert
   // failure).
-  static bool ParseInteger(const fun::string& text, uint64 max_value,
+  static bool ParseInteger(const string& text, uint64 max_value,
                            uint64* output);
 
   // Options ---------------------------------------------------------
@@ -235,14 +235,14 @@ class LIBPROTOBUF_EXPORT Tokenizer {
     require_space_after_number_ = require;
   }
 
-  // Whether to allow fun::string literals to span multiple lines. Default is false.
+  // Whether to allow string literals to span multiple lines. Default is false.
   // Do not use this; for Google-internal cleanup only.
   void set_allow_multiline_strings(bool allow) {
     allow_multiline_strings_ = allow;
   }
 
   // External helper: validate an identifier.
-  static bool IsIdentifier(const fun::string& text);
+  static bool IsIdentifier(const string& text);
 
   // -----------------------------------------------------------------
  private:
@@ -268,7 +268,7 @@ class LIBPROTOBUF_EXPORT Tokenizer {
   // Call RecordTo(&str) to start recording and StopRecording() to stop.
   // E.g. StartToken() calls RecordTo(&current_.text).  record_start_ is the
   // position within the current buffer where recording started.
-  fun::string* record_target_;
+  string* record_target_;
   int record_start_;
 
   // Options.
@@ -290,7 +290,7 @@ class LIBPROTOBUF_EXPORT Tokenizer {
   // Read a new buffer from the input.
   void Refresh();
 
-  inline void RecordTo(fun::string* target);
+  inline void RecordTo(string* target);
   inline void StopRecording();
 
   // Called when the current character is the first character of a new
@@ -302,7 +302,7 @@ class LIBPROTOBUF_EXPORT Tokenizer {
   inline void EndToken();
 
   // Convenience method to add an error at the current line and column.
-  void AddError(const fun::string& message) {
+  void AddError(const string& message) {
     error_collector_->AddError(line_, column_, message);
   }
 
@@ -312,7 +312,7 @@ class LIBPROTOBUF_EXPORT Tokenizer {
   // the first, since the calling function consumes the first character
   // in order to decide what kind of token is being read.
 
-  // Read and consume a fun::string, ending when the given delimiter is
+  // Read and consume a string, ending when the given delimiter is
   // consumed.
   void ConsumeString(char delimiter);
 
@@ -325,9 +325,9 @@ class LIBPROTOBUF_EXPORT Tokenizer {
   TokenType ConsumeNumber(bool started_with_zero, bool started_with_dot);
 
   // Consume the rest of a line.
-  void ConsumeLineComment(fun::string* content);
+  void ConsumeLineComment(string* content);
   // Consume until "*/".
-  void ConsumeBlockComment(fun::string* content);
+  void ConsumeBlockComment(string* content);
 
   enum NextCommentStatus {
     // Started a line comment.
@@ -390,7 +390,7 @@ inline const Tokenizer::Token& Tokenizer::previous() {
   return previous_;
 }
 
-inline void Tokenizer::ParseString(const fun::string& text, fun::string* output) {
+inline void Tokenizer::ParseString(const string& text, string* output) {
   output->clear();
   ParseStringAppend(text, output);
 }

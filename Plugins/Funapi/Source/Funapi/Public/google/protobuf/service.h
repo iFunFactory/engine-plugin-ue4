@@ -196,7 +196,7 @@ class LIBPROTOBUF_EXPORT Service {
 // RPC implementation and to find out about RPC-level errors.
 //
 // The methods provided by the RpcController interface are intended to be a
-// "least common denominator" fun::set of features which we expect all
+// "least common denominator" set of features which we expect all
 // implementations to support.  Specific implementations may provide more
 // advanced features (e.g. deadline propagation).
 class LIBPROTOBUF_EXPORT RpcController {
@@ -219,7 +219,7 @@ class LIBPROTOBUF_EXPORT RpcController {
   virtual bool Failed() const = 0;
 
   // If Failed() is true, returns a human-readable description of the error.
-  virtual fun::string ErrorText() const = 0;
+  virtual string ErrorText() const = 0;
 
   // Advises the RPC system that the caller desires that the RPC call be
   // canceled.  The RPC system may cancel it immediately, may wait awhile and
@@ -237,7 +237,7 @@ class LIBPROTOBUF_EXPORT RpcController {
   // you need to return machine-readable information about failures, you
   // should incorporate it into your response protocol buffer and should
   // NOT call SetFailed().
-  virtual void SetFailed(const fun::string& reason) = 0;
+  virtual void SetFailed(const string& reason) = 0;
 
   // If true, indicates that the client canceled the RPC, so the server may
   // as well give up on replying to it.  The server should still call the

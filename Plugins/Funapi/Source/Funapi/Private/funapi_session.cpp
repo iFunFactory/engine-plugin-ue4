@@ -51,8 +51,8 @@ struct RedirectServerPortInfo {
 };
 
 
-static fun::string EncodingToString(FunEncoding encoding) {
-  fun::string ret("");
+static std::string EncodingToString(FunEncoding encoding) {
+  std::string ret("");
 
   switch (encoding) {
     case FunEncoding::kJson:
@@ -71,8 +71,8 @@ static fun::string EncodingToString(FunEncoding encoding) {
 }
 
 
-static fun::string SessionEventTypeToString(SessionEventType type) {
-  fun::string ret("");
+static std::string SessionEventTypeToString(SessionEventType type) {
+  std::string ret("");
 
   switch (type) {
     case SessionEventType::kOpened:
@@ -107,8 +107,8 @@ static fun::string SessionEventTypeToString(SessionEventType type) {
 }
 
 
-static fun::string TransportEventTypeToString(TransportEventType type) {
-  fun::string ret("");
+static std::string TransportEventTypeToString(TransportEventType type) {
+  std::string ret("");
 
   switch (type) {
     case TransportEventType::kStarted:
@@ -143,8 +143,8 @@ static fun::string TransportEventTypeToString(TransportEventType type) {
 }
 
 
-fun::string TransportProtocolToString(TransportProtocol protocol) {
-  fun::string ret("");
+std::string TransportProtocolToString(TransportProtocol protocol) {
+  std::string ret("");
 
   switch (protocol) {
   case TransportProtocol::kDefault:
@@ -193,7 +193,7 @@ class FunapiQueue : public std::enable_shared_from_this<FunapiQueue> {
   void PopFront();
 
  private:
-  fun::deque<std::shared_ptr<FunapiMessage>> queue_;
+  std::deque<std::shared_ptr<FunapiMessage>> queue_;
   std::mutex mutex_;
 };
 
@@ -254,8 +254,8 @@ public:
     std::shared_ptr<FunapiUnsentMessage> PopFront();
 
     void UserVerification(const TransportProtocol protocol,
-                          const fun::vector<fun::string> &cur_tags,
-                          const fun::vector<fun::string> &target_tags,
+                          const std::vector<std::string> &cur_tags,
+                          const std::vector<std::string> &target_tags,
                           const RedirectQueueHandler &handler);
 
     int Size();
@@ -263,7 +263,7 @@ public:
     void Clear();
 
 private:
-    fun::deque<std::shared_ptr<FunapiUnsentMessage>> queue_;
+    std::deque<std::shared_ptr<FunapiUnsentMessage>> queue_;
     std::mutex mutex_;
 };
 
@@ -297,8 +297,8 @@ std::shared_ptr<FunapiUnsentMessage> FunapiUnsentQueue::PopFront()
 
 
 void FunapiUnsentQueue::UserVerification(const TransportProtocol protocol,
-                                         const fun::vector<fun::string> &cur_tags,
-                                         const fun::vector<fun::string> &target_tags,
+                                         const std::vector<std::string> &cur_tags,
+                                         const std::vector<std::string> &target_tags,
                                          const RedirectQueueHandler &handler)
 {
     std::unique_lock<std::mutex> lock(mutex_);
@@ -337,12 +337,12 @@ class FunapiSessionId : public std::enable_shared_from_this<FunapiSessionId> {
 
   static std::shared_ptr<FunapiSessionId> Create();
 
-  fun::string Get(const FunEncoding encoding);
-  void Set(const fun::string &session_id, const FunEncoding encoding);
+  std::string Get(const FunEncoding encoding);
+  void Set(const std::string &session_id, const FunEncoding encoding);
 
  private:
-  fun::string json_;
-  fun::string protobuf_;
+  std::string json_;
+  std::string protobuf_;
   std::mutex mutex_;
 };
 
@@ -361,7 +361,7 @@ std::shared_ptr<FunapiSessionId> FunapiSessionId::Create() {
 }
 
 
-fun::string FunapiSessionId::Get(const FunEncoding encoding) {
+std::string FunapiSessionId::Get(const FunEncoding encoding) {
   std::unique_lock<std::mutex> lock(mutex_);
 
   if (encoding == FunEncoding::kProtobuf) {
@@ -372,7 +372,7 @@ fun::string FunapiSessionId::Get(const FunEncoding encoding) {
 }
 
 
-void FunapiSessionId::Set(const fun::string &session_id, const FunEncoding encoding) {
+void FunapiSessionId::Set(const std::string &session_id, const FunEncoding encoding) {
   std::unique_lock<std::mutex> lock(mutex_);
 
   if (encoding == FunEncoding::kJson) {
@@ -394,23 +394,23 @@ public:
     FunapiMessage() = delete;
     FunapiMessage(const rapidjson::Document &json, const EncryptionType type);
     FunapiMessage(const FunMessage &pbuf, const EncryptionType type);
-    FunapiMessage(const fun::vector<uint8_t> &body, const EncryptionType type);
-    FunapiMessage(const FunEncoding encoding, const fun::vector<uint8_t> &body, const EncryptionType type);
+    FunapiMessage(const std::vector<uint8_t> &body, const EncryptionType type);
+    FunapiMessage(const FunEncoding encoding, const std::vector<uint8_t> &body, const EncryptionType type);
 
     virtual ~FunapiMessage() = default;
 
-    static std::shared_ptr<FunapiMessage> Create(const FunEncoding encoding, const fun::vector<uint8_t> &body);
+    static std::shared_ptr<FunapiMessage> Create(const FunEncoding encoding, const std::vector<uint8_t> &body);
     static std::shared_ptr<FunapiMessage> Create(const rapidjson::Document &json, const EncryptionType type);
     static std::shared_ptr<FunapiMessage> Create(const FunMessage &pbuf, const EncryptionType type);
-    static std::shared_ptr<FunapiMessage> Create(const fun::vector<uint8_t> &body, const EncryptionType type);
-    static std::shared_ptr<FunapiMessage> Create(const FunEncoding encoding, const fun::vector<uint8_t> &body,
+    static std::shared_ptr<FunapiMessage> Create(const std::vector<uint8_t> &body, const EncryptionType type);
+    static std::shared_ptr<FunapiMessage> Create(const FunEncoding encoding, const std::vector<uint8_t> &body,
                                                  const EncryptionType type);
 
     std::shared_ptr<rapidjson::Document> GetJsonDocumenet();
     std::shared_ptr<FunMessage> GetProtobufMessage();
-    fun::vector<uint8_t>& GetBody();
+    std::vector<uint8_t>& GetBody();
 
-    const fun::string& GetMsgType();
+    const std::string& GetMsgType();
     int32_t GetMsgType2();
 
     void SetUseSentQueue(const bool use);
@@ -433,10 +433,10 @@ private:
     bool use_sent_queue_ = false;
     bool use_seq_ = false;
     uint32_t seq_ = 0;
-    fun::string msg_type_;
+    std::string msg_type_;
     int32_t msg_type2_ = 0;
     FunEncoding encoding_ = FunEncoding::kNone;
-    fun::vector<uint8_t> body_;
+    std::vector<uint8_t> body_;
     std::shared_ptr<rapidjson::Document> json_document_ = nullptr;
     std::shared_ptr<FunMessage> protobuf_message_ = nullptr;
     EncryptionType encryption_type_ = EncryptionType::kNoneEncryption;
@@ -456,13 +456,13 @@ FunapiMessage::FunapiMessage(const FunMessage &message, const EncryptionType typ
 }
 
 
-FunapiMessage::FunapiMessage(const fun::vector<uint8_t> &body, const EncryptionType type)
+FunapiMessage::FunapiMessage(const std::vector<uint8_t> &body, const EncryptionType type)
     : encoding_(FunEncoding::kNone), body_(body), encryption_type_(type)
 {
 }
 
 
-FunapiMessage::FunapiMessage(const FunEncoding encoding, const fun::vector<uint8_t> &body, const EncryptionType type)
+FunapiMessage::FunapiMessage(const FunEncoding encoding, const std::vector<uint8_t> &body, const EncryptionType type)
     : encoding_(encoding), encryption_type_(type)
 {
     if (encoding_ == FunEncoding::kJson)
@@ -494,20 +494,20 @@ std::shared_ptr<FunapiMessage> FunapiMessage::Create(const FunMessage &message, 
 }
 
 
-std::shared_ptr<FunapiMessage> FunapiMessage::Create(const fun::vector<uint8_t>  &body, const EncryptionType type)
+std::shared_ptr<FunapiMessage> FunapiMessage::Create(const std::vector<uint8_t>  &body, const EncryptionType type)
 {
     return std::make_shared<FunapiMessage>(body, type);
 }
 
 
-std::shared_ptr<FunapiMessage> FunapiMessage::Create(const FunEncoding encoding, const fun::vector<uint8_t>  &body,
+std::shared_ptr<FunapiMessage> FunapiMessage::Create(const FunEncoding encoding, const std::vector<uint8_t>  &body,
                                                      const EncryptionType type)
 {
     return std::make_shared<FunapiMessage>(encoding, body, type);
 }
 
 
-std::shared_ptr<FunapiMessage> FunapiMessage::Create(const FunEncoding encoding, const fun::vector<uint8_t>  &body)
+std::shared_ptr<FunapiMessage> FunapiMessage::Create(const FunEncoding encoding, const std::vector<uint8_t>  &body)
 {
     return FunapiMessage::Create(encoding, body, EncryptionType::kNoneEncryption);
 }
@@ -585,7 +585,7 @@ void FunapiMessage::SetInitialized(bool initialized)
 }
 
 
-fun::vector<uint8_t>& FunapiMessage::GetBody()
+std::vector<uint8_t>& FunapiMessage::GetBody()
 {
     if (encoding_ == FunEncoding::kProtobuf)
     {
@@ -598,15 +598,15 @@ fun::vector<uint8_t>& FunapiMessage::GetBody()
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         json_document_->Accept(writer);
 
-        fun::string temp_string = buffer.GetString();
-        body_ = fun::vector<uint8_t>(temp_string.cbegin(), temp_string.cend());
+        std::string temp_string = buffer.GetString();
+        body_ = std::vector<uint8_t>(temp_string.cbegin(), temp_string.cend());
     }
 
     return body_;
 }
 
 
-const fun::string& FunapiMessage::GetMsgType()
+const std::string& FunapiMessage::GetMsgType()
 {
     if (msg_type_.empty())
     {
@@ -664,7 +664,7 @@ public:
 
     std::shared_ptr<FunapiMessage> GetMessage() const;
 
-    const fun::string& GetMsgType();
+    const std::string& GetMsgType();
     int32_t GetMsgType2();
 
     void SetDiscard(const bool discard);
@@ -694,7 +694,7 @@ std::shared_ptr<FunapiMessage> FunapiUnsentMessageImpl::GetMessage() const
 }
 
 
-const fun::string& FunapiUnsentMessageImpl::GetMsgType()
+const std::string& FunapiUnsentMessageImpl::GetMsgType()
 {
     return funapi_message_->GetMsgType();
 }
@@ -724,17 +724,17 @@ bool FunapiUnsentMessageImpl::GetDiscard()
 class FunapiTransport;
 class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl> {
  public:
-  typedef fun::map<fun::string, fun::string> HeaderFields;
+  typedef std::map<std::string, std::string> HeaderFields;
   typedef std::function<void(const TransportProtocol,
-    const fun::string &,
-    const fun::vector<uint8_t> &,
+    const std::string &,
+    const std::vector<uint8_t> &,
     const std::shared_ptr<FunapiMessage>)> MessageEventHandler;
   typedef std::function<void()> NotifyHandler;
 
   typedef std::function<void(const TransportProtocol,
     const FunEncoding,
     const HeaderFields &,
-    const fun::vector<uint8_t> &,
+    const std::vector<uint8_t> &,
     const std::shared_ptr<FunapiMessage>)> TransportReceivedHandler;
 
   typedef FunapiSession::TransportEventHandler TransportEventHandler;
@@ -761,8 +761,8 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   void UpdateSocketSelect();
   static void UpdateAll();
 
-  void SendMessage(const fun::string &msg_type,
-                   const fun::string &json_string,
+  void SendMessage(const std::string &msg_type,
+                   const std::string &json_string,
                    const TransportProtocol protocol,
                    const EncryptionType encryption_type = EncryptionType::kDefaultEncryption);
 
@@ -803,25 +803,25 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
 
   FunEncoding GetEncoding(const TransportProtocol protocol) const;
 
-  void SetRecvTimeout(const fun::string &msg_type, const int seconds);
+  void SetRecvTimeout(const std::string &msg_type, const int seconds);
   void SetRecvTimeout(const int32_t msg_type, const int seconds);
-  void EraseRecvTimeout(const fun::string &msg_type);
+  void EraseRecvTimeout(const std::string &msg_type);
   void EraseRecvTimeout(const int32_t msg_type);
 
   static void Add(std::shared_ptr<FunapiSessionImpl> s);
-  static fun::vector<std::shared_ptr<FunapiSessionImpl>> GetSessionImpls();
+  static std::vector<std::shared_ptr<FunapiSessionImpl>> GetSessionImpls();
 
   void OnTransportReceived(const TransportProtocol protocol,
                            const FunEncoding encoding,
                            const HeaderFields &header,
-                           const fun::vector<uint8_t> &body,
+                           const std::vector<uint8_t> &body,
                            const std::shared_ptr<FunapiMessage> message);
 
   void SendAck(const TransportProtocol protocol,
                const uint32_t ack,
                const EncryptionType encryption_type = EncryptionType::kDefaultEncryption);
 
-  fun::string GetSessionId(const FunEncoding encoding);
+  std::string GetSessionId(const FunEncoding encoding);
   std::shared_ptr<FunapiSessionId> GetSessionIdSharedPtr();
   std::shared_ptr<FunapiQueue> GetQueueSharedPtr(const TransportProtocol protocol);
 
@@ -856,48 +856,48 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   bool IsRedirecting() const;
   bool UseRedirectQueue() const;
 
-  void RegisterHandler(const fun::string &msg_type, const MessageEventHandler &handler);
+  void RegisterHandler(const std::string &msg_type, const MessageEventHandler &handler);
 
-  void SetSessionId(const fun::string &session_id, const FunEncoding encoding);
+  void SetSessionId(const std::string &session_id, const FunEncoding encoding);
 
   void AttachTransport(const std::shared_ptr<FunapiTransport> &transport);
 
   void OnSessionOpen(const TransportProtocol protocol,
-                     const fun::string &msg_type, const fun::vector<uint8_t>&v_body,
+                     const std::string &msg_type, const std::vector<uint8_t>&v_body,
                      const std::shared_ptr<FunapiMessage> message);
 
   void OnSessionClose(const TransportProtocol protocol,
-                      const fun::string &msg_type, const fun::vector<uint8_t>&v_body,
+                      const std::string &msg_type, const std::vector<uint8_t>&v_body,
                       const std::shared_ptr<FunapiMessage> message);
 
   void OnProtobufRecv(const TransportProtocol protocol, const FunMessage &message);
 
-  void OnJsonRecv(const TransportProtocol protocol, const fun::string &msg_type, const fun::string &json_string);
+  void OnJsonRecv(const TransportProtocol protocol, const std::string &msg_type, const std::string &json_string);
 
   void OnSessionEvent(const TransportProtocol protocol, const FunEncoding encoding,
-                      const SessionEventType type, const fun::string &session_id,
+                      const SessionEventType type, const std::string &session_id,
                       const std::shared_ptr<FunapiError> &error);
 
   void OnTransportEvent(const TransportProtocol protocol, const FunEncoding encoding,
                         const TransportEventType type, std::shared_ptr<FunapiError> error);
 
   void OnServerPingMessage(const TransportProtocol protocol,
-                           const fun::string &msg_type, const fun::vector<uint8_t>&v_body,
+                           const std::string &msg_type, const std::vector<uint8_t>&v_body,
                            const std::shared_ptr<FunapiMessage> message);
 
   void OnClientPingMessage(const TransportProtocol protocol,
-                           const fun::string &msg_type, const fun::vector<uint8_t>&v_body,
+                           const std::string &msg_type, const std::vector<uint8_t>&v_body,
                            const std::shared_ptr<FunapiMessage> message);
 
   void OnRedirectMessage(const TransportProtocol protocol,
-                         const fun::string &msg_type, const fun::vector<uint8_t>&v_body,
+                         const std::string &msg_type, const std::vector<uint8_t>&v_body,
                          const std::shared_ptr<FunapiMessage> message);
 
   void OnRedirectConnectMessage(const TransportProtocol protocol,
-                                const fun::string &msg_type, const fun::vector<uint8_t>&v_body,
+                                const std::string &msg_type, const std::vector<uint8_t>&v_body,
                                 const std::shared_ptr<FunapiMessage> message);
 
-  void SendRedirectConenectMessage(const TransportProtocol protocol, const fun::string &token,
+  void SendRedirectConenectMessage(const TransportProtocol protocol, const std::string &token,
                                    const EncryptionType encryption_type = EncryptionType::kDefaultEncryption);
 
   void SendMessage(std::shared_ptr<FunapiMessage> &message,
@@ -909,11 +909,11 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
 
   bool started_;
 
-  fun::vector<std::shared_ptr<FunapiTransport>> transports_;
+  std::vector<std::shared_ptr<FunapiTransport>> transports_;
   mutable std::mutex transports_mutex_;
   TransportProtocol default_protocol_ = TransportProtocol::kDefault;
 
-  typedef fun::unordered_map<fun::string, MessageEventHandler> MessageHandlerMap;
+  typedef std::unordered_map<std::string, MessageEventHandler> MessageHandlerMap;
   MessageHandlerMap message_handlers_;
 
   std::shared_ptr<FunapiTasks> tasks_;
@@ -927,10 +927,10 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   FunapiEvent<RecvTimeoutHandler> on_recv_timeout_;
   FunapiEvent<RecvTimeoutIntHandler> on_recv_timeout_int_;
 
-  fun::string hostname_or_ip_;
+  std::string hostname_or_ip_;
   std::weak_ptr<FunapiSession> session_;
 
-  fun::vector<TransportProtocol> v_protocols_ = {
+  std::vector<TransportProtocol> v_protocols_ = {
     TransportProtocol::kTcp,
 #if FUNAPI_HAVE_WEBSOCKET
     TransportProtocol::kWebsocket,
@@ -939,15 +939,15 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
     TransportProtocol::kUdp
   };
 
-  fun::unordered_map<fun::string, std::shared_ptr<FunapiTimer>> m_recv_timeout_;
-  fun::unordered_map<int32_t, std::shared_ptr<FunapiTimer>> m_recv_timeout_int_;
+  std::unordered_map<std::string, std::shared_ptr<FunapiTimer>> m_recv_timeout_;
+  std::unordered_map<int32_t, std::shared_ptr<FunapiTimer>> m_recv_timeout_int_;
   std::mutex m_recv_timeout_mutex_;
 
   void CheckRecvTimeout();
-  void OnRecvTimeout(const fun::string &msg_type);
+  void OnRecvTimeout(const std::string &msg_type);
   void OnRecvTimeout(const int32_t msg_type);
 
-  fun::string token_;
+  std::string token_;
 
   std::shared_ptr<FunapiTcpTransportOption> tcp_option_ = nullptr;
   std::shared_ptr<FunapiUdpTransportOption> udp_option_ = nullptr;
@@ -960,21 +960,21 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
 
   std::shared_ptr<FunapiSessionId> session_id_ = nullptr;
 
-  static fun::vector<std::weak_ptr<FunapiSessionImpl>> vec_sessions_;
+  static std::vector<std::weak_ptr<FunapiSessionImpl>> vec_sessions_;
   static std::mutex vec_sessions_mutex_;
 
   std::shared_ptr<FunapiThread> network_thread_ = nullptr;
 
   std::shared_ptr<FunapiSessionOption> session_option_ = nullptr;
 
-  fun::vector<std::shared_ptr<FunapiQueue>> send_queues_;
+  std::vector<std::shared_ptr<FunapiQueue>> send_queues_;
 
   std::shared_ptr<FunapiMessage> funapi_message_redirect_ = nullptr;
   TransportProtocol protocol_redirect_ = TransportProtocol::kDefault;
-  fun::map<TransportProtocol, FunEncoding> redirect_encodings_;
-  fun::vector<std::shared_ptr<FunapiUnsentQueue>> redirect_queues_;
-  fun::vector<fun::string> redirect_cur_tags_;
-  fun::vector<fun::string> redirect_target_tags_;
+  std::map<TransportProtocol, FunEncoding> redirect_encodings_;
+  std::vector<std::shared_ptr<FunapiUnsentQueue>> redirect_queues_;
+  std::vector<std::string> redirect_cur_tags_;
+  std::vector<std::string> redirect_target_tags_;
 
   void OnRedirect();
 
@@ -989,18 +989,18 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
 
 class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
  public:
-  typedef fun::map<fun::string, fun::string> HeaderFields;
+  typedef std::map<std::string, std::string> HeaderFields;
   typedef std::function<void(const TransportProtocol,
                              const FunEncoding,
                              const HeaderFields &,
-                             const fun::vector<uint8_t> &,
+                             const std::vector<uint8_t> &,
                              const std::shared_ptr<FunapiMessage>)> TransportReceivedHandler;
 
   static const size_t kMaxSend = 32;
 
   FunapiTransport(std::weak_ptr<FunapiSessionImpl> session,
                   TransportProtocol protocol,
-                  const fun::string &hostname_or_ip,
+                  const std::string &hostname_or_ip,
                   uint16_t port, FunEncoding encoding);
   virtual ~FunapiTransport();
 
@@ -1020,10 +1020,10 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
   virtual void ResetClientPingTimeout();
 
   void SetEncryptionType(EncryptionType type);
-  void SetEncryptionType(EncryptionType type, const fun::string &public_key);
+  void SetEncryptionType(EncryptionType type, const std::string &public_key);
 
   void SetCompressionType(CompressionType type);
-  void SetZstdDictBase64String(const fun::string &zstd_dict_base64string);
+  void SetZstdDictBase64String(const std::string &zstd_dict_base64string);
 
   void SetState(TransportState state);
   TransportState GetState();
@@ -1043,13 +1043,13 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
   void OnReceived(const TransportProtocol protocol,
                   const FunEncoding encoding,
                   const HeaderFields &header,
-                  const fun::vector<uint8_t> &body);
+                  const std::vector<uint8_t> &body);
 
   bool OnAckReceived(const uint32_t ack);
   bool OnSeqReceived(const uint32_t seq);
 
   virtual bool EncodeThenSendMessage(std::shared_ptr<FunapiMessage> message,
-                                     fun::vector<uint8_t> &body,
+                                     std::vector<uint8_t> &body,
                                      const EncryptionType encryption_type) = 0;
   virtual bool EncodeThenSendMessage(std::shared_ptr<FunapiMessage> message);
 
@@ -1057,17 +1057,17 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
                      bool priority,
                      bool handshake);
 
-  bool DecodeMessage(int nRead, fun::vector<uint8_t> &receiving, int &next_decoding_offset, bool &header_decoded, HeaderFields &header_fields);
-  bool TryToDecodeHeader(fun::vector<uint8_t> &receiving, int &next_decoding_offset, bool &header_decoded, HeaderFields &header_fields);
-  bool TryToDecodeBody(fun::vector<uint8_t> &receiving, int &next_decoding_offset, bool &header_decoded, HeaderFields &header_fields);
+  bool DecodeMessage(int nRead, std::vector<uint8_t> &receiving, int &next_decoding_offset, bool &header_decoded, HeaderFields &header_fields);
+  bool TryToDecodeHeader(std::vector<uint8_t> &receiving, int &next_decoding_offset, bool &header_decoded, HeaderFields &header_fields);
+  bool TryToDecodeBody(std::vector<uint8_t> &receiving, int &next_decoding_offset, bool &header_decoded, HeaderFields &header_fields);
   bool EncodeMessage(std::shared_ptr<FunapiMessage> message,
-                     fun::vector<uint8_t> &body,
+                     std::vector<uint8_t> &body,
                      const EncryptionType encryption_type = EncryptionType::kDefaultEncryption);
-  bool DecodeMessage(int nRead, fun::vector<uint8_t> &receiving);
+  bool DecodeMessage(int nRead, std::vector<uint8_t> &receiving);
 
-  fun::string MakeHeaderString(const fun::vector<uint8_t> &body);
-  void MakeHeaderFields(HeaderFields &header_fields, const fun::vector<uint8_t> &body);
-  void MakeHeaderString(fun::string &header_string, const HeaderFields &header_fields);
+  std::string MakeHeaderString(const std::vector<uint8_t> &body);
+  void MakeHeaderFields(HeaderFields &header_fields, const std::vector<uint8_t> &body);
+  void MakeHeaderString(std::string &header_string, const HeaderFields &header_fields);
 
   void PushUnsent(const uint32_t ack);
 
@@ -1080,7 +1080,7 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
 
   bool IsReliableSession() const;
 
-  fun::string GetSessionId();
+  std::string GetSessionId();
 
   std::shared_ptr<FunapiQueue> send_queue_;
   std::shared_ptr<FunapiQueue> send_priority_queue_;
@@ -1119,13 +1119,13 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
   void OnTransportReceived(const TransportProtocol protocol,
                            const FunEncoding encoding,
                            const HeaderFields &header,
-                           const fun::vector<uint8_t> &body,
+                           const std::vector<uint8_t> &body,
                            const std::shared_ptr<FunapiMessage> message);
   void OnSendAck(const TransportProtocol protocol, const uint32_t seq);
 
   TransportProtocol protocol_;
 
-  fun::string hostname_or_ip_;
+  std::string hostname_or_ip_;
   uint16_t port_;
 
   void SetSeq(std::shared_ptr<FunapiMessage> message);
@@ -1158,7 +1158,7 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
 
 FunapiTransport::FunapiTransport(std::weak_ptr<FunapiSessionImpl> session,
                                  TransportProtocol protocol,
-                                 const fun::string &hostname_or_ip,
+                                 const std::string &hostname_or_ip,
                                  uint16_t port, FunEncoding encoding)
 : encoding_(encoding),
   encrytion_(std::make_shared<FunapiEncryption>()),
@@ -1191,13 +1191,13 @@ FunapiTransport::~FunapiTransport() {
 
 
 bool FunapiTransport::EncodeMessage(std::shared_ptr<FunapiMessage> message,
-                                    fun::vector<uint8_t> &body,
+                                    std::vector<uint8_t> &body,
                                     const EncryptionType encryption_type) {
   HeaderFields header_fields;
   MakeHeaderFields(header_fields, body);
 
   // log
-  // fun::string body_string(body.cbegin(), body.cend());
+  // std::string body_string(body.cbegin(), body.cend());
   // DebugUtils::Log("Header to send: %s", header_string.c_str());
   // DebugUtils::Log("send message: %s", body_string.c_str());
   // //
@@ -1207,12 +1207,12 @@ bool FunapiTransport::EncodeMessage(std::shared_ptr<FunapiMessage> message,
   if (false == encrytion_->Encrypt(header_fields, body, encryption_type))
     return false;
 
-  fun::string header_string;
+  std::string header_string;
   MakeHeaderString(header_string, header_fields);
 
 #ifdef DEBUG_LOG
   {
-    fun::stringstream ss;
+    std::stringstream ss;
     ss << "[C->S] " << TransportProtocolToString(GetProtocol()) << "/" << EncodingToString(GetEncoding()) << ": ";
 
     // header
@@ -1239,7 +1239,7 @@ bool FunapiTransport::EncodeMessage(std::shared_ptr<FunapiMessage> message,
 #endif
 
   // log
-  // fun::string body_string(body.cbegin(), body.cend());
+  // std::string body_string(body.cbegin(), body.cend());
   // DebugUtils::Log("Header to send: %s", header_string.c_str());
   // DebugUtils::Log("send message: %s", body_string.c_str());
   // //
@@ -1251,7 +1251,7 @@ bool FunapiTransport::EncodeMessage(std::shared_ptr<FunapiMessage> message,
 
 
 bool FunapiTransport::DecodeMessage(int read_length,
-                                    fun::vector<uint8_t> &receiving,
+                                    std::vector<uint8_t> &receiving,
                                     int &next_decoding_offset,
                                     bool &header_decoded, HeaderFields &header_fields) {
   // Tries to decode as many messags as possible.
@@ -1283,7 +1283,7 @@ bool FunapiTransport::DecodeMessage(int read_length,
 }
 
 
-bool FunapiTransport::DecodeMessage(int read_length, fun::vector<uint8_t> &receiving) {
+bool FunapiTransport::DecodeMessage(int read_length, std::vector<uint8_t> &receiving) {
   int next_decoding_offset = 0;
   bool header_decoded = false;
   HeaderFields header_fields;
@@ -1413,7 +1413,7 @@ void FunapiTransport::SetSessionId(std::shared_ptr<FunapiMessage> message) {
     return;
   }
 
-  fun::string session_id = GetSessionId();
+  std::string session_id = GetSessionId();
 
   if (!session_id.empty()) {
     FunEncoding encoding = message->GetEncoding();
@@ -1437,7 +1437,7 @@ void FunapiTransport::SetSessionId(std::shared_ptr<FunapiMessage> message) {
 }
 
 
-bool FunapiTransport::TryToDecodeHeader(fun::vector<uint8_t> &receiving,
+bool FunapiTransport::TryToDecodeHeader(std::vector<uint8_t> &receiving,
                                         int &next_decoding_offset,
                                         bool &header_decoded,
                                         HeaderFields &header_fields) {
@@ -1461,7 +1461,7 @@ bool FunapiTransport::TryToDecodeHeader(fun::vector<uint8_t> &receiving,
       return false;
     }
 
-    // Generates a null-termianted fun::string by replacing the delimeter with \0.
+    // Generates a null-termianted string by replacing the delimeter with \0.
     *ptr = '\0';
     char *line = base + next_decoding_offset;
     // DebugUtils::Log("Header line: %s", line);
@@ -1480,7 +1480,7 @@ bool FunapiTransport::TryToDecodeHeader(fun::vector<uint8_t> &receiving,
                       ptrHeaderFieldDelimeter + strlen(ptrHeaderFieldDelimeter));
     assert((ptr - base) < eol_offset);
 
-    // Generates null-terminated fun::string by replacing the delimeter with \0.
+    // Generates null-terminated string by replacing the delimeter with \0.
     *ptr = '\0';
     char *e1 = line, *e2 = ptr + 1;
     while (*e2 == ' ' || *e2 == '\t') ++e2;
@@ -1491,7 +1491,7 @@ bool FunapiTransport::TryToDecodeHeader(fun::vector<uint8_t> &receiving,
 }
 
 
-bool FunapiTransport::TryToDecodeBody(fun::vector<uint8_t> &receiving,
+bool FunapiTransport::TryToDecodeBody(std::vector<uint8_t> &receiving,
                                       int &next_decoding_offset,
                                       bool &header_decoded,
                                       HeaderFields &header_fields) {
@@ -1514,12 +1514,12 @@ bool FunapiTransport::TryToDecodeBody(fun::vector<uint8_t> &receiving,
     return false;
   }
 
-  fun::vector<EncryptionType> encryption_types;
+  std::vector<EncryptionType> encryption_types;
 
 #ifdef DEBUG_LOG
   if (body_length == 0)
   {
-    fun::stringstream ss;
+    std::stringstream ss;
     ss << "[S->C] " << TransportProtocolToString(GetProtocol()) << "/" << EncodingToString(GetEncoding()) << ": ";
 
     // header
@@ -1533,9 +1533,8 @@ bool FunapiTransport::TryToDecodeBody(fun::vector<uint8_t> &receiving,
   }
 #endif
 
-  if (body_length > 0)
-  {
-    fun::vector<uint8_t> v(receiving.begin() + next_decoding_offset, receiving.begin() + next_decoding_offset + body_length);
+  if (body_length > 0) {
+    std::vector<uint8_t> v(receiving.begin() + next_decoding_offset, receiving.begin() + next_decoding_offset + body_length);
 
     // TODO(sungjin): 복호화에 실패 했을때 압축해제 하지 않고 에러로 처리.
     encrytion_->Decrypt(header_fields, v, encryption_types);
@@ -1547,7 +1546,7 @@ bool FunapiTransport::TryToDecodeBody(fun::vector<uint8_t> &receiving,
     next_decoding_offset += body_length;
 
     // log
-    // fun::string temp_string(v.begin(), v.end());
+    // std::string temp_string(v.begin(), v.end());
     // DebugUtils::Log("recv message: %s", temp_string.c_str());
     // //
 
@@ -1601,8 +1600,8 @@ bool FunapiTransport::TryToDecodeBody(fun::vector<uint8_t> &receiving,
 }
 
 
-fun::string FunapiTransport::MakeHeaderString(const fun::vector<uint8_t> &body) {
-  fun::stringstream ss;
+std::string FunapiTransport::MakeHeaderString(const std::vector<uint8_t> &body) {
+  std::stringstream ss;
 
   ss << kVersionHeaderField << kHeaderFieldDelimeter << static_cast<int>(FunapiVersion::kProtocolVersion) << kHeaderDelimeter;
 
@@ -1618,28 +1617,28 @@ fun::string FunapiTransport::MakeHeaderString(const fun::vector<uint8_t> &body) 
 
 
 void FunapiTransport::MakeHeaderFields(HeaderFields &header_fields,
-                                       const fun::vector<uint8_t> &body) {
-  fun::stringstream ss_protocol_version;
+                                       const std::vector<uint8_t> &body) {
+  std::stringstream ss_protocol_version;
   ss_protocol_version << static_cast<int>(FunapiVersion::kProtocolVersion);
   header_fields[kVersionHeaderField] = ss_protocol_version.str();
 
   if (first_sending_) {
     first_sending_ = false;
 
-    fun::stringstream ss_plugin_version;
+    std::stringstream ss_plugin_version;
     ss_plugin_version << static_cast<int>(FunapiVersion::kPluginVersion);
     header_fields[kPluginVersionHeaderField] = ss_plugin_version.str();
   }
 
-  fun::stringstream ss_length;
+  std::stringstream ss_length;
   ss_length << static_cast<size_t>(body.size());
   header_fields[kLengthHeaderField] = ss_length.str();
 }
 
 
-void FunapiTransport::MakeHeaderString(fun::string &header_string,
+void FunapiTransport::MakeHeaderString(std::string &header_string,
                                        const HeaderFields &header_fields) {
-  fun::stringstream ss;
+  std::stringstream ss;
 
   for (auto it : header_fields) {
     ss << it.first << kHeaderFieldDelimeter << it.second << kHeaderDelimeter;
@@ -1737,7 +1736,7 @@ void FunapiTransport::OnTransportDisconnected(const TransportProtocol protocol, 
 }
 
 
-fun::string FunapiTransport::GetSessionId() {
+std::string FunapiTransport::GetSessionId() {
   return session_id_->Get(GetEncoding());
 }
 
@@ -1749,7 +1748,7 @@ void FunapiTransport::SetEncryptionType(EncryptionType type) {
 }
 
 
-void FunapiTransport::SetEncryptionType(EncryptionType type, const fun::string &public_key) {
+void FunapiTransport::SetEncryptionType(EncryptionType type, const std::string &public_key) {
   if (public_key.length() > 0) {
     encrytion_->SetEncryptionType(type, public_key);
   }
@@ -1766,7 +1765,7 @@ void FunapiTransport::SetCompressionType(CompressionType type) {
 }
 
 
-void FunapiTransport::SetZstdDictBase64String(const fun::string &zstd_dict_base64string) {
+void FunapiTransport::SetZstdDictBase64String(const std::string &zstd_dict_base64string) {
 #if FUNAPI_HAVE_ZSTD
   compression_->SetZstdDictBase64String(zstd_dict_base64string);
 #endif
@@ -1841,7 +1840,7 @@ bool FunapiTransport::OnSeqReceived(const uint32_t seq) {
     }
     else if (seq != seq_recvd_ + 1) {
       // DebugUtils::Log("Received wrong sequence number %d. %d expected.", seq, seq_recvd_ + 1);
-      fun::stringstream ss;
+      std::stringstream ss;
       ss << "Received wrong sequence number " << seq <<". " << (seq_recvd_ + 1) << "expected.";
       Stop(true, FunapiError::Create(FunapiError::ErrorType::kSeq, 0, ss.str()));
       return false;
@@ -1867,7 +1866,7 @@ void FunapiTransport::PushUnsent(const uint32_t ack) {
 void FunapiTransport::OnTransportReceived(const TransportProtocol protocol,
                                           const FunEncoding encoding,
                                           const HeaderFields &header,
-                                          const fun::vector<uint8_t> &body,
+                                          const std::vector<uint8_t> &body,
                                           const std::shared_ptr<FunapiMessage> message) {
   if (auto s = session_impl_.lock()) {
     s->OnTransportReceived(protocol, encoding, header, body, message);
@@ -1878,10 +1877,10 @@ void FunapiTransport::OnTransportReceived(const TransportProtocol protocol,
 void FunapiTransport::OnReceived(const TransportProtocol protocol,
                                  const FunEncoding encoding,
                                  const HeaderFields &header,
-                                 const fun::vector<uint8_t> &body) {
+                                 const std::vector<uint8_t> &body) {
   auto message = FunapiMessage::Create(encoding, body);
 
-  fun::string msg_type;
+  std::string msg_type;
   uint32_t ack = 0;
   uint32_t seq = 0;
   bool hasAck = false;
@@ -2011,11 +2010,11 @@ void FunapiTransport::Update() {
 class FunapiTcpTransport : public FunapiTransport {
  public:
   FunapiTcpTransport(std::weak_ptr<FunapiSessionImpl> session, TransportProtocol protocol,
-                     const fun::string &hostname_or_ip, uint16_t port, FunEncoding encoding);
+                     const std::string &hostname_or_ip, uint16_t port, FunEncoding encoding);
   virtual ~FunapiTcpTransport();
 
   static std::shared_ptr<FunapiTcpTransport> Create(std::weak_ptr<FunapiSessionImpl> session,
-                                                    const fun::string &hostname_or_ip,
+                                                    const std::string &hostname_or_ip,
                                                     uint16_t port,
                                                     FunEncoding encoding);
 
@@ -2027,7 +2026,7 @@ class FunapiTcpTransport : public FunapiTransport {
   void SetSequenceNumberValidation(const bool validation);
   void SetEnablePing(const bool enable_ping);
   void SetUseTLS(const bool use_tls);
-  void SetCACertFilePath(const fun::string &path);
+  void SetCACertFilePath(const std::string &path);
   void ResetClientPingTimeout();
 
   bool UseSodium();
@@ -2038,14 +2037,14 @@ class FunapiTcpTransport : public FunapiTransport {
 
  protected:
   bool EncodeThenSendMessage(std::shared_ptr<FunapiMessage> message,
-                             fun::vector<uint8_t> &body,
+                             std::vector<uint8_t> &body,
                              const EncryptionType encryption_type);
   void Connect();
   void Connect(std::shared_ptr<FunapiAddrInfo> addrinfo_res);
   void OnConnectCompletion(const bool isFailed,
                            const bool isTimedOut,
                            const int error_code,
-                           const fun::string &error_string,
+                           const std::string &error_string,
                            std::shared_ptr<FunapiAddrInfo> addrinfo_res);
 
   void OnDisconnecting(std::shared_ptr<FunapiError> error = nullptr);
@@ -2074,14 +2073,14 @@ class FunapiTcpTransport : public FunapiTransport {
   time_t reconnect_wait_seconds_ = 1;
 
   int offset_ = 0;
-  fun::vector<uint8_t> receiving_vector_;
+  std::vector<uint8_t> receiving_vector_;
 
   bool disable_nagle_ = true;
   bool auto_reconnect_ = false;
   bool enable_ping_ = false;
 
   bool use_tls_ = false;
-  fun::string cert_file_path_;
+  std::string cert_file_path_;
 
   FunapiTimer client_ping_timeout_timer_;
   FunapiTimer ping_send_timer_;
@@ -2089,14 +2088,14 @@ class FunapiTcpTransport : public FunapiTransport {
   std::function<bool(const TransportProtocol protocol)> send_client_ping_message_handler_;
 
   std::shared_ptr<FunapiTcp> tcp_;
-  fun::vector<uint8_t> send_buffer_;
+  std::vector<uint8_t> send_buffer_;
   std::shared_ptr<FunapiAddrInfo> addrinfo_res_ = nullptr;
 };
 
 
 FunapiTcpTransport::FunapiTcpTransport(std::weak_ptr<FunapiSessionImpl> session,
                                        TransportProtocol protocol,
-                                       const fun::string &hostname_or_ip,
+                                       const std::string &hostname_or_ip,
                                        uint16_t port,
                                        FunEncoding encoding)
 : FunapiTransport(session, protocol, hostname_or_ip, port, encoding) {
@@ -2110,7 +2109,7 @@ FunapiTcpTransport::~FunapiTcpTransport() {
 
 std::shared_ptr<FunapiTcpTransport> FunapiTcpTransport::Create
   (std::weak_ptr<FunapiSessionImpl> session,
-   const fun::string &hostname_or_ip,
+   const std::string &hostname_or_ip,
    uint16_t port,
    FunEncoding encoding) {
     return std::make_shared<FunapiTcpTransport>(session, TransportProtocol::kTcp, hostname_or_ip, port, encoding);
@@ -2240,7 +2239,7 @@ void FunapiTcpTransport::SetUseTLS(const bool use_tls) {
 }
 
 
-void FunapiTcpTransport::SetCACertFilePath(const fun::string &path) {
+void FunapiTcpTransport::SetCACertFilePath(const std::string &path) {
   cert_file_path_ = path;
 }
 
@@ -2251,7 +2250,7 @@ void FunapiTcpTransport::ResetClientPingTimeout() {
 
 
 bool FunapiTcpTransport::EncodeThenSendMessage(std::shared_ptr<FunapiMessage> message,
-                                               fun::vector<uint8_t> &body,
+                                               std::vector<uint8_t> &body,
                                                const EncryptionType encryption_type) {
   if (!EncodeMessage(message, body, encryption_type)) {
     return false;
@@ -2265,11 +2264,10 @@ bool FunapiTcpTransport::EncodeThenSendMessage(std::shared_ptr<FunapiMessage> me
 void FunapiTcpTransport::OnConnectCompletion(const bool isFailed,
                                              const bool isTimedOut,
                                              const int error_code,
-                                             const fun::string &error_string,
-                                             std::shared_ptr<FunapiAddrInfo> addrinfo_res)
-{
+                                             const std::string &error_string,
+                                             std::shared_ptr<FunapiAddrInfo> addrinfo_res) {
   addrinfo_res_ = addrinfo_res;
-  fun::string hostname_or_ip = addrinfo_res->GetString();
+  std::string hostname_or_ip = addrinfo_res->GetString();
 
   if (isFailed) {
     SetUpdateState(UpdateState::kNone);
@@ -2341,7 +2339,7 @@ void FunapiTcpTransport::Connect() {
                 [weak, this](const bool is_failed,
                              const bool is_timed_out,
                              const int error_code,
-                             const fun::string &error_string,
+                             const std::string &error_string,
                              std::shared_ptr<FunapiAddrInfo> addrinfo_res)
   {
     if (auto t = weak.lock()) {
@@ -2353,8 +2351,8 @@ void FunapiTcpTransport::Connect() {
     }
   }, [weak, this](const bool is_failed,
                   const int error_code,
-                  const fun::string &error_string,
-                  const int read_length, fun::vector<uint8_t> &receiving)
+                  const std::string &error_string,
+                  const int read_length, std::vector<uint8_t> &receiving)
   {
     if (auto t = weak.lock()) {
       if (is_failed) {
@@ -2390,7 +2388,7 @@ void FunapiTcpTransport::Connect(std::shared_ptr<FunapiAddrInfo> addrinfo_res) {
      (const bool is_failed,
       const bool is_timed_out,
       const int error_code,
-      const fun::string &error_string,
+      const std::string &error_string,
       std::shared_ptr<FunapiAddrInfo> ai_res)
     {
       if (auto t = weak.lock()) {
@@ -2540,7 +2538,7 @@ void FunapiTcpTransport::Send(bool send_all) {
     tcp_->Send(send_buffer_,
                [weak, this](const bool is_failed,
                             const int error_code,
-                            const fun::string &error_string,
+                            const std::string &error_string,
                             const int sent_length)
     {
       if (auto t = weak.lock()) {
@@ -2576,13 +2574,13 @@ class FunapiUdpTransport : public FunapiTransport {
  public:
   FunapiUdpTransport(std::weak_ptr<FunapiSessionImpl> session,
                      TransportProtocol protocol,
-                     const fun::string &hostname_or_ip,
+                     const std::string &hostname_or_ip,
                      uint16_t port,
                      FunEncoding encoding);
   virtual ~FunapiUdpTransport();
 
   static std::shared_ptr<FunapiUdpTransport> Create(std::weak_ptr<FunapiSessionImpl> session,
-                                                    const fun::string &hostname_or_ip, uint16_t port, FunEncoding encoding);
+                                                    const std::string &hostname_or_ip, uint16_t port, FunEncoding encoding);
 
   TransportProtocol GetProtocol();
 
@@ -2591,7 +2589,7 @@ class FunapiUdpTransport : public FunapiTransport {
 
  protected:
   bool EncodeThenSendMessage(std::shared_ptr<FunapiMessage> message,
-                             fun::vector<uint8_t> &body,
+                             std::vector<uint8_t> &body,
                              const EncryptionType encryption_type);
   void OnDisconnecting(std::shared_ptr<FunapiError> error = nullptr);
 
@@ -2602,7 +2600,7 @@ class FunapiUdpTransport : public FunapiTransport {
 
 FunapiUdpTransport::FunapiUdpTransport(std::weak_ptr<FunapiSessionImpl> session,
                                        TransportProtocol protocol,
-                                       const fun::string &hostname_or_ip,
+                                       const std::string &hostname_or_ip,
                                        uint16_t port,
                                        FunEncoding encoding)
 : FunapiTransport(session, protocol, hostname_or_ip, port, encoding) {
@@ -2615,7 +2613,7 @@ FunapiUdpTransport::~FunapiUdpTransport() {
 
 
 std::shared_ptr<FunapiUdpTransport> FunapiUdpTransport::Create(std::weak_ptr<FunapiSessionImpl> session,
-                                                               const fun::string &hostname_or_ip,
+                                                               const std::string &hostname_or_ip,
                                                                uint16_t port,
                                                                FunEncoding encoding) {
   return std::make_shared<FunapiUdpTransport>(session,
@@ -2648,7 +2646,7 @@ void FunapiUdpTransport::Start() {
        [weak, this]
        (const bool isFailed,
         const int error_code,
-        const fun::string &error_string)
+        const std::string &error_string)
        {
          if (auto t2 = weak.lock()) {
            if (isFailed) {
@@ -2668,9 +2666,9 @@ void FunapiUdpTransport::Start() {
        },[weak, this]
        (const bool isFailed,
         const int error_code,
-        const fun::string &error_string,
+        const std::string &error_string,
         const int read_length,
-        fun::vector<uint8_t> &receiving)
+        std::vector<uint8_t> &receiving)
        {
          if (auto t2 = weak.lock()) {
            if (isFailed) {
@@ -2699,7 +2697,7 @@ void FunapiUdpTransport::OnDisconnecting(std::shared_ptr<FunapiError> error) {
 
 
 bool FunapiUdpTransport::EncodeThenSendMessage(std::shared_ptr<FunapiMessage> message,
-                                               fun::vector<uint8_t> &body,
+                                               std::vector<uint8_t> &body,
                                                const EncryptionType encryption_type) {
   if (!EncodeMessage(message, body, encryption_type)) {
     return false;
@@ -2713,7 +2711,7 @@ bool FunapiUdpTransport::EncodeThenSendMessage(std::shared_ptr<FunapiMessage> me
    [weak, this, &bRet]
    (const bool is_failed,
     const int error_code,
-    const fun::string &error_string,
+    const std::string &error_string,
     const int sent_length)
   {
     if (auto t = weak.lock()) {
@@ -2782,11 +2780,11 @@ void FunapiUdpTransport::Send(bool send_all) {
 class FunapiHttpTransport : public FunapiTransport {
  public:
   FunapiHttpTransport(std::weak_ptr<FunapiSessionImpl> session,
-                      const fun::string &hostname_or_ip, uint16_t port, bool https, FunEncoding encoding);
+                      const std::string &hostname_or_ip, uint16_t port, bool https, FunEncoding encoding);
   virtual ~FunapiHttpTransport();
 
   static std::shared_ptr<FunapiHttpTransport> Create(std::weak_ptr<FunapiSessionImpl> session,
-                                                     const fun::string &hostname_or_ip, uint16_t port, bool https, FunEncoding encoding);
+                                                     const std::string &hostname_or_ip, uint16_t port, bool https, FunEncoding encoding);
 
   TransportProtocol GetProtocol();
 
@@ -2795,35 +2793,35 @@ class FunapiHttpTransport : public FunapiTransport {
   void Update();
 
   void SetSequenceNumberValidation(const bool validation);
-  void SetCACertFilePath(const fun::string &path);
+  void SetCACertFilePath(const std::string &path);
 
   void Send(bool send_all = false);
 
  protected:
   bool EncodeThenSendMessage(std::shared_ptr<FunapiMessage> message,
-                             fun::vector<uint8_t> &body,
+                             std::vector<uint8_t> &body,
                              const EncryptionType encryption_type);
   void OnDisconnecting(std::shared_ptr<FunapiError> error = nullptr);
 
  private:
   void WebResponseHeaderCb(const void *data, int len, HeaderFields &header_fields);
-  void WebResponseBodyCb(const void *data, int len, fun::vector<uint8_t> &receiving);
+  void WebResponseBodyCb(const void *data, int len, std::vector<uint8_t> &receiving);
 
-  fun::string host_url_;
-  fun::string cookie_;
+  std::string host_url_;
+  std::string cookie_;
 
   std::shared_ptr<FunapiHttp> http_ = nullptr;
-  fun::string cert_file_path_;
+  std::string cert_file_path_;
 
   std::shared_ptr<FunapiThread> http_thread_ = nullptr;
 };
 
 
 FunapiHttpTransport::FunapiHttpTransport(std::weak_ptr<FunapiSessionImpl> session,
-                                         const fun::string &hostname_or_ip,
+                                         const std::string &hostname_or_ip,
                                          uint16_t port, bool https, FunEncoding encoding)
 : FunapiTransport(session, TransportProtocol::kHttp, hostname_or_ip, port, encoding) {
-  fun::stringstream ss_url;
+  std::stringstream ss_url;
   ss_url << (https ? "https" : "http") << "://" << hostname_or_ip << ":" << port << "/v" << static_cast<int>(FunapiVersion::kProtocolVersion) << "/";
   host_url_ = ss_url.str();
 
@@ -2839,7 +2837,7 @@ FunapiHttpTransport::~FunapiHttpTransport() {
 
 
 std::shared_ptr<FunapiHttpTransport> FunapiHttpTransport::Create(std::weak_ptr<FunapiSessionImpl> session,
-                                                                 const fun::string &hostname_or_ip,
+                                                                 const std::string &hostname_or_ip,
                                                                  uint16_t port, bool https, FunEncoding encoding) {
   return std::make_shared<FunapiHttpTransport>(session, hostname_or_ip, port, https, encoding);
 }
@@ -2914,7 +2912,7 @@ void FunapiHttpTransport::Send(bool send_all) {
 
 
 bool FunapiHttpTransport::EncodeThenSendMessage(std::shared_ptr<FunapiMessage> message,
-                                                fun::vector<uint8_t> &body,
+                                                std::vector<uint8_t> &body,
                                                 const EncryptionType encryption_type) {
   if (GetState() == TransportState::kDisconnected) return false;
 
@@ -2933,7 +2931,7 @@ bool FunapiHttpTransport::EncodeThenSendMessage(std::shared_ptr<FunapiMessage> m
 
 #ifdef DEBUG_LOG
   {
-    fun::stringstream ss;
+    std::stringstream ss;
     ss << "[C->S] " << TransportProtocolToString(GetProtocol()) << "/" << EncodingToString(GetEncoding()) << ": ";
 
     // header
@@ -2965,7 +2963,7 @@ bool FunapiHttpTransport::EncodeThenSendMessage(std::shared_ptr<FunapiMessage> m
                      header_fields_for_send,
                      body,
                      [weak, this, &is_ok](int code,
-                                          const fun::string error_string)
+                                          const std::string error_string)
   {
     if (auto t = weak.lock()) {
       // DebugUtils::Log("Error from cURL: %d, %s", code, error_string.c_str());
@@ -2978,24 +2976,24 @@ bool FunapiHttpTransport::EncodeThenSendMessage(std::shared_ptr<FunapiMessage> m
 
       Stop(true, FunapiError::Create(FunapiError::ErrorType::kCurl, code, error_string));
     }
-  }, [weak, this](const fun::vector<fun::string> &v_header,
-                  const fun::vector<uint8_t> &v_body)
+  }, [weak, this](const std::vector<std::string> &v_header,
+                  const std::vector<uint8_t> &v_body)
   {
     if (auto t = weak.lock()) {
       HeaderFields header_fields;
-      auto temp_header = const_cast<fun::vector<fun::string>&>(v_header);
-      auto temp_body = const_cast<fun::vector<uint8_t>&>(v_body);
+      auto temp_header = const_cast<std::vector<std::string>&>(v_header);
+      auto temp_body = const_cast<std::vector<uint8_t>&>(v_body);
 
       for (size_t i=1;i<temp_header.size();++i) {
         WebResponseHeaderCb(temp_header[i].c_str(), static_cast<int>(temp_header[i].length()), header_fields);
       }
 
-      // std::to_string is not supported on android, using fun::stringstream instead.
-      fun::stringstream ss_protocol_version;
+      // std::to_string is not supported on android, using std::stringstream instead.
+      std::stringstream ss_protocol_version;
       ss_protocol_version << static_cast<int>(FunapiVersion::kProtocolVersion);
       header_fields[kVersionHeaderField] = ss_protocol_version.str();
 
-      fun::stringstream ss_version_header_field;
+      std::stringstream ss_version_header_field;
       ss_version_header_field << temp_body.size();
       header_fields[kLengthHeaderField] = ss_version_header_field.str();
 
@@ -3019,7 +3017,7 @@ bool FunapiHttpTransport::EncodeThenSendMessage(std::shared_ptr<FunapiMessage> m
 
 
 void FunapiHttpTransport::WebResponseHeaderCb(const void *data, int len, HeaderFields &header_fields) {
-  fun::vector<uint8_t> receiving(len);
+  std::vector<uint8_t> receiving(len);
   memcpy(receiving.data(), data, len);
   char *buf = reinterpret_cast<char*>(receiving.data());
 
@@ -3033,17 +3031,17 @@ void FunapiHttpTransport::WebResponseHeaderCb(const void *data, int len, HeaderF
   if (eol_offset >= (size_t)len)
     return;
 
-  // Generates null-terminated fun::string by replacing the delimeter with \0.
+  // Generates null-terminated string by replacing the delimeter with \0.
   *ptr = '\0';
   const char *e1 = buf, *e2 = ptr + 1;
   while (*e2 == ' ' || *e2 == '\t') ++e2;
   // DebugUtils::Log("Decoded header field '%s' => '%s'", e1, e2);
 
-  fun::string cookie_field(kCookieResponseHeaderField);
+  std::string cookie_field(kCookieResponseHeaderField);
   bool is_cookie_field = false;
 
   if (strlen(e1) == cookie_field.length()) {
-    fun::string temp(e1);
+    std::string temp(e1);
     std::transform(temp.begin(), temp.end(), temp.begin(), ::toupper);
 
     if (temp.compare(cookie_field) == 0) {
@@ -3060,7 +3058,7 @@ void FunapiHttpTransport::WebResponseHeaderCb(const void *data, int len, HeaderF
 }
 
 
-void FunapiHttpTransport::WebResponseBodyCb(const void *data, int len, fun::vector<uint8_t> &receiving) {
+void FunapiHttpTransport::WebResponseBodyCb(const void *data, int len, std::vector<uint8_t> &receiving) {
   receiving.insert(receiving.end(), (uint8_t*)data, (uint8_t*)data + len);
 }
 
@@ -3089,7 +3087,7 @@ void FunapiHttpTransport::SetSequenceNumberValidation(const bool validation) {
 }
 
 
-void FunapiHttpTransport::SetCACertFilePath(const fun::string &path) {
+void FunapiHttpTransport::SetCACertFilePath(const std::string &path) {
   cert_file_path_ = path;
 }
 
@@ -3100,12 +3098,12 @@ void FunapiHttpTransport::SetCACertFilePath(const fun::string &path) {
 class FunapiWebsocketTransport : public FunapiTransport {
  public:
   FunapiWebsocketTransport(std::weak_ptr<FunapiSessionImpl> session,
-                           const fun::string &hostname_or_ip, uint16_t port,
+                           const std::string &hostname_or_ip, uint16_t port,
                            bool use_wss, FunEncoding encoding);
   virtual ~FunapiWebsocketTransport();
 
   static std::shared_ptr<FunapiWebsocketTransport> Create(std::weak_ptr<FunapiSessionImpl> session,
-    const fun::string &hostname_or_ip, uint16_t port, bool use_wss, FunEncoding encoding);
+    const std::string &hostname_or_ip, uint16_t port, bool use_wss, FunEncoding encoding);
 
   TransportProtocol GetProtocol();
 
@@ -3117,12 +3115,12 @@ class FunapiWebsocketTransport : public FunapiTransport {
 
  protected:
   bool EncodeThenSendMessage(std::shared_ptr<FunapiMessage> message,
-                             fun::vector<uint8_t> &body,
+                             std::vector<uint8_t> &body,
                              const EncryptionType encryption_type);
   void OnDisconnecting(std::shared_ptr<FunapiError> error = nullptr);
 
  private:
-  fun::vector<uint8_t> receiving_vector_;
+  std::vector<uint8_t> receiving_vector_;
   bool use_wss_ = false;
 
   std::shared_ptr<FunapiWebsocket> websocket_ = nullptr;
@@ -3131,7 +3129,7 @@ class FunapiWebsocketTransport : public FunapiTransport {
 
 
 FunapiWebsocketTransport::FunapiWebsocketTransport(std::weak_ptr<FunapiSessionImpl> session,
-                                                   const fun::string &hostname_or_ip, uint16_t port,
+                                                   const std::string &hostname_or_ip, uint16_t port,
                                                    bool use_wss, FunEncoding encoding)
 #if FUNAPI_HAVE_WEBSOCKET
 : FunapiTransport(session, TransportProtocol::kWebsocket, hostname_or_ip, port, encoding) {
@@ -3148,7 +3146,7 @@ FunapiWebsocketTransport::~FunapiWebsocketTransport() {
 
 
 std::shared_ptr<FunapiWebsocketTransport> FunapiWebsocketTransport::Create(std::weak_ptr<FunapiSessionImpl> session,
-                                                                           const fun::string &hostname_or_ip,
+                                                                           const std::string &hostname_or_ip,
                                                                            uint16_t port,
                                                                            bool use_wss,
                                                                            FunEncoding encoding) {
@@ -3184,7 +3182,7 @@ void FunapiWebsocketTransport::Start() {
          [weak, this]
          (const bool is_failed,
           const int error_code,
-          const fun::string &error_string)
+          const std::string &error_string)
         {
           if (auto t2 = weak.lock()) {
             if (is_failed) {
@@ -3200,7 +3198,7 @@ void FunapiWebsocketTransport::Start() {
         },
          [weak, this]
          (const int error_code,
-          const fun::string &error_string)
+          const std::string &error_string)
         {
           // close
           if (auto t2 = weak.lock()) {
@@ -3219,7 +3217,7 @@ void FunapiWebsocketTransport::Start() {
         },
          [weak, this]
          (const int read_length,
-          fun::vector<uint8_t> &receiving)
+          std::vector<uint8_t> &receiving)
         {
           if (auto t2 = weak.lock()) {
             receiving_vector_.insert(receiving_vector_.end(), receiving.cbegin(), receiving.cbegin() + read_length);
@@ -3272,7 +3270,7 @@ void FunapiWebsocketTransport::Send(bool send_all) {
 
 
 bool FunapiWebsocketTransport::EncodeThenSendMessage(std::shared_ptr<FunapiMessage> message,
-                                                     fun::vector<uint8_t> &body,
+                                                     std::vector<uint8_t> &body,
                                                      const EncryptionType encryption_type) {
   if (GetState() == TransportState::kDisconnected) return false;
 
@@ -3288,7 +3286,7 @@ bool FunapiWebsocketTransport::EncodeThenSendMessage(std::shared_ptr<FunapiMessa
                      [weak, this]
                      (const bool is_failed,
                       const int error_code,
-                      const fun::string &error_string,
+                      const std::string &error_string,
                       const int sent_length)
     {
       if (auto t = weak.lock()) {
@@ -3322,13 +3320,13 @@ void FunapiWebsocketTransport::Update() {
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiSessionImpl implementation.
 
-fun::vector<std::weak_ptr<FunapiSessionImpl>> FunapiSessionImpl::vec_sessions_;
+std::vector<std::weak_ptr<FunapiSessionImpl>> FunapiSessionImpl::vec_sessions_;
 std::mutex FunapiSessionImpl::vec_sessions_mutex_;
 
 
-fun::vector<std::shared_ptr<FunapiSessionImpl>> FunapiSessionImpl::GetSessionImpls() {
-  fun::vector<std::shared_ptr<FunapiSessionImpl>> v_sessions;
-  fun::vector<std::weak_ptr<FunapiSessionImpl>> v_weak_sessions;
+std::vector<std::shared_ptr<FunapiSessionImpl>> FunapiSessionImpl::GetSessionImpls() {
+  std::vector<std::shared_ptr<FunapiSessionImpl>> v_sessions;
+  std::vector<std::weak_ptr<FunapiSessionImpl>> v_weak_sessions;
   {
     std::unique_lock<std::mutex> lock(vec_sessions_mutex_);
     if (!vec_sessions_.empty()) {
@@ -3392,16 +3390,16 @@ void FunapiSessionImpl::Initialize()
     // session
     message_handlers_[kSessionOpenedMessageType] =
     [this](const TransportProtocol &p,
-           const fun::string &s,
-           const fun::vector<uint8_t> &v,
+           const std::string &s,
+           const std::vector<uint8_t> &v,
            const std::shared_ptr<FunapiMessage> m)
     {
         OnSessionOpen(p, s, v, m);
     };
     message_handlers_[kSessionClosedMessageType] =
     [this](const TransportProtocol &p,
-           const fun::string &s,
-           const fun::vector<uint8_t> &v,
+           const std::string &s,
+           const std::vector<uint8_t> &v,
            const std::shared_ptr<FunapiMessage> m)
     {
         OnSessionClose(p, s, v, m);
@@ -3410,16 +3408,16 @@ void FunapiSessionImpl::Initialize()
     // ping
     message_handlers_[kServerPingMessageType] =
     [this](const TransportProtocol &p,
-           const fun::string &s,
-           const fun::vector<uint8_t> &v,
+           const std::string &s,
+           const std::vector<uint8_t> &v,
            const std::shared_ptr<FunapiMessage> m)
     {
         OnServerPingMessage(p, s, v, m);
     };
     message_handlers_[kClientPingMessageType] =
     [this](const TransportProtocol &p,
-           const fun::string &s,
-           const fun::vector<uint8_t> &v,
+           const std::string &s,
+           const std::vector<uint8_t> &v,
            const std::shared_ptr<FunapiMessage> m)
     {
         OnClientPingMessage(p, s, v, m);
@@ -3428,16 +3426,16 @@ void FunapiSessionImpl::Initialize()
     // redirect
     message_handlers_[kRedirectMessageType] =
     [this](const TransportProtocol &p,
-           const fun::string &s,
-           const fun::vector<uint8_t> &v,
+           const std::string &s,
+           const std::vector<uint8_t> &v,
            const std::shared_ptr<FunapiMessage> m)
     {
         OnRedirectMessage(p, s, v, m);
     };
     message_handlers_[kRedirectConnectMessageType] =
     [this](const TransportProtocol &p,
-           const fun::string &s,
-           const fun::vector<uint8_t> &v,
+           const std::string &s,
+           const std::vector<uint8_t> &v,
            const std::shared_ptr<FunapiMessage> m)
     {
         OnRedirectConnectMessage(p, s, v, m);
@@ -3642,7 +3640,7 @@ void FunapiSessionImpl::Connect(const TransportProtocol protocol) {
 }
 
 
-void FunapiSessionImpl::RegisterHandler(const fun::string &msg_type,
+void FunapiSessionImpl::RegisterHandler(const std::string &msg_type,
                                         const MessageEventHandler &handler) {
   // DebugUtils::Log("New handler for message type %s", msg_type.c_str());
   message_handlers_[msg_type] = handler;
@@ -3731,8 +3729,8 @@ void FunapiSessionImpl::SendMessage(std::shared_ptr<FunapiMessage> &message, con
         }
         else
         {
-            const fun::string& str_msg_type = message->GetMsgType();
-            const fun::string str_protocol = TransportProtocolToString(protocol);
+            const std::string& str_msg_type = message->GetMsgType();
+            const std::string str_protocol = TransportProtocolToString(protocol);
             DebugUtils::Log("'%s' message skipped. There's no %s transport.", str_msg_type.c_str(), str_protocol.c_str());
         }
     }
@@ -3740,7 +3738,7 @@ void FunapiSessionImpl::SendMessage(std::shared_ptr<FunapiMessage> &message, con
     {
         if (IsRedirecting() && UseRedirectQueue())
         {
-            const fun::string& msg_type = message->GetMsgType();
+            const std::string& msg_type = message->GetMsgType();
             if (msg_type != kRedirectConnectMessageType)
             {
                 AddMessageToRedirectQueue(protocol_for_send, message);
@@ -3757,8 +3755,8 @@ void FunapiSessionImpl::SendMessage(std::shared_ptr<FunapiMessage> &message, con
 }
 
 
-void FunapiSessionImpl::SendMessage(const fun::string &msg_type,
-                                    const fun::string &json_string,
+void FunapiSessionImpl::SendMessage(const std::string &msg_type,
+                                    const std::string &json_string,
                                     const TransportProtocol protocol,
                                     const EncryptionType encryption_type) {
   rapidjson::Document body;
@@ -3827,10 +3825,10 @@ bool FunapiSessionImpl::IsConnected(const TransportProtocol protocol) const {
 void FunapiSessionImpl::OnTransportReceived(const TransportProtocol protocol,
                                             const FunEncoding encoding,
                                             const HeaderFields &header,
-                                            const fun::vector<uint8_t> &body,
+                                            const std::vector<uint8_t> &body,
                                             const std::shared_ptr<FunapiMessage> message) {
-  fun::string msg_type;
-  fun::string session_id;
+  std::string msg_type;
+  std::string session_id;
   int32_t msg_type2 = 0;
 
   if (encoding == FunEncoding::kJson) {
@@ -3865,7 +3863,7 @@ void FunapiSessionImpl::OnTransportReceived(const TransportProtocol protocol,
 
 #ifdef DEBUG_LOG
   {
-    fun::stringstream ss;
+    std::stringstream ss;
     ss << "[S->C] " << TransportProtocolToString(protocol) << "/" << EncodingToString(encoding) << ": ";
 
     // header
@@ -3898,7 +3896,7 @@ void FunapiSessionImpl::OnTransportReceived(const TransportProtocol protocol,
       }
     }
 
-    fun::string session_id_old = GetSessionId(encoding);
+    std::string session_id_old = GetSessionId(encoding);
     if (session_id_old.empty()) {
       SetSessionId(session_id, encoding);
       // DebugUtils::Log("New session id: %s", GetSessionId(FunEncoding::kJson).c_str());
@@ -3908,12 +3906,12 @@ void FunapiSessionImpl::OnTransportReceived(const TransportProtocol protocol,
         SetSessionId(session_id, encoding);
       }
       else {
-        fun::string old_string = GetSessionId(FunEncoding::kJson);
+        std::string old_string = GetSessionId(FunEncoding::kJson);
         SetSessionId(session_id, encoding);
 
-        fun::string new_string = GetSessionId(FunEncoding::kJson);
+        std::string new_string = GetSessionId(FunEncoding::kJson);
         // DebugUtils::Log("Session id changed: %s => %s", old_string.c_str(), new_string.c_str());
-        fun::stringstream ss;
+        std::stringstream ss;
         ss << old_string << " -> " << new_string;
 
         OnSessionEvent(protocol,
@@ -3944,7 +3942,7 @@ void FunapiSessionImpl::OnTransportReceived(const TransportProtocol protocol,
   }
 
   if (encoding == FunEncoding::kJson) {
-    OnJsonRecv(protocol, msg_type, fun::string(body.begin(), body.end()));
+    OnJsonRecv(protocol, msg_type, std::string(body.begin(), body.end()));
   }
   else if (encoding == FunEncoding::kProtobuf) {
     OnProtobufRecv(protocol, *(message->GetProtobufMessage()));
@@ -3953,8 +3951,8 @@ void FunapiSessionImpl::OnTransportReceived(const TransportProtocol protocol,
 
 
 void FunapiSessionImpl::OnSessionOpen(const TransportProtocol protocol,
-                                      const fun::string &msg_type,
-                                      const fun::vector<uint8_t>&v_body,
+                                      const std::string &msg_type,
+                                      const std::vector<uint8_t>&v_body,
                                       const std::shared_ptr<FunapiMessage> message) {
   OnSessionEvent(protocol,
                  GetEncoding(protocol),
@@ -3977,8 +3975,8 @@ void FunapiSessionImpl::OnSessionOpen(const TransportProtocol protocol,
 
 
 void FunapiSessionImpl::OnSessionClose(const TransportProtocol protocol,
-                                       const fun::string &msg_type,
-                                       const fun::vector<uint8_t>&v_body,
+                                       const std::string &msg_type,
+                                       const std::vector<uint8_t>&v_body,
                                        const std::shared_ptr<FunapiMessage> message)
 {
     // DebugUtils::Log("Session timed out. Resetting my session id. The server will send me another one next time.");
@@ -3993,7 +3991,7 @@ void FunapiSessionImpl::OnSessionClose(const TransportProtocol protocol,
     ResetSession();
 
     auto encoding = GetEncoding(protocol);
-    fun::string temp_session_id = GetSessionId(FunEncoding::kJson);
+    std::string temp_session_id = GetSessionId(FunEncoding::kJson);
 
     OnSessionEvent(protocol,
                    encoding,
@@ -4004,8 +4002,8 @@ void FunapiSessionImpl::OnSessionClose(const TransportProtocol protocol,
 
 
 void FunapiSessionImpl::OnServerPingMessage(const TransportProtocol protocol,
-                                            const fun::string &msg_type,
-                                            const fun::vector<uint8_t>&v_body,
+                                            const std::string &msg_type,
+                                            const std::vector<uint8_t>&v_body,
                                             const std::shared_ptr<FunapiMessage> m) {
   fun::FunEncoding encoding = GetEncoding(protocol);
   assert(encoding!=FunEncoding::kNone);
@@ -4020,13 +4018,13 @@ void FunapiSessionImpl::OnServerPingMessage(const TransportProtocol protocol,
 
 
 void FunapiSessionImpl::OnClientPingMessage(const TransportProtocol protocol,
-                                            const fun::string &msg_type,
-                                            const fun::vector<uint8_t>&v_body,
+                                            const std::string &msg_type,
+                                            const std::vector<uint8_t>&v_body,
                                             const std::shared_ptr<FunapiMessage> message) {
   fun::FunEncoding encoding = GetEncoding(protocol);
   assert(encoding!=FunEncoding::kNone);
 
-  fun::string body(v_body.cbegin(), v_body.cend());
+  std::string body(v_body.cbegin(), v_body.cend());
   int64_t timestamp_ms = 0;
 
   if (encoding == FunEncoding::kJson)
@@ -4080,8 +4078,8 @@ void FunapiSessionImpl::OnRedirect()
     fun::FunEncoding encoding = message->GetEncoding();
     assert(encoding!=FunEncoding::kNone);
 
-    fun::string flavor;
-    fun::vector<RedirectServerPortInfo> server_ports_info;
+    std::string flavor;
+    std::vector<RedirectServerPortInfo> server_ports_info;
 
     redirect_cur_tags_.clear();
     redirect_target_tags_.clear();
@@ -4091,8 +4089,8 @@ void FunapiSessionImpl::OnRedirect()
     {
 
         // log
-        // fun::string temp_string(v_body.begin(), v_body.end());
-        // DebugUtils::Log("json fun::string = %s", temp_string.c_str());
+        // std::string temp_string(v_body.begin(), v_body.end());
+        // DebugUtils::Log("json string = %s", temp_string.c_str());
         // //
 
         auto document = message->GetJsonDocumenet();
@@ -4220,13 +4218,13 @@ void FunapiSessionImpl::OnRedirect()
         }
     }
 
-    fun::string old_session_id = GetSessionId(FunEncoding::kJson);
+    std::string old_session_id = GetSessionId(FunEncoding::kJson);
 
     // NOTE(sungjin) : 이전 서버와 통신에 사용되었지만 남아있는
     // transports, send_queues, tasks, session_id_를 제거 하고 재생성 합니다.
     ResetSession();
 
-    fun::vector<std::shared_ptr<FunapiTransportOption>> v_option(FunRedirectMessage_Protocol_Protocol_MAX + 1);
+    std::vector<std::shared_ptr<FunapiTransportOption>> v_option(FunRedirectMessage_Protocol_Protocol_MAX + 1);
     v_option[FunRedirectMessage_Protocol_PROTO_TCP] = tcp_option_;
     v_option[FunRedirectMessage_Protocol_PROTO_UDP] = udp_option_;
     v_option[FunRedirectMessage_Protocol_PROTO_HTTP] = http_option_;
@@ -4298,8 +4296,8 @@ void FunapiSessionImpl::OnRedirect()
 
 
 void FunapiSessionImpl::OnRedirectMessage(const TransportProtocol protocol,
-                                          const fun::string &msg_type,
-                                          const fun::vector<uint8_t>&v_body,
+                                          const std::string &msg_type,
+                                          const std::vector<uint8_t>&v_body,
                                           const std::shared_ptr<FunapiMessage> message)
 {
     funapi_message_redirect_ = message;
@@ -4317,8 +4315,8 @@ void FunapiSessionImpl::OnRedirectMessage(const TransportProtocol protocol,
 
 
 void FunapiSessionImpl::OnRedirectConnectMessage(const TransportProtocol protocol,
-                                                 const fun::string &msg_type,
-                                                 const fun::vector<uint8_t>&v_body,
+                                                 const std::string &msg_type,
+                                                 const std::vector<uint8_t>&v_body,
                                                  const std::shared_ptr<FunapiMessage> message)
 {
     fun::FunEncoding encoding = GetEncoding(protocol);
@@ -4329,8 +4327,8 @@ void FunapiSessionImpl::OnRedirectConnectMessage(const TransportProtocol protoco
     if (encoding == FunEncoding::kJson)
     {
         // log
-        // fun::string temp_string(v_body.begin(), v_body.end());
-        // DebugUtils::Log("json fun::string = %s", temp_string.c_str());
+        // std::string temp_string(v_body.begin(), v_body.end());
+        // DebugUtils::Log("json string = %s", temp_string.c_str());
         // //
 
         auto document = message->GetJsonDocumenet();
@@ -4478,12 +4476,12 @@ std::shared_ptr<FunapiQueue> FunapiSessionImpl::GetQueueSharedPtr(const Transpor
 }
 
 
-fun::string FunapiSessionImpl::GetSessionId(const FunEncoding encoding) {
+std::string FunapiSessionImpl::GetSessionId(const FunEncoding encoding) {
   return session_id_->Get(encoding);
 }
 
 
-void FunapiSessionImpl::SetSessionId(const fun::string &session_id, const FunEncoding encoding) {
+void FunapiSessionImpl::SetSessionId(const std::string &session_id, const FunEncoding encoding) {
   session_id_->Set(session_id, encoding);
 }
 
@@ -4623,7 +4621,7 @@ void FunapiSessionImpl::OnProtobufRecv(const TransportProtocol protocol, const F
 }
 
 
-void FunapiSessionImpl::OnJsonRecv(const TransportProtocol protocol, const fun::string &msg_type, const fun::string &json_string) {
+void FunapiSessionImpl::OnJsonRecv(const TransportProtocol protocol, const std::string &msg_type, const std::string &json_string) {
   PushTaskQueue([this, protocol, msg_type, json_string]()->bool {
     if (auto s = session_.lock()) {
       on_json_recv_(s, protocol, msg_type, json_string);
@@ -4636,7 +4634,7 @@ void FunapiSessionImpl::OnJsonRecv(const TransportProtocol protocol, const fun::
 void FunapiSessionImpl::OnSessionEvent(const TransportProtocol protocol,
                                        const FunEncoding encoding,
                                        const SessionEventType type,
-                                       const fun::string &session_id,
+                                       const std::string &session_id,
                                        const std::shared_ptr<FunapiError> &error) {
 
   bool use_skip = IsRedirecting() &&
@@ -4646,7 +4644,7 @@ void FunapiSessionImpl::OnSessionEvent(const TransportProtocol protocol,
 
   // log
   {
-    fun::stringstream ss;
+    std::stringstream ss;
     if (use_skip) {
       ss << "(Skip)";
     }
@@ -4681,7 +4679,7 @@ void FunapiSessionImpl::OnTransportEvent(const TransportProtocol protocol,
                                          std::shared_ptr<FunapiError> error) {
   // log
   {
-    fun::stringstream ss;
+    std::stringstream ss;
     if (IsRedirecting()) {
       ss << "(Skip)";
     }
@@ -4889,7 +4887,7 @@ void FunapiSessionImpl::SendAck(const TransportProtocol protocol,
 
 
 void FunapiSessionImpl::SendRedirectConenectMessage(const TransportProtocol protocol,
-                                                    const fun::string &token,
+                                                    const std::string &token,
                                                     const EncryptionType encryption_type) {
   std::shared_ptr<FunapiTransport> transport = GetTransport(protocol);
   if (transport == nullptr) return;
@@ -4931,7 +4929,7 @@ bool FunapiSessionImpl::IsReliableSession() const {
 }
 
 
-void FunapiSessionImpl::SetRecvTimeout(const fun::string &msg_type, const int seconds) {
+void FunapiSessionImpl::SetRecvTimeout(const std::string &msg_type, const int seconds) {
   std::unique_lock<std::mutex> lock(m_recv_timeout_mutex_);
   m_recv_timeout_[msg_type] = std::make_shared<FunapiTimer>(seconds);
 }
@@ -4943,7 +4941,7 @@ void FunapiSessionImpl::SetRecvTimeout(const int32_t msg_type, const int seconds
 }
 
 
-void FunapiSessionImpl::EraseRecvTimeout(const fun::string &msg_type) {
+void FunapiSessionImpl::EraseRecvTimeout(const std::string &msg_type) {
   std::unique_lock<std::mutex> lock(m_recv_timeout_mutex_);
   m_recv_timeout_.erase(msg_type);
 }
@@ -4956,8 +4954,8 @@ void FunapiSessionImpl::EraseRecvTimeout(const int32_t msg_type) {
 
 
 void FunapiSessionImpl::CheckRecvTimeout() {
-  fun::vector<fun::string> msg_types;
-  fun::vector<int32_t> msg_types2;
+  std::vector<std::string> msg_types;
+  std::vector<int32_t> msg_types2;
 
   {
     std::unique_lock<std::mutex> lock(m_recv_timeout_mutex_);
@@ -4995,7 +4993,7 @@ void FunapiSessionImpl::CheckRecvTimeout() {
 }
 
 
-void FunapiSessionImpl::OnRecvTimeout(const fun::string &msg_type) {
+void FunapiSessionImpl::OnRecvTimeout(const std::string &msg_type) {
   PushTaskQueue([this, msg_type]()->bool {
     if (auto s = session_.lock()) {
       on_recv_timeout_(s, msg_type);
@@ -5068,12 +5066,12 @@ void FunapiSessionImpl::AddMessageToRedirectQueue(const TransportProtocol protoc
 {
     if (!UseRedirectQueue())
     {
-        DebugUtils::Log("Couldn't save to the redirect fun::queue. The UseRedirectQueue option is turned off.");
+        DebugUtils::Log("Couldn't save to the redirect queue. The UseRedirectQueue option is turned off.");
         return;
     }
 
-    const fun::string str_protocol = TransportProtocolToString(protocol);
-    const fun::string& str_msg_type = message->GetMsgType();
+    const std::string str_protocol = TransportProtocolToString(protocol);
+    const std::string& str_msg_type = message->GetMsgType();
 
     // Checks the protocol of the server to be moved
     if (redirect_encodings_.find(protocol) == redirect_encodings_.end())
@@ -5093,7 +5091,7 @@ void FunapiSessionImpl::AddMessageToRedirectQueue(const TransportProtocol protoc
     }
 
     // Queueing a message
-    DebugUtils::Log("%s adds '%s' message to the redirect fun::queue.", str_protocol.c_str(), str_msg_type.c_str());
+    DebugUtils::Log("%s adds '%s' message to the redirect queue.", str_protocol.c_str(), str_msg_type.c_str());
 
     auto unsent_message = FunapiUnsentMessageImpl::Create(message);
     redirect_queues_[static_cast<int>(protocol)]->PushBack(unsent_message);
@@ -5115,7 +5113,7 @@ void FunapiSessionImpl::SendUnsentQueueMessages()
             continue;
         }
 
-        const fun::string str_protocol = TransportProtocolToString(protocol);
+        const std::string str_protocol = TransportProtocolToString(protocol);
 
         DebugUtils::Log("%s has %d unsent message(s).", str_protocol.c_str(), queue->Size());
 
@@ -5220,8 +5218,8 @@ void FunapiSession::Close(const TransportProtocol protocol) {
 }
 
 
-void FunapiSession::SendMessage(const fun::string &msg_type,
-                                const fun::string &json_string,
+void FunapiSession::SendMessage(const std::string &msg_type,
+                                const std::string &json_string,
                                 const TransportProtocol protocol,
                                 const EncryptionType encryption_type) {
   impl_->SendMessage(msg_type, json_string, protocol, encryption_type);
@@ -5370,12 +5368,12 @@ void FunapiSession::AddRecvTimeoutCallback(const RecvTimeoutHandler &handler) {
 }
 
 
-void FunapiSession::SetRecvTimeout(const fun::string &msg_type, const int seconds) {
+void FunapiSession::SetRecvTimeout(const std::string &msg_type, const int seconds) {
   impl_->SetRecvTimeout(msg_type, seconds);
 }
 
 
-void FunapiSession::EraseRecvTimeout(const fun::string &msg_type) {
+void FunapiSession::EraseRecvTimeout(const std::string &msg_type) {
   impl_->EraseRecvTimeout(msg_type);
 }
 

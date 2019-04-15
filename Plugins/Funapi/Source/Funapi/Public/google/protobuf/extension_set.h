@@ -178,11 +178,11 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
 
   // =================================================================
 
-  // Add all fields which are currently present to the given fun::vector.  This
+  // Add all fields which are currently present to the given vector.  This
   // is useful to implement Reflection::ListFields().
   void AppendToList(const Descriptor* containing_type,
                     const DescriptorPool* pool,
-                    fun::vector<const FieldDescriptor*>* output) const;
+                    vector<const FieldDescriptor*>* output) const;
 
   // =================================================================
   // Accessors
@@ -230,7 +230,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   double GetDouble(int number, double default_value) const;
   bool   GetBool  (int number, bool   default_value) const;
   int    GetEnum  (int number, int    default_value) const;
-  const fun::string & GetString (int number, const fun::string&  default_value) const;
+  const string & GetString (int number, const string&  default_value) const;
   const MessageLite& GetMessage(int number,
                                 const MessageLite& default_value) const;
   const MessageLite& GetMessage(int number, const Descriptor* message_type,
@@ -248,8 +248,8 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   void SetDouble(int number, FieldType type, double value, desc);
   void SetBool  (int number, FieldType type, bool   value, desc);
   void SetEnum  (int number, FieldType type, int    value, desc);
-  void SetString(int number, FieldType type, const fun::string& value, desc);
-  fun::string * MutableString (int number, FieldType type, desc);
+  void SetString(int number, FieldType type, const string& value, desc);
+  string * MutableString (int number, FieldType type, desc);
   MessageLite* MutableMessage(int number, FieldType type,
                               const MessageLite& prototype, desc);
   MessageLite* MutableMessage(const FieldDescriptor* decsriptor,
@@ -291,7 +291,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   double GetRepeatedDouble(int number, int index) const;
   bool   GetRepeatedBool  (int number, int index) const;
   int    GetRepeatedEnum  (int number, int index) const;
-  const fun::string & GetRepeatedString (int number, int index) const;
+  const string & GetRepeatedString (int number, int index) const;
   const MessageLite& GetRepeatedMessage(int number, int index) const;
 
   void SetRepeatedInt32 (int number, int index, int32  value);
@@ -302,8 +302,8 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   void SetRepeatedDouble(int number, int index, double value);
   void SetRepeatedBool  (int number, int index, bool   value);
   void SetRepeatedEnum  (int number, int index, int    value);
-  void SetRepeatedString(int number, int index, const fun::string& value);
-  fun::string * MutableRepeatedString (int number, int index);
+  void SetRepeatedString(int number, int index, const string& value);
+  string * MutableRepeatedString (int number, int index);
   MessageLite* MutableRepeatedMessage(int number, int index);
 
 #define desc const FieldDescriptor* descriptor  // avoid line wrapping
@@ -315,8 +315,8 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   void AddDouble(int number, FieldType type, bool packed, double value, desc);
   void AddBool  (int number, FieldType type, bool packed, bool   value, desc);
   void AddEnum  (int number, FieldType type, bool packed, int    value, desc);
-  void AddString(int number, FieldType type, const fun::string& value, desc);
-  fun::string * AddString (int number, FieldType type, desc);
+  void AddString(int number, FieldType type, const string& value, desc);
+  string * AddString (int number, FieldType type, desc);
   MessageLite* AddMessage(int number, FieldType type,
                           const MessageLite& prototype, desc);
   MessageLite* AddMessage(const FieldDescriptor* descriptor,
@@ -455,7 +455,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
       double                double_value;
       bool                  bool_value;
       int                   enum_value;
-      fun::string*               string_value;
+      string*               string_value;
       MessageLite*          message_value;
       LazyMessageExtension* lazymessage_value;
 
@@ -467,7 +467,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
       RepeatedField   <double     >* repeated_double_value;
       RepeatedField   <bool       >* repeated_bool_value;
       RepeatedField   <int        >* repeated_enum_value;
-      RepeatedPtrField<fun::string     >* repeated_string_value;
+      RepeatedPtrField<string     >* repeated_string_value;
       RepeatedPtrField<MessageLite>* repeated_message_value;
     };
 
@@ -475,9 +475,9 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
     bool is_repeated;
 
     // For singular types, indicates if the extension is "cleared".  This
-    // happens when an extension is fun::set and then later cleared by the caller.
+    // happens when an extension is set and then later cleared by the caller.
     // We want to keep the Extension object around for reuse, so instead of
-    // removing it from the fun::map, we just fun::set is_cleared = true.  This has no
+    // removing it from the map, we just set is_cleared = true.  This has no
     // meaning for repeated types; for those, the size of the RepeatedField
     // simply becomes zero when cleared.
     bool is_cleared : 4;
@@ -581,28 +581,28 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
       RepeatedPtrFieldBase* field);
 
   // The Extension struct is small enough to be passed by value, so we use it
-  // directly as the value type in the fun::map rather than use pointers.  We use
-  // a fun::map rather than hash_map here because we expect most ExtensionSets will
+  // directly as the value type in the map rather than use pointers.  We use
+  // a map rather than hash_map here because we expect most ExtensionSets will
   // only contain a small number of extensions whereas hash_map is optimized
   // for 100 elements or more.  Also, we want AppendToList() to order fields
   // by field number.
-  fun::map<int, Extension> extensions_;
+  std::map<int, Extension> extensions_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionSet);
 };
 
 // These are just for convenience...
 inline void ExtensionSet::SetString(int number, FieldType type,
-                                    const fun::string& value,
+                                    const string& value,
                                     const FieldDescriptor* descriptor) {
   MutableString(number, type, descriptor)->assign(value);
 }
 inline void ExtensionSet::SetRepeatedString(int number, int index,
-                                            const fun::string& value) {
+                                            const string& value) {
   MutableRepeatedString(number, index)->assign(value);
 }
 inline void ExtensionSet::AddString(int number, FieldType type,
-                                    const fun::string& value,
+                                    const string& value,
                                     const FieldDescriptor* descriptor) {
   AddString(number, type, descriptor)->assign(value);
 }
@@ -613,7 +613,7 @@ inline void ExtensionSet::AddString(int number, FieldType type,
 // -------------------------------------------------------------------
 // Template magic
 
-// First we have a fun::set of classes representing "type traits" for different
+// First we have a set of classes representing "type traits" for different
 // field types.  A type traits class knows how to implement basic accessors
 // for extensions of a particular type given an ExtensionSet.  The signature
 // for a type traits class looks like this:
@@ -651,7 +651,7 @@ inline void ExtensionSet::AddString(int number, FieldType type,
 // Not all of these methods make sense for all field types.  For example, the
 // "Mutable" methods only make sense for strings and messages, and the
 // repeated methods only make sense for repeated types.  So, each type
-// traits class implements only the fun::set of methods from this signature that it
+// traits class implements only the set of methods from this signature that it
 // actually supports.  This will cause a compiler error if the user tries to
 // access an extension using a method that doesn't make sense for its type.
 // For example, if "foo" is an extension of type "optional int32", then if you
@@ -780,19 +780,19 @@ PROTOBUF_DEFINE_PRIMITIVE_TYPE(  bool,   Bool)
 // Strings support both Set() and Mutable().
 class LIBPROTOBUF_EXPORT StringTypeTraits {
  public:
-  typedef const fun::string& ConstType;
-  typedef fun::string* MutableType;
+  typedef const string& ConstType;
+  typedef string* MutableType;
   typedef StringTypeTraits Singular;
 
-  static inline const fun::string& Get(int number, const ExtensionSet& set,
+  static inline const string& Get(int number, const ExtensionSet& set,
                                   ConstType default_value) {
     return set.GetString(number, default_value);
   }
   static inline void Set(int number, FieldType field_type,
-                         const fun::string& value, ExtensionSet* set) {
+                         const string& value, ExtensionSet* set) {
     set->SetString(number, field_type, value, NULL);
   }
-  static inline fun::string* Mutable(int number, FieldType field_type,
+  static inline string* Mutable(int number, FieldType field_type,
                                 ExtensionSet* set) {
     return set->MutableString(number, field_type, NULL);
   }
@@ -800,42 +800,42 @@ class LIBPROTOBUF_EXPORT StringTypeTraits {
 
 class LIBPROTOBUF_EXPORT RepeatedStringTypeTraits {
  public:
-  typedef const fun::string& ConstType;
-  typedef fun::string* MutableType;
+  typedef const string& ConstType;
+  typedef string* MutableType;
   typedef RepeatedStringTypeTraits Repeated;
 
-  typedef RepeatedPtrField<fun::string> RepeatedFieldType;
+  typedef RepeatedPtrField<string> RepeatedFieldType;
 
-  static inline const fun::string& Get(int number, const ExtensionSet& set,
+  static inline const string& Get(int number, const ExtensionSet& set,
                                   int index) {
     return set.GetRepeatedString(number, index);
   }
   static inline void Set(int number, int index,
-                         const fun::string& value, ExtensionSet* set) {
+                         const string& value, ExtensionSet* set) {
     set->SetRepeatedString(number, index, value);
   }
-  static inline fun::string* Mutable(int number, int index, ExtensionSet* set) {
+  static inline string* Mutable(int number, int index, ExtensionSet* set) {
     return set->MutableRepeatedString(number, index);
   }
   static inline void Add(int number, FieldType field_type,
-                         bool /*is_packed*/, const fun::string& value,
+                         bool /*is_packed*/, const string& value,
                          ExtensionSet* set) {
     set->AddString(number, field_type, value, NULL);
   }
-  static inline fun::string* Add(int number, FieldType field_type,
+  static inline string* Add(int number, FieldType field_type,
                             ExtensionSet* set) {
     return set->AddString(number, field_type, NULL);
   }
-  static inline const RepeatedPtrField<fun::string>&
+  static inline const RepeatedPtrField<string>&
       GetRepeated(int number, const ExtensionSet& set) {
-    return *reinterpret_cast<const RepeatedPtrField<fun::string>*>(
+    return *reinterpret_cast<const RepeatedPtrField<string>*>(
         set.GetRawRepeatedField(number, GetDefaultRepeatedField()));
   }
 
-  static inline RepeatedPtrField<fun::string>*
+  static inline RepeatedPtrField<string>*
       MutableRepeated(int number, FieldType field_type,
                       bool is_packed, ExtensionSet* set) {
-    return reinterpret_cast<RepeatedPtrField<fun::string>*>(
+    return reinterpret_cast<RepeatedPtrField<string>*>(
         set->MutableRawRepeatedField(number, field_type,
                                      is_packed, NULL));
   }

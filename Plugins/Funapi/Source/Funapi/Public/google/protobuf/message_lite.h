@@ -82,26 +82,26 @@ class LIBPROTOBUF_EXPORT MessageLite {
   // Basic Operations ------------------------------------------------
 
   // Get the name of this message type, e.g. "foo.bar.BazProto".
-  virtual fun::string GetTypeName() const = 0;
+  virtual string GetTypeName() const = 0;
 
   // Construct a new instance of the same type.  Ownership is passed to the
   // caller.
   virtual MessageLite* New() const = 0;
 
-  // Clear all fields of the message and fun::set them to their default values.
+  // Clear all fields of the message and set them to their default values.
   // Clear() avoids freeing memory, assuming that any memory allocated
   // to hold parts of the message will be needed again to hold the next
   // message.  If you actually want to free the memory used by a Message,
   // you must delete it.
   virtual void Clear() = 0;
 
-  // Quickly check if all required fields have values set
+  // Quickly check if all required fields have values set.
   virtual bool IsInitialized() const = 0;
 
   // This is not implemented for Lite messages -- it just returns "(cannot
   // determine missing fields for lite message)".  However, it is implemented
   // for full messages.  See message.h.
-  virtual fun::string InitializationErrorString() const;
+  virtual string InitializationErrorString() const;
 
   // If |other| is the exact same class as this, calls MergeFrom().  Otherwise,
   // results are undefined (probably crash).
@@ -133,11 +133,11 @@ class LIBPROTOBUF_EXPORT MessageLite {
   // missing required fields.
   bool ParsePartialFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input,
                                              int size);
-  // Parse a protocol buffer contained in a fun::string.
-  bool ParseFromString(const fun::string& data);
+  // Parse a protocol buffer contained in a string.
+  bool ParseFromString(const string& data);
   // Like ParseFromString(), but accepts messages that are missing
   // required fields.
-  bool ParsePartialFromString(const fun::string& data);
+  bool ParsePartialFromString(const string& data);
   // Parse a protocol buffer contained in an array of bytes.
   bool ParseFromArray(const void* data, int size);
   // Like ParseFromArray(), but accepts messages that are missing
@@ -177,36 +177,36 @@ class LIBPROTOBUF_EXPORT MessageLite {
   // Like SerializeToCodedStream(), but allows missing required fields.
   bool SerializePartialToCodedStream(io::CodedOutputStream* output) const;
   // Write the message to the given zero-copy output stream.  All required
-  // fields must be set
+  // fields must be set.
   bool SerializeToZeroCopyStream(io::ZeroCopyOutputStream* output) const;
   // Like SerializeToZeroCopyStream(), but allows missing required fields.
   bool SerializePartialToZeroCopyStream(io::ZeroCopyOutputStream* output) const;
-  // Serialize the message and store it in the given fun::string.  All required
-  // fields must be set
-  bool SerializeToString(fun::string* output) const;
+  // Serialize the message and store it in the given string.  All required
+  // fields must be set.
+  bool SerializeToString(string* output) const;
   // Like SerializeToString(), but allows missing required fields.
-  bool SerializePartialToString(fun::string* output) const;
+  bool SerializePartialToString(string* output) const;
   // Serialize the message and store it in the given byte array.  All required
-  // fields must be set
+  // fields must be set.
   bool SerializeToArray(void* data, int size) const;
   // Like SerializeToArray(), but allows missing required fields.
   bool SerializePartialToArray(void* data, int size) const;
 
-  // Make a fun::string encoding the message. Is equivalent to calling
-  // SerializeToString() on a fun::string and using that.  Returns the empty
-  // fun::string if SerializeToString() would have returned an error.
+  // Make a string encoding the message. Is equivalent to calling
+  // SerializeToString() on a string and using that.  Returns the empty
+  // string if SerializeToString() would have returned an error.
   // Note: If you intend to generate many such strings, you may
-  // reduce heap fragmentation by instead re-using the same fun::string
+  // reduce heap fragmentation by instead re-using the same string
   // object with calls to SerializeToString().
-  fun::string SerializeAsString() const;
+  string SerializeAsString() const;
   // Like SerializeAsString(), but allows missing required fields.
-  fun::string SerializePartialAsString() const;
+  string SerializePartialAsString() const;
 
-  // Like SerializeToString(), but appends to the data to the fun::string's existing
-  // contents.  All required fields must be set
-  bool AppendToString(fun::string* output) const;
+  // Like SerializeToString(), but appends to the data to the string's existing
+  // contents.  All required fields must be set.
+  bool AppendToString(string* output) const;
   // Like AppendToString(), but allows missing required fields.
-  bool AppendPartialToString(fun::string* output) const;
+  bool AppendPartialToString(string* output) const;
 
   // Computes the serialized size of the message.  This recursively calls
   // ByteSize() on all embedded messages.  If a subclass does not override

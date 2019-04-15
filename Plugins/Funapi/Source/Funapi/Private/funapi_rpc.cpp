@@ -72,7 +72,7 @@ class FunapiRpcImpl : public std::enable_shared_from_this<FunapiRpcImpl> {
   typedef FunapiRpc::RpcHandler RpcHandler;
 
   typedef std::function<void(std::shared_ptr<FunapiRpcPeer> peer,
-                             const fun::string &type,
+                             const std::string &type,
                              const FunDedicatedServerRpcMessage &request_message,
                              const ResponseHandler &response_handler)> RpcSystemHandler;
 
@@ -81,8 +81,8 @@ class FunapiRpcImpl : public std::enable_shared_from_this<FunapiRpcImpl> {
 
   void Start(std::shared_ptr<FunapiRpcOption> option);
   void SetPeerEventHandler(const EventHandler &handler);
-  void SetHandler(const fun::string &type, const RpcHandler &handler);
-  void SetSystemHandler(const fun::string &type, const RpcSystemHandler &handler);
+  void SetHandler(const std::string &type, const RpcHandler &handler);
+  void SetSystemHandler(const std::string &type, const RpcSystemHandler &handler);
   void Update();
 
   void OnHandler(std::shared_ptr<FunapiRpcPeer> peer, std::shared_ptr<FunapiRpcMessage> msg);
@@ -94,27 +94,27 @@ class FunapiRpcImpl : public std::enable_shared_from_this<FunapiRpcImpl> {
   void DebugClose();
 
  protected:
-  void OnEvent(const EventType type, const fun::string &hostname_or_ip, const int port, const fun::string &peer_id);
-  fun::string EventTypeToString(const EventType type);
-  void Connect(const fun::string &peer_id, const fun::string &hostname_or_ip, const int port);
+  void OnEvent(const EventType type, const std::string &hostname_or_ip, const int port, const std::string &peer_id);
+  std::string EventTypeToString(const EventType type);
+  void Connect(const std::string &peer_id, const std::string &hostname_or_ip, const int port);
   void Connect(const int index);
   void InitSystemHandlers();
-  void SetPeerEventHanderReconnect(const fun::string &peer_id, std::shared_ptr<FunapiRpcPeer> peer);
+  void SetPeerEventHanderReconnect(const std::string &peer_id, std::shared_ptr<FunapiRpcPeer> peer);
   void CallMasterMessage();
 
  private:
   std::shared_ptr<FunapiTasks> tasks_;
 
-  fun::unordered_set<std::shared_ptr<FunapiRpcPeer>> peer_set_;
+  std::unordered_set<std::shared_ptr<FunapiRpcPeer>> peer_set_;
   std::mutex peer_set_mutex_;
 
-  fun::unordered_map<fun::string, std::shared_ptr<FunapiRpcPeer>> peer_map_;
+  std::unordered_map<std::string, std::shared_ptr<FunapiRpcPeer>> peer_map_;
   std::mutex peer_map_mutex_;
 
-  fun::unordered_map<fun::string, std::shared_ptr<RpcHandler>> handler_map_;
+  std::unordered_map<std::string, std::shared_ptr<RpcHandler>> handler_map_;
   std::mutex handler_map_mutex_;
 
-  fun::unordered_map<fun::string, std::shared_ptr<RpcSystemHandler>> sys_handler_map_;
+  std::unordered_map<std::string, std::shared_ptr<RpcSystemHandler>> sys_handler_map_;
   std::mutex sys_handler_map_mutex_;
 
   std::shared_ptr<EventHandler> event_handler_ = nullptr;
@@ -147,7 +147,7 @@ class FunapiRpcPeer : public std::enable_shared_from_this<FunapiRpcPeer> {
   FunapiRpcPeer();
   virtual ~FunapiRpcPeer();
 
-  void Connect(const fun::string &hostname_or_ip, int port);
+  void Connect(const std::string &hostname_or_ip, int port);
   void Close();
 
   State GetState();
@@ -155,7 +155,7 @@ class FunapiRpcPeer : public std::enable_shared_from_this<FunapiRpcPeer> {
 
   void SetEventCallback(const EventHandler &handler);
   void SetRpcImpl(std::weak_ptr<FunapiRpcImpl> weak);
-  void SetPeerId(const fun::string &id);
+  void SetPeerId(const std::string &id);
 
   void Call(std::shared_ptr<FunapiRpcMessage> message);
 
@@ -163,15 +163,15 @@ class FunapiRpcPeer : public std::enable_shared_from_this<FunapiRpcPeer> {
   void SetState(const State s);
   void PushNetworkThread(const FunapiThread::TaskHandler &handler);
   void PushTaskQueue(const FunapiTasks::TaskHandler &task);
-  void OnConnect(fun::string hostname_or_ip, int port);
+  void OnConnect(std::string hostname_or_ip, int port);
   void OnClose();
   void OnEvent(const EventType type);
   void OnSend();
-  void OnRecv(const int read_length, const fun::vector<uint8_t> &receiving);
+  void OnRecv(const int read_length, const std::vector<uint8_t> &receiving);
   void OnConnectCompletion(const bool isFailed,
                            const bool isTimedOut,
                            const int error_code,
-                           const fun::string &error_string,
+                           const std::string &error_string,
                            std::shared_ptr<FunapiAddrInfo> addrinfo_res);
   void OnDisconnecting();
   void OnDisconnect();
@@ -192,18 +192,18 @@ class FunapiRpcPeer : public std::enable_shared_from_this<FunapiRpcPeer> {
   std::shared_ptr<FunapiTasks> tasks_ =  nullptr;
   std::shared_ptr<FunapiTcp> tcp_ = nullptr;
 
-  fun::vector<uint8_t> recv_buffer_;
+  std::vector<uint8_t> recv_buffer_;
   uint32_t proto_length_ = 0;
 
-  fun::string hostname_or_ip_;
+  std::string hostname_or_ip_;
   int port_ = 0;
 
-  fun::deque<std::shared_ptr<FunapiRpcMessage>> send_queue_;
+  std::deque<std::shared_ptr<FunapiRpcMessage>> send_queue_;
   std::mutex send_queue_mutex_;
 
   std::weak_ptr<FunapiRpcImpl> rpc_impl_;
 
-  fun::string peer_id_;
+  std::string peer_id_;
 };
 
 
@@ -218,10 +218,10 @@ FunapiRpcPeer::~FunapiRpcPeer() {
 
 
 void FunapiRpcPeer::OnSend() {
-  fun::vector<uint8_t> buffer;
+  std::vector<uint8_t> buffer;
   int offset = 0;
 
-  fun::deque<std::shared_ptr<FunapiRpcMessage>> temp_queue;
+  std::deque<std::shared_ptr<FunapiRpcMessage>> temp_queue;
   {
     std::unique_lock<std::mutex> lock(send_queue_mutex_);
     temp_queue.swap(send_queue_);
@@ -250,7 +250,7 @@ void FunapiRpcPeer::OnSend() {
      [weak, this]
      (const bool is_failed,
       const int error_code,
-      const fun::string &error_string,
+      const std::string &error_string,
       const int sent_length)
     {
       if (auto t = weak.lock()) {
@@ -267,7 +267,7 @@ void FunapiRpcPeer::OnSend() {
 }
 
 
-void FunapiRpcPeer::OnRecv(const int read_length, const fun::vector<uint8_t> &receiving) {
+void FunapiRpcPeer::OnRecv(const int read_length, const std::vector<uint8_t> &receiving) {
   recv_buffer_.insert(recv_buffer_.end(), receiving.cbegin(), receiving.cbegin() + read_length);
 
   while (true) {
@@ -320,15 +320,15 @@ void FunapiRpcPeer::OnRecv(const int read_length, const fun::vector<uint8_t> &re
 void FunapiRpcPeer::OnConnectCompletion(const bool isFailed,
                                         const bool isTimedOut,
                                         const int error_code,
-                                        const fun::string &error_string,
+                                        const std::string &error_string,
                                         std::shared_ptr<FunapiAddrInfo> addrinfo_res) {
-  fun::string hostname_or_ip = addrinfo_res->GetString();
+  std::string hostname_or_ip = addrinfo_res->GetString();
 
   if (isFailed) {
     SetState(State::kDisconnected);
 
     if (isTimedOut) {
-      fun::stringstream ss;
+      std::stringstream ss;
       ss << "Tcp connection timed out: " << hostname_or_ip.c_str();
       if (error_code != 0) {
         ss << "(" << error_code << ") " << error_string.c_str();
@@ -340,7 +340,7 @@ void FunapiRpcPeer::OnConnectCompletion(const bool isFailed,
     }
     else
     {
-      fun::stringstream ss;
+      std::stringstream ss;
       ss << "Failed to tcp connection: " << hostname_or_ip.c_str();
       if (error_code != 0) {
         ss << "(" << error_code << ") " << error_string.c_str();
@@ -379,7 +379,7 @@ void FunapiRpcPeer::PushConnectThread() {
          (const bool is_failed,
           const bool is_timed_out,
           const int error_code,
-          const fun::string &error_string,
+          const std::string &error_string,
           std::shared_ptr<FunapiAddrInfo> addrinfo_res)
         {
           if (auto t = weak.lock()) {
@@ -392,8 +392,8 @@ void FunapiRpcPeer::PushConnectThread() {
         }, [weak, this]
          (const bool is_failed,
           const int error_code,
-          const fun::string &error_string,
-          const int read_length, fun::vector<uint8_t> &receiving)
+          const std::string &error_string,
+          const int read_length, std::vector<uint8_t> &receiving)
         {
           if (auto t = weak.lock()) {
             if (is_failed) {
@@ -412,7 +412,7 @@ void FunapiRpcPeer::PushConnectThread() {
 }
 
 
-void FunapiRpcPeer::OnConnect(fun::string hostname_or_ip, int port) {
+void FunapiRpcPeer::OnConnect(std::string hostname_or_ip, int port) {
   if (GetState() == State::kDisconnecting) {
     Connect(hostname_or_ip, port);
   }
@@ -425,7 +425,7 @@ void FunapiRpcPeer::OnConnect(fun::string hostname_or_ip, int port) {
 }
 
 
-void FunapiRpcPeer::Connect(const fun::string &hostname_or_ip, const int port) {
+void FunapiRpcPeer::Connect(const std::string &hostname_or_ip, const int port) {
   PushTaskQueue([this, hostname_or_ip, port]()->bool {
     OnConnect(hostname_or_ip, port);
     return false;
@@ -577,7 +577,7 @@ void FunapiRpcPeer::Call(std::shared_ptr<FunapiRpcMessage> message) {
 }
 
 
-void FunapiRpcPeer::SetPeerId(const fun::string &id) {
+void FunapiRpcPeer::SetPeerId(const std::string &id) {
   peer_id_ = id;
   OnEvent(EventType::kPeerId);
 }
@@ -607,7 +607,7 @@ void FunapiRpcImpl::CallMasterMessage() {
   if (master_peer) {
     auto master_message = std::make_shared<FunapiRpcMessage>();
 
-    fun::stringstream ss_xid;
+    std::stringstream ss_xid;
     std::random_device rd;
     std::default_random_engine re(rd());
     std::uniform_int_distribution<int> dist(1,0xffff);
@@ -625,7 +625,7 @@ void FunapiRpcImpl::InitSystemHandlers() {
   SetSystemHandler(kRpcInfoMessageType,
                    [this]
                    (std::shared_ptr<FunapiRpcPeer> peer,
-                    const fun::string &type,
+                    const std::string &type,
                     const FunDedicatedServerRpcMessage &request_message,
                     const fun::FunapiRpc::ResponseHandler &response_handler)
   {
@@ -633,9 +633,9 @@ void FunapiRpcImpl::InitSystemHandlers() {
       FunDedicatedServerRpcMessage response_message;
       FunDedicatedServerRpcSystemMessage *sys_response_message = response_message.MutableExtension(ds_rpc_sys);
 
-      fun::string tag = rpc_option_->GetTag();
+      std::string tag = rpc_option_->GetTag();
       if (tag.length() > 0) {
-        fun::stringstream ss;
+        std::stringstream ss;
         ss << "{ \"tag\" : \"" << rpc_option_->GetTag() << "\" }";
         sys_response_message->set_data(ss.str());
       }
@@ -648,7 +648,7 @@ void FunapiRpcImpl::InitSystemHandlers() {
     rapidjson::Document json_document;
     json_document.Parse<0>(sys_message.data().c_str());
 
-    fun::string peer_id;
+    std::string peer_id;
     const char* kPeerId = "id";
     if (json_document.HasMember(kPeerId)) {
       peer_id = json_document[kPeerId].GetString();
@@ -686,7 +686,7 @@ void FunapiRpcImpl::InitSystemHandlers() {
   SetSystemHandler(kRpcAddMessageType,
                    [this]
                    (std::shared_ptr<FunapiRpcPeer> peer,
-                    const fun::string &type,
+                    const std::string &type,
                     const FunDedicatedServerRpcMessage &request_message,
                     const fun::FunapiRpc::ResponseHandler &response_handler)
   {
@@ -705,8 +705,8 @@ void FunapiRpcImpl::InitSystemHandlers() {
         json_document.HasMember(kPeerIp) &&
         json_document.HasMember(kPeerPort))
     {
-      fun::string peer_id = json_document[kPeerId].GetString();
-      fun::string peer_ip = json_document[kPeerIp].GetString();
+      std::string peer_id = json_document[kPeerId].GetString();
+      std::string peer_ip = json_document[kPeerIp].GetString();
       int peer_port = json_document[kPeerPort].GetInt();
 
       Connect(peer_id, peer_ip, peer_port);
@@ -716,7 +716,7 @@ void FunapiRpcImpl::InitSystemHandlers() {
   SetSystemHandler(kRpcDelMessageType,
                    [this]
                    (std::shared_ptr<FunapiRpcPeer> peer,
-                    const fun::string &type,
+                    const std::string &type,
                     const FunDedicatedServerRpcMessage &request_message,
                     const fun::FunapiRpc::ResponseHandler &response_handler)
   {
@@ -731,7 +731,7 @@ void FunapiRpcImpl::InitSystemHandlers() {
     const char* kPeerId = "id";
     if (json_document.HasMember(kPeerId))
     {
-      fun::string peer_id = json_document[kPeerId].GetString();
+      std::string peer_id = json_document[kPeerId].GetString();
 
       if (peer_id.length() > 0) {
         std::shared_ptr<FunapiRpcPeer> del_peer = nullptr;
@@ -799,9 +799,9 @@ void FunapiRpcImpl::Connect(const int index) {
   std::weak_ptr<FunapiRpcPeer> peer_weak = peer;
   std::weak_ptr<FunapiRpcImpl> weak = shared_from_this();
   auto new_handler = [this, index, weak, peer_weak](const EventType type,
-                                             const fun::string &hostname_or_ip,
+                                             const std::string &hostname_or_ip,
                                              const int port,
-                                             const fun::string &peer_id)
+                                             const std::string &peer_id)
   {
     if (auto impl = weak.lock()) {
       OnEvent(type, hostname_or_ip, port, peer_id);
@@ -844,13 +844,13 @@ void FunapiRpcImpl::Connect(const int index) {
 }
 
 
-void FunapiRpcImpl::SetPeerEventHanderReconnect(const fun::string &peer_id, std::shared_ptr<FunapiRpcPeer> peer) {
+void FunapiRpcImpl::SetPeerEventHanderReconnect(const std::string &peer_id, std::shared_ptr<FunapiRpcPeer> peer) {
   std::weak_ptr<FunapiRpcPeer> peer_weak = peer;
   std::weak_ptr<FunapiRpcImpl> weak = shared_from_this();
   auto new_handler = [this, peer_id, weak, peer_weak](const EventType type,
-                                                      const fun::string &peer_hostname_or_ip,
+                                                      const std::string &peer_hostname_or_ip,
                                                       const int peer_port,
-                                                      const fun::string &peer_id_empty)
+                                                      const std::string &peer_id_empty)
   {
     if (auto impl = weak.lock()) {
       OnEvent(type, peer_hostname_or_ip, peer_port, peer_id);
@@ -925,7 +925,7 @@ void FunapiRpcImpl::SetPeerEventHanderReconnect(const fun::string &peer_id, std:
 }
 
 
-void FunapiRpcImpl::Connect(const fun::string &peer_id, const fun::string &hostname_or_ip, const int port) {
+void FunapiRpcImpl::Connect(const std::string &peer_id, const std::string &hostname_or_ip, const int port) {
   std::shared_ptr<FunapiRpcPeer> peer = nullptr;
   {
     std::unique_lock<std::mutex> lock(peer_map_mutex_);
@@ -957,13 +957,13 @@ void FunapiRpcImpl::SetPeerEventHandler(const EventHandler &handler) {
 }
 
 
-void FunapiRpcImpl::SetHandler(const fun::string &type, const RpcHandler &handler) {
+void FunapiRpcImpl::SetHandler(const std::string &type, const RpcHandler &handler) {
   std::unique_lock<std::mutex> lock(handler_map_mutex_);
   handler_map_[type] = std::make_shared<RpcHandler>(handler);
 }
 
 
-void FunapiRpcImpl::SetSystemHandler(const fun::string &type, const RpcSystemHandler &handler) {
+void FunapiRpcImpl::SetSystemHandler(const std::string &type, const RpcSystemHandler &handler) {
   std::unique_lock<std::mutex> lock(sys_handler_map_mutex_);
   sys_handler_map_[type] = std::make_shared<RpcSystemHandler>(handler);
 }
@@ -985,7 +985,7 @@ void FunapiRpcImpl::Update() {
 }
 
 
-fun::string FunapiRpcImpl::EventTypeToString(const EventType type) {
+std::string FunapiRpcImpl::EventTypeToString(const EventType type) {
   if (type == EventType::kConnected) {
     return "Connected";
   }
@@ -1007,10 +1007,10 @@ fun::string FunapiRpcImpl::EventTypeToString(const EventType type) {
 
 
 void FunapiRpcImpl::OnEvent(const EventType type,
-                            const fun::string &hostname_or_ip,
+                            const std::string &hostname_or_ip,
                             const int port,
-                            const fun::string &peer_id) {
-  fun::stringstream ss;
+                            const std::string &peer_id) {
+  std::stringstream ss;
   ss << "RPC peer event: ";
   if (peer_id.length() > 0) {
     ss << "'" << peer_id << "' ";
@@ -1033,7 +1033,7 @@ void FunapiRpcImpl::OnEvent(const EventType type,
 void FunapiRpcImpl::OnHandler(std::shared_ptr<FunapiRpcPeer> peer,
                               std::shared_ptr<FunapiRpcMessage> request_message) {
   if (request_message->GetMessage().is_request()) {
-    fun::string type = request_message->GetMessage().type();
+    std::string type = request_message->GetMessage().type();
 
     std::shared_ptr<RpcHandler> handler = nullptr;
     {
@@ -1083,7 +1083,7 @@ std::shared_ptr<FunapiRpcOption> FunapiRpcImpl::GetRpcOption() {
 
 
 void FunapiRpcImpl::DebugCall(const FunDedicatedServerRpcMessage &debug_request) {
-  fun::vector<std::shared_ptr<FunapiRpcPeer>> v_peer;
+  std::vector<std::shared_ptr<FunapiRpcPeer>> v_peer;
   {
     std::unique_lock<std::mutex> lock(peer_set_mutex_);
     for (auto p : peer_set_) {
@@ -1149,7 +1149,7 @@ void FunapiRpc::SetPeerEventHandler(const EventHandler &handler) {
 }
 
 
-void FunapiRpc::SetHandler(const fun::string &type, const RpcHandler &handler) {
+void FunapiRpc::SetHandler(const std::string &type, const RpcHandler &handler) {
   impl_->SetHandler(type, handler);
 }
 
@@ -1177,8 +1177,8 @@ class FunapiRpcOptionImpl : public std::enable_shared_from_this<FunapiRpcOptionI
   FunapiRpcOptionImpl() = default;
   virtual ~FunapiRpcOptionImpl() = default;
 
-  void AddInitializer(const fun::string &hostname_or_ip, const int port);
-  fun::vector<std::tuple<fun::string, int>>& GetInitializers();
+  void AddInitializer(const std::string &hostname_or_ip, const int port);
+  std::vector<std::tuple<std::string, int>>& GetInitializers();
 
   void SetDisableNagle(const bool disable_nagle);
   bool GetDisableNagle();
@@ -1186,23 +1186,23 @@ class FunapiRpcOptionImpl : public std::enable_shared_from_this<FunapiRpcOptionI
   void SetConnectTimeout(const int seconds);
   int GetConnectTimeout();
 
-  void SetTag(const fun::string &tag);
-  fun::string GetTag();
+  void SetTag(const std::string &tag);
+  std::string GetTag();
 
  private:
-  fun::vector<std::tuple<fun::string, int>> initializers_;
+  std::vector<std::tuple<std::string, int>> initializers_;
   bool disable_nagle_ = true;
   int timeout_seconds_ = 5;
-  fun::string tag_;
+  std::string tag_;
 };
 
 
-void FunapiRpcOptionImpl::AddInitializer(const fun::string &hostname_or_ip, const int port) {
+void FunapiRpcOptionImpl::AddInitializer(const std::string &hostname_or_ip, const int port) {
   initializers_.push_back(std::make_tuple(hostname_or_ip, port));
 }
 
 
-fun::vector<std::tuple<fun::string, int>>& FunapiRpcOptionImpl::GetInitializers() {
+std::vector<std::tuple<std::string, int>>& FunapiRpcOptionImpl::GetInitializers() {
   return initializers_;
 }
 
@@ -1227,12 +1227,12 @@ int FunapiRpcOptionImpl::GetConnectTimeout() {
 }
 
 
-void FunapiRpcOptionImpl::SetTag(const fun::string &tag) {
+void FunapiRpcOptionImpl::SetTag(const std::string &tag) {
   tag_ = tag;
 }
 
 
-fun::string FunapiRpcOptionImpl::GetTag() {
+std::string FunapiRpcOptionImpl::GetTag() {
   return tag_;
 }
 
@@ -1249,12 +1249,12 @@ std::shared_ptr<FunapiRpcOption> FunapiRpcOption::Create() {
 }
 
 
-void FunapiRpcOption::AddInitializer(const fun::string &hostname_or_ip, const int port) {
+void FunapiRpcOption::AddInitializer(const std::string &hostname_or_ip, const int port) {
   impl_->AddInitializer(hostname_or_ip, port);
 }
 
 
-fun::vector<std::tuple<fun::string, int>>& FunapiRpcOption::GetInitializers() {
+std::vector<std::tuple<std::string, int>>& FunapiRpcOption::GetInitializers() {
   return impl_->GetInitializers();
 }
 
@@ -1279,12 +1279,12 @@ int FunapiRpcOption::GetConnectTimeout() {
 }
 
 
-void FunapiRpcOption::SetTag(const fun::string &tag) {
+void FunapiRpcOption::SetTag(const std::string &tag) {
   impl_->SetTag(tag);
 }
 
 
-fun::string FunapiRpcOption::GetTag() {
+std::string FunapiRpcOption::GetTag() {
   return impl_->GetTag();
 }
 

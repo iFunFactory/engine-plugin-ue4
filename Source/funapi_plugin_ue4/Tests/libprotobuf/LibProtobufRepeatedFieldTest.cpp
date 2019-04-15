@@ -60,8 +60,8 @@ int ReservedSpace(google::protobuf::RepeatedField<int>* field) {
   return field->size() - 1;
 };
 
-int ReservedSpace(google::protobuf::RepeatedPtrField<fun::string>* field) {
-  const fun::string* const* ptr = field->data();
+int ReservedSpace(google::protobuf::RepeatedPtrField<std::string>* field) {
+  const std::string* const* ptr = field->data();
   do {
     field->Add();
   } while (field->data() == ptr);
@@ -331,7 +331,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
   // TEST(RepeatedField, IteratorConstruct)
   {
-    fun::vector<int> values;
+    std::vector<int> values;
     values.push_back(1);
     values.push_back(2);
 
@@ -453,7 +453,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
   // TEST(RepeatedPtrField, Small)
   {
-    google::protobuf::RepeatedPtrField<fun::string> field;
+    google::protobuf::RepeatedPtrField<std::string> field;
 
     verify(field.empty());
     verify(field.size() == 0);
@@ -492,7 +492,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
   // TEST(RepeatedPtrField, Large)
   {
-    google::protobuf::RepeatedPtrField<fun::string> field;
+    google::protobuf::RepeatedPtrField<std::string> field;
 
     for (int i = 0; i < 16; i++) {
       *field.Add() += 'a' + i;
@@ -505,14 +505,14 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
       verify(field.Get(i)[0] == 'a' + i);
     }
 
-    int min_expected_usage = 16 * sizeof(fun::string);
+    int min_expected_usage = 16 * sizeof(std::string);
     verify(field.SpaceUsedExcludingSelf() >= min_expected_usage);
   }
 
   // TEST(RepeatedPtrField, SwapSmallSmall)
   {
-    google::protobuf::RepeatedPtrField<fun::string> field1;
-    google::protobuf::RepeatedPtrField<fun::string> field2;
+    google::protobuf::RepeatedPtrField<std::string> field1;
+    google::protobuf::RepeatedPtrField<std::string> field2;
 
     verify(field1.empty());
     verify(field1.size() == 0);
@@ -542,8 +542,8 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
   // TEST(RepeatedPtrField, SwapLargeSmall)
   {
-    google::protobuf::RepeatedPtrField<fun::string> field1;
-    google::protobuf::RepeatedPtrField<fun::string> field2;
+    google::protobuf::RepeatedPtrField<std::string> field1;
+    google::protobuf::RepeatedPtrField<std::string> field2;
 
     field2.Add()->assign("foo");
     field2.Add()->assign("bar");
@@ -564,8 +564,8 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
   // TEST(RepeatedPtrField, SwapLargeLarge)
   {
-    google::protobuf::RepeatedPtrField<fun::string> field1;
-    google::protobuf::RepeatedPtrField<fun::string> field2;
+    google::protobuf::RepeatedPtrField<std::string> field1;
+    google::protobuf::RepeatedPtrField<std::string> field2;
 
     field1.Add()->assign("foo");
     field1.Add()->assign("bar");
@@ -591,7 +591,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
   // TEST(RepeatedPtrField, ReserveMoreThanDouble)
   {
-    google::protobuf::RepeatedPtrField<fun::string> field;
+    google::protobuf::RepeatedPtrField<std::string> field;
     field.Reserve(20);
 
     verify(20 == ReservedSpace(&field));
@@ -599,7 +599,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
   // TEST(RepeatedPtrField, ReserveLessThanDouble)
   {
-    google::protobuf::RepeatedPtrField<fun::string> field;
+    google::protobuf::RepeatedPtrField<std::string> field;
     field.Reserve(20);
     field.Reserve(30);
 
@@ -608,9 +608,9 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
   // TEST(RepeatedPtrField, ReserveLessThanExisting)
   {
-    google::protobuf::RepeatedPtrField<fun::string> field;
+    google::protobuf::RepeatedPtrField<std::string> field;
     field.Reserve(20);
-    const fun::string* const* previous_ptr = field.data();
+    const std::string* const* previous_ptr = field.data();
     field.Reserve(10);
 
     verify(previous_ptr == field.data());
@@ -622,8 +622,8 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
     // Check that a bug is fixed:  An earlier implementation of Reserve()
     // failed to copy pointers to allocated-but-cleared objects, possibly
     // leading to segfaults.
-    google::protobuf::RepeatedPtrField<fun::string> field;
-    fun::string* first = field.Add();
+    google::protobuf::RepeatedPtrField<std::string> field;
+    std::string* first = field.Add();
     field.RemoveLast();
 
     field.Reserve(20);
@@ -634,9 +634,9 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
   // the elements is retained and reused.
   // TEST(RepeatedPtrField, ClearedElements)
   {
-    google::protobuf::RepeatedPtrField<fun::string> field;
+    google::protobuf::RepeatedPtrField<std::string> field;
 
-    fun::string* original = field.Add();
+    std::string* original = field.Add();
     *original = "foo";
 
     verify(field.ClearedCount() == 0);
@@ -645,12 +645,12 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
     verify(original->empty());
     verify(field.ClearedCount() == 1);
 
-    verify(field.Add() == original);  // Should return same fun::string for reuse.
+    verify(field.Add() == original);  // Should return same string for reuse.
 
     verify(field.ReleaseLast() == original);  // We take ownership.
     verify(field.ClearedCount() == 0);
 
-    verify(field.Add() != original);  // Should NOT return the same fun::string.
+    verify(field.Add() != original);  // Should NOT return the same string.
     verify(field.ClearedCount() == 0);
 
     field.AddAllocated(original);  // Give ownership back.
@@ -675,7 +675,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
   // Test all code paths in AddAllocated().
   // TEST(RepeatedPtrField, AddAlocated)
   {
-    google::protobuf::RepeatedPtrField<fun::string> field;
+    google::protobuf::RepeatedPtrField<std::string> field;
     while (field.size() < field.Capacity()) {
       field.Add()->assign("filler");
     }
@@ -683,14 +683,14 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
     int index = field.size();
 
     // First branch:  Field is at capacity with no cleared objects.
-    fun::string* foo = new fun::string("foo");
+    std::string* foo = new std::string("foo");
     field.AddAllocated(foo);
     verify(index + 1 == field.size());
     verify(0 == field.ClearedCount());
     verify(foo == &field.Get(index));
 
     // Last branch:  Field is not at capacity and there are no cleared objects.
-    fun::string* bar = new fun::string("bar");
+    std::string* bar = new std::string("bar");
     field.AddAllocated(bar);
     ++index;
     verify(index + 1 == field.size());
@@ -699,7 +699,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
     // Third branch:  Field is not at capacity and there are no cleared objects.
     field.RemoveLast();
-    fun::string* baz = new fun::string("baz");
+    std::string* baz = new std::string("baz");
     field.AddAllocated(baz);
     verify(index + 1 == field.size());
     verify(1 == field.ClearedCount());
@@ -711,7 +711,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
     }
     field.RemoveLast();
     index = field.size();
-    fun::string* qux = new fun::string("qux");
+    std::string* qux = new std::string("qux");
     field.AddAllocated(qux);
     verify(index + 1 == field.size());
     // We should have discarded the cleared object.
@@ -721,7 +721,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
   // TEST(RepeatedPtrField, MergeFrom)
   {
-    google::protobuf::RepeatedPtrField<fun::string> source, destination;
+    google::protobuf::RepeatedPtrField<std::string> source, destination;
     source.Add()->assign("4");
     source.Add()->assign("5");
     destination.Add()->assign("1");
@@ -740,7 +740,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
   // TEST(RepeatedPtrField, CopyFrom)
   {
-    google::protobuf::RepeatedPtrField<fun::string> source, destination;
+    google::protobuf::RepeatedPtrField<std::string> source, destination;
     source.Add()->assign("4");
     source.Add()->assign("5");
     destination.Add()->assign("1");
@@ -756,7 +756,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
   // TEST(RepeatedPtrField, CopyFromSelf)
   {
-    google::protobuf::RepeatedPtrField<fun::string> me;
+    google::protobuf::RepeatedPtrField<std::string> me;
     me.Add()->assign("1");
     me.CopyFrom(me);
     verify(1 == me.size());
@@ -765,11 +765,11 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
   // TEST(RepeatedPtrField, CopyConstruct)
   {
-    google::protobuf::RepeatedPtrField<fun::string> source;
+    google::protobuf::RepeatedPtrField<std::string> source;
     source.Add()->assign("1");
     source.Add()->assign("2");
 
-    google::protobuf::RepeatedPtrField<fun::string> destination(source);
+    google::protobuf::RepeatedPtrField<std::string> destination(source);
 
     verify(2 == destination.size());
     verify("1" == destination.Get(0));
@@ -778,16 +778,16 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
   // TEST(RepeatedPtrField, IteratorConstruct_String)
   {
-    fun::vector<fun::string> values;
+    std::vector<std::string> values;
     values.push_back("1");
     values.push_back("2");
 
-    google::protobuf::RepeatedPtrField<fun::string> field(values.begin(), values.end());
+    google::protobuf::RepeatedPtrField<std::string> field(values.begin(), values.end());
     verify(values.size() == field.size());
     verify(values[0] == field.Get(0));
     verify(values[1] == field.Get(1));
 
-    google::protobuf::RepeatedPtrField<fun::string> other(field.begin(), field.end());
+    google::protobuf::RepeatedPtrField<std::string> other(field.begin(), field.end());
     verify(values.size() == other.size());
     verify(values[0] == other.Get(0));
     verify(values[1] == other.Get(1));
@@ -796,7 +796,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
   // TEST(RepeatedPtrField, IteratorConstruct_Proto)
   {
     typedef TestAllTypes::NestedMessage Nested;
-    fun::vector<Nested> values;
+    std::vector<Nested> values;
     values.push_back(Nested());
     values.back().set_bb(1);
     values.push_back(Nested());
@@ -815,7 +815,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
   // TEST(RepeatedPtrField, CopyAssign)
   {
-    google::protobuf::RepeatedPtrField<fun::string> source, destination;
+    google::protobuf::RepeatedPtrField<std::string> source, destination;
     source.Add()->assign("4");
     source.Add()->assign("5");
     destination.Add()->assign("1");
@@ -832,7 +832,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
   // TEST(RepeatedPtrField, SelfAssign)
   {
     // Verify that assignment to self does not destroy data.
-    google::protobuf::RepeatedPtrField<fun::string> source, *p;
+    google::protobuf::RepeatedPtrField<std::string> source, *p;
     p = &source;
     source.Add()->assign("7");
     source.Add()->assign("8");
@@ -846,12 +846,12 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
   // TEST(RepeatedPtrField, MutableDataIsMutable)
   {
-    google::protobuf::RepeatedPtrField<fun::string> field;
+    google::protobuf::RepeatedPtrField<std::string> field;
     *field.Add() = "1";
     verify("1" == field.Get(0));
     // The fact that this line compiles would be enough, but we'll check the
     // value anyway.
-    fun::string** data = field.mutable_data();
+    std::string** data = field.mutable_data();
     **data = "2";
     verify("2" == field.Get(0));
   }
@@ -864,12 +864,12 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
       for (int num = 0; num <= sz; ++num) {
         for (int start = 0; start < sz - num; ++start) {
           for (int extra = 0; extra < 4; ++extra) {
-            fun::vector<fun::string*> subject;
+            std::vector<std::string*> subject;
 
             // Create an array with "sz" elements and "extra" cleared elements.
-            google::protobuf::RepeatedPtrField<fun::string> field;
+            google::protobuf::RepeatedPtrField<std::string> field;
             for (int i = 0; i < sz + extra; ++i) {
-              subject.push_back(new fun::string());
+              subject.push_back(new std::string());
               field.AddAllocated(subject[i]);
             }
             verify(field.size() == sz + extra);
@@ -879,7 +879,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
             verify(field.ClearedCount() == extra);
 
             // Create a catcher array and call ExtractSubrange.
-            fun::string* catcher[10];
+            std::string* catcher[10];
             for (int i = 0; i < 10; ++i)
               catcher[i] = NULL;
             field.ExtractSubrange(start, num, catcher);
@@ -988,7 +988,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
   // -------------------------------------------------------------------
   // RepeatedPtrFieldIteratorTest
   {
-    google::protobuf::RepeatedPtrField<fun::string> proto_array_;
+    google::protobuf::RepeatedPtrField<std::string> proto_array_;
 
     // SetUp()
     {
@@ -999,15 +999,15 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
     // TEST_F(RepeatedPtrFieldIteratorTest, Convertible)
     {
-      google::protobuf::RepeatedPtrField<fun::string>::iterator iter = proto_array_.begin();
-      google::protobuf::RepeatedPtrField<fun::string>::const_iterator c_iter = iter;
-      google::protobuf::RepeatedPtrField<fun::string>::value_type value = *c_iter;
+      google::protobuf::RepeatedPtrField<std::string>::iterator iter = proto_array_.begin();
+      google::protobuf::RepeatedPtrField<std::string>::const_iterator c_iter = iter;
+      google::protobuf::RepeatedPtrField<std::string>::value_type value = *c_iter;
       verify("foo" == value);
     }
 
     // TEST_F(RepeatedPtrFieldIteratorTest, MutableIteration)
     {
-      google::protobuf::RepeatedPtrField<fun::string>::iterator iter = proto_array_.begin();
+      google::protobuf::RepeatedPtrField<std::string>::iterator iter = proto_array_.begin();
       verify("foo" == *iter);
       ++iter;
       verify("bar" == *(iter++));
@@ -1019,8 +1019,8 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
     // TEST_F(RepeatedPtrFieldIteratorTest, ConstIteration)
     {
-      const google::protobuf::RepeatedPtrField<fun::string>& const_proto_array = proto_array_;
-      google::protobuf::RepeatedPtrField<fun::string>::const_iterator iter = const_proto_array.begin();
+      const google::protobuf::RepeatedPtrField<std::string>& const_proto_array = proto_array_;
+      google::protobuf::RepeatedPtrField<std::string>::const_iterator iter = const_proto_array.begin();
       verify("foo" == *iter);
       ++iter;
       verify("bar" == *(iter++));
@@ -1032,7 +1032,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
     // TEST_F(RepeatedPtrFieldIteratorTest, MutableReverseIteration)
     {
-      google::protobuf::RepeatedPtrField<fun::string>::reverse_iterator iter = proto_array_.rbegin();
+      google::protobuf::RepeatedPtrField<std::string>::reverse_iterator iter = proto_array_.rbegin();
       verify("baz" == *iter);
       ++iter;
       verify("bar" == *(iter++));
@@ -1044,8 +1044,8 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
     // TEST_F(RepeatedPtrFieldIteratorTest, ConstReverseIteration)
     {
-      const google::protobuf::RepeatedPtrField<fun::string>& const_proto_array = proto_array_;
-      google::protobuf::RepeatedPtrField<fun::string>::const_reverse_iterator iter
+      const google::protobuf::RepeatedPtrField<std::string>& const_proto_array = proto_array_;
+      google::protobuf::RepeatedPtrField<std::string>::const_reverse_iterator iter
         = const_proto_array.rbegin();
       verify("baz" == *iter);
       ++iter;
@@ -1058,8 +1058,8 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
     // TEST_F(RepeatedPtrFieldIteratorTest, RandomAccess)
     {
-      google::protobuf::RepeatedPtrField<fun::string>::iterator iter = proto_array_.begin();
-      google::protobuf::RepeatedPtrField<fun::string>::iterator iter2 = iter;
+      google::protobuf::RepeatedPtrField<std::string>::iterator iter = proto_array_.begin();
+      google::protobuf::RepeatedPtrField<std::string>::iterator iter2 = iter;
       ++iter2;
       ++iter2;
       verify(iter + 2 == iter2);
@@ -1071,8 +1071,8 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
     // TEST_F(RepeatedPtrFieldIteratorTest, Comparable)
     {
-      google::protobuf::RepeatedPtrField<fun::string>::const_iterator iter = proto_array_.begin();
-      google::protobuf::RepeatedPtrField<fun::string>::const_iterator iter2 = iter + 1;
+      google::protobuf::RepeatedPtrField<std::string>::const_iterator iter = proto_array_.begin();
+      google::protobuf::RepeatedPtrField<std::string>::const_iterator iter2 = iter + 1;
       verify(iter == iter);
       verify(iter != iter2);
       verify(iter < iter2);
@@ -1086,7 +1086,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
     // Uninitialized iterator does not point to any of the RepeatedPtrField.
     // TEST_F(RepeatedPtrFieldIteratorTest, UninitializedIterator)
     {
-      google::protobuf::RepeatedPtrField<fun::string>::iterator iter;
+      google::protobuf::RepeatedPtrField<std::string>::iterator iter;
       verify(iter != proto_array_.begin());
       verify(iter != proto_array_.begin() + 1);
       verify(iter != proto_array_.begin() + 2);
@@ -1105,8 +1105,8 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
       proto_array_.Add()->assign("x");
       proto_array_.Add()->assign("y");
 
-      fun::string v = "f";
-      google::protobuf::RepeatedPtrField <fun::string> ::const_iterator it =
+      std::string v = "f";
+      google::protobuf::RepeatedPtrField <std::string> ::const_iterator it =
         lower_bound(proto_array_.begin(), proto_array_.end(), v);
 
       verify(*it == "n");
@@ -1115,7 +1115,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
     // TEST_F(RepeatedPtrFieldIteratorTest, Mutation)
     {
-      google::protobuf::RepeatedPtrField<fun::string>::iterator iter = proto_array_.begin();
+      google::protobuf::RepeatedPtrField<std::string>::iterator iter = proto_array_.begin();
       *iter = "qux";
       verify("qux" == proto_array_.Get(0));
     }
@@ -1124,8 +1124,8 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
   // -------------------------------------------------------------------
   // RepeatedPtrFieldPtrsIteratorTest
   {
-    google::protobuf::RepeatedPtrField<fun::string> proto_array_;
-    const google::protobuf::RepeatedPtrField<fun::string>* const_proto_array_;
+    google::protobuf::RepeatedPtrField<std::string> proto_array_;
+    const google::protobuf::RepeatedPtrField<std::string>* const_proto_array_;
 
     auto SetUp = [&proto_array_, &const_proto_array_]()
     {
@@ -1140,7 +1140,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
     // TEST_F(RepeatedPtrFieldPtrsIteratorTest, ConvertiblePtr)
     SetUp();
     {
-      google::protobuf::RepeatedPtrField<fun::string>::pointer_iterator iter =
+      google::protobuf::RepeatedPtrField<std::string>::pointer_iterator iter =
         proto_array_.pointer_begin();
       static_cast<void>(iter);
     }
@@ -1148,7 +1148,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
     // TEST_F(RepeatedPtrFieldPtrsIteratorTest, ConvertibleConstPtr)
     SetUp();
     {
-      google::protobuf::RepeatedPtrField<fun::string>::const_pointer_iterator iter =
+      google::protobuf::RepeatedPtrField<std::string>::const_pointer_iterator iter =
         const_proto_array_->pointer_begin();
       static_cast<void>(iter);
     }
@@ -1156,7 +1156,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
     // TEST_F(RepeatedPtrFieldPtrsIteratorTest, MutablePtrIteration)
     SetUp();
     {
-      google::protobuf::RepeatedPtrField<fun::string>::pointer_iterator iter =
+      google::protobuf::RepeatedPtrField<std::string>::pointer_iterator iter =
         proto_array_.pointer_begin();
       verify("foo" == **iter);
       ++iter;
@@ -1170,7 +1170,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
     // TEST_F(RepeatedPtrFieldPtrsIteratorTest, MutableConstPtrIteration)
     SetUp();
     {
-      google::protobuf::RepeatedPtrField<fun::string>::const_pointer_iterator iter =
+      google::protobuf::RepeatedPtrField<std::string>::const_pointer_iterator iter =
         const_proto_array_->pointer_begin();
       verify("foo" == **iter);
       ++iter;
@@ -1184,9 +1184,9 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
     // TEST_F(RepeatedPtrFieldPtrsIteratorTest, RandomPtrAccess)
     SetUp();
     {
-      google::protobuf::RepeatedPtrField<fun::string>::pointer_iterator iter =
+      google::protobuf::RepeatedPtrField<std::string>::pointer_iterator iter =
         proto_array_.pointer_begin();
-      google::protobuf::RepeatedPtrField<fun::string>::pointer_iterator iter2 = iter;
+      google::protobuf::RepeatedPtrField<std::string>::pointer_iterator iter2 = iter;
       ++iter2;
       ++iter2;
       verify(iter + 2 == iter2);
@@ -1199,9 +1199,9 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
     // TEST_F(RepeatedPtrFieldPtrsIteratorTest, RandomConstPtrAccess)
     SetUp();
     {
-      google::protobuf::RepeatedPtrField<fun::string>::const_pointer_iterator iter =
+      google::protobuf::RepeatedPtrField<std::string>::const_pointer_iterator iter =
         const_proto_array_->pointer_begin();
-      google::protobuf::RepeatedPtrField<fun::string>::const_pointer_iterator iter2 = iter;
+      google::protobuf::RepeatedPtrField<std::string>::const_pointer_iterator iter2 = iter;
       ++iter2;
       ++iter2;
       verify(iter + 2 == iter2);
@@ -1214,9 +1214,9 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
     // TEST_F(RepeatedPtrFieldPtrsIteratorTest, ComparablePtr)
     SetUp();
     {
-      google::protobuf::RepeatedPtrField<fun::string>::pointer_iterator iter =
+      google::protobuf::RepeatedPtrField<std::string>::pointer_iterator iter =
         proto_array_.pointer_begin();
-      google::protobuf::RepeatedPtrField<fun::string>::pointer_iterator iter2 = iter + 1;
+      google::protobuf::RepeatedPtrField<std::string>::pointer_iterator iter2 = iter + 1;
       verify(iter == iter);
       verify(iter != iter2);
       verify(iter < iter2);
@@ -1230,9 +1230,9 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
     // TEST_F(RepeatedPtrFieldPtrsIteratorTest, ComparableConstPtr)
     SetUp();
     {
-      google::protobuf::RepeatedPtrField<fun::string>::const_pointer_iterator iter =
+      google::protobuf::RepeatedPtrField<std::string>::const_pointer_iterator iter =
         const_proto_array_->pointer_begin();
-      google::protobuf::RepeatedPtrField<fun::string>::const_pointer_iterator iter2 = iter + 1;
+      google::protobuf::RepeatedPtrField<std::string>::const_pointer_iterator iter2 = iter + 1;
       verify(iter == iter);
       verify(iter != iter2);
       verify(iter < iter2);
@@ -1248,7 +1248,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
     // TEST_F(RepeatedPtrFieldPtrsIteratorTest, UninitializedPtrIterator)
     SetUp();
     {
-      google::protobuf::RepeatedPtrField<fun::string>::pointer_iterator iter;
+      google::protobuf::RepeatedPtrField<std::string>::pointer_iterator iter;
       verify(iter != proto_array_.pointer_begin());
       verify(iter != proto_array_.pointer_begin() + 1);
       verify(iter != proto_array_.pointer_begin() + 2);
@@ -1259,7 +1259,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
     // TEST_F(RepeatedPtrFieldPtrsIteratorTest, UninitializedConstPtrIterator)
     SetUp();
     {
-      google::protobuf::RepeatedPtrField<fun::string>::const_pointer_iterator iter;
+      google::protobuf::RepeatedPtrField<std::string>::const_pointer_iterator iter;
       verify(iter != const_proto_array_->pointer_begin());
       verify(iter != const_proto_array_->pointer_begin() + 1);
       verify(iter != const_proto_array_->pointer_begin() + 2);
@@ -1269,13 +1269,13 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
     // This comparison functor is required by the tests for RepeatedPtrOverPtrs.
     // They operate on strings and need to compare strings as strings in
-    // any stl algorithm, even though the iterator returns a pointer to a fun::string
-    // - i.e. *iter has type fun::string*.
+    // any stl algorithm, even though the iterator returns a pointer to a string
+    // - i.e. *iter has type string*.
     struct StringLessThan {
-      bool operator()(const fun::string* z, const fun::string& y) {
+      bool operator()(const std::string* z, const std::string& y) {
         return *z < y;
       }
-      bool operator()(const fun::string* z, const fun::string* y) const { return *z < *y; }
+      bool operator()(const std::string* z, const std::string* y) const { return *z < *y; }
     };
 
     // TEST_F(RepeatedPtrFieldPtrsIteratorTest, PtrSTLAlgorithms_lower_bound)
@@ -1291,8 +1291,8 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
       proto_array_.Add()->assign("y");
 
       {
-        fun::string v = "f";
-        google::protobuf::RepeatedPtrField<fun::string>::pointer_iterator it =
+        std::string v = "f";
+        google::protobuf::RepeatedPtrField<std::string>::pointer_iterator it =
           lower_bound(proto_array_.pointer_begin(), proto_array_.pointer_end(),
             &v, StringLessThan());
 
@@ -1302,8 +1302,8 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
         verify(it == proto_array_.pointer_begin() + 3);
       }
       {
-        fun::string v = "f";
-        google::protobuf::RepeatedPtrField<fun::string>::const_pointer_iterator it =
+        std::string v = "f";
+        google::protobuf::RepeatedPtrField<std::string>::const_pointer_iterator it =
           lower_bound(const_proto_array_->pointer_begin(),
             const_proto_array_->pointer_end(),
             &v, StringLessThan());
@@ -1318,7 +1318,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
     // TEST_F(RepeatedPtrFieldPtrsIteratorTest, PtrMutation)
     SetUp();
     {
-      google::protobuf::RepeatedPtrField<fun::string>::pointer_iterator iter =
+      google::protobuf::RepeatedPtrField<std::string>::pointer_iterator iter =
         proto_array_.pointer_begin();
       **iter = "qux";
       verify("qux" == proto_array_.Get(0));
@@ -1327,10 +1327,10 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
       verify("baz" == proto_array_.Get(2));
       ++iter;
       delete *iter;
-      *iter = new fun::string("a");
+      *iter = new std::string("a");
       ++iter;
       delete *iter;
-      *iter = new fun::string("b");
+      *iter = new std::string("b");
       verify("a" == proto_array_.Get(1));
       verify("b" == proto_array_.Get(2));
     }
@@ -1368,10 +1368,10 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
   {
     std::list<double> halves;
     std::list<int> fibonacci;
-    fun::vector<fun::string> words;
+    std::vector<std::string> words;
     typedef TestAllTypes::NestedMessage Nested;
     Nested nesteds[2];
-    fun::vector<Nested*> nested_ptrs;
+    std::vector<Nested*> nested_ptrs;
     TestAllTypes protobuffer;
 
     // SetUp()
@@ -1478,7 +1478,7 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
     // TEST_F(RepeatedFieldInsertionIteratorsTest, AllocatedRepeatedPtrFieldWithStringIntData)
     {
-      fun::vector<Nested*> data;
+      std::vector<Nested*> data;
       TestAllTypes goldenproto;
       for (int i = 0; i < 10; ++i) {
         Nested* new_data = new Nested;
@@ -1497,10 +1497,10 @@ bool FFunapiLibProtobufRepeatedFieldTest::RunTest(const FString& Parameters)
 
     // TEST_F(RepeatedFieldInsertionIteratorsTest, AllocatedRepeatedPtrFieldWithString)
     {
-      fun::vector<fun::string*> data;
+      std::vector<std::string*> data;
       TestAllTypes goldenproto;
       for (int i = 0; i < 10; ++i) {
-        fun::string* new_data = new fun::string;
+        std::string* new_data = new std::string;
         *new_data = "name-" + google::protobuf::SimpleItoa(i);
         data.push_back(new_data);
 

@@ -65,22 +65,22 @@ LIBPROTOBUF_EXPORT double Infinity();
 LIBPROTOBUF_EXPORT double NaN();
 
 // TODO(jieluo): Change to template. We have tried to use template,
-// but it causes net/rpc/python:rpcutil_test fail (the empty fun::string will
+// but it causes net/rpc/python:rpcutil_test fail (the empty string will
 // init twice). It may related to swig. Change to template after we
 // found the solution.
 
-// Default empty fun::string object. Don't use the pointer directly. Instead, call
+// Default empty string object. Don't use the pointer directly. Instead, call
 // GetEmptyString() to get the reference.
-LIBPROTOBUF_EXPORT extern const ::fun::string* empty_string_;
+LIBPROTOBUF_EXPORT extern const ::std::string* empty_string_;
 LIBPROTOBUF_EXPORT extern ProtobufOnceType empty_string_once_init_;
 LIBPROTOBUF_EXPORT void InitEmptyString();
 
 
-LIBPROTOBUF_EXPORT inline const ::fun::string& GetEmptyStringAlreadyInited() {
+LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyStringAlreadyInited() {
   assert(empty_string_ != NULL);
   return *empty_string_;
 }
-LIBPROTOBUF_EXPORT inline const ::fun::string& GetEmptyString() {
+LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyString() {
   ::google::protobuf::GoogleOnceInit(&empty_string_once_init_, &InitEmptyString);
   return GetEmptyStringAlreadyInited();
 }
@@ -91,7 +91,7 @@ LIBPROTOBUF_EXPORT inline const ::fun::string& GetEmptyString() {
 // TODO(jasonh): The various callers get this declaration from a variety of
 // places: probably in most cases repeated_field.h. Clean these up so they all
 // get the declaration from this file.
-LIBPROTOBUF_EXPORT int StringSpaceUsedExcludingSelf(const fun::string& str);
+LIBPROTOBUF_EXPORT int StringSpaceUsedExcludingSelf(const string& str);
 
 
 // True if IsInitialized() is true for all elements of t.  Type is expected

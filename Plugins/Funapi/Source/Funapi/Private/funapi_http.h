@@ -15,41 +15,41 @@ class FunapiHttpImpl;
 class FunapiHttp : public std::enable_shared_from_this<FunapiHttp> {
  public:
   typedef std::function<void(const int,
-                             const fun::string&)> ErrorHandler;
+                             const std::string&)> ErrorHandler;
 
-  typedef std::function<void(const fun::vector<fun::string>&,
-                             const fun::vector<uint8_t>&)> CompletionHandler;
+  typedef std::function<void(const std::vector<std::string>&,
+                             const std::vector<uint8_t>&)> CompletionHandler;
 
-  typedef std::function<void(const fun::string&,
-                             const fun::string&,
+  typedef std::function<void(const std::string&,
+                             const std::string&,
                              const uint64_t)> ProgressHandler;
 
-  typedef std::function<void(const fun::string&,
-                             const fun::string&,
-                             const fun::vector<fun::string>&)> DownloadCompletionHandler;
+  typedef std::function<void(const std::string&,
+                             const std::string&,
+                             const std::vector<std::string>&)> DownloadCompletionHandler;
 
-  typedef fun::map<fun::string, fun::string> HeaderFields;
+  typedef std::map<std::string, std::string> HeaderFields;
 
   FunapiHttp();
-  FunapiHttp(const fun::string &path);
+  FunapiHttp(const std::string &path);
   virtual ~FunapiHttp();
 
   static std::shared_ptr<FunapiHttp> Create();
-  static std::shared_ptr<FunapiHttp> Create(const fun::string &path);
+  static std::shared_ptr<FunapiHttp> Create(const std::string &path);
 
-  void PostRequest(const fun::string &url,
+  void PostRequest(const std::string &url,
                    const HeaderFields &header,
-                   const fun::vector<uint8_t> &body,
+                   const std::vector<uint8_t> &body,
                    const ErrorHandler &error_handler,
                    const CompletionHandler &completion_handler);
 
-  void GetRequest(const fun::string &url,
+  void GetRequest(const std::string &url,
                   const HeaderFields &header,
                   const ErrorHandler &error_handler,
                   const CompletionHandler &completion_handler);
 
-  void DownloadRequest(const fun::string &url,
-                       const fun::string &path,
+  void DownloadRequest(const std::string &url,
+                       const std::string &path,
                        const HeaderFields &header,
                        const ErrorHandler &error_handler,
                        const ProgressHandler &progress_handler,

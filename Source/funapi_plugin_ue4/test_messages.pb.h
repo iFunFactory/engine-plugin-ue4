@@ -90,17 +90,17 @@ class PbufEchoMessage : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // required fun::string msg = 1;
+  // required string msg = 1;
   inline bool has_msg() const;
   inline void clear_msg();
   static const int kMsgFieldNumber = 1;
-  inline const ::fun::string& msg() const;
-  inline void set_msg(const ::fun::string& value);
+  inline const ::std::string& msg() const;
+  inline void set_msg(const ::std::string& value);
   inline void set_msg(const char* value);
   inline void set_msg(const char* value, size_t size);
-  inline ::fun::string* mutable_msg();
-  inline ::fun::string* release_msg();
-  inline void set_allocated_msg(::fun::string* msg);
+  inline ::std::string* mutable_msg();
+  inline ::std::string* release_msg();
+  inline void set_allocated_msg(::std::string* msg);
 
   // @@protoc_insertion_point(class_scope:PbufEchoMessage)
  private:
@@ -111,7 +111,7 @@ class PbufEchoMessage : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::fun::string* msg_;
+  ::std::string* msg_;
   friend void  protobuf_AddDesc_test_5fmessages_2eproto();
   friend void protobuf_AssignDesc_test_5fmessages_2eproto();
   friend void protobuf_ShutdownFile_test_5fmessages_2eproto();
@@ -174,17 +174,17 @@ class PbufAnotherMessage : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional fun::string msg = 1;
+  // optional string msg = 1;
   inline bool has_msg() const;
   inline void clear_msg();
   static const int kMsgFieldNumber = 1;
-  inline const ::fun::string& msg() const;
-  inline void set_msg(const ::fun::string& value);
+  inline const ::std::string& msg() const;
+  inline void set_msg(const ::std::string& value);
   inline void set_msg(const char* value);
   inline void set_msg(const char* value, size_t size);
-  inline ::fun::string* mutable_msg();
-  inline ::fun::string* release_msg();
-  inline void set_allocated_msg(::fun::string* msg);
+  inline ::std::string* mutable_msg();
+  inline ::std::string* release_msg();
+  inline void set_allocated_msg(::std::string* msg);
 
   // @@protoc_insertion_point(class_scope:PbufAnotherMessage)
  private:
@@ -195,7 +195,7 @@ class PbufAnotherMessage : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::fun::string* msg_;
+  ::std::string* msg_;
   friend void  protobuf_AddDesc_test_5fmessages_2eproto();
   friend void protobuf_AssignDesc_test_5fmessages_2eproto();
   friend void protobuf_ShutdownFile_test_5fmessages_2eproto();
@@ -218,7 +218,7 @@ extern ::google::protobuf::internal::ExtensionIdentifier< ::FunMessage,
 
 // PbufEchoMessage
 
-// required fun::string msg = 1;
+// required string msg = 1;
 inline bool PbufEchoMessage::has_msg() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -234,14 +234,14 @@ inline void PbufEchoMessage::clear_msg() {
   }
   clear_has_msg();
 }
-inline const ::fun::string& PbufEchoMessage::msg() const {
+inline const ::std::string& PbufEchoMessage::msg() const {
   // @@protoc_insertion_point(field_get:PbufEchoMessage.msg)
   return *msg_;
 }
-inline void PbufEchoMessage::set_msg(const ::fun::string& value) {
+inline void PbufEchoMessage::set_msg(const ::std::string& value) {
   set_has_msg();
   if (msg_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    msg_ = new ::fun::string;
+    msg_ = new ::std::string;
   }
   msg_->assign(value);
   // @@protoc_insertion_point(field_set:PbufEchoMessage.msg)
@@ -249,7 +249,7 @@ inline void PbufEchoMessage::set_msg(const ::fun::string& value) {
 inline void PbufEchoMessage::set_msg(const char* value) {
   set_has_msg();
   if (msg_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    msg_ = new ::fun::string;
+    msg_ = new ::std::string;
   }
   msg_->assign(value);
   // @@protoc_insertion_point(field_set_char:PbufEchoMessage.msg)
@@ -257,30 +257,30 @@ inline void PbufEchoMessage::set_msg(const char* value) {
 inline void PbufEchoMessage::set_msg(const char* value, size_t size) {
   set_has_msg();
   if (msg_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    msg_ = new ::fun::string;
+    msg_ = new ::std::string;
   }
   msg_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:PbufEchoMessage.msg)
 }
-inline ::fun::string* PbufEchoMessage::mutable_msg() {
+inline ::std::string* PbufEchoMessage::mutable_msg() {
   set_has_msg();
   if (msg_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    msg_ = new ::fun::string;
+    msg_ = new ::std::string;
   }
   // @@protoc_insertion_point(field_mutable:PbufEchoMessage.msg)
   return msg_;
 }
-inline ::fun::string* PbufEchoMessage::release_msg() {
+inline ::std::string* PbufEchoMessage::release_msg() {
   clear_has_msg();
   if (msg_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::fun::string* temp = msg_;
-    msg_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::std::string* temp = msg_;
+    msg_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void PbufEchoMessage::set_allocated_msg(::fun::string* msg) {
+inline void PbufEchoMessage::set_allocated_msg(::std::string* msg) {
   if (msg_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete msg_;
   }
@@ -289,7 +289,7 @@ inline void PbufEchoMessage::set_allocated_msg(::fun::string* msg) {
     msg_ = msg;
   } else {
     clear_has_msg();
-    msg_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    msg_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:PbufEchoMessage.msg)
 }
@@ -298,7 +298,7 @@ inline void PbufEchoMessage::set_allocated_msg(::fun::string* msg) {
 
 // PbufAnotherMessage
 
-// optional fun::string msg = 1;
+// optional string msg = 1;
 inline bool PbufAnotherMessage::has_msg() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -314,14 +314,14 @@ inline void PbufAnotherMessage::clear_msg() {
   }
   clear_has_msg();
 }
-inline const ::fun::string& PbufAnotherMessage::msg() const {
+inline const ::std::string& PbufAnotherMessage::msg() const {
   // @@protoc_insertion_point(field_get:PbufAnotherMessage.msg)
   return *msg_;
 }
-inline void PbufAnotherMessage::set_msg(const ::fun::string& value) {
+inline void PbufAnotherMessage::set_msg(const ::std::string& value) {
   set_has_msg();
   if (msg_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    msg_ = new ::fun::string;
+    msg_ = new ::std::string;
   }
   msg_->assign(value);
   // @@protoc_insertion_point(field_set:PbufAnotherMessage.msg)
@@ -329,7 +329,7 @@ inline void PbufAnotherMessage::set_msg(const ::fun::string& value) {
 inline void PbufAnotherMessage::set_msg(const char* value) {
   set_has_msg();
   if (msg_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    msg_ = new ::fun::string;
+    msg_ = new ::std::string;
   }
   msg_->assign(value);
   // @@protoc_insertion_point(field_set_char:PbufAnotherMessage.msg)
@@ -337,30 +337,30 @@ inline void PbufAnotherMessage::set_msg(const char* value) {
 inline void PbufAnotherMessage::set_msg(const char* value, size_t size) {
   set_has_msg();
   if (msg_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    msg_ = new ::fun::string;
+    msg_ = new ::std::string;
   }
   msg_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:PbufAnotherMessage.msg)
 }
-inline ::fun::string* PbufAnotherMessage::mutable_msg() {
+inline ::std::string* PbufAnotherMessage::mutable_msg() {
   set_has_msg();
   if (msg_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    msg_ = new ::fun::string;
+    msg_ = new ::std::string;
   }
   // @@protoc_insertion_point(field_mutable:PbufAnotherMessage.msg)
   return msg_;
 }
-inline ::fun::string* PbufAnotherMessage::release_msg() {
+inline ::std::string* PbufAnotherMessage::release_msg() {
   clear_has_msg();
   if (msg_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::fun::string* temp = msg_;
-    msg_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::std::string* temp = msg_;
+    msg_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void PbufAnotherMessage::set_allocated_msg(::fun::string* msg) {
+inline void PbufAnotherMessage::set_allocated_msg(::std::string* msg) {
   if (msg_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete msg_;
   }
@@ -369,7 +369,7 @@ inline void PbufAnotherMessage::set_allocated_msg(::fun::string* msg) {
     msg_ = msg;
   } else {
     clear_has_msg();
-    msg_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    msg_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:PbufAnotherMessage.msg)
 }

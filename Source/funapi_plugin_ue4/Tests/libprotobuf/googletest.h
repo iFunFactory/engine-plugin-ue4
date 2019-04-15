@@ -47,19 +47,19 @@ namespace google {
 namespace protobuf {
 
 // When running unittests, get the directory containing the source code.
-fun::string TestSourceDir();
+string TestSourceDir();
 
 // When running unittests, get a directory where temporary files may be
 // placed.
-fun::string TestTempDir();
+string TestTempDir();
 
 // Capture all text written to stdout or stderr.
 void CaptureTestStdout();
 void CaptureTestStderr();
 
 // Stop capturing stdout or stderr and return the text captured.
-fun::string GetCapturedTestStdout();
-fun::string GetCapturedTestStderr();
+string GetCapturedTestStdout();
+string GetCapturedTestStderr();
 
 // For use with ScopedMemoryLog::GetMessages().  Inside Google the LogLevel
 // constants don't have the LOGLEVEL_ prefix, so the code that used
@@ -72,7 +72,7 @@ static const LogLevel WARNING = LOGLEVEL_WARNING;
 //   {
 //     ScopedMemoryLog log;  // constructor registers object as a log sink
 //     SomeRoutineThatMayLogMessages();
-//     const fun::vector<fun::string>& warnings = log.GetMessages(ERROR);
+//     const vector<string>& warnings = log.GetMessages(ERROR);
 //   }  // destructor unregisters object as a log sink
 // This is a dummy implementation which covers only what is used by protocol
 // buffer unit tests.
@@ -82,14 +82,14 @@ class ScopedMemoryLog {
   virtual ~ScopedMemoryLog();
 
   // Fetches all messages with the given severity level.
-  const fun::vector<fun::string>& GetMessages(LogLevel error);
+  const vector<string>& GetMessages(LogLevel error);
 
  private:
-  fun::map<LogLevel, fun::vector<fun::string> > messages_;
+  map<LogLevel, vector<string> > messages_;
   LogHandler* old_handler_;
 
   static void HandleLog(LogLevel level, const char* filename, int line,
-                        const fun::string& message);
+                        const string& message);
 
   static ScopedMemoryLog* active_log_;
 

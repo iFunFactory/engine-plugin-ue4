@@ -82,7 +82,7 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
   // Remove all fields and deallocate internal data objects
   void ClearAndFreeMemory();
 
-  // Is this fun::set empty?
+  // Is this set empty?
   inline bool empty() const;
 
   // Merge the contents of some other UnknownFieldSet with this one.
@@ -101,10 +101,10 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
 
   // Returns the number of fields present in the UnknownFieldSet.
   inline int field_count() const;
-  // Get a field in the fun::set, where 0 <= index < field_count().  The fields
+  // Get a field in the set, where 0 <= index < field_count().  The fields
   // appear in the order in which they were added.
   inline const UnknownField& field(int index) const;
-  // Get a mutable pointer to a field in the fun::set, where
+  // Get a mutable pointer to a field in the set, where
   // 0 <= index < field_count().  The fields appear in the order in which
   // they were added.
   inline UnknownField* mutable_field(int index);
@@ -114,11 +114,11 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
   void AddVarint(int number, uint64 value);
   void AddFixed32(int number, uint32 value);
   void AddFixed64(int number, uint64 value);
-  void AddLengthDelimited(int number, const fun::string& value);
-  fun::string* AddLengthDelimited(int number);
+  void AddLengthDelimited(int number, const string& value);
+  string* AddLengthDelimited(int number);
   UnknownFieldSet* AddGroup(int number);
 
-  // Adds an unknown field from another set
+  // Adds an unknown field from another set.
   void AddField(const UnknownField& field);
 
   // Delete fields with indices in the range [start .. start+num-1].
@@ -137,7 +137,7 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
   bool ParseFromCodedStream(io::CodedInputStream* input);
   bool ParseFromZeroCopyStream(io::ZeroCopyInputStream* input);
   bool ParseFromArray(const void* data, int size);
-  inline bool ParseFromString(const fun::string& data) {
+  inline bool ParseFromString(const string& data) {
     return ParseFromArray(data.data(), static_cast<int>(data.size()));
   }
 
@@ -145,7 +145,7 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
 
   void ClearFallback();
 
-  fun::vector<UnknownField>* fields_;
+  vector<UnknownField>* fields_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(UnknownFieldSet);
 };
@@ -173,14 +173,14 @@ class LIBPROTOBUF_EXPORT UnknownField {
   inline uint64 varint() const;
   inline uint32 fixed32() const;
   inline uint64 fixed64() const;
-  inline const fun::string& length_delimited() const;
+  inline const string& length_delimited() const;
   inline const UnknownFieldSet& group() const;
 
   inline void set_varint(uint64 value);
   inline void set_fixed32(uint32 value);
   inline void set_fixed64(uint64 value);
-  inline void set_length_delimited(const fun::string& value);
-  inline fun::string* mutable_length_delimited();
+  inline void set_length_delimited(const string& value);
+  inline string* mutable_length_delimited();
   inline UnknownFieldSet* mutable_group();
 
   // Serialization API.
@@ -212,7 +212,7 @@ class LIBPROTOBUF_EXPORT UnknownField {
     uint32 fixed32_;
     uint64 fixed64_;
     mutable union {
-      fun::string* string_value_;
+      string* string_value_;
     } length_delimited_;
     UnknownFieldSet* group_;
   };
@@ -246,7 +246,7 @@ inline UnknownField* UnknownFieldSet::mutable_field(int index) {
 }
 
 inline void UnknownFieldSet::AddLengthDelimited(
-    int number, const fun::string& value) {
+    int number, const string& value) {
   AddLengthDelimited(number)->assign(value);
 }
 
@@ -268,7 +268,7 @@ inline uint64 UnknownField::fixed64() const {
   assert(type() == TYPE_FIXED64);
   return fixed64_;
 }
-inline const fun::string& UnknownField::length_delimited() const {
+inline const string& UnknownField::length_delimited() const {
   assert(type() == TYPE_LENGTH_DELIMITED);
   return *length_delimited_.string_value_;
 }
@@ -289,11 +289,11 @@ inline void UnknownField::set_fixed64(uint64 value) {
   assert(type() == TYPE_FIXED64);
   fixed64_ = value;
 }
-inline void UnknownField::set_length_delimited(const fun::string& value) {
+inline void UnknownField::set_length_delimited(const string& value) {
   assert(type() == TYPE_LENGTH_DELIMITED);
   length_delimited_.string_value_->assign(value);
 }
-inline fun::string* UnknownField::mutable_length_delimited() {
+inline string* UnknownField::mutable_length_delimited() {
   assert(type() == TYPE_LENGTH_DELIMITED);
   return length_delimited_.string_value_;
 }

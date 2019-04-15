@@ -71,7 +71,7 @@ enum class FUNAPI_API TransportEventType : int
 };
 
 
-extern FUNAPI_API fun::string TransportProtocolToString(TransportProtocol protocol);
+extern FUNAPI_API std::string TransportProtocolToString(TransportProtocol protocol);
 
 
 class FunapiSessionOption;
@@ -82,8 +82,8 @@ class FUNAPI_API FunapiSession : public std::enable_shared_from_this<FunapiSessi
 public:
     typedef std::function<void(const std::shared_ptr<FunapiSession>&,
                                const TransportProtocol,
-                               const fun::string&,
-                               const fun::string&)> JsonRecvHandler;
+                               const std::string&,
+                               const std::string&)> JsonRecvHandler;
 
     typedef std::function<void(const std::shared_ptr<FunapiSession>&,
                                const TransportProtocol,
@@ -92,7 +92,7 @@ public:
     typedef std::function<void(const std::shared_ptr<FunapiSession>&,
                                const TransportProtocol,
                                const SessionEventType,
-                               const fun::string&,
+                               const std::string&,
                                const std::shared_ptr<FunapiError>&)> SessionEventHandler;
 
     typedef std::function<void(const std::shared_ptr<FunapiSession>&,
@@ -101,17 +101,17 @@ public:
                                const std::shared_ptr<FunapiError>&)> TransportEventHandler;
 
     typedef std::function<void(const std::shared_ptr<FunapiSession>&,
-                               const fun::string&)> RecvTimeoutHandler;
+                               const std::string&)> RecvTimeoutHandler;
 
     typedef std::function<void(const std::shared_ptr<FunapiSession>&,
                                const int32_t)> RecvTimeoutIntHandler;
 
     typedef std::function<std::shared_ptr<FunapiTransportOption>(const TransportProtocol,
-                                                                 const fun::string&)> TransportOptionHandler;
+                                                                 const std::string&)> TransportOptionHandler;
 
     typedef std::function<void(const TransportProtocol,
-                               const fun::vector<fun::string>&, const fun::vector<fun::string>&,
-                               const fun::deque<std::shared_ptr<FunapiUnsentMessage>>&)> RedirectQueueHandler;
+                               const std::vector<std::string>&, const std::vector<std::string>&,
+                               const std::deque<std::shared_ptr<FunapiUnsentMessage>>&)> RedirectQueueHandler;
 
     FunapiSession() = delete;
     FunapiSession(const char* hostname_or_ip, std::shared_ptr<FunapiSessionOption> option);
@@ -131,8 +131,8 @@ public:
     void Close(const TransportProtocol protocol);
     void Close();
 
-    void SendMessage(const fun::string &msg_type,
-                     const fun::string &json_string,
+    void SendMessage(const std::string &msg_type,
+                     const std::string &json_string,
                      const TransportProtocol protocol = TransportProtocol::kDefault,
                      const EncryptionType encryption_type = EncryptionType::kDefaultEncryption);
 
@@ -172,8 +172,8 @@ public:
 
     void RemoveAllCallbacks();
 
-    void SetRecvTimeout(const fun::string &msg_type, const int seconds);
-    void EraseRecvTimeout(const fun::string &msg_type);
+    void SetRecvTimeout(const std::string &msg_type, const int seconds);
+    void EraseRecvTimeout(const std::string &msg_type);
 
     void SetRecvTimeout(const int32_t msg_type, const int seconds);
     void EraseRecvTimeout(const int32_t msg_type);
@@ -191,7 +191,7 @@ public:
     FunapiUnsentMessage() = default;
     virtual ~ FunapiUnsentMessage() = default;
 
-    virtual const fun::string& GetMsgType() = 0;
+    virtual const std::string& GetMsgType() = 0;
     virtual int32_t GetMsgType2() = 0;
 
     virtual void SetDiscard(const bool discard) = 0;

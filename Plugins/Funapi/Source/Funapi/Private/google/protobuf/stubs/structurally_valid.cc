@@ -8,8 +8,8 @@ namespace protobuf {
 namespace internal {
 
 // These four-byte entries compactly encode how many bytes 0..255 to delete
-// in making a fun::string replacement, how many bytes to add 0..255, and the offset
-// 0..64k-1 of the replacement fun::string in remap_string.
+// in making a string replacement, how many bytes to add 0..255, and the offset
+// 0..64k-1 of the replacement string in remap_string.
 struct RemapEntry {
   uint8 delete_bytes;
   uint8 add_bytes;
@@ -286,7 +286,7 @@ X__, X__, X__, X__, X__, X__, X__, X__,  X__, X__, X__, X__, X__, X__, X__, X__,
 static const RemapEntry utf8acceptnonsurrogates_remap_base[] = {
 {0, 0, 0} };
 
-// Remap fun::string[0]
+// Remap string[0]
 static const unsigned char utf8acceptnonsurrogates_remap_string[] = {
 0 };
 
@@ -350,7 +350,7 @@ static inline bool InStateZero(const UTF8ScanObj* st, const uint8* Tbl) {
   return (static_cast<uint32>(Tbl - Tbl0) < st->state0_size);
 }
 
-// Scan a UTF-8 fun::string based on state table.
+// Scan a UTF-8 string based on state table.
 // Always scan complete UTF-8 characters
 // Set number of bytes scanned. Return reason for exiting
 int UTF8GenericScan(const UTF8ScanObj* st,

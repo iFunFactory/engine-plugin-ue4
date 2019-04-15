@@ -129,7 +129,7 @@ class LIBPROTOBUF_EXPORT GzipOutputStream : public ZeroCopyOutputStream {
     // compression.  Defaults to Z_DEFAULT_COMPRESSION (see zlib.h).
     int compression_level;
 
-    // Defaults to Z_DEFAULT_STRATEGY.  Can also be fun::set to Z_FILTERED,
+    // Defaults to Z_DEFAULT_STRATEGY.  Can also be set to Z_FILTERED,
     // Z_HUFFMAN_ONLY, or Z_RLE.  See the documentation for deflateInit2 in
     // zlib.h for definitions of these constants.
     int compression_strategy;

@@ -62,11 +62,11 @@ namespace protobuf {
 #endif
 #endif
 
-bool File::Exists(const fun::string& name) {
+bool File::Exists(const string& name) {
   return access(name.c_str(), F_OK) == 0;
 }
 
-bool File::ReadFileToString(const fun::string& name, fun::string* output) {
+bool File::ReadFileToString(const string& name, string* output) {
   char buffer[1024];
   FILE* file = fopen(name.c_str(), "rb");
   if (file == NULL) return false;
@@ -82,11 +82,11 @@ bool File::ReadFileToString(const fun::string& name, fun::string* output) {
   return error == 0;
 }
 
-void File::ReadFileToStringOrDie(const fun::string& name, fun::string* output) {
+void File::ReadFileToStringOrDie(const string& name, string* output) {
   GOOGLE_CHECK(ReadFileToString(name, output)) << "Could not read: " << name;
 }
 
-bool File::WriteStringToFile(const fun::string& contents, const fun::string& name) {
+bool File::WriteStringToFile(const string& contents, const string& name) {
   FILE* file = fopen(name.c_str(), "wb");
   if (file == NULL) {
     GOOGLE_LOG(ERROR) << "fopen(" << name << ", \"wb\"): " << strerror(errno);
@@ -104,7 +104,7 @@ bool File::WriteStringToFile(const fun::string& contents, const fun::string& nam
   return true;
 }
 
-void File::WriteStringToFileOrDie(const fun::string& contents, const fun::string& name) {
+void File::WriteStringToFileOrDie(const string& contents, const string& name) {
   FILE* file = fopen(name.c_str(), "wb");
   GOOGLE_CHECK(file != NULL)
       << "fopen(" << name << ", \"wb\"): " << strerror(errno);
@@ -115,18 +115,18 @@ void File::WriteStringToFileOrDie(const fun::string& contents, const fun::string
       << "fclose(" << name << "): " << strerror(errno);
 }
 
-bool File::CreateDir(const fun::string& name, int mode) {
+bool File::CreateDir(const string& name, int mode) {
   return mkdir(name.c_str(), mode) == 0;
 }
 
-bool File::RecursivelyCreateDir(const fun::string& path, int mode) {
+bool File::RecursivelyCreateDir(const string& path, int mode) {
   if (CreateDir(path, mode)) return true;
 
   if (Exists(path)) return false;
 
   // Try creating the parent.
-  fun::string::size_type slashpos = path.find_last_of('/');
-  if (slashpos == fun::string::npos) {
+  string::size_type slashpos = path.find_last_of('/');
+  if (slashpos == string::npos) {
     // No parent given.
     return false;
   }
@@ -135,7 +135,7 @@ bool File::RecursivelyCreateDir(const fun::string& path, int mode) {
          CreateDir(path, mode);
 }
 
-void File::DeleteRecursively(const fun::string& name,
+void File::DeleteRecursively(const string& name,
                              void* dummy1, void* dummy2) {
   // We don't care too much about error checking here since this is only used
   // in tests to delete temporary directories that are under /tmp anyway.
@@ -148,7 +148,7 @@ void File::DeleteRecursively(const fun::string& name,
   WIN32_FIND_DATA find_data;
 
   // WCHAR temp_wchar[WCHAR_MAX];
-  // fun::string temp_string = (name + "/*");
+  // string temp_string = (name + "/*");
   // MultiByteToWideChar(0, 0, temp_string.c_str(), temp_string.length(), temp_wchar, WCHAR_MAX);
 
   // HANDLE find_handle = FindFirstFile((name + "/*").c_str(), &find_data);
@@ -168,10 +168,10 @@ void File::DeleteRecursively(const fun::string& name,
     if (entry_name != L"." && entry_name != L"..") {
       wstring path = wname + L"/" + entry_name;
       if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-        DeleteRecursively(fun::string(path.begin(), path.end()), NULL, NULL);
+        DeleteRecursively(string(path.begin(), path.end()), NULL, NULL);
         RemoveDirectory(path.c_str());
       } else {
-        DeleteFileA((fun::string(path.begin(), path.end())).c_str());
+        DeleteFileA((string(path.begin(), path.end())).c_str());
       }
     }
   } while(FindNextFile(find_handle, &find_data));
@@ -190,7 +190,7 @@ void File::DeleteRecursively(const fun::string& name,
       while (true) {
         struct dirent* entry = readdir(dir);
         if (entry == NULL) break;
-        fun::string entry_name = entry->d_name;
+        string entry_name = entry->d_name;
         if (entry_name != "." && entry_name != "..") {
           DeleteRecursively(name + "/" + entry_name, NULL, NULL);
         }

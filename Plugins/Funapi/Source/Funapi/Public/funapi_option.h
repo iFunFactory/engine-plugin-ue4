@@ -20,11 +20,11 @@ class FUNAPI_API FunapiTransportOption : public std::enable_shared_from_this<Fun
   virtual ~FunapiTransportOption() = default;
 
   virtual void SetCompressionType(const CompressionType type) = 0;
-  virtual fun::vector<CompressionType> GetCompressionTypes() = 0;
+  virtual std::vector<CompressionType> GetCompressionTypes() = 0;
 
 #if FUNAPI_HAVE_ZSTD
-  // virtual void SetZstdDictBase64String(const fun::string &zstd_dict_base64string) = 0;
-  virtual fun::string GetZstdDictBase64String() = 0;
+  // virtual void SetZstdDictBase64String(const std::string &zstd_dict_base64string) = 0;
+  virtual std::string GetZstdDictBase64String() = 0;
 #endif
 };
 
@@ -53,18 +53,18 @@ class FUNAPI_API FunapiTcpTransportOption : public FunapiTransportOption {
   int GetConnectTimeout();
 
   void SetEncryptionType(const EncryptionType type);
-  fun::vector<EncryptionType> GetEncryptionTypes();
+  std::vector<EncryptionType> GetEncryptionTypes();
 
   void SetCompressionType(const CompressionType type);
-  fun::vector<CompressionType> GetCompressionTypes();
+  std::vector<CompressionType> GetCompressionTypes();
 
 #if FUNAPI_HAVE_ZSTD
-  // void SetZstdDictBase64String(const fun::string &zstd_dict_base64string);
-  fun::string GetZstdDictBase64String();
+  // void SetZstdDictBase64String(const std::string &zstd_dict_base64string);
+  std::string GetZstdDictBase64String();
 #endif
 
-  void SetEncryptionType(const EncryptionType type, const fun::string &public_key);
-  fun::string GetPublicKey(const EncryptionType type);
+  void SetEncryptionType(const EncryptionType type, const std::string &public_key);
+  std::string GetPublicKey(const EncryptionType type);
 
 #if FUNAPI_HAVE_TCP_TLS
   void SetUseTLS(const bool use_tls);
@@ -72,11 +72,11 @@ class FUNAPI_API FunapiTcpTransportOption : public FunapiTransportOption {
   bool GetUseTLS();
 
 #ifdef FUNAPI_UE4_PLATFORM_PS4
-  void SetCACert(const fun::string &cert);
+  void SetCACert(const std::string &cert);
 #else
-  void SetCACertFilePath(const fun::string &path);
+  void SetCACertFilePath(const std::string &path);
 #endif
-  const fun::string& GetCACertFilePath();
+  const std::string& GetCACertFilePath();
 
  private:
   std::shared_ptr<FunapiTcpTransportOptionImpl> impl_;
@@ -95,11 +95,11 @@ class FUNAPI_API FunapiUdpTransportOption : public FunapiTransportOption {
   EncryptionType GetEncryptionType();
 
   void SetCompressionType(const CompressionType type);
-  fun::vector<CompressionType> GetCompressionTypes();
+  std::vector<CompressionType> GetCompressionTypes();
 
 #if FUNAPI_HAVE_ZSTD
-  // void SetZstdDictBase64String(const fun::string &zstd_dict_base64string);
-  fun::string GetZstdDictBase64String();
+  // void SetZstdDictBase64String(const std::string &zstd_dict_base64string);
+  std::string GetZstdDictBase64String();
 #endif
 
  private:
@@ -128,19 +128,19 @@ class FUNAPI_API FunapiHttpTransportOption : public FunapiTransportOption {
   EncryptionType GetEncryptionType();
 
   void SetCompressionType(const CompressionType type);
-  fun::vector<CompressionType> GetCompressionTypes();
+  std::vector<CompressionType> GetCompressionTypes();
 
 #if FUNAPI_HAVE_ZSTD
-  // void SetZstdDictBase64String(const fun::string &zstd_dict_base64string);
-  fun::string GetZstdDictBase64String();
+  // void SetZstdDictBase64String(const std::string &zstd_dict_base64string);
+  std::string GetZstdDictBase64String();
 #endif
 
 #ifdef FUNAPI_UE4_PLATFORM_PS4
-  void SetCACert(const fun::string &cert);
+  void SetCACert(const std::string &cert);
 #else
-  void SetCACertFilePath(const fun::string &path);
+  void SetCACertFilePath(const std::string &path);
 #endif
-  const fun::string& GetCACertFilePath();
+  const std::string& GetCACertFilePath();
 
  private:
   std::shared_ptr<FunapiHttpTransportOptionImpl> impl_;
@@ -159,11 +159,11 @@ class FUNAPI_API FunapiWebsocketTransportOption : public FunapiTransportOption {
   bool GetUseWss();
 
   void SetCompressionType(const CompressionType type);
-  fun::vector<CompressionType> GetCompressionTypes();
+  std::vector<CompressionType> GetCompressionTypes();
 
 #if FUNAPI_HAVE_ZSTD
-  // void SetZstdDictBase64String(const fun::string &zstd_dict_base64string);
-  fun::string GetZstdDictBase64String();
+  // void SetZstdDictBase64String(const std::string &zstd_dict_base64string);
+  std::string GetZstdDictBase64String();
 #endif
 
  private:
@@ -193,18 +193,18 @@ class FUNAPI_API FunapiError : public std::enable_shared_from_this<FunapiError> 
   };
 
   FunapiError() = delete;
-  FunapiError(const ErrorType type, const int code, const fun::string& error_string);
+  FunapiError(const ErrorType type, const int code, const std::string& error_string);
   virtual ~FunapiError() = default;
 
-  static std::shared_ptr<FunapiError> Create(const ErrorType type, const int code, const fun::string& error_string = "");
+  static std::shared_ptr<FunapiError> Create(const ErrorType type, const int code, const std::string& error_string = "");
   static std::shared_ptr<FunapiError> Create(const ErrorType type, const ErrorCode code);
 
   ErrorType GetErrorType();
   int GetErrorCode();
-  fun::string GetErrorString();
+  std::string GetErrorString();
 
-  fun::string GetErrorTypeString();
-  fun::string DebugString();
+  std::string GetErrorTypeString();
+  std::string DebugString();
 
  private:
   std::shared_ptr<FunapiErrorImpl> impl_;

@@ -47,7 +47,7 @@ template <typename T> class FunapiEvent
   }
 
  private:
-  fun::vector<T> vector_;
+  std::vector<T> vector_;
   std::mutex mutex_;
 };
 
@@ -75,18 +75,18 @@ class FunapiUtil
 {
  public:
   static bool SeqLess(const uint32_t x, const uint32_t y);
-  static bool IsFileExists(const fun::string &file_name);
-  static long GetFileSize(const fun::string &file_name);
+  static bool IsFileExists(const std::string &file_name);
+  static long GetFileSize(const std::string &file_name);
 
-  static fun::string MD5String(const fun::string &file_name, bool use_front);
+  static std::string MD5String(const std::string &file_name, bool use_front);
 
-  static fun::string StringFromBytes(const fun::string &uuid_str);
-  static fun::string BytesFromString(const fun::string &uuid);
+  static std::string StringFromBytes(const std::string &uuid_str);
+  static std::string BytesFromString(const std::string &uuid);
 
-  static bool DecodeBase64(const fun::string &in, fun::vector<uint8_t> &out);
+  static bool DecodeBase64(const std::string &in, std::vector<uint8_t> &out);
 
   static int GetSocketErrorCode();
-  static fun::string GetSocketErrorString(const int code);
+  static std::string GetSocketErrorString(const int code);
 };
 
 

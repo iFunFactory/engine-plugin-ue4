@@ -119,12 +119,12 @@ const TestAllTypes_NestedEnum TestAllTypes_NestedEnum_NestedEnum_MAX = TestAllTy
 const int TestAllTypes_NestedEnum_NestedEnum_ARRAYSIZE = TestAllTypes_NestedEnum_NestedEnum_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* TestAllTypes_NestedEnum_descriptor();
-inline const ::fun::string& TestAllTypes_NestedEnum_Name(TestAllTypes_NestedEnum value) {
+inline const ::std::string& TestAllTypes_NestedEnum_Name(TestAllTypes_NestedEnum value) {
   return ::google::protobuf::internal::NameOfEnum(
     TestAllTypes_NestedEnum_descriptor(), value);
 }
 inline bool TestAllTypes_NestedEnum_Parse(
-    const ::fun::string& name, TestAllTypes_NestedEnum* value) {
+    const ::std::string& name, TestAllTypes_NestedEnum* value) {
   return ::google::protobuf::internal::ParseNamedEnum<TestAllTypes_NestedEnum>(
     TestAllTypes_NestedEnum_descriptor(), name, value);
 }
@@ -139,12 +139,12 @@ const TestOneof2_NestedEnum TestOneof2_NestedEnum_NestedEnum_MAX = TestOneof2_Ne
 const int TestOneof2_NestedEnum_NestedEnum_ARRAYSIZE = TestOneof2_NestedEnum_NestedEnum_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* TestOneof2_NestedEnum_descriptor();
-inline const ::fun::string& TestOneof2_NestedEnum_Name(TestOneof2_NestedEnum value) {
+inline const ::std::string& TestOneof2_NestedEnum_Name(TestOneof2_NestedEnum value) {
   return ::google::protobuf::internal::NameOfEnum(
     TestOneof2_NestedEnum_descriptor(), value);
 }
 inline bool TestOneof2_NestedEnum_Parse(
-    const ::fun::string& name, TestOneof2_NestedEnum* value) {
+    const ::std::string& name, TestOneof2_NestedEnum* value) {
   return ::google::protobuf::internal::ParseNamedEnum<TestOneof2_NestedEnum>(
     TestOneof2_NestedEnum_descriptor(), name, value);
 }
@@ -159,12 +159,12 @@ const TestDynamicExtensions_DynamicEnumType TestDynamicExtensions_DynamicEnumTyp
 const int TestDynamicExtensions_DynamicEnumType_DynamicEnumType_ARRAYSIZE = TestDynamicExtensions_DynamicEnumType_DynamicEnumType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* TestDynamicExtensions_DynamicEnumType_descriptor();
-inline const ::fun::string& TestDynamicExtensions_DynamicEnumType_Name(TestDynamicExtensions_DynamicEnumType value) {
+inline const ::std::string& TestDynamicExtensions_DynamicEnumType_Name(TestDynamicExtensions_DynamicEnumType value) {
   return ::google::protobuf::internal::NameOfEnum(
     TestDynamicExtensions_DynamicEnumType_descriptor(), value);
 }
 inline bool TestDynamicExtensions_DynamicEnumType_Parse(
-    const ::fun::string& name, TestDynamicExtensions_DynamicEnumType* value) {
+    const ::std::string& name, TestDynamicExtensions_DynamicEnumType* value) {
   return ::google::protobuf::internal::ParseNamedEnum<TestDynamicExtensions_DynamicEnumType>(
     TestDynamicExtensions_DynamicEnumType_descriptor(), name, value);
 }
@@ -179,12 +179,12 @@ const ForeignEnum ForeignEnum_MAX = FOREIGN_BAZ;
 const int ForeignEnum_ARRAYSIZE = ForeignEnum_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* ForeignEnum_descriptor();
-inline const ::fun::string& ForeignEnum_Name(ForeignEnum value) {
+inline const ::std::string& ForeignEnum_Name(ForeignEnum value) {
   return ::google::protobuf::internal::NameOfEnum(
     ForeignEnum_descriptor(), value);
 }
 inline bool ForeignEnum_Parse(
-    const ::fun::string& name, ForeignEnum* value) {
+    const ::std::string& name, ForeignEnum* value) {
   return ::google::protobuf::internal::ParseNamedEnum<ForeignEnum>(
     ForeignEnum_descriptor(), name, value);
 }
@@ -201,12 +201,12 @@ const TestEnumWithDupValue TestEnumWithDupValue_MAX = BAZ;
 const int TestEnumWithDupValue_ARRAYSIZE = TestEnumWithDupValue_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* TestEnumWithDupValue_descriptor();
-inline const ::fun::string& TestEnumWithDupValue_Name(TestEnumWithDupValue value) {
+inline const ::std::string& TestEnumWithDupValue_Name(TestEnumWithDupValue value) {
   return ::google::protobuf::internal::NameOfEnum(
     TestEnumWithDupValue_descriptor(), value);
 }
 inline bool TestEnumWithDupValue_Parse(
-    const ::fun::string& name, TestEnumWithDupValue* value) {
+    const ::std::string& name, TestEnumWithDupValue* value) {
   return ::google::protobuf::internal::ParseNamedEnum<TestEnumWithDupValue>(
     TestEnumWithDupValue_descriptor(), name, value);
 }
@@ -225,12 +225,12 @@ const TestSparseEnum TestSparseEnum_MAX = SPARSE_C;
 const int TestSparseEnum_ARRAYSIZE = TestSparseEnum_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* TestSparseEnum_descriptor();
-inline const ::fun::string& TestSparseEnum_Name(TestSparseEnum value) {
+inline const ::std::string& TestSparseEnum_Name(TestSparseEnum value) {
   return ::google::protobuf::internal::NameOfEnum(
     TestSparseEnum_descriptor(), value);
 }
 inline bool TestSparseEnum_Parse(
-    const ::fun::string& name, TestSparseEnum* value) {
+    const ::std::string& name, TestSparseEnum* value) {
   return ::google::protobuf::internal::ParseNamedEnum<TestSparseEnum>(
     TestSparseEnum_descriptor(), name, value);
 }
@@ -554,10 +554,10 @@ class TestAllTypes : public ::google::protobuf::Message {
   NestedEnum_descriptor() {
     return TestAllTypes_NestedEnum_descriptor();
   }
-  static inline const ::fun::string& NestedEnum_Name(NestedEnum value) {
+  static inline const ::std::string& NestedEnum_Name(NestedEnum value) {
     return TestAllTypes_NestedEnum_Name(value);
   }
-  static inline bool NestedEnum_Parse(const ::fun::string& name,
+  static inline bool NestedEnum_Parse(const ::std::string& name,
       NestedEnum* value) {
     return TestAllTypes_NestedEnum_Parse(name, value);
   }
@@ -655,29 +655,29 @@ class TestAllTypes : public ::google::protobuf::Message {
   inline bool optional_bool() const;
   inline void set_optional_bool(bool value);
 
-  // optional fun::string optional_string = 14;
+  // optional string optional_string = 14;
   inline bool has_optional_string() const;
   inline void clear_optional_string();
   static const int kOptionalStringFieldNumber = 14;
-  inline const ::fun::string& optional_string() const;
-  inline void set_optional_string(const ::fun::string& value);
+  inline const ::std::string& optional_string() const;
+  inline void set_optional_string(const ::std::string& value);
   inline void set_optional_string(const char* value);
   inline void set_optional_string(const char* value, size_t size);
-  inline ::fun::string* mutable_optional_string();
-  inline ::fun::string* release_optional_string();
-  inline void set_allocated_optional_string(::fun::string* optional_string);
+  inline ::std::string* mutable_optional_string();
+  inline ::std::string* release_optional_string();
+  inline void set_allocated_optional_string(::std::string* optional_string);
 
   // optional bytes optional_bytes = 15;
   inline bool has_optional_bytes() const;
   inline void clear_optional_bytes();
   static const int kOptionalBytesFieldNumber = 15;
-  inline const ::fun::string& optional_bytes() const;
-  inline void set_optional_bytes(const ::fun::string& value);
+  inline const ::std::string& optional_bytes() const;
+  inline void set_optional_bytes(const ::std::string& value);
   inline void set_optional_bytes(const char* value);
   inline void set_optional_bytes(const void* value, size_t size);
-  inline ::fun::string* mutable_optional_bytes();
-  inline ::fun::string* release_optional_bytes();
-  inline void set_allocated_optional_bytes(::fun::string* optional_bytes);
+  inline ::std::string* mutable_optional_bytes();
+  inline ::std::string* release_optional_bytes();
+  inline void set_allocated_optional_bytes(::std::string* optional_bytes);
 
   // optional group OptionalGroup = 16 {
   inline bool has_optionalgroup() const;
@@ -736,34 +736,34 @@ class TestAllTypes : public ::google::protobuf::Message {
   inline ::protobuf_unittest_import::ImportEnum optional_import_enum() const;
   inline void set_optional_import_enum(::protobuf_unittest_import::ImportEnum value);
 
-  // optional fun::string optional_string_piece = 24 [ctype = STRING_PIECE];
+  // optional string optional_string_piece = 24 [ctype = STRING_PIECE];
   inline bool has_optional_string_piece() const;
   inline void clear_optional_string_piece();
   static const int kOptionalStringPieceFieldNumber = 24;
  private:
   // Hidden due to unknown ctype option.
-  inline const ::fun::string& optional_string_piece() const;
-  inline void set_optional_string_piece(const ::fun::string& value);
+  inline const ::std::string& optional_string_piece() const;
+  inline void set_optional_string_piece(const ::std::string& value);
   inline void set_optional_string_piece(const char* value);
   inline void set_optional_string_piece(const char* value, size_t size);
-  inline ::fun::string* mutable_optional_string_piece();
-  inline ::fun::string* release_optional_string_piece();
-  inline void set_allocated_optional_string_piece(::fun::string* optional_string_piece);
+  inline ::std::string* mutable_optional_string_piece();
+  inline ::std::string* release_optional_string_piece();
+  inline void set_allocated_optional_string_piece(::std::string* optional_string_piece);
  public:
 
-  // optional fun::string optional_cord = 25 [ctype = CORD];
+  // optional string optional_cord = 25 [ctype = CORD];
   inline bool has_optional_cord() const;
   inline void clear_optional_cord();
   static const int kOptionalCordFieldNumber = 25;
  private:
   // Hidden due to unknown ctype option.
-  inline const ::fun::string& optional_cord() const;
-  inline void set_optional_cord(const ::fun::string& value);
+  inline const ::std::string& optional_cord() const;
+  inline void set_optional_cord(const ::std::string& value);
   inline void set_optional_cord(const char* value);
   inline void set_optional_cord(const char* value, size_t size);
-  inline ::fun::string* mutable_optional_cord();
-  inline ::fun::string* release_optional_cord();
-  inline void set_allocated_optional_cord(::fun::string* optional_cord);
+  inline ::std::string* mutable_optional_cord();
+  inline ::std::string* release_optional_cord();
+  inline void set_allocated_optional_cord(::std::string* optional_cord);
  public:
 
   // optional .protobuf_unittest_import.PublicImportMessage optional_public_import_message = 26;
@@ -940,37 +940,37 @@ class TestAllTypes : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< bool >*
       mutable_repeated_bool();
 
-  // repeated fun::string repeated_string = 44;
+  // repeated string repeated_string = 44;
   inline int repeated_string_size() const;
   inline void clear_repeated_string();
   static const int kRepeatedStringFieldNumber = 44;
-  inline const ::fun::string& repeated_string(int index) const;
-  inline ::fun::string* mutable_repeated_string(int index);
-  inline void set_repeated_string(int index, const ::fun::string& value);
+  inline const ::std::string& repeated_string(int index) const;
+  inline ::std::string* mutable_repeated_string(int index);
+  inline void set_repeated_string(int index, const ::std::string& value);
   inline void set_repeated_string(int index, const char* value);
   inline void set_repeated_string(int index, const char* value, size_t size);
-  inline ::fun::string* add_repeated_string();
-  inline void add_repeated_string(const ::fun::string& value);
+  inline ::std::string* add_repeated_string();
+  inline void add_repeated_string(const ::std::string& value);
   inline void add_repeated_string(const char* value);
   inline void add_repeated_string(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::fun::string>& repeated_string() const;
-  inline ::google::protobuf::RepeatedPtrField< ::fun::string>* mutable_repeated_string();
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& repeated_string() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_repeated_string();
 
   // repeated bytes repeated_bytes = 45;
   inline int repeated_bytes_size() const;
   inline void clear_repeated_bytes();
   static const int kRepeatedBytesFieldNumber = 45;
-  inline const ::fun::string& repeated_bytes(int index) const;
-  inline ::fun::string* mutable_repeated_bytes(int index);
-  inline void set_repeated_bytes(int index, const ::fun::string& value);
+  inline const ::std::string& repeated_bytes(int index) const;
+  inline ::std::string* mutable_repeated_bytes(int index);
+  inline void set_repeated_bytes(int index, const ::std::string& value);
   inline void set_repeated_bytes(int index, const char* value);
   inline void set_repeated_bytes(int index, const void* value, size_t size);
-  inline ::fun::string* add_repeated_bytes();
-  inline void add_repeated_bytes(const ::fun::string& value);
+  inline ::std::string* add_repeated_bytes();
+  inline void add_repeated_bytes(const ::std::string& value);
   inline void add_repeated_bytes(const char* value);
   inline void add_repeated_bytes(const void* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::fun::string>& repeated_bytes() const;
-  inline ::google::protobuf::RepeatedPtrField< ::fun::string>* mutable_repeated_bytes();
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& repeated_bytes() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_repeated_bytes();
 
   // repeated group RepeatedGroup = 46 {
   inline int repeatedgroup_size() const;
@@ -1050,42 +1050,42 @@ class TestAllTypes : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedField<int>& repeated_import_enum() const;
   inline ::google::protobuf::RepeatedField<int>* mutable_repeated_import_enum();
 
-  // repeated fun::string repeated_string_piece = 54 [ctype = STRING_PIECE];
+  // repeated string repeated_string_piece = 54 [ctype = STRING_PIECE];
   inline int repeated_string_piece_size() const;
   inline void clear_repeated_string_piece();
   static const int kRepeatedStringPieceFieldNumber = 54;
  private:
   // Hidden due to unknown ctype option.
-  inline const ::fun::string& repeated_string_piece(int index) const;
-  inline ::fun::string* mutable_repeated_string_piece(int index);
-  inline void set_repeated_string_piece(int index, const ::fun::string& value);
+  inline const ::std::string& repeated_string_piece(int index) const;
+  inline ::std::string* mutable_repeated_string_piece(int index);
+  inline void set_repeated_string_piece(int index, const ::std::string& value);
   inline void set_repeated_string_piece(int index, const char* value);
   inline void set_repeated_string_piece(int index, const char* value, size_t size);
-  inline ::fun::string* add_repeated_string_piece();
-  inline void add_repeated_string_piece(const ::fun::string& value);
+  inline ::std::string* add_repeated_string_piece();
+  inline void add_repeated_string_piece(const ::std::string& value);
   inline void add_repeated_string_piece(const char* value);
   inline void add_repeated_string_piece(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::fun::string>& repeated_string_piece() const;
-  inline ::google::protobuf::RepeatedPtrField< ::fun::string>* mutable_repeated_string_piece();
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& repeated_string_piece() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_repeated_string_piece();
  public:
 
-  // repeated fun::string repeated_cord = 55 [ctype = CORD];
+  // repeated string repeated_cord = 55 [ctype = CORD];
   inline int repeated_cord_size() const;
   inline void clear_repeated_cord();
   static const int kRepeatedCordFieldNumber = 55;
  private:
   // Hidden due to unknown ctype option.
-  inline const ::fun::string& repeated_cord(int index) const;
-  inline ::fun::string* mutable_repeated_cord(int index);
-  inline void set_repeated_cord(int index, const ::fun::string& value);
+  inline const ::std::string& repeated_cord(int index) const;
+  inline ::std::string* mutable_repeated_cord(int index);
+  inline void set_repeated_cord(int index, const ::std::string& value);
   inline void set_repeated_cord(int index, const char* value);
   inline void set_repeated_cord(int index, const char* value, size_t size);
-  inline ::fun::string* add_repeated_cord();
-  inline void add_repeated_cord(const ::fun::string& value);
+  inline ::std::string* add_repeated_cord();
+  inline void add_repeated_cord(const ::std::string& value);
   inline void add_repeated_cord(const char* value);
   inline void add_repeated_cord(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::fun::string>& repeated_cord() const;
-  inline ::google::protobuf::RepeatedPtrField< ::fun::string>* mutable_repeated_cord();
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& repeated_cord() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_repeated_cord();
  public:
 
   // repeated .protobuf_unittest.TestAllTypes.NestedMessage repeated_lazy_message = 57 [lazy = true];
@@ -1191,29 +1191,29 @@ class TestAllTypes : public ::google::protobuf::Message {
   inline bool default_bool() const;
   inline void set_default_bool(bool value);
 
-  // optional fun::string default_string = 74 [default = "hello"];
+  // optional string default_string = 74 [default = "hello"];
   inline bool has_default_string() const;
   inline void clear_default_string();
   static const int kDefaultStringFieldNumber = 74;
-  inline const ::fun::string& default_string() const;
-  inline void set_default_string(const ::fun::string& value);
+  inline const ::std::string& default_string() const;
+  inline void set_default_string(const ::std::string& value);
   inline void set_default_string(const char* value);
   inline void set_default_string(const char* value, size_t size);
-  inline ::fun::string* mutable_default_string();
-  inline ::fun::string* release_default_string();
-  inline void set_allocated_default_string(::fun::string* default_string);
+  inline ::std::string* mutable_default_string();
+  inline ::std::string* release_default_string();
+  inline void set_allocated_default_string(::std::string* default_string);
 
   // optional bytes default_bytes = 75 [default = "world"];
   inline bool has_default_bytes() const;
   inline void clear_default_bytes();
   static const int kDefaultBytesFieldNumber = 75;
-  inline const ::fun::string& default_bytes() const;
-  inline void set_default_bytes(const ::fun::string& value);
+  inline const ::std::string& default_bytes() const;
+  inline void set_default_bytes(const ::std::string& value);
   inline void set_default_bytes(const char* value);
   inline void set_default_bytes(const void* value, size_t size);
-  inline ::fun::string* mutable_default_bytes();
-  inline ::fun::string* release_default_bytes();
-  inline void set_allocated_default_bytes(::fun::string* default_bytes);
+  inline ::std::string* mutable_default_bytes();
+  inline ::std::string* release_default_bytes();
+  inline void set_allocated_default_bytes(::std::string* default_bytes);
 
   // optional .protobuf_unittest.TestAllTypes.NestedEnum default_nested_enum = 81 [default = BAR];
   inline bool has_default_nested_enum() const;
@@ -1236,34 +1236,34 @@ class TestAllTypes : public ::google::protobuf::Message {
   inline ::protobuf_unittest_import::ImportEnum default_import_enum() const;
   inline void set_default_import_enum(::protobuf_unittest_import::ImportEnum value);
 
-  // optional fun::string default_string_piece = 84 [default = "abc", ctype = STRING_PIECE];
+  // optional string default_string_piece = 84 [default = "abc", ctype = STRING_PIECE];
   inline bool has_default_string_piece() const;
   inline void clear_default_string_piece();
   static const int kDefaultStringPieceFieldNumber = 84;
  private:
   // Hidden due to unknown ctype option.
-  inline const ::fun::string& default_string_piece() const;
-  inline void set_default_string_piece(const ::fun::string& value);
+  inline const ::std::string& default_string_piece() const;
+  inline void set_default_string_piece(const ::std::string& value);
   inline void set_default_string_piece(const char* value);
   inline void set_default_string_piece(const char* value, size_t size);
-  inline ::fun::string* mutable_default_string_piece();
-  inline ::fun::string* release_default_string_piece();
-  inline void set_allocated_default_string_piece(::fun::string* default_string_piece);
+  inline ::std::string* mutable_default_string_piece();
+  inline ::std::string* release_default_string_piece();
+  inline void set_allocated_default_string_piece(::std::string* default_string_piece);
  public:
 
-  // optional fun::string default_cord = 85 [default = "123", ctype = CORD];
+  // optional string default_cord = 85 [default = "123", ctype = CORD];
   inline bool has_default_cord() const;
   inline void clear_default_cord();
   static const int kDefaultCordFieldNumber = 85;
  private:
   // Hidden due to unknown ctype option.
-  inline const ::fun::string& default_cord() const;
-  inline void set_default_cord(const ::fun::string& value);
+  inline const ::std::string& default_cord() const;
+  inline void set_default_cord(const ::std::string& value);
   inline void set_default_cord(const char* value);
   inline void set_default_cord(const char* value, size_t size);
-  inline ::fun::string* mutable_default_cord();
-  inline ::fun::string* release_default_cord();
-  inline void set_allocated_default_cord(::fun::string* default_cord);
+  inline ::std::string* mutable_default_cord();
+  inline ::std::string* release_default_cord();
+  inline void set_allocated_default_cord(::std::string* default_cord);
  public:
 
   // optional uint32 oneof_uint32 = 111;
@@ -1282,29 +1282,29 @@ class TestAllTypes : public ::google::protobuf::Message {
   inline ::protobuf_unittest::TestAllTypes_NestedMessage* release_oneof_nested_message();
   inline void set_allocated_oneof_nested_message(::protobuf_unittest::TestAllTypes_NestedMessage* oneof_nested_message);
 
-  // optional fun::string oneof_string = 113;
+  // optional string oneof_string = 113;
   inline bool has_oneof_string() const;
   inline void clear_oneof_string();
   static const int kOneofStringFieldNumber = 113;
-  inline const ::fun::string& oneof_string() const;
-  inline void set_oneof_string(const ::fun::string& value);
+  inline const ::std::string& oneof_string() const;
+  inline void set_oneof_string(const ::std::string& value);
   inline void set_oneof_string(const char* value);
   inline void set_oneof_string(const char* value, size_t size);
-  inline ::fun::string* mutable_oneof_string();
-  inline ::fun::string* release_oneof_string();
-  inline void set_allocated_oneof_string(::fun::string* oneof_string);
+  inline ::std::string* mutable_oneof_string();
+  inline ::std::string* release_oneof_string();
+  inline void set_allocated_oneof_string(::std::string* oneof_string);
 
   // optional bytes oneof_bytes = 114;
   inline bool has_oneof_bytes() const;
   inline void clear_oneof_bytes();
   static const int kOneofBytesFieldNumber = 114;
-  inline const ::fun::string& oneof_bytes() const;
-  inline void set_oneof_bytes(const ::fun::string& value);
+  inline const ::std::string& oneof_bytes() const;
+  inline void set_oneof_bytes(const ::std::string& value);
   inline void set_oneof_bytes(const char* value);
   inline void set_oneof_bytes(const void* value, size_t size);
-  inline ::fun::string* mutable_oneof_bytes();
-  inline ::fun::string* release_oneof_bytes();
-  inline void set_allocated_oneof_bytes(::fun::string* oneof_bytes);
+  inline ::std::string* mutable_oneof_bytes();
+  inline ::std::string* release_oneof_bytes();
+  inline void set_allocated_oneof_bytes(::std::string* oneof_bytes);
 
   inline OneofFieldCase oneof_field_case() const;
   // @@protoc_insertion_point(class_scope:protobuf_unittest.TestAllTypes)
@@ -1426,16 +1426,16 @@ class TestAllTypes : public ::google::protobuf::Message {
   ::google::protobuf::int32 optional_sfixed32_;
   float optional_float_;
   double optional_double_;
-  ::fun::string* optional_string_;
-  ::fun::string* optional_bytes_;
+  ::std::string* optional_string_;
+  ::std::string* optional_bytes_;
   ::protobuf_unittest::TestAllTypes_OptionalGroup* optionalgroup_;
   ::protobuf_unittest::TestAllTypes_NestedMessage* optional_nested_message_;
   ::protobuf_unittest::ForeignMessage* optional_foreign_message_;
   ::protobuf_unittest_import::ImportMessage* optional_import_message_;
   int optional_nested_enum_;
   int optional_foreign_enum_;
-  ::fun::string* optional_string_piece_;
-  ::fun::string* optional_cord_;
+  ::std::string* optional_string_piece_;
+  ::std::string* optional_cord_;
   ::protobuf_unittest_import::PublicImportMessage* optional_public_import_message_;
   ::protobuf_unittest::TestAllTypes_NestedMessage* optional_lazy_message_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > repeated_int32_;
@@ -1454,8 +1454,8 @@ class TestAllTypes : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedField< float > repeated_float_;
   ::google::protobuf::RepeatedField< double > repeated_double_;
   ::google::protobuf::RepeatedField< bool > repeated_bool_;
-  ::google::protobuf::RepeatedPtrField< ::fun::string> repeated_string_;
-  ::google::protobuf::RepeatedPtrField< ::fun::string> repeated_bytes_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> repeated_string_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> repeated_bytes_;
   ::google::protobuf::RepeatedPtrField< ::protobuf_unittest::TestAllTypes_RepeatedGroup > repeatedgroup_;
   ::google::protobuf::RepeatedPtrField< ::protobuf_unittest::TestAllTypes_NestedMessage > repeated_nested_message_;
   ::google::protobuf::RepeatedPtrField< ::protobuf_unittest::ForeignMessage > repeated_foreign_message_;
@@ -1463,8 +1463,8 @@ class TestAllTypes : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedField<int> repeated_nested_enum_;
   ::google::protobuf::RepeatedField<int> repeated_foreign_enum_;
   ::google::protobuf::RepeatedField<int> repeated_import_enum_;
-  ::google::protobuf::RepeatedPtrField< ::fun::string> repeated_string_piece_;
-  ::google::protobuf::RepeatedPtrField< ::fun::string> repeated_cord_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> repeated_string_piece_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> repeated_cord_;
   ::google::protobuf::RepeatedPtrField< ::protobuf_unittest::TestAllTypes_NestedMessage > repeated_lazy_message_;
   ::google::protobuf::int64 default_int64_;
   ::google::protobuf::int32 default_int32_;
@@ -1478,22 +1478,22 @@ class TestAllTypes : public ::google::protobuf::Message {
   ::google::protobuf::int32 default_sfixed32_;
   float default_float_;
   double default_double_;
-  static ::fun::string* _default_default_string_;
-  ::fun::string* default_string_;
-  static ::fun::string* _default_default_bytes_;
-  ::fun::string* default_bytes_;
+  static ::std::string* _default_default_string_;
+  ::std::string* default_string_;
+  static ::std::string* _default_default_bytes_;
+  ::std::string* default_bytes_;
   int default_nested_enum_;
   int default_foreign_enum_;
-  static ::fun::string* _default_default_string_piece_;
-  ::fun::string* default_string_piece_;
-  static ::fun::string* _default_default_cord_;
-  ::fun::string* default_cord_;
+  static ::std::string* _default_default_string_piece_;
+  ::std::string* default_string_piece_;
+  static ::std::string* _default_default_cord_;
+  ::std::string* default_cord_;
   int default_import_enum_;
   union OneofFieldUnion {
     ::google::protobuf::uint32 oneof_uint32_;
     ::protobuf_unittest::TestAllTypes_NestedMessage* oneof_nested_message_;
-    ::fun::string* oneof_string_;
-    ::fun::string* oneof_bytes_;
+    ::std::string* oneof_string_;
+    ::std::string* oneof_bytes_;
   } oneof_field_;
   ::google::protobuf::uint32 _oneof_case_[1];
 
@@ -3885,17 +3885,17 @@ class TestCamelCaseFieldNames : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 primitivefield() const;
   inline void set_primitivefield(::google::protobuf::int32 value);
 
-  // optional fun::string StringField = 2;
+  // optional string StringField = 2;
   inline bool has_stringfield() const;
   inline void clear_stringfield();
   static const int kStringFieldFieldNumber = 2;
-  inline const ::fun::string& stringfield() const;
-  inline void set_stringfield(const ::fun::string& value);
+  inline const ::std::string& stringfield() const;
+  inline void set_stringfield(const ::std::string& value);
   inline void set_stringfield(const char* value);
   inline void set_stringfield(const char* value, size_t size);
-  inline ::fun::string* mutable_stringfield();
-  inline ::fun::string* release_stringfield();
-  inline void set_allocated_stringfield(::fun::string* stringfield);
+  inline ::std::string* mutable_stringfield();
+  inline ::std::string* release_stringfield();
+  inline void set_allocated_stringfield(::std::string* stringfield);
 
   // optional .protobuf_unittest.ForeignEnum EnumField = 3;
   inline bool has_enumfield() const;
@@ -3913,34 +3913,34 @@ class TestCamelCaseFieldNames : public ::google::protobuf::Message {
   inline ::protobuf_unittest::ForeignMessage* release_messagefield();
   inline void set_allocated_messagefield(::protobuf_unittest::ForeignMessage* messagefield);
 
-  // optional fun::string StringPieceField = 5 [ctype = STRING_PIECE];
+  // optional string StringPieceField = 5 [ctype = STRING_PIECE];
   inline bool has_stringpiecefield() const;
   inline void clear_stringpiecefield();
   static const int kStringPieceFieldFieldNumber = 5;
  private:
   // Hidden due to unknown ctype option.
-  inline const ::fun::string& stringpiecefield() const;
-  inline void set_stringpiecefield(const ::fun::string& value);
+  inline const ::std::string& stringpiecefield() const;
+  inline void set_stringpiecefield(const ::std::string& value);
   inline void set_stringpiecefield(const char* value);
   inline void set_stringpiecefield(const char* value, size_t size);
-  inline ::fun::string* mutable_stringpiecefield();
-  inline ::fun::string* release_stringpiecefield();
-  inline void set_allocated_stringpiecefield(::fun::string* stringpiecefield);
+  inline ::std::string* mutable_stringpiecefield();
+  inline ::std::string* release_stringpiecefield();
+  inline void set_allocated_stringpiecefield(::std::string* stringpiecefield);
  public:
 
-  // optional fun::string CordField = 6 [ctype = CORD];
+  // optional string CordField = 6 [ctype = CORD];
   inline bool has_cordfield() const;
   inline void clear_cordfield();
   static const int kCordFieldFieldNumber = 6;
  private:
   // Hidden due to unknown ctype option.
-  inline const ::fun::string& cordfield() const;
-  inline void set_cordfield(const ::fun::string& value);
+  inline const ::std::string& cordfield() const;
+  inline void set_cordfield(const ::std::string& value);
   inline void set_cordfield(const char* value);
   inline void set_cordfield(const char* value, size_t size);
-  inline ::fun::string* mutable_cordfield();
-  inline ::fun::string* release_cordfield();
-  inline void set_allocated_cordfield(::fun::string* cordfield);
+  inline ::std::string* mutable_cordfield();
+  inline ::std::string* release_cordfield();
+  inline void set_allocated_cordfield(::std::string* cordfield);
  public:
 
   // repeated int32 RepeatedPrimitiveField = 7;
@@ -3955,21 +3955,21 @@ class TestCamelCaseFieldNames : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_repeatedprimitivefield();
 
-  // repeated fun::string RepeatedStringField = 8;
+  // repeated string RepeatedStringField = 8;
   inline int repeatedstringfield_size() const;
   inline void clear_repeatedstringfield();
   static const int kRepeatedStringFieldFieldNumber = 8;
-  inline const ::fun::string& repeatedstringfield(int index) const;
-  inline ::fun::string* mutable_repeatedstringfield(int index);
-  inline void set_repeatedstringfield(int index, const ::fun::string& value);
+  inline const ::std::string& repeatedstringfield(int index) const;
+  inline ::std::string* mutable_repeatedstringfield(int index);
+  inline void set_repeatedstringfield(int index, const ::std::string& value);
   inline void set_repeatedstringfield(int index, const char* value);
   inline void set_repeatedstringfield(int index, const char* value, size_t size);
-  inline ::fun::string* add_repeatedstringfield();
-  inline void add_repeatedstringfield(const ::fun::string& value);
+  inline ::std::string* add_repeatedstringfield();
+  inline void add_repeatedstringfield(const ::std::string& value);
   inline void add_repeatedstringfield(const char* value);
   inline void add_repeatedstringfield(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::fun::string>& repeatedstringfield() const;
-  inline ::google::protobuf::RepeatedPtrField< ::fun::string>* mutable_repeatedstringfield();
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& repeatedstringfield() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_repeatedstringfield();
 
   // repeated .protobuf_unittest.ForeignEnum RepeatedEnumField = 9;
   inline int repeatedenumfield_size() const;
@@ -3993,42 +3993,42 @@ class TestCamelCaseFieldNames : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::protobuf_unittest::ForeignMessage >*
       mutable_repeatedmessagefield();
 
-  // repeated fun::string RepeatedStringPieceField = 11 [ctype = STRING_PIECE];
+  // repeated string RepeatedStringPieceField = 11 [ctype = STRING_PIECE];
   inline int repeatedstringpiecefield_size() const;
   inline void clear_repeatedstringpiecefield();
   static const int kRepeatedStringPieceFieldFieldNumber = 11;
  private:
   // Hidden due to unknown ctype option.
-  inline const ::fun::string& repeatedstringpiecefield(int index) const;
-  inline ::fun::string* mutable_repeatedstringpiecefield(int index);
-  inline void set_repeatedstringpiecefield(int index, const ::fun::string& value);
+  inline const ::std::string& repeatedstringpiecefield(int index) const;
+  inline ::std::string* mutable_repeatedstringpiecefield(int index);
+  inline void set_repeatedstringpiecefield(int index, const ::std::string& value);
   inline void set_repeatedstringpiecefield(int index, const char* value);
   inline void set_repeatedstringpiecefield(int index, const char* value, size_t size);
-  inline ::fun::string* add_repeatedstringpiecefield();
-  inline void add_repeatedstringpiecefield(const ::fun::string& value);
+  inline ::std::string* add_repeatedstringpiecefield();
+  inline void add_repeatedstringpiecefield(const ::std::string& value);
   inline void add_repeatedstringpiecefield(const char* value);
   inline void add_repeatedstringpiecefield(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::fun::string>& repeatedstringpiecefield() const;
-  inline ::google::protobuf::RepeatedPtrField< ::fun::string>* mutable_repeatedstringpiecefield();
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& repeatedstringpiecefield() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_repeatedstringpiecefield();
  public:
 
-  // repeated fun::string RepeatedCordField = 12 [ctype = CORD];
+  // repeated string RepeatedCordField = 12 [ctype = CORD];
   inline int repeatedcordfield_size() const;
   inline void clear_repeatedcordfield();
   static const int kRepeatedCordFieldFieldNumber = 12;
  private:
   // Hidden due to unknown ctype option.
-  inline const ::fun::string& repeatedcordfield(int index) const;
-  inline ::fun::string* mutable_repeatedcordfield(int index);
-  inline void set_repeatedcordfield(int index, const ::fun::string& value);
+  inline const ::std::string& repeatedcordfield(int index) const;
+  inline ::std::string* mutable_repeatedcordfield(int index);
+  inline void set_repeatedcordfield(int index, const ::std::string& value);
   inline void set_repeatedcordfield(int index, const char* value);
   inline void set_repeatedcordfield(int index, const char* value, size_t size);
-  inline ::fun::string* add_repeatedcordfield();
-  inline void add_repeatedcordfield(const ::fun::string& value);
+  inline ::std::string* add_repeatedcordfield();
+  inline void add_repeatedcordfield(const ::std::string& value);
   inline void add_repeatedcordfield(const char* value);
   inline void add_repeatedcordfield(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::fun::string>& repeatedcordfield() const;
-  inline ::google::protobuf::RepeatedPtrField< ::fun::string>* mutable_repeatedcordfield();
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& repeatedcordfield() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_repeatedcordfield();
  public:
 
   // @@protoc_insertion_point(class_scope:protobuf_unittest.TestCamelCaseFieldNames)
@@ -4050,18 +4050,18 @@ class TestCamelCaseFieldNames : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::fun::string* stringfield_;
+  ::std::string* stringfield_;
   ::google::protobuf::int32 primitivefield_;
   int enumfield_;
   ::protobuf_unittest::ForeignMessage* messagefield_;
-  ::fun::string* stringpiecefield_;
-  ::fun::string* cordfield_;
+  ::std::string* stringpiecefield_;
+  ::std::string* cordfield_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > repeatedprimitivefield_;
-  ::google::protobuf::RepeatedPtrField< ::fun::string> repeatedstringfield_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> repeatedstringfield_;
   ::google::protobuf::RepeatedField<int> repeatedenumfield_;
   ::google::protobuf::RepeatedPtrField< ::protobuf_unittest::ForeignMessage > repeatedmessagefield_;
-  ::google::protobuf::RepeatedPtrField< ::fun::string> repeatedstringpiecefield_;
-  ::google::protobuf::RepeatedPtrField< ::fun::string> repeatedcordfield_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> repeatedstringpiecefield_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> repeatedcordfield_;
   friend void  protobuf_AddDesc_google_2fprotobuf_2funittest_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2funittest_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2funittest_2eproto();
@@ -4124,17 +4124,17 @@ class TestFieldOrderings : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional fun::string my_string = 11;
+  // optional string my_string = 11;
   inline bool has_my_string() const;
   inline void clear_my_string();
   static const int kMyStringFieldNumber = 11;
-  inline const ::fun::string& my_string() const;
-  inline void set_my_string(const ::fun::string& value);
+  inline const ::std::string& my_string() const;
+  inline void set_my_string(const ::std::string& value);
   inline void set_my_string(const char* value);
   inline void set_my_string(const char* value, size_t size);
-  inline ::fun::string* mutable_my_string();
-  inline ::fun::string* release_my_string();
-  inline void set_allocated_my_string(::fun::string* my_string);
+  inline ::std::string* mutable_my_string();
+  inline ::std::string* release_my_string();
+  inline void set_allocated_my_string(::std::string* my_string);
 
   // optional int64 my_int = 1;
   inline bool has_my_int() const;
@@ -4166,7 +4166,7 @@ class TestFieldOrderings : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::fun::string* my_string_;
+  ::std::string* my_string_;
   ::google::protobuf::int64 my_int_;
   float my_float_;
   friend void  protobuf_AddDesc_google_2fprotobuf_2funittest_2eproto();
@@ -4235,13 +4235,13 @@ class TestExtremeDefaultValues : public ::google::protobuf::Message {
   inline bool has_escaped_bytes() const;
   inline void clear_escaped_bytes();
   static const int kEscapedBytesFieldNumber = 1;
-  inline const ::fun::string& escaped_bytes() const;
-  inline void set_escaped_bytes(const ::fun::string& value);
+  inline const ::std::string& escaped_bytes() const;
+  inline void set_escaped_bytes(const ::std::string& value);
   inline void set_escaped_bytes(const char* value);
   inline void set_escaped_bytes(const void* value, size_t size);
-  inline ::fun::string* mutable_escaped_bytes();
-  inline ::fun::string* release_escaped_bytes();
-  inline void set_allocated_escaped_bytes(::fun::string* escaped_bytes);
+  inline ::std::string* mutable_escaped_bytes();
+  inline ::std::string* release_escaped_bytes();
+  inline void set_allocated_escaped_bytes(::std::string* escaped_bytes);
 
   // optional uint32 large_uint32 = 2 [default = 4294967295];
   inline bool has_large_uint32() const;
@@ -4285,17 +4285,17 @@ class TestExtremeDefaultValues : public ::google::protobuf::Message {
   inline ::google::protobuf::int64 really_small_int64() const;
   inline void set_really_small_int64(::google::protobuf::int64 value);
 
-  // optional fun::string utf8_string = 6 [default = "\341\210\264"];
+  // optional string utf8_string = 6 [default = "\341\210\264"];
   inline bool has_utf8_string() const;
   inline void clear_utf8_string();
   static const int kUtf8StringFieldNumber = 6;
-  inline const ::fun::string& utf8_string() const;
-  inline void set_utf8_string(const ::fun::string& value);
+  inline const ::std::string& utf8_string() const;
+  inline void set_utf8_string(const ::std::string& value);
   inline void set_utf8_string(const char* value);
   inline void set_utf8_string(const char* value, size_t size);
-  inline ::fun::string* mutable_utf8_string();
-  inline ::fun::string* release_utf8_string();
-  inline void set_allocated_utf8_string(::fun::string* utf8_string);
+  inline ::std::string* mutable_utf8_string();
+  inline ::std::string* release_utf8_string();
+  inline void set_allocated_utf8_string(::std::string* utf8_string);
 
   // optional float zero_float = 7 [default = 0];
   inline bool has_zero_float() const;
@@ -4388,83 +4388,83 @@ class TestExtremeDefaultValues : public ::google::protobuf::Message {
   inline float nan_float() const;
   inline void set_nan_float(float value);
 
-  // optional fun::string cpp_trigraph = 20 [default = "? ? ?? ?? ??? ??/ ??-"];
+  // optional string cpp_trigraph = 20 [default = "? ? ?? ?? ??? ??/ ??-"];
   inline bool has_cpp_trigraph() const;
   inline void clear_cpp_trigraph();
   static const int kCppTrigraphFieldNumber = 20;
-  inline const ::fun::string& cpp_trigraph() const;
-  inline void set_cpp_trigraph(const ::fun::string& value);
+  inline const ::std::string& cpp_trigraph() const;
+  inline void set_cpp_trigraph(const ::std::string& value);
   inline void set_cpp_trigraph(const char* value);
   inline void set_cpp_trigraph(const char* value, size_t size);
-  inline ::fun::string* mutable_cpp_trigraph();
-  inline ::fun::string* release_cpp_trigraph();
-  inline void set_allocated_cpp_trigraph(::fun::string* cpp_trigraph);
+  inline ::std::string* mutable_cpp_trigraph();
+  inline ::std::string* release_cpp_trigraph();
+  inline void set_allocated_cpp_trigraph(::std::string* cpp_trigraph);
 
-  // optional fun::string string_with_zero = 23 [default = "hel\000lo"];
+  // optional string string_with_zero = 23 [default = "hel\000lo"];
   inline bool has_string_with_zero() const;
   inline void clear_string_with_zero();
   static const int kStringWithZeroFieldNumber = 23;
-  inline const ::fun::string& string_with_zero() const;
-  inline void set_string_with_zero(const ::fun::string& value);
+  inline const ::std::string& string_with_zero() const;
+  inline void set_string_with_zero(const ::std::string& value);
   inline void set_string_with_zero(const char* value);
   inline void set_string_with_zero(const char* value, size_t size);
-  inline ::fun::string* mutable_string_with_zero();
-  inline ::fun::string* release_string_with_zero();
-  inline void set_allocated_string_with_zero(::fun::string* string_with_zero);
+  inline ::std::string* mutable_string_with_zero();
+  inline ::std::string* release_string_with_zero();
+  inline void set_allocated_string_with_zero(::std::string* string_with_zero);
 
   // optional bytes bytes_with_zero = 24 [default = "wor\000ld"];
   inline bool has_bytes_with_zero() const;
   inline void clear_bytes_with_zero();
   static const int kBytesWithZeroFieldNumber = 24;
-  inline const ::fun::string& bytes_with_zero() const;
-  inline void set_bytes_with_zero(const ::fun::string& value);
+  inline const ::std::string& bytes_with_zero() const;
+  inline void set_bytes_with_zero(const ::std::string& value);
   inline void set_bytes_with_zero(const char* value);
   inline void set_bytes_with_zero(const void* value, size_t size);
-  inline ::fun::string* mutable_bytes_with_zero();
-  inline ::fun::string* release_bytes_with_zero();
-  inline void set_allocated_bytes_with_zero(::fun::string* bytes_with_zero);
+  inline ::std::string* mutable_bytes_with_zero();
+  inline ::std::string* release_bytes_with_zero();
+  inline void set_allocated_bytes_with_zero(::std::string* bytes_with_zero);
 
-  // optional fun::string string_piece_with_zero = 25 [default = "ab\000c", ctype = STRING_PIECE];
+  // optional string string_piece_with_zero = 25 [default = "ab\000c", ctype = STRING_PIECE];
   inline bool has_string_piece_with_zero() const;
   inline void clear_string_piece_with_zero();
   static const int kStringPieceWithZeroFieldNumber = 25;
  private:
   // Hidden due to unknown ctype option.
-  inline const ::fun::string& string_piece_with_zero() const;
-  inline void set_string_piece_with_zero(const ::fun::string& value);
+  inline const ::std::string& string_piece_with_zero() const;
+  inline void set_string_piece_with_zero(const ::std::string& value);
   inline void set_string_piece_with_zero(const char* value);
   inline void set_string_piece_with_zero(const char* value, size_t size);
-  inline ::fun::string* mutable_string_piece_with_zero();
-  inline ::fun::string* release_string_piece_with_zero();
-  inline void set_allocated_string_piece_with_zero(::fun::string* string_piece_with_zero);
+  inline ::std::string* mutable_string_piece_with_zero();
+  inline ::std::string* release_string_piece_with_zero();
+  inline void set_allocated_string_piece_with_zero(::std::string* string_piece_with_zero);
  public:
 
-  // optional fun::string cord_with_zero = 26 [default = "12\0003", ctype = CORD];
+  // optional string cord_with_zero = 26 [default = "12\0003", ctype = CORD];
   inline bool has_cord_with_zero() const;
   inline void clear_cord_with_zero();
   static const int kCordWithZeroFieldNumber = 26;
  private:
   // Hidden due to unknown ctype option.
-  inline const ::fun::string& cord_with_zero() const;
-  inline void set_cord_with_zero(const ::fun::string& value);
+  inline const ::std::string& cord_with_zero() const;
+  inline void set_cord_with_zero(const ::std::string& value);
   inline void set_cord_with_zero(const char* value);
   inline void set_cord_with_zero(const char* value, size_t size);
-  inline ::fun::string* mutable_cord_with_zero();
-  inline ::fun::string* release_cord_with_zero();
-  inline void set_allocated_cord_with_zero(::fun::string* cord_with_zero);
+  inline ::std::string* mutable_cord_with_zero();
+  inline ::std::string* release_cord_with_zero();
+  inline void set_allocated_cord_with_zero(::std::string* cord_with_zero);
  public:
 
-  // optional fun::string replacement_string = 27 [default = "${unknown}"];
+  // optional string replacement_string = 27 [default = "${unknown}"];
   inline bool has_replacement_string() const;
   inline void clear_replacement_string();
   static const int kReplacementStringFieldNumber = 27;
-  inline const ::fun::string& replacement_string() const;
-  inline void set_replacement_string(const ::fun::string& value);
+  inline const ::std::string& replacement_string() const;
+  inline void set_replacement_string(const ::std::string& value);
   inline void set_replacement_string(const char* value);
   inline void set_replacement_string(const char* value, size_t size);
-  inline ::fun::string* mutable_replacement_string();
-  inline ::fun::string* release_replacement_string();
-  inline void set_allocated_replacement_string(::fun::string* replacement_string);
+  inline ::std::string* mutable_replacement_string();
+  inline ::std::string* release_replacement_string();
+  inline void set_allocated_replacement_string(::std::string* replacement_string);
 
   // @@protoc_insertion_point(class_scope:protobuf_unittest.TestExtremeDefaultValues)
  private:
@@ -4527,8 +4527,8 @@ class TestExtremeDefaultValues : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  static ::fun::string* _default_escaped_bytes_;
-  ::fun::string* escaped_bytes_;
+  static ::std::string* _default_escaped_bytes_;
+  ::std::string* escaped_bytes_;
   ::google::protobuf::uint64 large_uint64_;
   ::google::protobuf::uint32 large_uint32_;
   ::google::protobuf::int32 small_int32_;
@@ -4536,8 +4536,8 @@ class TestExtremeDefaultValues : public ::google::protobuf::Message {
   ::google::protobuf::int64 really_small_int64_;
   ::google::protobuf::int32 really_small_int32_;
   float zero_float_;
-  static ::fun::string* _default_utf8_string_;
-  ::fun::string* utf8_string_;
+  static ::std::string* _default_utf8_string_;
+  ::std::string* utf8_string_;
   float one_float_;
   float small_float_;
   float negative_one_float_;
@@ -4549,18 +4549,18 @@ class TestExtremeDefaultValues : public ::google::protobuf::Message {
   double nan_double_;
   float inf_float_;
   float neg_inf_float_;
-  static ::fun::string* _default_cpp_trigraph_;
-  ::fun::string* cpp_trigraph_;
-  static ::fun::string* _default_string_with_zero_;
-  ::fun::string* string_with_zero_;
-  static ::fun::string* _default_bytes_with_zero_;
-  ::fun::string* bytes_with_zero_;
-  static ::fun::string* _default_string_piece_with_zero_;
-  ::fun::string* string_piece_with_zero_;
-  static ::fun::string* _default_cord_with_zero_;
-  ::fun::string* cord_with_zero_;
-  static ::fun::string* _default_replacement_string_;
-  ::fun::string* replacement_string_;
+  static ::std::string* _default_cpp_trigraph_;
+  ::std::string* cpp_trigraph_;
+  static ::std::string* _default_string_with_zero_;
+  ::std::string* string_with_zero_;
+  static ::std::string* _default_bytes_with_zero_;
+  ::std::string* bytes_with_zero_;
+  static ::std::string* _default_string_piece_with_zero_;
+  ::std::string* string_piece_with_zero_;
+  static ::std::string* _default_cord_with_zero_;
+  ::std::string* cord_with_zero_;
+  static ::std::string* _default_replacement_string_;
+  ::std::string* replacement_string_;
   float nan_float_;
   friend void  protobuf_AddDesc_google_2fprotobuf_2funittest_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2funittest_2eproto();
@@ -4703,17 +4703,17 @@ class OneString : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional fun::string data = 1;
+  // optional string data = 1;
   inline bool has_data() const;
   inline void clear_data();
   static const int kDataFieldNumber = 1;
-  inline const ::fun::string& data() const;
-  inline void set_data(const ::fun::string& value);
+  inline const ::std::string& data() const;
+  inline void set_data(const ::std::string& value);
   inline void set_data(const char* value);
   inline void set_data(const char* value, size_t size);
-  inline ::fun::string* mutable_data();
-  inline ::fun::string* release_data();
-  inline void set_allocated_data(::fun::string* data);
+  inline ::std::string* mutable_data();
+  inline ::std::string* release_data();
+  inline void set_allocated_data(::std::string* data);
 
   // @@protoc_insertion_point(class_scope:protobuf_unittest.OneString)
  private:
@@ -4724,7 +4724,7 @@ class OneString : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::fun::string* data_;
+  ::std::string* data_;
   friend void  protobuf_AddDesc_google_2fprotobuf_2funittest_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2funittest_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2funittest_2eproto();
@@ -4787,21 +4787,21 @@ class MoreString : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // repeated fun::string data = 1;
+  // repeated string data = 1;
   inline int data_size() const;
   inline void clear_data();
   static const int kDataFieldNumber = 1;
-  inline const ::fun::string& data(int index) const;
-  inline ::fun::string* mutable_data(int index);
-  inline void set_data(int index, const ::fun::string& value);
+  inline const ::std::string& data(int index) const;
+  inline ::std::string* mutable_data(int index);
+  inline void set_data(int index, const ::std::string& value);
   inline void set_data(int index, const char* value);
   inline void set_data(int index, const char* value, size_t size);
-  inline ::fun::string* add_data();
-  inline void add_data(const ::fun::string& value);
+  inline ::std::string* add_data();
+  inline void add_data(const ::std::string& value);
   inline void add_data(const char* value);
   inline void add_data(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::fun::string>& data() const;
-  inline ::google::protobuf::RepeatedPtrField< ::fun::string>* mutable_data();
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& data() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_data();
 
   // @@protoc_insertion_point(class_scope:protobuf_unittest.MoreString)
  private:
@@ -4810,7 +4810,7 @@ class MoreString : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::google::protobuf::RepeatedPtrField< ::fun::string> data_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> data_;
   friend void  protobuf_AddDesc_google_2fprotobuf_2funittest_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2funittest_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2funittest_2eproto();
@@ -4877,13 +4877,13 @@ class OneBytes : public ::google::protobuf::Message {
   inline bool has_data() const;
   inline void clear_data();
   static const int kDataFieldNumber = 1;
-  inline const ::fun::string& data() const;
-  inline void set_data(const ::fun::string& value);
+  inline const ::std::string& data() const;
+  inline void set_data(const ::std::string& value);
   inline void set_data(const char* value);
   inline void set_data(const void* value, size_t size);
-  inline ::fun::string* mutable_data();
-  inline ::fun::string* release_data();
-  inline void set_allocated_data(::fun::string* data);
+  inline ::std::string* mutable_data();
+  inline ::std::string* release_data();
+  inline void set_allocated_data(::std::string* data);
 
   // @@protoc_insertion_point(class_scope:protobuf_unittest.OneBytes)
  private:
@@ -4894,7 +4894,7 @@ class OneBytes : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::fun::string* data_;
+  ::std::string* data_;
   friend void  protobuf_AddDesc_google_2fprotobuf_2funittest_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2funittest_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2funittest_2eproto();
@@ -4961,17 +4961,17 @@ class MoreBytes : public ::google::protobuf::Message {
   inline int data_size() const;
   inline void clear_data();
   static const int kDataFieldNumber = 1;
-  inline const ::fun::string& data(int index) const;
-  inline ::fun::string* mutable_data(int index);
-  inline void set_data(int index, const ::fun::string& value);
+  inline const ::std::string& data(int index) const;
+  inline ::std::string* mutable_data(int index);
+  inline void set_data(int index, const ::std::string& value);
   inline void set_data(int index, const char* value);
   inline void set_data(int index, const void* value, size_t size);
-  inline ::fun::string* add_data();
-  inline void add_data(const ::fun::string& value);
+  inline ::std::string* add_data();
+  inline void add_data(const ::std::string& value);
   inline void add_data(const char* value);
   inline void add_data(const void* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::fun::string>& data() const;
-  inline ::google::protobuf::RepeatedPtrField< ::fun::string>* mutable_data();
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& data() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_data();
 
   // @@protoc_insertion_point(class_scope:protobuf_unittest.MoreBytes)
  private:
@@ -4980,7 +4980,7 @@ class MoreBytes : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::google::protobuf::RepeatedPtrField< ::fun::string> data_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> data_;
   friend void  protobuf_AddDesc_google_2fprotobuf_2funittest_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2funittest_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2funittest_2eproto();
@@ -5445,17 +5445,17 @@ class TestOneof_FooGroup : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 a() const;
   inline void set_a(::google::protobuf::int32 value);
 
-  // optional fun::string b = 6;
+  // optional string b = 6;
   inline bool has_b() const;
   inline void clear_b();
   static const int kBFieldNumber = 6;
-  inline const ::fun::string& b() const;
-  inline void set_b(const ::fun::string& value);
+  inline const ::std::string& b() const;
+  inline void set_b(const ::std::string& value);
   inline void set_b(const char* value);
   inline void set_b(const char* value, size_t size);
-  inline ::fun::string* mutable_b();
-  inline ::fun::string* release_b();
-  inline void set_allocated_b(::fun::string* b);
+  inline ::std::string* mutable_b();
+  inline ::std::string* release_b();
+  inline void set_allocated_b(::std::string* b);
 
   // @@protoc_insertion_point(class_scope:protobuf_unittest.TestOneof.FooGroup)
  private:
@@ -5468,7 +5468,7 @@ class TestOneof_FooGroup : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::fun::string* b_;
+  ::std::string* b_;
   ::google::protobuf::int32 a_;
   friend void  protobuf_AddDesc_google_2fprotobuf_2funittest_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2funittest_2eproto();
@@ -5549,17 +5549,17 @@ class TestOneof : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 foo_int() const;
   inline void set_foo_int(::google::protobuf::int32 value);
 
-  // optional fun::string foo_string = 2;
+  // optional string foo_string = 2;
   inline bool has_foo_string() const;
   inline void clear_foo_string();
   static const int kFooStringFieldNumber = 2;
-  inline const ::fun::string& foo_string() const;
-  inline void set_foo_string(const ::fun::string& value);
+  inline const ::std::string& foo_string() const;
+  inline void set_foo_string(const ::std::string& value);
   inline void set_foo_string(const char* value);
   inline void set_foo_string(const char* value, size_t size);
-  inline ::fun::string* mutable_foo_string();
-  inline ::fun::string* release_foo_string();
-  inline void set_allocated_foo_string(::fun::string* foo_string);
+  inline ::std::string* mutable_foo_string();
+  inline ::std::string* release_foo_string();
+  inline void set_allocated_foo_string(::std::string* foo_string);
 
   // optional .protobuf_unittest.TestAllTypes foo_message = 3;
   inline bool has_foo_message() const;
@@ -5597,7 +5597,7 @@ class TestOneof : public ::google::protobuf::Message {
   mutable int _cached_size_;
   union FooUnion {
     ::google::protobuf::int32 foo_int_;
-    ::fun::string* foo_string_;
+    ::std::string* foo_string_;
     ::protobuf_unittest::TestAllTypes* foo_message_;
     ::protobuf_unittest::TestOneof_FooGroup* foogroup_;
   } foo_;
@@ -5672,17 +5672,17 @@ class TestOneofBackwardsCompatible_FooGroup : public ::google::protobuf::Message
   inline ::google::protobuf::int32 a() const;
   inline void set_a(::google::protobuf::int32 value);
 
-  // optional fun::string b = 6;
+  // optional string b = 6;
   inline bool has_b() const;
   inline void clear_b();
   static const int kBFieldNumber = 6;
-  inline const ::fun::string& b() const;
-  inline void set_b(const ::fun::string& value);
+  inline const ::std::string& b() const;
+  inline void set_b(const ::std::string& value);
   inline void set_b(const char* value);
   inline void set_b(const char* value, size_t size);
-  inline ::fun::string* mutable_b();
-  inline ::fun::string* release_b();
-  inline void set_allocated_b(::fun::string* b);
+  inline ::std::string* mutable_b();
+  inline ::std::string* release_b();
+  inline void set_allocated_b(::std::string* b);
 
   // @@protoc_insertion_point(class_scope:protobuf_unittest.TestOneofBackwardsCompatible.FooGroup)
  private:
@@ -5695,7 +5695,7 @@ class TestOneofBackwardsCompatible_FooGroup : public ::google::protobuf::Message
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::fun::string* b_;
+  ::std::string* b_;
   ::google::protobuf::int32 a_;
   friend void  protobuf_AddDesc_google_2fprotobuf_2funittest_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2funittest_2eproto();
@@ -5768,17 +5768,17 @@ class TestOneofBackwardsCompatible : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 foo_int() const;
   inline void set_foo_int(::google::protobuf::int32 value);
 
-  // optional fun::string foo_string = 2;
+  // optional string foo_string = 2;
   inline bool has_foo_string() const;
   inline void clear_foo_string();
   static const int kFooStringFieldNumber = 2;
-  inline const ::fun::string& foo_string() const;
-  inline void set_foo_string(const ::fun::string& value);
+  inline const ::std::string& foo_string() const;
+  inline void set_foo_string(const ::std::string& value);
   inline void set_foo_string(const char* value);
   inline void set_foo_string(const char* value, size_t size);
-  inline ::fun::string* mutable_foo_string();
-  inline ::fun::string* release_foo_string();
-  inline void set_allocated_foo_string(::fun::string* foo_string);
+  inline ::std::string* mutable_foo_string();
+  inline ::std::string* release_foo_string();
+  inline void set_allocated_foo_string(::std::string* foo_string);
 
   // optional .protobuf_unittest.TestAllTypes foo_message = 3;
   inline bool has_foo_message() const;
@@ -5813,7 +5813,7 @@ class TestOneofBackwardsCompatible : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::fun::string* foo_string_;
+  ::std::string* foo_string_;
   ::protobuf_unittest::TestAllTypes* foo_message_;
   ::protobuf_unittest::TestOneofBackwardsCompatible_FooGroup* foogroup_;
   ::google::protobuf::int32 foo_int_;
@@ -5886,17 +5886,17 @@ class TestOneof2_FooGroup : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 a() const;
   inline void set_a(::google::protobuf::int32 value);
 
-  // optional fun::string b = 10;
+  // optional string b = 10;
   inline bool has_b() const;
   inline void clear_b();
   static const int kBFieldNumber = 10;
-  inline const ::fun::string& b() const;
-  inline void set_b(const ::fun::string& value);
+  inline const ::std::string& b() const;
+  inline void set_b(const ::std::string& value);
   inline void set_b(const char* value);
   inline void set_b(const char* value, size_t size);
-  inline ::fun::string* mutable_b();
-  inline ::fun::string* release_b();
-  inline void set_allocated_b(::fun::string* b);
+  inline ::std::string* mutable_b();
+  inline ::std::string* release_b();
+  inline void set_allocated_b(::std::string* b);
 
   // @@protoc_insertion_point(class_scope:protobuf_unittest.TestOneof2.FooGroup)
  private:
@@ -5909,7 +5909,7 @@ class TestOneof2_FooGroup : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::fun::string* b_;
+  ::std::string* b_;
   ::google::protobuf::int32 a_;
   friend void  protobuf_AddDesc_google_2fprotobuf_2funittest_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2funittest_2eproto();
@@ -6106,10 +6106,10 @@ class TestOneof2 : public ::google::protobuf::Message {
   NestedEnum_descriptor() {
     return TestOneof2_NestedEnum_descriptor();
   }
-  static inline const ::fun::string& NestedEnum_Name(NestedEnum value) {
+  static inline const ::std::string& NestedEnum_Name(NestedEnum value) {
     return TestOneof2_NestedEnum_Name(value);
   }
-  static inline bool NestedEnum_Parse(const ::fun::string& name,
+  static inline bool NestedEnum_Parse(const ::std::string& name,
       NestedEnum* value) {
     return TestOneof2_NestedEnum_Parse(name, value);
   }
@@ -6123,59 +6123,59 @@ class TestOneof2 : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 foo_int() const;
   inline void set_foo_int(::google::protobuf::int32 value);
 
-  // optional fun::string foo_string = 2;
+  // optional string foo_string = 2;
   inline bool has_foo_string() const;
   inline void clear_foo_string();
   static const int kFooStringFieldNumber = 2;
-  inline const ::fun::string& foo_string() const;
-  inline void set_foo_string(const ::fun::string& value);
+  inline const ::std::string& foo_string() const;
+  inline void set_foo_string(const ::std::string& value);
   inline void set_foo_string(const char* value);
   inline void set_foo_string(const char* value, size_t size);
-  inline ::fun::string* mutable_foo_string();
-  inline ::fun::string* release_foo_string();
-  inline void set_allocated_foo_string(::fun::string* foo_string);
+  inline ::std::string* mutable_foo_string();
+  inline ::std::string* release_foo_string();
+  inline void set_allocated_foo_string(::std::string* foo_string);
 
-  // optional fun::string foo_cord = 3 [ctype = CORD];
+  // optional string foo_cord = 3 [ctype = CORD];
   inline bool has_foo_cord() const;
   inline void clear_foo_cord();
   static const int kFooCordFieldNumber = 3;
  private:
   // Hidden due to unknown ctype option.
-  inline const ::fun::string& foo_cord() const;
-  inline void set_foo_cord(const ::fun::string& value);
+  inline const ::std::string& foo_cord() const;
+  inline void set_foo_cord(const ::std::string& value);
   inline void set_foo_cord(const char* value);
   inline void set_foo_cord(const char* value, size_t size);
-  inline ::fun::string* mutable_foo_cord();
-  inline ::fun::string* release_foo_cord();
-  inline void set_allocated_foo_cord(::fun::string* foo_cord);
+  inline ::std::string* mutable_foo_cord();
+  inline ::std::string* release_foo_cord();
+  inline void set_allocated_foo_cord(::std::string* foo_cord);
  public:
 
-  // optional fun::string foo_string_piece = 4 [ctype = STRING_PIECE];
+  // optional string foo_string_piece = 4 [ctype = STRING_PIECE];
   inline bool has_foo_string_piece() const;
   inline void clear_foo_string_piece();
   static const int kFooStringPieceFieldNumber = 4;
  private:
   // Hidden due to unknown ctype option.
-  inline const ::fun::string& foo_string_piece() const;
-  inline void set_foo_string_piece(const ::fun::string& value);
+  inline const ::std::string& foo_string_piece() const;
+  inline void set_foo_string_piece(const ::std::string& value);
   inline void set_foo_string_piece(const char* value);
   inline void set_foo_string_piece(const char* value, size_t size);
-  inline ::fun::string* mutable_foo_string_piece();
-  inline ::fun::string* release_foo_string_piece();
-  inline void set_allocated_foo_string_piece(::fun::string* foo_string_piece);
+  inline ::std::string* mutable_foo_string_piece();
+  inline ::std::string* release_foo_string_piece();
+  inline void set_allocated_foo_string_piece(::std::string* foo_string_piece);
  public:
 
   // optional bytes foo_bytes = 5;
   inline bool has_foo_bytes() const;
   inline void clear_foo_bytes();
   static const int kFooBytesFieldNumber = 5;
-  inline const ::fun::string& foo_bytes() const;
-  inline void set_foo_bytes(const ::fun::string& value);
+  inline const ::std::string& foo_bytes() const;
+  inline void set_foo_bytes(const ::std::string& value);
   inline void set_foo_bytes(const char* value);
   inline void set_foo_bytes(const void* value, size_t size);
-  inline ::fun::string* mutable_foo_bytes();
-  inline ::fun::string* release_foo_bytes();
-  inline void set_allocated_foo_bytes(::fun::string* foo_bytes);
+  inline ::std::string* mutable_foo_bytes();
+  inline ::std::string* release_foo_bytes();
+  inline void set_allocated_foo_bytes(::std::string* foo_bytes);
 
   // optional .protobuf_unittest.TestOneof2.NestedEnum foo_enum = 6;
   inline bool has_foo_enum() const;
@@ -6218,59 +6218,59 @@ class TestOneof2 : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 bar_int() const;
   inline void set_bar_int(::google::protobuf::int32 value);
 
-  // optional fun::string bar_string = 13 [default = "STRING"];
+  // optional string bar_string = 13 [default = "STRING"];
   inline bool has_bar_string() const;
   inline void clear_bar_string();
   static const int kBarStringFieldNumber = 13;
-  inline const ::fun::string& bar_string() const;
-  inline void set_bar_string(const ::fun::string& value);
+  inline const ::std::string& bar_string() const;
+  inline void set_bar_string(const ::std::string& value);
   inline void set_bar_string(const char* value);
   inline void set_bar_string(const char* value, size_t size);
-  inline ::fun::string* mutable_bar_string();
-  inline ::fun::string* release_bar_string();
-  inline void set_allocated_bar_string(::fun::string* bar_string);
+  inline ::std::string* mutable_bar_string();
+  inline ::std::string* release_bar_string();
+  inline void set_allocated_bar_string(::std::string* bar_string);
 
-  // optional fun::string bar_cord = 14 [default = "CORD", ctype = CORD];
+  // optional string bar_cord = 14 [default = "CORD", ctype = CORD];
   inline bool has_bar_cord() const;
   inline void clear_bar_cord();
   static const int kBarCordFieldNumber = 14;
  private:
   // Hidden due to unknown ctype option.
-  inline const ::fun::string& bar_cord() const;
-  inline void set_bar_cord(const ::fun::string& value);
+  inline const ::std::string& bar_cord() const;
+  inline void set_bar_cord(const ::std::string& value);
   inline void set_bar_cord(const char* value);
   inline void set_bar_cord(const char* value, size_t size);
-  inline ::fun::string* mutable_bar_cord();
-  inline ::fun::string* release_bar_cord();
-  inline void set_allocated_bar_cord(::fun::string* bar_cord);
+  inline ::std::string* mutable_bar_cord();
+  inline ::std::string* release_bar_cord();
+  inline void set_allocated_bar_cord(::std::string* bar_cord);
  public:
 
-  // optional fun::string bar_string_piece = 15 [default = "SPIECE", ctype = STRING_PIECE];
+  // optional string bar_string_piece = 15 [default = "SPIECE", ctype = STRING_PIECE];
   inline bool has_bar_string_piece() const;
   inline void clear_bar_string_piece();
   static const int kBarStringPieceFieldNumber = 15;
  private:
   // Hidden due to unknown ctype option.
-  inline const ::fun::string& bar_string_piece() const;
-  inline void set_bar_string_piece(const ::fun::string& value);
+  inline const ::std::string& bar_string_piece() const;
+  inline void set_bar_string_piece(const ::std::string& value);
   inline void set_bar_string_piece(const char* value);
   inline void set_bar_string_piece(const char* value, size_t size);
-  inline ::fun::string* mutable_bar_string_piece();
-  inline ::fun::string* release_bar_string_piece();
-  inline void set_allocated_bar_string_piece(::fun::string* bar_string_piece);
+  inline ::std::string* mutable_bar_string_piece();
+  inline ::std::string* release_bar_string_piece();
+  inline void set_allocated_bar_string_piece(::std::string* bar_string_piece);
  public:
 
   // optional bytes bar_bytes = 16 [default = "BYTES"];
   inline bool has_bar_bytes() const;
   inline void clear_bar_bytes();
   static const int kBarBytesFieldNumber = 16;
-  inline const ::fun::string& bar_bytes() const;
-  inline void set_bar_bytes(const ::fun::string& value);
+  inline const ::std::string& bar_bytes() const;
+  inline void set_bar_bytes(const ::std::string& value);
   inline void set_bar_bytes(const char* value);
   inline void set_bar_bytes(const void* value, size_t size);
-  inline ::fun::string* mutable_bar_bytes();
-  inline ::fun::string* release_bar_bytes();
-  inline void set_allocated_bar_bytes(::fun::string* bar_bytes);
+  inline ::std::string* mutable_bar_bytes();
+  inline ::std::string* release_bar_bytes();
+  inline void set_allocated_bar_bytes(::std::string* bar_bytes);
 
   // optional .protobuf_unittest.TestOneof2.NestedEnum bar_enum = 17 [default = BAR];
   inline bool has_bar_enum() const;
@@ -6286,17 +6286,17 @@ class TestOneof2 : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 baz_int() const;
   inline void set_baz_int(::google::protobuf::int32 value);
 
-  // optional fun::string baz_string = 19 [default = "BAZ"];
+  // optional string baz_string = 19 [default = "BAZ"];
   inline bool has_baz_string() const;
   inline void clear_baz_string();
   static const int kBazStringFieldNumber = 19;
-  inline const ::fun::string& baz_string() const;
-  inline void set_baz_string(const ::fun::string& value);
+  inline const ::std::string& baz_string() const;
+  inline void set_baz_string(const ::std::string& value);
   inline void set_baz_string(const char* value);
   inline void set_baz_string(const char* value, size_t size);
-  inline ::fun::string* mutable_baz_string();
-  inline ::fun::string* release_baz_string();
-  inline void set_allocated_baz_string(::fun::string* baz_string);
+  inline ::std::string* mutable_baz_string();
+  inline ::std::string* release_baz_string();
+  inline void set_allocated_baz_string(::std::string* baz_string);
 
   inline FooCase foo_case() const;
   inline BarCase bar_case() const;
@@ -6334,15 +6334,15 @@ class TestOneof2 : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  static ::fun::string* _default_baz_string_;
-  ::fun::string* baz_string_;
+  static ::std::string* _default_baz_string_;
+  ::std::string* baz_string_;
   ::google::protobuf::int32 baz_int_;
   union FooUnion {
     ::google::protobuf::int32 foo_int_;
-    ::fun::string* foo_string_;
-    ::fun::string* foo_cord_;
-    ::fun::string* foo_string_piece_;
-    ::fun::string* foo_bytes_;
+    ::std::string* foo_string_;
+    ::std::string* foo_cord_;
+    ::std::string* foo_string_piece_;
+    ::std::string* foo_bytes_;
     int foo_enum_;
     ::protobuf_unittest::TestOneof2_NestedMessage* foo_message_;
     ::protobuf_unittest::TestOneof2_FooGroup* foogroup_;
@@ -6350,16 +6350,16 @@ class TestOneof2 : public ::google::protobuf::Message {
   } foo_;
   union BarUnion {
     ::google::protobuf::int32 bar_int_;
-    ::fun::string* bar_string_;
-    ::fun::string* bar_cord_;
-    ::fun::string* bar_string_piece_;
-    ::fun::string* bar_bytes_;
+    ::std::string* bar_string_;
+    ::std::string* bar_cord_;
+    ::std::string* bar_string_piece_;
+    ::std::string* bar_bytes_;
     int bar_enum_;
   } bar_;
-  static ::fun::string* _default_bar_string_;
-  static ::fun::string* _default_bar_cord_;
-  static ::fun::string* _default_bar_string_piece_;
-  static ::fun::string* _default_bar_bytes_;
+  static ::std::string* _default_bar_string_;
+  static ::std::string* _default_bar_cord_;
+  static ::std::string* _default_bar_string_piece_;
+  static ::std::string* _default_bar_bytes_;
   ::google::protobuf::uint32 _oneof_case_[2];
 
   friend void  protobuf_AddDesc_google_2fprotobuf_2funittest_2eproto();
@@ -6519,17 +6519,17 @@ class TestRequiredOneof : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 foo_int() const;
   inline void set_foo_int(::google::protobuf::int32 value);
 
-  // optional fun::string foo_string = 2;
+  // optional string foo_string = 2;
   inline bool has_foo_string() const;
   inline void clear_foo_string();
   static const int kFooStringFieldNumber = 2;
-  inline const ::fun::string& foo_string() const;
-  inline void set_foo_string(const ::fun::string& value);
+  inline const ::std::string& foo_string() const;
+  inline void set_foo_string(const ::std::string& value);
   inline void set_foo_string(const char* value);
   inline void set_foo_string(const char* value, size_t size);
-  inline ::fun::string* mutable_foo_string();
-  inline ::fun::string* release_foo_string();
-  inline void set_allocated_foo_string(::fun::string* foo_string);
+  inline ::std::string* mutable_foo_string();
+  inline ::std::string* release_foo_string();
+  inline void set_allocated_foo_string(::std::string* foo_string);
 
   // optional .protobuf_unittest.TestRequiredOneof.NestedMessage foo_message = 3;
   inline bool has_foo_message() const;
@@ -6557,7 +6557,7 @@ class TestRequiredOneof : public ::google::protobuf::Message {
   mutable int _cached_size_;
   union FooUnion {
     ::google::protobuf::int32 foo_int_;
-    ::fun::string* foo_string_;
+    ::std::string* foo_string_;
     ::protobuf_unittest::TestRequiredOneof_NestedMessage* foo_message_;
   } foo_;
   ::google::protobuf::uint32 _oneof_case_[1];
@@ -7376,10 +7376,10 @@ class TestDynamicExtensions : public ::google::protobuf::Message {
   DynamicEnumType_descriptor() {
     return TestDynamicExtensions_DynamicEnumType_descriptor();
   }
-  static inline const ::fun::string& DynamicEnumType_Name(DynamicEnumType value) {
+  static inline const ::std::string& DynamicEnumType_Name(DynamicEnumType value) {
     return TestDynamicExtensions_DynamicEnumType_Name(value);
   }
-  static inline bool DynamicEnumType_Parse(const ::fun::string& name,
+  static inline bool DynamicEnumType_Parse(const ::std::string& name,
       DynamicEnumType* value) {
     return TestDynamicExtensions_DynamicEnumType_Parse(name, value);
   }
@@ -7425,21 +7425,21 @@ class TestDynamicExtensions : public ::google::protobuf::Message {
   inline ::protobuf_unittest::TestDynamicExtensions_DynamicMessageType* release_dynamic_message_extension();
   inline void set_allocated_dynamic_message_extension(::protobuf_unittest::TestDynamicExtensions_DynamicMessageType* dynamic_message_extension);
 
-  // repeated fun::string repeated_extension = 2005;
+  // repeated string repeated_extension = 2005;
   inline int repeated_extension_size() const;
   inline void clear_repeated_extension();
   static const int kRepeatedExtensionFieldNumber = 2005;
-  inline const ::fun::string& repeated_extension(int index) const;
-  inline ::fun::string* mutable_repeated_extension(int index);
-  inline void set_repeated_extension(int index, const ::fun::string& value);
+  inline const ::std::string& repeated_extension(int index) const;
+  inline ::std::string* mutable_repeated_extension(int index);
+  inline void set_repeated_extension(int index, const ::std::string& value);
   inline void set_repeated_extension(int index, const char* value);
   inline void set_repeated_extension(int index, const char* value, size_t size);
-  inline ::fun::string* add_repeated_extension();
-  inline void add_repeated_extension(const ::fun::string& value);
+  inline ::std::string* add_repeated_extension();
+  inline void add_repeated_extension(const ::std::string& value);
   inline void add_repeated_extension(const char* value);
   inline void add_repeated_extension(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::fun::string>& repeated_extension() const;
-  inline ::google::protobuf::RepeatedPtrField< ::fun::string>* mutable_repeated_extension();
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& repeated_extension() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_repeated_extension();
 
   // repeated sint32 packed_extension = 2006 [packed = true];
   inline int packed_extension_size() const;
@@ -7474,7 +7474,7 @@ class TestDynamicExtensions : public ::google::protobuf::Message {
   int enum_extension_;
   ::protobuf_unittest::ForeignMessage* message_extension_;
   ::protobuf_unittest::TestDynamicExtensions_DynamicMessageType* dynamic_message_extension_;
-  ::google::protobuf::RepeatedPtrField< ::fun::string> repeated_extension_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> repeated_extension_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > packed_extension_;
   mutable int _packed_extension_cached_byte_size_;
   int dynamic_enum_extension_;
@@ -8320,17 +8320,17 @@ class TestCommentInjectionMessage : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional fun::string a = 1 [default = "*/ <- Neither should this."];
+  // optional string a = 1 [default = "*/ <- Neither should this."];
   inline bool has_a() const;
   inline void clear_a();
   static const int kAFieldNumber = 1;
-  inline const ::fun::string& a() const;
-  inline void set_a(const ::fun::string& value);
+  inline const ::std::string& a() const;
+  inline void set_a(const ::std::string& value);
   inline void set_a(const char* value);
   inline void set_a(const char* value, size_t size);
-  inline ::fun::string* mutable_a();
-  inline ::fun::string* release_a();
-  inline void set_allocated_a(::fun::string* a);
+  inline ::std::string* mutable_a();
+  inline ::std::string* release_a();
+  inline void set_allocated_a(::std::string* a);
 
   // @@protoc_insertion_point(class_scope:protobuf_unittest.TestCommentInjectionMessage)
  private:
@@ -8341,8 +8341,8 @@ class TestCommentInjectionMessage : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  static ::fun::string* _default_a_;
-  ::fun::string* a_;
+  static ::std::string* _default_a_;
+  ::std::string* a_;
   friend void  protobuf_AddDesc_google_2fprotobuf_2funittest_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2funittest_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2funittest_2eproto();
@@ -9654,7 +9654,7 @@ inline void TestAllTypes::set_optional_bool(bool value) {
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestAllTypes.optional_bool)
 }
 
-// optional fun::string optional_string = 14;
+// optional string optional_string = 14;
 inline bool TestAllTypes::has_optional_string() const {
   return (_has_bits_[0] & 0x00002000u) != 0;
 }
@@ -9670,14 +9670,14 @@ inline void TestAllTypes::clear_optional_string() {
   }
   clear_has_optional_string();
 }
-inline const ::fun::string& TestAllTypes::optional_string() const {
+inline const ::std::string& TestAllTypes::optional_string() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestAllTypes.optional_string)
   return *optional_string_;
 }
-inline void TestAllTypes::set_optional_string(const ::fun::string& value) {
+inline void TestAllTypes::set_optional_string(const ::std::string& value) {
   set_has_optional_string();
   if (optional_string_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    optional_string_ = new ::fun::string;
+    optional_string_ = new ::std::string;
   }
   optional_string_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestAllTypes.optional_string)
@@ -9685,7 +9685,7 @@ inline void TestAllTypes::set_optional_string(const ::fun::string& value) {
 inline void TestAllTypes::set_optional_string(const char* value) {
   set_has_optional_string();
   if (optional_string_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    optional_string_ = new ::fun::string;
+    optional_string_ = new ::std::string;
   }
   optional_string_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestAllTypes.optional_string)
@@ -9693,30 +9693,30 @@ inline void TestAllTypes::set_optional_string(const char* value) {
 inline void TestAllTypes::set_optional_string(const char* value, size_t size) {
   set_has_optional_string();
   if (optional_string_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    optional_string_ = new ::fun::string;
+    optional_string_ = new ::std::string;
   }
   optional_string_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestAllTypes.optional_string)
 }
-inline ::fun::string* TestAllTypes::mutable_optional_string() {
+inline ::std::string* TestAllTypes::mutable_optional_string() {
   set_has_optional_string();
   if (optional_string_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    optional_string_ = new ::fun::string;
+    optional_string_ = new ::std::string;
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestAllTypes.optional_string)
   return optional_string_;
 }
-inline ::fun::string* TestAllTypes::release_optional_string() {
+inline ::std::string* TestAllTypes::release_optional_string() {
   clear_has_optional_string();
   if (optional_string_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::fun::string* temp = optional_string_;
-    optional_string_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::std::string* temp = optional_string_;
+    optional_string_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void TestAllTypes::set_allocated_optional_string(::fun::string* optional_string) {
+inline void TestAllTypes::set_allocated_optional_string(::std::string* optional_string) {
   if (optional_string_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete optional_string_;
   }
@@ -9725,7 +9725,7 @@ inline void TestAllTypes::set_allocated_optional_string(::fun::string* optional_
     optional_string_ = optional_string;
   } else {
     clear_has_optional_string();
-    optional_string_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    optional_string_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestAllTypes.optional_string)
 }
@@ -9746,14 +9746,14 @@ inline void TestAllTypes::clear_optional_bytes() {
   }
   clear_has_optional_bytes();
 }
-inline const ::fun::string& TestAllTypes::optional_bytes() const {
+inline const ::std::string& TestAllTypes::optional_bytes() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestAllTypes.optional_bytes)
   return *optional_bytes_;
 }
-inline void TestAllTypes::set_optional_bytes(const ::fun::string& value) {
+inline void TestAllTypes::set_optional_bytes(const ::std::string& value) {
   set_has_optional_bytes();
   if (optional_bytes_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    optional_bytes_ = new ::fun::string;
+    optional_bytes_ = new ::std::string;
   }
   optional_bytes_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestAllTypes.optional_bytes)
@@ -9761,7 +9761,7 @@ inline void TestAllTypes::set_optional_bytes(const ::fun::string& value) {
 inline void TestAllTypes::set_optional_bytes(const char* value) {
   set_has_optional_bytes();
   if (optional_bytes_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    optional_bytes_ = new ::fun::string;
+    optional_bytes_ = new ::std::string;
   }
   optional_bytes_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestAllTypes.optional_bytes)
@@ -9769,30 +9769,30 @@ inline void TestAllTypes::set_optional_bytes(const char* value) {
 inline void TestAllTypes::set_optional_bytes(const void* value, size_t size) {
   set_has_optional_bytes();
   if (optional_bytes_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    optional_bytes_ = new ::fun::string;
+    optional_bytes_ = new ::std::string;
   }
   optional_bytes_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestAllTypes.optional_bytes)
 }
-inline ::fun::string* TestAllTypes::mutable_optional_bytes() {
+inline ::std::string* TestAllTypes::mutable_optional_bytes() {
   set_has_optional_bytes();
   if (optional_bytes_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    optional_bytes_ = new ::fun::string;
+    optional_bytes_ = new ::std::string;
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestAllTypes.optional_bytes)
   return optional_bytes_;
 }
-inline ::fun::string* TestAllTypes::release_optional_bytes() {
+inline ::std::string* TestAllTypes::release_optional_bytes() {
   clear_has_optional_bytes();
   if (optional_bytes_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::fun::string* temp = optional_bytes_;
-    optional_bytes_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::std::string* temp = optional_bytes_;
+    optional_bytes_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void TestAllTypes::set_allocated_optional_bytes(::fun::string* optional_bytes) {
+inline void TestAllTypes::set_allocated_optional_bytes(::std::string* optional_bytes) {
   if (optional_bytes_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete optional_bytes_;
   }
@@ -9801,7 +9801,7 @@ inline void TestAllTypes::set_allocated_optional_bytes(::fun::string* optional_b
     optional_bytes_ = optional_bytes;
   } else {
     clear_has_optional_bytes();
-    optional_bytes_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    optional_bytes_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestAllTypes.optional_bytes)
 }
@@ -10045,7 +10045,7 @@ inline void TestAllTypes::set_optional_import_enum(::protobuf_unittest_import::I
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestAllTypes.optional_import_enum)
 }
 
-// optional fun::string optional_string_piece = 24 [ctype = STRING_PIECE];
+// optional string optional_string_piece = 24 [ctype = STRING_PIECE];
 inline bool TestAllTypes::has_optional_string_piece() const {
   return (_has_bits_[0] & 0x00400000u) != 0;
 }
@@ -10061,14 +10061,14 @@ inline void TestAllTypes::clear_optional_string_piece() {
   }
   clear_has_optional_string_piece();
 }
-inline const ::fun::string& TestAllTypes::optional_string_piece() const {
+inline const ::std::string& TestAllTypes::optional_string_piece() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestAllTypes.optional_string_piece)
   return *optional_string_piece_;
 }
-inline void TestAllTypes::set_optional_string_piece(const ::fun::string& value) {
+inline void TestAllTypes::set_optional_string_piece(const ::std::string& value) {
   set_has_optional_string_piece();
   if (optional_string_piece_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    optional_string_piece_ = new ::fun::string;
+    optional_string_piece_ = new ::std::string;
   }
   optional_string_piece_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestAllTypes.optional_string_piece)
@@ -10076,7 +10076,7 @@ inline void TestAllTypes::set_optional_string_piece(const ::fun::string& value) 
 inline void TestAllTypes::set_optional_string_piece(const char* value) {
   set_has_optional_string_piece();
   if (optional_string_piece_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    optional_string_piece_ = new ::fun::string;
+    optional_string_piece_ = new ::std::string;
   }
   optional_string_piece_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestAllTypes.optional_string_piece)
@@ -10084,30 +10084,30 @@ inline void TestAllTypes::set_optional_string_piece(const char* value) {
 inline void TestAllTypes::set_optional_string_piece(const char* value, size_t size) {
   set_has_optional_string_piece();
   if (optional_string_piece_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    optional_string_piece_ = new ::fun::string;
+    optional_string_piece_ = new ::std::string;
   }
   optional_string_piece_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestAllTypes.optional_string_piece)
 }
-inline ::fun::string* TestAllTypes::mutable_optional_string_piece() {
+inline ::std::string* TestAllTypes::mutable_optional_string_piece() {
   set_has_optional_string_piece();
   if (optional_string_piece_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    optional_string_piece_ = new ::fun::string;
+    optional_string_piece_ = new ::std::string;
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestAllTypes.optional_string_piece)
   return optional_string_piece_;
 }
-inline ::fun::string* TestAllTypes::release_optional_string_piece() {
+inline ::std::string* TestAllTypes::release_optional_string_piece() {
   clear_has_optional_string_piece();
   if (optional_string_piece_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::fun::string* temp = optional_string_piece_;
-    optional_string_piece_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::std::string* temp = optional_string_piece_;
+    optional_string_piece_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void TestAllTypes::set_allocated_optional_string_piece(::fun::string* optional_string_piece) {
+inline void TestAllTypes::set_allocated_optional_string_piece(::std::string* optional_string_piece) {
   if (optional_string_piece_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete optional_string_piece_;
   }
@@ -10116,12 +10116,12 @@ inline void TestAllTypes::set_allocated_optional_string_piece(::fun::string* opt
     optional_string_piece_ = optional_string_piece;
   } else {
     clear_has_optional_string_piece();
-    optional_string_piece_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    optional_string_piece_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestAllTypes.optional_string_piece)
 }
 
-// optional fun::string optional_cord = 25 [ctype = CORD];
+// optional string optional_cord = 25 [ctype = CORD];
 inline bool TestAllTypes::has_optional_cord() const {
   return (_has_bits_[0] & 0x00800000u) != 0;
 }
@@ -10137,14 +10137,14 @@ inline void TestAllTypes::clear_optional_cord() {
   }
   clear_has_optional_cord();
 }
-inline const ::fun::string& TestAllTypes::optional_cord() const {
+inline const ::std::string& TestAllTypes::optional_cord() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestAllTypes.optional_cord)
   return *optional_cord_;
 }
-inline void TestAllTypes::set_optional_cord(const ::fun::string& value) {
+inline void TestAllTypes::set_optional_cord(const ::std::string& value) {
   set_has_optional_cord();
   if (optional_cord_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    optional_cord_ = new ::fun::string;
+    optional_cord_ = new ::std::string;
   }
   optional_cord_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestAllTypes.optional_cord)
@@ -10152,7 +10152,7 @@ inline void TestAllTypes::set_optional_cord(const ::fun::string& value) {
 inline void TestAllTypes::set_optional_cord(const char* value) {
   set_has_optional_cord();
   if (optional_cord_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    optional_cord_ = new ::fun::string;
+    optional_cord_ = new ::std::string;
   }
   optional_cord_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestAllTypes.optional_cord)
@@ -10160,30 +10160,30 @@ inline void TestAllTypes::set_optional_cord(const char* value) {
 inline void TestAllTypes::set_optional_cord(const char* value, size_t size) {
   set_has_optional_cord();
   if (optional_cord_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    optional_cord_ = new ::fun::string;
+    optional_cord_ = new ::std::string;
   }
   optional_cord_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestAllTypes.optional_cord)
 }
-inline ::fun::string* TestAllTypes::mutable_optional_cord() {
+inline ::std::string* TestAllTypes::mutable_optional_cord() {
   set_has_optional_cord();
   if (optional_cord_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    optional_cord_ = new ::fun::string;
+    optional_cord_ = new ::std::string;
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestAllTypes.optional_cord)
   return optional_cord_;
 }
-inline ::fun::string* TestAllTypes::release_optional_cord() {
+inline ::std::string* TestAllTypes::release_optional_cord() {
   clear_has_optional_cord();
   if (optional_cord_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::fun::string* temp = optional_cord_;
-    optional_cord_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::std::string* temp = optional_cord_;
+    optional_cord_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void TestAllTypes::set_allocated_optional_cord(::fun::string* optional_cord) {
+inline void TestAllTypes::set_allocated_optional_cord(::std::string* optional_cord) {
   if (optional_cord_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete optional_cord_;
   }
@@ -10192,7 +10192,7 @@ inline void TestAllTypes::set_allocated_optional_cord(::fun::string* optional_co
     optional_cord_ = optional_cord;
   } else {
     clear_has_optional_cord();
-    optional_cord_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    optional_cord_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestAllTypes.optional_cord)
 }
@@ -10669,22 +10669,22 @@ TestAllTypes::mutable_repeated_bool() {
   return &repeated_bool_;
 }
 
-// repeated fun::string repeated_string = 44;
+// repeated string repeated_string = 44;
 inline int TestAllTypes::repeated_string_size() const {
   return repeated_string_.size();
 }
 inline void TestAllTypes::clear_repeated_string() {
   repeated_string_.Clear();
 }
-inline const ::fun::string& TestAllTypes::repeated_string(int index) const {
+inline const ::std::string& TestAllTypes::repeated_string(int index) const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestAllTypes.repeated_string)
   return repeated_string_.Get(index);
 }
-inline ::fun::string* TestAllTypes::mutable_repeated_string(int index) {
+inline ::std::string* TestAllTypes::mutable_repeated_string(int index) {
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestAllTypes.repeated_string)
   return repeated_string_.Mutable(index);
 }
-inline void TestAllTypes::set_repeated_string(int index, const ::fun::string& value) {
+inline void TestAllTypes::set_repeated_string(int index, const ::std::string& value) {
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestAllTypes.repeated_string)
   repeated_string_.Mutable(index)->assign(value);
 }
@@ -10697,10 +10697,10 @@ inline void TestAllTypes::set_repeated_string(int index, const char* value, size
     reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestAllTypes.repeated_string)
 }
-inline ::fun::string* TestAllTypes::add_repeated_string() {
+inline ::std::string* TestAllTypes::add_repeated_string() {
   return repeated_string_.Add();
 }
-inline void TestAllTypes::add_repeated_string(const ::fun::string& value) {
+inline void TestAllTypes::add_repeated_string(const ::std::string& value) {
   repeated_string_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:protobuf_unittest.TestAllTypes.repeated_string)
 }
@@ -10712,12 +10712,12 @@ inline void TestAllTypes::add_repeated_string(const char* value, size_t size) {
   repeated_string_.Add()->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:protobuf_unittest.TestAllTypes.repeated_string)
 }
-inline const ::google::protobuf::RepeatedPtrField< ::fun::string>&
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
 TestAllTypes::repeated_string() const {
   // @@protoc_insertion_point(field_list:protobuf_unittest.TestAllTypes.repeated_string)
   return repeated_string_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::fun::string>*
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 TestAllTypes::mutable_repeated_string() {
   // @@protoc_insertion_point(field_mutable_list:protobuf_unittest.TestAllTypes.repeated_string)
   return &repeated_string_;
@@ -10730,15 +10730,15 @@ inline int TestAllTypes::repeated_bytes_size() const {
 inline void TestAllTypes::clear_repeated_bytes() {
   repeated_bytes_.Clear();
 }
-inline const ::fun::string& TestAllTypes::repeated_bytes(int index) const {
+inline const ::std::string& TestAllTypes::repeated_bytes(int index) const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestAllTypes.repeated_bytes)
   return repeated_bytes_.Get(index);
 }
-inline ::fun::string* TestAllTypes::mutable_repeated_bytes(int index) {
+inline ::std::string* TestAllTypes::mutable_repeated_bytes(int index) {
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestAllTypes.repeated_bytes)
   return repeated_bytes_.Mutable(index);
 }
-inline void TestAllTypes::set_repeated_bytes(int index, const ::fun::string& value) {
+inline void TestAllTypes::set_repeated_bytes(int index, const ::std::string& value) {
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestAllTypes.repeated_bytes)
   repeated_bytes_.Mutable(index)->assign(value);
 }
@@ -10751,10 +10751,10 @@ inline void TestAllTypes::set_repeated_bytes(int index, const void* value, size_
     reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestAllTypes.repeated_bytes)
 }
-inline ::fun::string* TestAllTypes::add_repeated_bytes() {
+inline ::std::string* TestAllTypes::add_repeated_bytes() {
   return repeated_bytes_.Add();
 }
-inline void TestAllTypes::add_repeated_bytes(const ::fun::string& value) {
+inline void TestAllTypes::add_repeated_bytes(const ::std::string& value) {
   repeated_bytes_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:protobuf_unittest.TestAllTypes.repeated_bytes)
 }
@@ -10766,12 +10766,12 @@ inline void TestAllTypes::add_repeated_bytes(const void* value, size_t size) {
   repeated_bytes_.Add()->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:protobuf_unittest.TestAllTypes.repeated_bytes)
 }
-inline const ::google::protobuf::RepeatedPtrField< ::fun::string>&
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
 TestAllTypes::repeated_bytes() const {
   // @@protoc_insertion_point(field_list:protobuf_unittest.TestAllTypes.repeated_bytes)
   return repeated_bytes_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::fun::string>*
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 TestAllTypes::mutable_repeated_bytes() {
   // @@protoc_insertion_point(field_mutable_list:protobuf_unittest.TestAllTypes.repeated_bytes)
   return &repeated_bytes_;
@@ -10993,22 +10993,22 @@ TestAllTypes::mutable_repeated_import_enum() {
   return &repeated_import_enum_;
 }
 
-// repeated fun::string repeated_string_piece = 54 [ctype = STRING_PIECE];
+// repeated string repeated_string_piece = 54 [ctype = STRING_PIECE];
 inline int TestAllTypes::repeated_string_piece_size() const {
   return repeated_string_piece_.size();
 }
 inline void TestAllTypes::clear_repeated_string_piece() {
   repeated_string_piece_.Clear();
 }
-inline const ::fun::string& TestAllTypes::repeated_string_piece(int index) const {
+inline const ::std::string& TestAllTypes::repeated_string_piece(int index) const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestAllTypes.repeated_string_piece)
   return repeated_string_piece_.Get(index);
 }
-inline ::fun::string* TestAllTypes::mutable_repeated_string_piece(int index) {
+inline ::std::string* TestAllTypes::mutable_repeated_string_piece(int index) {
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestAllTypes.repeated_string_piece)
   return repeated_string_piece_.Mutable(index);
 }
-inline void TestAllTypes::set_repeated_string_piece(int index, const ::fun::string& value) {
+inline void TestAllTypes::set_repeated_string_piece(int index, const ::std::string& value) {
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestAllTypes.repeated_string_piece)
   repeated_string_piece_.Mutable(index)->assign(value);
 }
@@ -11021,10 +11021,10 @@ inline void TestAllTypes::set_repeated_string_piece(int index, const char* value
     reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestAllTypes.repeated_string_piece)
 }
-inline ::fun::string* TestAllTypes::add_repeated_string_piece() {
+inline ::std::string* TestAllTypes::add_repeated_string_piece() {
   return repeated_string_piece_.Add();
 }
-inline void TestAllTypes::add_repeated_string_piece(const ::fun::string& value) {
+inline void TestAllTypes::add_repeated_string_piece(const ::std::string& value) {
   repeated_string_piece_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:protobuf_unittest.TestAllTypes.repeated_string_piece)
 }
@@ -11036,33 +11036,33 @@ inline void TestAllTypes::add_repeated_string_piece(const char* value, size_t si
   repeated_string_piece_.Add()->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:protobuf_unittest.TestAllTypes.repeated_string_piece)
 }
-inline const ::google::protobuf::RepeatedPtrField< ::fun::string>&
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
 TestAllTypes::repeated_string_piece() const {
   // @@protoc_insertion_point(field_list:protobuf_unittest.TestAllTypes.repeated_string_piece)
   return repeated_string_piece_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::fun::string>*
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 TestAllTypes::mutable_repeated_string_piece() {
   // @@protoc_insertion_point(field_mutable_list:protobuf_unittest.TestAllTypes.repeated_string_piece)
   return &repeated_string_piece_;
 }
 
-// repeated fun::string repeated_cord = 55 [ctype = CORD];
+// repeated string repeated_cord = 55 [ctype = CORD];
 inline int TestAllTypes::repeated_cord_size() const {
   return repeated_cord_.size();
 }
 inline void TestAllTypes::clear_repeated_cord() {
   repeated_cord_.Clear();
 }
-inline const ::fun::string& TestAllTypes::repeated_cord(int index) const {
+inline const ::std::string& TestAllTypes::repeated_cord(int index) const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestAllTypes.repeated_cord)
   return repeated_cord_.Get(index);
 }
-inline ::fun::string* TestAllTypes::mutable_repeated_cord(int index) {
+inline ::std::string* TestAllTypes::mutable_repeated_cord(int index) {
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestAllTypes.repeated_cord)
   return repeated_cord_.Mutable(index);
 }
-inline void TestAllTypes::set_repeated_cord(int index, const ::fun::string& value) {
+inline void TestAllTypes::set_repeated_cord(int index, const ::std::string& value) {
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestAllTypes.repeated_cord)
   repeated_cord_.Mutable(index)->assign(value);
 }
@@ -11075,10 +11075,10 @@ inline void TestAllTypes::set_repeated_cord(int index, const char* value, size_t
     reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestAllTypes.repeated_cord)
 }
-inline ::fun::string* TestAllTypes::add_repeated_cord() {
+inline ::std::string* TestAllTypes::add_repeated_cord() {
   return repeated_cord_.Add();
 }
-inline void TestAllTypes::add_repeated_cord(const ::fun::string& value) {
+inline void TestAllTypes::add_repeated_cord(const ::std::string& value) {
   repeated_cord_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:protobuf_unittest.TestAllTypes.repeated_cord)
 }
@@ -11090,12 +11090,12 @@ inline void TestAllTypes::add_repeated_cord(const char* value, size_t size) {
   repeated_cord_.Add()->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:protobuf_unittest.TestAllTypes.repeated_cord)
 }
-inline const ::google::protobuf::RepeatedPtrField< ::fun::string>&
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
 TestAllTypes::repeated_cord() const {
   // @@protoc_insertion_point(field_list:protobuf_unittest.TestAllTypes.repeated_cord)
   return repeated_cord_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::fun::string>*
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 TestAllTypes::mutable_repeated_cord() {
   // @@protoc_insertion_point(field_mutable_list:protobuf_unittest.TestAllTypes.repeated_cord)
   return &repeated_cord_;
@@ -11443,7 +11443,7 @@ inline void TestAllTypes::set_default_bool(bool value) {
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestAllTypes.default_bool)
 }
 
-// optional fun::string default_string = 74 [default = "hello"];
+// optional string default_string = 74 [default = "hello"];
 inline bool TestAllTypes::has_default_string() const {
   return (_has_bits_[2] & 0x00000001u) != 0;
 }
@@ -11459,14 +11459,14 @@ inline void TestAllTypes::clear_default_string() {
   }
   clear_has_default_string();
 }
-inline const ::fun::string& TestAllTypes::default_string() const {
+inline const ::std::string& TestAllTypes::default_string() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestAllTypes.default_string)
   return *default_string_;
 }
-inline void TestAllTypes::set_default_string(const ::fun::string& value) {
+inline void TestAllTypes::set_default_string(const ::std::string& value) {
   set_has_default_string();
   if (default_string_ == _default_default_string_) {
-    default_string_ = new ::fun::string;
+    default_string_ = new ::std::string;
   }
   default_string_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestAllTypes.default_string)
@@ -11474,7 +11474,7 @@ inline void TestAllTypes::set_default_string(const ::fun::string& value) {
 inline void TestAllTypes::set_default_string(const char* value) {
   set_has_default_string();
   if (default_string_ == _default_default_string_) {
-    default_string_ = new ::fun::string;
+    default_string_ = new ::std::string;
   }
   default_string_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestAllTypes.default_string)
@@ -11482,30 +11482,30 @@ inline void TestAllTypes::set_default_string(const char* value) {
 inline void TestAllTypes::set_default_string(const char* value, size_t size) {
   set_has_default_string();
   if (default_string_ == _default_default_string_) {
-    default_string_ = new ::fun::string;
+    default_string_ = new ::std::string;
   }
   default_string_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestAllTypes.default_string)
 }
-inline ::fun::string* TestAllTypes::mutable_default_string() {
+inline ::std::string* TestAllTypes::mutable_default_string() {
   set_has_default_string();
   if (default_string_ == _default_default_string_) {
-    default_string_ = new ::fun::string(*_default_default_string_);
+    default_string_ = new ::std::string(*_default_default_string_);
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestAllTypes.default_string)
   return default_string_;
 }
-inline ::fun::string* TestAllTypes::release_default_string() {
+inline ::std::string* TestAllTypes::release_default_string() {
   clear_has_default_string();
   if (default_string_ == _default_default_string_) {
     return NULL;
   } else {
-    ::fun::string* temp = default_string_;
-    default_string_ = const_cast< ::fun::string*>(_default_default_string_);
+    ::std::string* temp = default_string_;
+    default_string_ = const_cast< ::std::string*>(_default_default_string_);
     return temp;
   }
 }
-inline void TestAllTypes::set_allocated_default_string(::fun::string* default_string) {
+inline void TestAllTypes::set_allocated_default_string(::std::string* default_string) {
   if (default_string_ != _default_default_string_) {
     delete default_string_;
   }
@@ -11514,7 +11514,7 @@ inline void TestAllTypes::set_allocated_default_string(::fun::string* default_st
     default_string_ = default_string;
   } else {
     clear_has_default_string();
-    default_string_ = const_cast< ::fun::string*>(_default_default_string_);
+    default_string_ = const_cast< ::std::string*>(_default_default_string_);
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestAllTypes.default_string)
 }
@@ -11535,14 +11535,14 @@ inline void TestAllTypes::clear_default_bytes() {
   }
   clear_has_default_bytes();
 }
-inline const ::fun::string& TestAllTypes::default_bytes() const {
+inline const ::std::string& TestAllTypes::default_bytes() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestAllTypes.default_bytes)
   return *default_bytes_;
 }
-inline void TestAllTypes::set_default_bytes(const ::fun::string& value) {
+inline void TestAllTypes::set_default_bytes(const ::std::string& value) {
   set_has_default_bytes();
   if (default_bytes_ == _default_default_bytes_) {
-    default_bytes_ = new ::fun::string;
+    default_bytes_ = new ::std::string;
   }
   default_bytes_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestAllTypes.default_bytes)
@@ -11550,7 +11550,7 @@ inline void TestAllTypes::set_default_bytes(const ::fun::string& value) {
 inline void TestAllTypes::set_default_bytes(const char* value) {
   set_has_default_bytes();
   if (default_bytes_ == _default_default_bytes_) {
-    default_bytes_ = new ::fun::string;
+    default_bytes_ = new ::std::string;
   }
   default_bytes_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestAllTypes.default_bytes)
@@ -11558,30 +11558,30 @@ inline void TestAllTypes::set_default_bytes(const char* value) {
 inline void TestAllTypes::set_default_bytes(const void* value, size_t size) {
   set_has_default_bytes();
   if (default_bytes_ == _default_default_bytes_) {
-    default_bytes_ = new ::fun::string;
+    default_bytes_ = new ::std::string;
   }
   default_bytes_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestAllTypes.default_bytes)
 }
-inline ::fun::string* TestAllTypes::mutable_default_bytes() {
+inline ::std::string* TestAllTypes::mutable_default_bytes() {
   set_has_default_bytes();
   if (default_bytes_ == _default_default_bytes_) {
-    default_bytes_ = new ::fun::string(*_default_default_bytes_);
+    default_bytes_ = new ::std::string(*_default_default_bytes_);
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestAllTypes.default_bytes)
   return default_bytes_;
 }
-inline ::fun::string* TestAllTypes::release_default_bytes() {
+inline ::std::string* TestAllTypes::release_default_bytes() {
   clear_has_default_bytes();
   if (default_bytes_ == _default_default_bytes_) {
     return NULL;
   } else {
-    ::fun::string* temp = default_bytes_;
-    default_bytes_ = const_cast< ::fun::string*>(_default_default_bytes_);
+    ::std::string* temp = default_bytes_;
+    default_bytes_ = const_cast< ::std::string*>(_default_default_bytes_);
     return temp;
   }
 }
-inline void TestAllTypes::set_allocated_default_bytes(::fun::string* default_bytes) {
+inline void TestAllTypes::set_allocated_default_bytes(::std::string* default_bytes) {
   if (default_bytes_ != _default_default_bytes_) {
     delete default_bytes_;
   }
@@ -11590,7 +11590,7 @@ inline void TestAllTypes::set_allocated_default_bytes(::fun::string* default_byt
     default_bytes_ = default_bytes;
   } else {
     clear_has_default_bytes();
-    default_bytes_ = const_cast< ::fun::string*>(_default_default_bytes_);
+    default_bytes_ = const_cast< ::std::string*>(_default_default_bytes_);
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestAllTypes.default_bytes)
 }
@@ -11670,7 +11670,7 @@ inline void TestAllTypes::set_default_import_enum(::protobuf_unittest_import::Im
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestAllTypes.default_import_enum)
 }
 
-// optional fun::string default_string_piece = 84 [default = "abc", ctype = STRING_PIECE];
+// optional string default_string_piece = 84 [default = "abc", ctype = STRING_PIECE];
 inline bool TestAllTypes::has_default_string_piece() const {
   return (_has_bits_[2] & 0x00000020u) != 0;
 }
@@ -11686,14 +11686,14 @@ inline void TestAllTypes::clear_default_string_piece() {
   }
   clear_has_default_string_piece();
 }
-inline const ::fun::string& TestAllTypes::default_string_piece() const {
+inline const ::std::string& TestAllTypes::default_string_piece() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestAllTypes.default_string_piece)
   return *default_string_piece_;
 }
-inline void TestAllTypes::set_default_string_piece(const ::fun::string& value) {
+inline void TestAllTypes::set_default_string_piece(const ::std::string& value) {
   set_has_default_string_piece();
   if (default_string_piece_ == _default_default_string_piece_) {
-    default_string_piece_ = new ::fun::string;
+    default_string_piece_ = new ::std::string;
   }
   default_string_piece_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestAllTypes.default_string_piece)
@@ -11701,7 +11701,7 @@ inline void TestAllTypes::set_default_string_piece(const ::fun::string& value) {
 inline void TestAllTypes::set_default_string_piece(const char* value) {
   set_has_default_string_piece();
   if (default_string_piece_ == _default_default_string_piece_) {
-    default_string_piece_ = new ::fun::string;
+    default_string_piece_ = new ::std::string;
   }
   default_string_piece_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestAllTypes.default_string_piece)
@@ -11709,30 +11709,30 @@ inline void TestAllTypes::set_default_string_piece(const char* value) {
 inline void TestAllTypes::set_default_string_piece(const char* value, size_t size) {
   set_has_default_string_piece();
   if (default_string_piece_ == _default_default_string_piece_) {
-    default_string_piece_ = new ::fun::string;
+    default_string_piece_ = new ::std::string;
   }
   default_string_piece_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestAllTypes.default_string_piece)
 }
-inline ::fun::string* TestAllTypes::mutable_default_string_piece() {
+inline ::std::string* TestAllTypes::mutable_default_string_piece() {
   set_has_default_string_piece();
   if (default_string_piece_ == _default_default_string_piece_) {
-    default_string_piece_ = new ::fun::string(*_default_default_string_piece_);
+    default_string_piece_ = new ::std::string(*_default_default_string_piece_);
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestAllTypes.default_string_piece)
   return default_string_piece_;
 }
-inline ::fun::string* TestAllTypes::release_default_string_piece() {
+inline ::std::string* TestAllTypes::release_default_string_piece() {
   clear_has_default_string_piece();
   if (default_string_piece_ == _default_default_string_piece_) {
     return NULL;
   } else {
-    ::fun::string* temp = default_string_piece_;
-    default_string_piece_ = const_cast< ::fun::string*>(_default_default_string_piece_);
+    ::std::string* temp = default_string_piece_;
+    default_string_piece_ = const_cast< ::std::string*>(_default_default_string_piece_);
     return temp;
   }
 }
-inline void TestAllTypes::set_allocated_default_string_piece(::fun::string* default_string_piece) {
+inline void TestAllTypes::set_allocated_default_string_piece(::std::string* default_string_piece) {
   if (default_string_piece_ != _default_default_string_piece_) {
     delete default_string_piece_;
   }
@@ -11741,12 +11741,12 @@ inline void TestAllTypes::set_allocated_default_string_piece(::fun::string* defa
     default_string_piece_ = default_string_piece;
   } else {
     clear_has_default_string_piece();
-    default_string_piece_ = const_cast< ::fun::string*>(_default_default_string_piece_);
+    default_string_piece_ = const_cast< ::std::string*>(_default_default_string_piece_);
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestAllTypes.default_string_piece)
 }
 
-// optional fun::string default_cord = 85 [default = "123", ctype = CORD];
+// optional string default_cord = 85 [default = "123", ctype = CORD];
 inline bool TestAllTypes::has_default_cord() const {
   return (_has_bits_[2] & 0x00000040u) != 0;
 }
@@ -11762,14 +11762,14 @@ inline void TestAllTypes::clear_default_cord() {
   }
   clear_has_default_cord();
 }
-inline const ::fun::string& TestAllTypes::default_cord() const {
+inline const ::std::string& TestAllTypes::default_cord() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestAllTypes.default_cord)
   return *default_cord_;
 }
-inline void TestAllTypes::set_default_cord(const ::fun::string& value) {
+inline void TestAllTypes::set_default_cord(const ::std::string& value) {
   set_has_default_cord();
   if (default_cord_ == _default_default_cord_) {
-    default_cord_ = new ::fun::string;
+    default_cord_ = new ::std::string;
   }
   default_cord_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestAllTypes.default_cord)
@@ -11777,7 +11777,7 @@ inline void TestAllTypes::set_default_cord(const ::fun::string& value) {
 inline void TestAllTypes::set_default_cord(const char* value) {
   set_has_default_cord();
   if (default_cord_ == _default_default_cord_) {
-    default_cord_ = new ::fun::string;
+    default_cord_ = new ::std::string;
   }
   default_cord_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestAllTypes.default_cord)
@@ -11785,30 +11785,30 @@ inline void TestAllTypes::set_default_cord(const char* value) {
 inline void TestAllTypes::set_default_cord(const char* value, size_t size) {
   set_has_default_cord();
   if (default_cord_ == _default_default_cord_) {
-    default_cord_ = new ::fun::string;
+    default_cord_ = new ::std::string;
   }
   default_cord_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestAllTypes.default_cord)
 }
-inline ::fun::string* TestAllTypes::mutable_default_cord() {
+inline ::std::string* TestAllTypes::mutable_default_cord() {
   set_has_default_cord();
   if (default_cord_ == _default_default_cord_) {
-    default_cord_ = new ::fun::string(*_default_default_cord_);
+    default_cord_ = new ::std::string(*_default_default_cord_);
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestAllTypes.default_cord)
   return default_cord_;
 }
-inline ::fun::string* TestAllTypes::release_default_cord() {
+inline ::std::string* TestAllTypes::release_default_cord() {
   clear_has_default_cord();
   if (default_cord_ == _default_default_cord_) {
     return NULL;
   } else {
-    ::fun::string* temp = default_cord_;
-    default_cord_ = const_cast< ::fun::string*>(_default_default_cord_);
+    ::std::string* temp = default_cord_;
+    default_cord_ = const_cast< ::std::string*>(_default_default_cord_);
     return temp;
   }
 }
-inline void TestAllTypes::set_allocated_default_cord(::fun::string* default_cord) {
+inline void TestAllTypes::set_allocated_default_cord(::std::string* default_cord) {
   if (default_cord_ != _default_default_cord_) {
     delete default_cord_;
   }
@@ -11817,7 +11817,7 @@ inline void TestAllTypes::set_allocated_default_cord(::fun::string* default_cord
     default_cord_ = default_cord;
   } else {
     clear_has_default_cord();
-    default_cord_ = const_cast< ::fun::string*>(_default_default_cord_);
+    default_cord_ = const_cast< ::std::string*>(_default_default_cord_);
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestAllTypes.default_cord)
 }
@@ -11892,7 +11892,7 @@ inline void TestAllTypes::set_allocated_oneof_nested_message(::protobuf_unittest
   }
 }
 
-// optional fun::string oneof_string = 113;
+// optional string oneof_string = 113;
 inline bool TestAllTypes::has_oneof_string() const {
   return oneof_field_case() == kOneofString;
 }
@@ -11905,17 +11905,17 @@ inline void TestAllTypes::clear_oneof_string() {
     clear_has_oneof_field();
   }
 }
-inline const ::fun::string& TestAllTypes::oneof_string() const {
+inline const ::std::string& TestAllTypes::oneof_string() const {
   if (has_oneof_string()) {
     return *oneof_field_.oneof_string_;
   }
   return ::google::protobuf::internal::GetEmptyStringAlreadyInited();
 }
-inline void TestAllTypes::set_oneof_string(const ::fun::string& value) {
+inline void TestAllTypes::set_oneof_string(const ::std::string& value) {
   if (!has_oneof_string()) {
     clear_oneof_field();
     set_has_oneof_string();
-    oneof_field_.oneof_string_ = new ::fun::string;
+    oneof_field_.oneof_string_ = new ::std::string;
   }
   oneof_field_.oneof_string_->assign(value);
 }
@@ -11923,7 +11923,7 @@ inline void TestAllTypes::set_oneof_string(const char* value) {
   if (!has_oneof_string()) {
     clear_oneof_field();
     set_has_oneof_string();
-    oneof_field_.oneof_string_ = new ::fun::string;
+    oneof_field_.oneof_string_ = new ::std::string;
   }
   oneof_field_.oneof_string_->assign(value);
 }
@@ -11931,30 +11931,30 @@ inline void TestAllTypes::set_oneof_string(const char* value, size_t size) {
   if (!has_oneof_string()) {
     clear_oneof_field();
     set_has_oneof_string();
-    oneof_field_.oneof_string_ = new ::fun::string;
+    oneof_field_.oneof_string_ = new ::std::string;
   }
   oneof_field_.oneof_string_->assign(
       reinterpret_cast<const char*>(value), size);
 }
-inline ::fun::string* TestAllTypes::mutable_oneof_string() {
+inline ::std::string* TestAllTypes::mutable_oneof_string() {
   if (!has_oneof_string()) {
     clear_oneof_field();
     set_has_oneof_string();
-    oneof_field_.oneof_string_ = new ::fun::string;
+    oneof_field_.oneof_string_ = new ::std::string;
   }
   return oneof_field_.oneof_string_;
 }
-inline ::fun::string* TestAllTypes::release_oneof_string() {
+inline ::std::string* TestAllTypes::release_oneof_string() {
   if (has_oneof_string()) {
     clear_has_oneof_field();
-    ::fun::string* temp = oneof_field_.oneof_string_;
+    ::std::string* temp = oneof_field_.oneof_string_;
     oneof_field_.oneof_string_ = NULL;
     return temp;
   } else {
     return NULL;
   }
 }
-inline void TestAllTypes::set_allocated_oneof_string(::fun::string* oneof_string) {
+inline void TestAllTypes::set_allocated_oneof_string(::std::string* oneof_string) {
   clear_oneof_field();
   if (oneof_string) {
     set_has_oneof_string();
@@ -11975,17 +11975,17 @@ inline void TestAllTypes::clear_oneof_bytes() {
     clear_has_oneof_field();
   }
 }
-inline const ::fun::string& TestAllTypes::oneof_bytes() const {
+inline const ::std::string& TestAllTypes::oneof_bytes() const {
   if (has_oneof_bytes()) {
     return *oneof_field_.oneof_bytes_;
   }
   return ::google::protobuf::internal::GetEmptyStringAlreadyInited();
 }
-inline void TestAllTypes::set_oneof_bytes(const ::fun::string& value) {
+inline void TestAllTypes::set_oneof_bytes(const ::std::string& value) {
   if (!has_oneof_bytes()) {
     clear_oneof_field();
     set_has_oneof_bytes();
-    oneof_field_.oneof_bytes_ = new ::fun::string;
+    oneof_field_.oneof_bytes_ = new ::std::string;
   }
   oneof_field_.oneof_bytes_->assign(value);
 }
@@ -11993,7 +11993,7 @@ inline void TestAllTypes::set_oneof_bytes(const char* value) {
   if (!has_oneof_bytes()) {
     clear_oneof_field();
     set_has_oneof_bytes();
-    oneof_field_.oneof_bytes_ = new ::fun::string;
+    oneof_field_.oneof_bytes_ = new ::std::string;
   }
   oneof_field_.oneof_bytes_->assign(value);
 }
@@ -12001,30 +12001,30 @@ inline void TestAllTypes::set_oneof_bytes(const void* value, size_t size) {
   if (!has_oneof_bytes()) {
     clear_oneof_field();
     set_has_oneof_bytes();
-    oneof_field_.oneof_bytes_ = new ::fun::string;
+    oneof_field_.oneof_bytes_ = new ::std::string;
   }
   oneof_field_.oneof_bytes_->assign(
       reinterpret_cast<const char*>(value), size);
 }
-inline ::fun::string* TestAllTypes::mutable_oneof_bytes() {
+inline ::std::string* TestAllTypes::mutable_oneof_bytes() {
   if (!has_oneof_bytes()) {
     clear_oneof_field();
     set_has_oneof_bytes();
-    oneof_field_.oneof_bytes_ = new ::fun::string;
+    oneof_field_.oneof_bytes_ = new ::std::string;
   }
   return oneof_field_.oneof_bytes_;
 }
-inline ::fun::string* TestAllTypes::release_oneof_bytes() {
+inline ::std::string* TestAllTypes::release_oneof_bytes() {
   if (has_oneof_bytes()) {
     clear_has_oneof_field();
-    ::fun::string* temp = oneof_field_.oneof_bytes_;
+    ::std::string* temp = oneof_field_.oneof_bytes_;
     oneof_field_.oneof_bytes_ = NULL;
     return temp;
   } else {
     return NULL;
   }
 }
-inline void TestAllTypes::set_allocated_oneof_bytes(::fun::string* oneof_bytes) {
+inline void TestAllTypes::set_allocated_oneof_bytes(::std::string* oneof_bytes) {
   clear_oneof_field();
   if (oneof_bytes) {
     set_has_oneof_bytes();
@@ -13827,7 +13827,7 @@ inline void TestCamelCaseFieldNames::set_primitivefield(::google::protobuf::int3
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestCamelCaseFieldNames.PrimitiveField)
 }
 
-// optional fun::string StringField = 2;
+// optional string StringField = 2;
 inline bool TestCamelCaseFieldNames::has_stringfield() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -13843,14 +13843,14 @@ inline void TestCamelCaseFieldNames::clear_stringfield() {
   }
   clear_has_stringfield();
 }
-inline const ::fun::string& TestCamelCaseFieldNames::stringfield() const {
+inline const ::std::string& TestCamelCaseFieldNames::stringfield() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestCamelCaseFieldNames.StringField)
   return *stringfield_;
 }
-inline void TestCamelCaseFieldNames::set_stringfield(const ::fun::string& value) {
+inline void TestCamelCaseFieldNames::set_stringfield(const ::std::string& value) {
   set_has_stringfield();
   if (stringfield_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    stringfield_ = new ::fun::string;
+    stringfield_ = new ::std::string;
   }
   stringfield_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestCamelCaseFieldNames.StringField)
@@ -13858,7 +13858,7 @@ inline void TestCamelCaseFieldNames::set_stringfield(const ::fun::string& value)
 inline void TestCamelCaseFieldNames::set_stringfield(const char* value) {
   set_has_stringfield();
   if (stringfield_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    stringfield_ = new ::fun::string;
+    stringfield_ = new ::std::string;
   }
   stringfield_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestCamelCaseFieldNames.StringField)
@@ -13866,30 +13866,30 @@ inline void TestCamelCaseFieldNames::set_stringfield(const char* value) {
 inline void TestCamelCaseFieldNames::set_stringfield(const char* value, size_t size) {
   set_has_stringfield();
   if (stringfield_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    stringfield_ = new ::fun::string;
+    stringfield_ = new ::std::string;
   }
   stringfield_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestCamelCaseFieldNames.StringField)
 }
-inline ::fun::string* TestCamelCaseFieldNames::mutable_stringfield() {
+inline ::std::string* TestCamelCaseFieldNames::mutable_stringfield() {
   set_has_stringfield();
   if (stringfield_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    stringfield_ = new ::fun::string;
+    stringfield_ = new ::std::string;
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestCamelCaseFieldNames.StringField)
   return stringfield_;
 }
-inline ::fun::string* TestCamelCaseFieldNames::release_stringfield() {
+inline ::std::string* TestCamelCaseFieldNames::release_stringfield() {
   clear_has_stringfield();
   if (stringfield_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::fun::string* temp = stringfield_;
-    stringfield_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::std::string* temp = stringfield_;
+    stringfield_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void TestCamelCaseFieldNames::set_allocated_stringfield(::fun::string* stringfield) {
+inline void TestCamelCaseFieldNames::set_allocated_stringfield(::std::string* stringfield) {
   if (stringfield_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete stringfield_;
   }
@@ -13898,7 +13898,7 @@ inline void TestCamelCaseFieldNames::set_allocated_stringfield(::fun::string* st
     stringfield_ = stringfield;
   } else {
     clear_has_stringfield();
-    stringfield_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    stringfield_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestCamelCaseFieldNames.StringField)
 }
@@ -13969,7 +13969,7 @@ inline void TestCamelCaseFieldNames::set_allocated_messagefield(::protobuf_unitt
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestCamelCaseFieldNames.MessageField)
 }
 
-// optional fun::string StringPieceField = 5 [ctype = STRING_PIECE];
+// optional string StringPieceField = 5 [ctype = STRING_PIECE];
 inline bool TestCamelCaseFieldNames::has_stringpiecefield() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -13985,14 +13985,14 @@ inline void TestCamelCaseFieldNames::clear_stringpiecefield() {
   }
   clear_has_stringpiecefield();
 }
-inline const ::fun::string& TestCamelCaseFieldNames::stringpiecefield() const {
+inline const ::std::string& TestCamelCaseFieldNames::stringpiecefield() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestCamelCaseFieldNames.StringPieceField)
   return *stringpiecefield_;
 }
-inline void TestCamelCaseFieldNames::set_stringpiecefield(const ::fun::string& value) {
+inline void TestCamelCaseFieldNames::set_stringpiecefield(const ::std::string& value) {
   set_has_stringpiecefield();
   if (stringpiecefield_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    stringpiecefield_ = new ::fun::string;
+    stringpiecefield_ = new ::std::string;
   }
   stringpiecefield_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestCamelCaseFieldNames.StringPieceField)
@@ -14000,7 +14000,7 @@ inline void TestCamelCaseFieldNames::set_stringpiecefield(const ::fun::string& v
 inline void TestCamelCaseFieldNames::set_stringpiecefield(const char* value) {
   set_has_stringpiecefield();
   if (stringpiecefield_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    stringpiecefield_ = new ::fun::string;
+    stringpiecefield_ = new ::std::string;
   }
   stringpiecefield_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestCamelCaseFieldNames.StringPieceField)
@@ -14008,30 +14008,30 @@ inline void TestCamelCaseFieldNames::set_stringpiecefield(const char* value) {
 inline void TestCamelCaseFieldNames::set_stringpiecefield(const char* value, size_t size) {
   set_has_stringpiecefield();
   if (stringpiecefield_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    stringpiecefield_ = new ::fun::string;
+    stringpiecefield_ = new ::std::string;
   }
   stringpiecefield_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestCamelCaseFieldNames.StringPieceField)
 }
-inline ::fun::string* TestCamelCaseFieldNames::mutable_stringpiecefield() {
+inline ::std::string* TestCamelCaseFieldNames::mutable_stringpiecefield() {
   set_has_stringpiecefield();
   if (stringpiecefield_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    stringpiecefield_ = new ::fun::string;
+    stringpiecefield_ = new ::std::string;
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestCamelCaseFieldNames.StringPieceField)
   return stringpiecefield_;
 }
-inline ::fun::string* TestCamelCaseFieldNames::release_stringpiecefield() {
+inline ::std::string* TestCamelCaseFieldNames::release_stringpiecefield() {
   clear_has_stringpiecefield();
   if (stringpiecefield_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::fun::string* temp = stringpiecefield_;
-    stringpiecefield_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::std::string* temp = stringpiecefield_;
+    stringpiecefield_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void TestCamelCaseFieldNames::set_allocated_stringpiecefield(::fun::string* stringpiecefield) {
+inline void TestCamelCaseFieldNames::set_allocated_stringpiecefield(::std::string* stringpiecefield) {
   if (stringpiecefield_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete stringpiecefield_;
   }
@@ -14040,12 +14040,12 @@ inline void TestCamelCaseFieldNames::set_allocated_stringpiecefield(::fun::strin
     stringpiecefield_ = stringpiecefield;
   } else {
     clear_has_stringpiecefield();
-    stringpiecefield_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    stringpiecefield_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestCamelCaseFieldNames.StringPieceField)
 }
 
-// optional fun::string CordField = 6 [ctype = CORD];
+// optional string CordField = 6 [ctype = CORD];
 inline bool TestCamelCaseFieldNames::has_cordfield() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
@@ -14061,14 +14061,14 @@ inline void TestCamelCaseFieldNames::clear_cordfield() {
   }
   clear_has_cordfield();
 }
-inline const ::fun::string& TestCamelCaseFieldNames::cordfield() const {
+inline const ::std::string& TestCamelCaseFieldNames::cordfield() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestCamelCaseFieldNames.CordField)
   return *cordfield_;
 }
-inline void TestCamelCaseFieldNames::set_cordfield(const ::fun::string& value) {
+inline void TestCamelCaseFieldNames::set_cordfield(const ::std::string& value) {
   set_has_cordfield();
   if (cordfield_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    cordfield_ = new ::fun::string;
+    cordfield_ = new ::std::string;
   }
   cordfield_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestCamelCaseFieldNames.CordField)
@@ -14076,7 +14076,7 @@ inline void TestCamelCaseFieldNames::set_cordfield(const ::fun::string& value) {
 inline void TestCamelCaseFieldNames::set_cordfield(const char* value) {
   set_has_cordfield();
   if (cordfield_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    cordfield_ = new ::fun::string;
+    cordfield_ = new ::std::string;
   }
   cordfield_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestCamelCaseFieldNames.CordField)
@@ -14084,30 +14084,30 @@ inline void TestCamelCaseFieldNames::set_cordfield(const char* value) {
 inline void TestCamelCaseFieldNames::set_cordfield(const char* value, size_t size) {
   set_has_cordfield();
   if (cordfield_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    cordfield_ = new ::fun::string;
+    cordfield_ = new ::std::string;
   }
   cordfield_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestCamelCaseFieldNames.CordField)
 }
-inline ::fun::string* TestCamelCaseFieldNames::mutable_cordfield() {
+inline ::std::string* TestCamelCaseFieldNames::mutable_cordfield() {
   set_has_cordfield();
   if (cordfield_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    cordfield_ = new ::fun::string;
+    cordfield_ = new ::std::string;
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestCamelCaseFieldNames.CordField)
   return cordfield_;
 }
-inline ::fun::string* TestCamelCaseFieldNames::release_cordfield() {
+inline ::std::string* TestCamelCaseFieldNames::release_cordfield() {
   clear_has_cordfield();
   if (cordfield_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::fun::string* temp = cordfield_;
-    cordfield_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::std::string* temp = cordfield_;
+    cordfield_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void TestCamelCaseFieldNames::set_allocated_cordfield(::fun::string* cordfield) {
+inline void TestCamelCaseFieldNames::set_allocated_cordfield(::std::string* cordfield) {
   if (cordfield_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete cordfield_;
   }
@@ -14116,7 +14116,7 @@ inline void TestCamelCaseFieldNames::set_allocated_cordfield(::fun::string* cord
     cordfield_ = cordfield;
   } else {
     clear_has_cordfield();
-    cordfield_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    cordfield_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestCamelCaseFieldNames.CordField)
 }
@@ -14151,22 +14151,22 @@ TestCamelCaseFieldNames::mutable_repeatedprimitivefield() {
   return &repeatedprimitivefield_;
 }
 
-// repeated fun::string RepeatedStringField = 8;
+// repeated string RepeatedStringField = 8;
 inline int TestCamelCaseFieldNames::repeatedstringfield_size() const {
   return repeatedstringfield_.size();
 }
 inline void TestCamelCaseFieldNames::clear_repeatedstringfield() {
   repeatedstringfield_.Clear();
 }
-inline const ::fun::string& TestCamelCaseFieldNames::repeatedstringfield(int index) const {
+inline const ::std::string& TestCamelCaseFieldNames::repeatedstringfield(int index) const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestCamelCaseFieldNames.RepeatedStringField)
   return repeatedstringfield_.Get(index);
 }
-inline ::fun::string* TestCamelCaseFieldNames::mutable_repeatedstringfield(int index) {
+inline ::std::string* TestCamelCaseFieldNames::mutable_repeatedstringfield(int index) {
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestCamelCaseFieldNames.RepeatedStringField)
   return repeatedstringfield_.Mutable(index);
 }
-inline void TestCamelCaseFieldNames::set_repeatedstringfield(int index, const ::fun::string& value) {
+inline void TestCamelCaseFieldNames::set_repeatedstringfield(int index, const ::std::string& value) {
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestCamelCaseFieldNames.RepeatedStringField)
   repeatedstringfield_.Mutable(index)->assign(value);
 }
@@ -14179,10 +14179,10 @@ inline void TestCamelCaseFieldNames::set_repeatedstringfield(int index, const ch
     reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestCamelCaseFieldNames.RepeatedStringField)
 }
-inline ::fun::string* TestCamelCaseFieldNames::add_repeatedstringfield() {
+inline ::std::string* TestCamelCaseFieldNames::add_repeatedstringfield() {
   return repeatedstringfield_.Add();
 }
-inline void TestCamelCaseFieldNames::add_repeatedstringfield(const ::fun::string& value) {
+inline void TestCamelCaseFieldNames::add_repeatedstringfield(const ::std::string& value) {
   repeatedstringfield_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:protobuf_unittest.TestCamelCaseFieldNames.RepeatedStringField)
 }
@@ -14194,12 +14194,12 @@ inline void TestCamelCaseFieldNames::add_repeatedstringfield(const char* value, 
   repeatedstringfield_.Add()->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:protobuf_unittest.TestCamelCaseFieldNames.RepeatedStringField)
 }
-inline const ::google::protobuf::RepeatedPtrField< ::fun::string>&
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
 TestCamelCaseFieldNames::repeatedstringfield() const {
   // @@protoc_insertion_point(field_list:protobuf_unittest.TestCamelCaseFieldNames.RepeatedStringField)
   return repeatedstringfield_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::fun::string>*
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 TestCamelCaseFieldNames::mutable_repeatedstringfield() {
   // @@protoc_insertion_point(field_mutable_list:protobuf_unittest.TestCamelCaseFieldNames.RepeatedStringField)
   return &repeatedstringfield_;
@@ -14267,22 +14267,22 @@ TestCamelCaseFieldNames::mutable_repeatedmessagefield() {
   return &repeatedmessagefield_;
 }
 
-// repeated fun::string RepeatedStringPieceField = 11 [ctype = STRING_PIECE];
+// repeated string RepeatedStringPieceField = 11 [ctype = STRING_PIECE];
 inline int TestCamelCaseFieldNames::repeatedstringpiecefield_size() const {
   return repeatedstringpiecefield_.size();
 }
 inline void TestCamelCaseFieldNames::clear_repeatedstringpiecefield() {
   repeatedstringpiecefield_.Clear();
 }
-inline const ::fun::string& TestCamelCaseFieldNames::repeatedstringpiecefield(int index) const {
+inline const ::std::string& TestCamelCaseFieldNames::repeatedstringpiecefield(int index) const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestCamelCaseFieldNames.RepeatedStringPieceField)
   return repeatedstringpiecefield_.Get(index);
 }
-inline ::fun::string* TestCamelCaseFieldNames::mutable_repeatedstringpiecefield(int index) {
+inline ::std::string* TestCamelCaseFieldNames::mutable_repeatedstringpiecefield(int index) {
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestCamelCaseFieldNames.RepeatedStringPieceField)
   return repeatedstringpiecefield_.Mutable(index);
 }
-inline void TestCamelCaseFieldNames::set_repeatedstringpiecefield(int index, const ::fun::string& value) {
+inline void TestCamelCaseFieldNames::set_repeatedstringpiecefield(int index, const ::std::string& value) {
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestCamelCaseFieldNames.RepeatedStringPieceField)
   repeatedstringpiecefield_.Mutable(index)->assign(value);
 }
@@ -14295,10 +14295,10 @@ inline void TestCamelCaseFieldNames::set_repeatedstringpiecefield(int index, con
     reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestCamelCaseFieldNames.RepeatedStringPieceField)
 }
-inline ::fun::string* TestCamelCaseFieldNames::add_repeatedstringpiecefield() {
+inline ::std::string* TestCamelCaseFieldNames::add_repeatedstringpiecefield() {
   return repeatedstringpiecefield_.Add();
 }
-inline void TestCamelCaseFieldNames::add_repeatedstringpiecefield(const ::fun::string& value) {
+inline void TestCamelCaseFieldNames::add_repeatedstringpiecefield(const ::std::string& value) {
   repeatedstringpiecefield_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:protobuf_unittest.TestCamelCaseFieldNames.RepeatedStringPieceField)
 }
@@ -14310,33 +14310,33 @@ inline void TestCamelCaseFieldNames::add_repeatedstringpiecefield(const char* va
   repeatedstringpiecefield_.Add()->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:protobuf_unittest.TestCamelCaseFieldNames.RepeatedStringPieceField)
 }
-inline const ::google::protobuf::RepeatedPtrField< ::fun::string>&
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
 TestCamelCaseFieldNames::repeatedstringpiecefield() const {
   // @@protoc_insertion_point(field_list:protobuf_unittest.TestCamelCaseFieldNames.RepeatedStringPieceField)
   return repeatedstringpiecefield_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::fun::string>*
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 TestCamelCaseFieldNames::mutable_repeatedstringpiecefield() {
   // @@protoc_insertion_point(field_mutable_list:protobuf_unittest.TestCamelCaseFieldNames.RepeatedStringPieceField)
   return &repeatedstringpiecefield_;
 }
 
-// repeated fun::string RepeatedCordField = 12 [ctype = CORD];
+// repeated string RepeatedCordField = 12 [ctype = CORD];
 inline int TestCamelCaseFieldNames::repeatedcordfield_size() const {
   return repeatedcordfield_.size();
 }
 inline void TestCamelCaseFieldNames::clear_repeatedcordfield() {
   repeatedcordfield_.Clear();
 }
-inline const ::fun::string& TestCamelCaseFieldNames::repeatedcordfield(int index) const {
+inline const ::std::string& TestCamelCaseFieldNames::repeatedcordfield(int index) const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestCamelCaseFieldNames.RepeatedCordField)
   return repeatedcordfield_.Get(index);
 }
-inline ::fun::string* TestCamelCaseFieldNames::mutable_repeatedcordfield(int index) {
+inline ::std::string* TestCamelCaseFieldNames::mutable_repeatedcordfield(int index) {
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestCamelCaseFieldNames.RepeatedCordField)
   return repeatedcordfield_.Mutable(index);
 }
-inline void TestCamelCaseFieldNames::set_repeatedcordfield(int index, const ::fun::string& value) {
+inline void TestCamelCaseFieldNames::set_repeatedcordfield(int index, const ::std::string& value) {
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestCamelCaseFieldNames.RepeatedCordField)
   repeatedcordfield_.Mutable(index)->assign(value);
 }
@@ -14349,10 +14349,10 @@ inline void TestCamelCaseFieldNames::set_repeatedcordfield(int index, const char
     reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestCamelCaseFieldNames.RepeatedCordField)
 }
-inline ::fun::string* TestCamelCaseFieldNames::add_repeatedcordfield() {
+inline ::std::string* TestCamelCaseFieldNames::add_repeatedcordfield() {
   return repeatedcordfield_.Add();
 }
-inline void TestCamelCaseFieldNames::add_repeatedcordfield(const ::fun::string& value) {
+inline void TestCamelCaseFieldNames::add_repeatedcordfield(const ::std::string& value) {
   repeatedcordfield_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:protobuf_unittest.TestCamelCaseFieldNames.RepeatedCordField)
 }
@@ -14364,12 +14364,12 @@ inline void TestCamelCaseFieldNames::add_repeatedcordfield(const char* value, si
   repeatedcordfield_.Add()->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:protobuf_unittest.TestCamelCaseFieldNames.RepeatedCordField)
 }
-inline const ::google::protobuf::RepeatedPtrField< ::fun::string>&
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
 TestCamelCaseFieldNames::repeatedcordfield() const {
   // @@protoc_insertion_point(field_list:protobuf_unittest.TestCamelCaseFieldNames.RepeatedCordField)
   return repeatedcordfield_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::fun::string>*
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 TestCamelCaseFieldNames::mutable_repeatedcordfield() {
   // @@protoc_insertion_point(field_mutable_list:protobuf_unittest.TestCamelCaseFieldNames.RepeatedCordField)
   return &repeatedcordfield_;
@@ -14379,7 +14379,7 @@ TestCamelCaseFieldNames::mutable_repeatedcordfield() {
 
 // TestFieldOrderings
 
-// optional fun::string my_string = 11;
+// optional string my_string = 11;
 inline bool TestFieldOrderings::has_my_string() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -14395,14 +14395,14 @@ inline void TestFieldOrderings::clear_my_string() {
   }
   clear_has_my_string();
 }
-inline const ::fun::string& TestFieldOrderings::my_string() const {
+inline const ::std::string& TestFieldOrderings::my_string() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestFieldOrderings.my_string)
   return *my_string_;
 }
-inline void TestFieldOrderings::set_my_string(const ::fun::string& value) {
+inline void TestFieldOrderings::set_my_string(const ::std::string& value) {
   set_has_my_string();
   if (my_string_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    my_string_ = new ::fun::string;
+    my_string_ = new ::std::string;
   }
   my_string_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestFieldOrderings.my_string)
@@ -14410,7 +14410,7 @@ inline void TestFieldOrderings::set_my_string(const ::fun::string& value) {
 inline void TestFieldOrderings::set_my_string(const char* value) {
   set_has_my_string();
   if (my_string_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    my_string_ = new ::fun::string;
+    my_string_ = new ::std::string;
   }
   my_string_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestFieldOrderings.my_string)
@@ -14418,30 +14418,30 @@ inline void TestFieldOrderings::set_my_string(const char* value) {
 inline void TestFieldOrderings::set_my_string(const char* value, size_t size) {
   set_has_my_string();
   if (my_string_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    my_string_ = new ::fun::string;
+    my_string_ = new ::std::string;
   }
   my_string_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestFieldOrderings.my_string)
 }
-inline ::fun::string* TestFieldOrderings::mutable_my_string() {
+inline ::std::string* TestFieldOrderings::mutable_my_string() {
   set_has_my_string();
   if (my_string_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    my_string_ = new ::fun::string;
+    my_string_ = new ::std::string;
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestFieldOrderings.my_string)
   return my_string_;
 }
-inline ::fun::string* TestFieldOrderings::release_my_string() {
+inline ::std::string* TestFieldOrderings::release_my_string() {
   clear_has_my_string();
   if (my_string_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::fun::string* temp = my_string_;
-    my_string_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::std::string* temp = my_string_;
+    my_string_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void TestFieldOrderings::set_allocated_my_string(::fun::string* my_string) {
+inline void TestFieldOrderings::set_allocated_my_string(::std::string* my_string) {
   if (my_string_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete my_string_;
   }
@@ -14450,7 +14450,7 @@ inline void TestFieldOrderings::set_allocated_my_string(::fun::string* my_string
     my_string_ = my_string;
   } else {
     clear_has_my_string();
-    my_string_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    my_string_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestFieldOrderings.my_string)
 }
@@ -14523,14 +14523,14 @@ inline void TestExtremeDefaultValues::clear_escaped_bytes() {
   }
   clear_has_escaped_bytes();
 }
-inline const ::fun::string& TestExtremeDefaultValues::escaped_bytes() const {
+inline const ::std::string& TestExtremeDefaultValues::escaped_bytes() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestExtremeDefaultValues.escaped_bytes)
   return *escaped_bytes_;
 }
-inline void TestExtremeDefaultValues::set_escaped_bytes(const ::fun::string& value) {
+inline void TestExtremeDefaultValues::set_escaped_bytes(const ::std::string& value) {
   set_has_escaped_bytes();
   if (escaped_bytes_ == _default_escaped_bytes_) {
-    escaped_bytes_ = new ::fun::string;
+    escaped_bytes_ = new ::std::string;
   }
   escaped_bytes_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestExtremeDefaultValues.escaped_bytes)
@@ -14538,7 +14538,7 @@ inline void TestExtremeDefaultValues::set_escaped_bytes(const ::fun::string& val
 inline void TestExtremeDefaultValues::set_escaped_bytes(const char* value) {
   set_has_escaped_bytes();
   if (escaped_bytes_ == _default_escaped_bytes_) {
-    escaped_bytes_ = new ::fun::string;
+    escaped_bytes_ = new ::std::string;
   }
   escaped_bytes_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestExtremeDefaultValues.escaped_bytes)
@@ -14546,30 +14546,30 @@ inline void TestExtremeDefaultValues::set_escaped_bytes(const char* value) {
 inline void TestExtremeDefaultValues::set_escaped_bytes(const void* value, size_t size) {
   set_has_escaped_bytes();
   if (escaped_bytes_ == _default_escaped_bytes_) {
-    escaped_bytes_ = new ::fun::string;
+    escaped_bytes_ = new ::std::string;
   }
   escaped_bytes_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestExtremeDefaultValues.escaped_bytes)
 }
-inline ::fun::string* TestExtremeDefaultValues::mutable_escaped_bytes() {
+inline ::std::string* TestExtremeDefaultValues::mutable_escaped_bytes() {
   set_has_escaped_bytes();
   if (escaped_bytes_ == _default_escaped_bytes_) {
-    escaped_bytes_ = new ::fun::string(*_default_escaped_bytes_);
+    escaped_bytes_ = new ::std::string(*_default_escaped_bytes_);
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestExtremeDefaultValues.escaped_bytes)
   return escaped_bytes_;
 }
-inline ::fun::string* TestExtremeDefaultValues::release_escaped_bytes() {
+inline ::std::string* TestExtremeDefaultValues::release_escaped_bytes() {
   clear_has_escaped_bytes();
   if (escaped_bytes_ == _default_escaped_bytes_) {
     return NULL;
   } else {
-    ::fun::string* temp = escaped_bytes_;
-    escaped_bytes_ = const_cast< ::fun::string*>(_default_escaped_bytes_);
+    ::std::string* temp = escaped_bytes_;
+    escaped_bytes_ = const_cast< ::std::string*>(_default_escaped_bytes_);
     return temp;
   }
 }
-inline void TestExtremeDefaultValues::set_allocated_escaped_bytes(::fun::string* escaped_bytes) {
+inline void TestExtremeDefaultValues::set_allocated_escaped_bytes(::std::string* escaped_bytes) {
   if (escaped_bytes_ != _default_escaped_bytes_) {
     delete escaped_bytes_;
   }
@@ -14578,7 +14578,7 @@ inline void TestExtremeDefaultValues::set_allocated_escaped_bytes(::fun::string*
     escaped_bytes_ = escaped_bytes;
   } else {
     clear_has_escaped_bytes();
-    escaped_bytes_ = const_cast< ::fun::string*>(_default_escaped_bytes_);
+    escaped_bytes_ = const_cast< ::std::string*>(_default_escaped_bytes_);
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestExtremeDefaultValues.escaped_bytes)
 }
@@ -14727,7 +14727,7 @@ inline void TestExtremeDefaultValues::set_really_small_int64(::google::protobuf:
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestExtremeDefaultValues.really_small_int64)
 }
 
-// optional fun::string utf8_string = 6 [default = "\341\210\264"];
+// optional string utf8_string = 6 [default = "\341\210\264"];
 inline bool TestExtremeDefaultValues::has_utf8_string() const {
   return (_has_bits_[0] & 0x00000080u) != 0;
 }
@@ -14743,14 +14743,14 @@ inline void TestExtremeDefaultValues::clear_utf8_string() {
   }
   clear_has_utf8_string();
 }
-inline const ::fun::string& TestExtremeDefaultValues::utf8_string() const {
+inline const ::std::string& TestExtremeDefaultValues::utf8_string() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestExtremeDefaultValues.utf8_string)
   return *utf8_string_;
 }
-inline void TestExtremeDefaultValues::set_utf8_string(const ::fun::string& value) {
+inline void TestExtremeDefaultValues::set_utf8_string(const ::std::string& value) {
   set_has_utf8_string();
   if (utf8_string_ == _default_utf8_string_) {
-    utf8_string_ = new ::fun::string;
+    utf8_string_ = new ::std::string;
   }
   utf8_string_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestExtremeDefaultValues.utf8_string)
@@ -14758,7 +14758,7 @@ inline void TestExtremeDefaultValues::set_utf8_string(const ::fun::string& value
 inline void TestExtremeDefaultValues::set_utf8_string(const char* value) {
   set_has_utf8_string();
   if (utf8_string_ == _default_utf8_string_) {
-    utf8_string_ = new ::fun::string;
+    utf8_string_ = new ::std::string;
   }
   utf8_string_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestExtremeDefaultValues.utf8_string)
@@ -14766,30 +14766,30 @@ inline void TestExtremeDefaultValues::set_utf8_string(const char* value) {
 inline void TestExtremeDefaultValues::set_utf8_string(const char* value, size_t size) {
   set_has_utf8_string();
   if (utf8_string_ == _default_utf8_string_) {
-    utf8_string_ = new ::fun::string;
+    utf8_string_ = new ::std::string;
   }
   utf8_string_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestExtremeDefaultValues.utf8_string)
 }
-inline ::fun::string* TestExtremeDefaultValues::mutable_utf8_string() {
+inline ::std::string* TestExtremeDefaultValues::mutable_utf8_string() {
   set_has_utf8_string();
   if (utf8_string_ == _default_utf8_string_) {
-    utf8_string_ = new ::fun::string(*_default_utf8_string_);
+    utf8_string_ = new ::std::string(*_default_utf8_string_);
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestExtremeDefaultValues.utf8_string)
   return utf8_string_;
 }
-inline ::fun::string* TestExtremeDefaultValues::release_utf8_string() {
+inline ::std::string* TestExtremeDefaultValues::release_utf8_string() {
   clear_has_utf8_string();
   if (utf8_string_ == _default_utf8_string_) {
     return NULL;
   } else {
-    ::fun::string* temp = utf8_string_;
-    utf8_string_ = const_cast< ::fun::string*>(_default_utf8_string_);
+    ::std::string* temp = utf8_string_;
+    utf8_string_ = const_cast< ::std::string*>(_default_utf8_string_);
     return temp;
   }
 }
-inline void TestExtremeDefaultValues::set_allocated_utf8_string(::fun::string* utf8_string) {
+inline void TestExtremeDefaultValues::set_allocated_utf8_string(::std::string* utf8_string) {
   if (utf8_string_ != _default_utf8_string_) {
     delete utf8_string_;
   }
@@ -14798,7 +14798,7 @@ inline void TestExtremeDefaultValues::set_allocated_utf8_string(::fun::string* u
     utf8_string_ = utf8_string;
   } else {
     clear_has_utf8_string();
-    utf8_string_ = const_cast< ::fun::string*>(_default_utf8_string_);
+    utf8_string_ = const_cast< ::std::string*>(_default_utf8_string_);
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestExtremeDefaultValues.utf8_string)
 }
@@ -15115,7 +15115,7 @@ inline void TestExtremeDefaultValues::set_nan_float(float value) {
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestExtremeDefaultValues.nan_float)
 }
 
-// optional fun::string cpp_trigraph = 20 [default = "? ? ?? ?? ??? ??/ ??-"];
+// optional string cpp_trigraph = 20 [default = "? ? ?? ?? ??? ??/ ??-"];
 inline bool TestExtremeDefaultValues::has_cpp_trigraph() const {
   return (_has_bits_[0] & 0x00200000u) != 0;
 }
@@ -15131,14 +15131,14 @@ inline void TestExtremeDefaultValues::clear_cpp_trigraph() {
   }
   clear_has_cpp_trigraph();
 }
-inline const ::fun::string& TestExtremeDefaultValues::cpp_trigraph() const {
+inline const ::std::string& TestExtremeDefaultValues::cpp_trigraph() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestExtremeDefaultValues.cpp_trigraph)
   return *cpp_trigraph_;
 }
-inline void TestExtremeDefaultValues::set_cpp_trigraph(const ::fun::string& value) {
+inline void TestExtremeDefaultValues::set_cpp_trigraph(const ::std::string& value) {
   set_has_cpp_trigraph();
   if (cpp_trigraph_ == _default_cpp_trigraph_) {
-    cpp_trigraph_ = new ::fun::string;
+    cpp_trigraph_ = new ::std::string;
   }
   cpp_trigraph_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestExtremeDefaultValues.cpp_trigraph)
@@ -15146,7 +15146,7 @@ inline void TestExtremeDefaultValues::set_cpp_trigraph(const ::fun::string& valu
 inline void TestExtremeDefaultValues::set_cpp_trigraph(const char* value) {
   set_has_cpp_trigraph();
   if (cpp_trigraph_ == _default_cpp_trigraph_) {
-    cpp_trigraph_ = new ::fun::string;
+    cpp_trigraph_ = new ::std::string;
   }
   cpp_trigraph_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestExtremeDefaultValues.cpp_trigraph)
@@ -15154,30 +15154,30 @@ inline void TestExtremeDefaultValues::set_cpp_trigraph(const char* value) {
 inline void TestExtremeDefaultValues::set_cpp_trigraph(const char* value, size_t size) {
   set_has_cpp_trigraph();
   if (cpp_trigraph_ == _default_cpp_trigraph_) {
-    cpp_trigraph_ = new ::fun::string;
+    cpp_trigraph_ = new ::std::string;
   }
   cpp_trigraph_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestExtremeDefaultValues.cpp_trigraph)
 }
-inline ::fun::string* TestExtremeDefaultValues::mutable_cpp_trigraph() {
+inline ::std::string* TestExtremeDefaultValues::mutable_cpp_trigraph() {
   set_has_cpp_trigraph();
   if (cpp_trigraph_ == _default_cpp_trigraph_) {
-    cpp_trigraph_ = new ::fun::string(*_default_cpp_trigraph_);
+    cpp_trigraph_ = new ::std::string(*_default_cpp_trigraph_);
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestExtremeDefaultValues.cpp_trigraph)
   return cpp_trigraph_;
 }
-inline ::fun::string* TestExtremeDefaultValues::release_cpp_trigraph() {
+inline ::std::string* TestExtremeDefaultValues::release_cpp_trigraph() {
   clear_has_cpp_trigraph();
   if (cpp_trigraph_ == _default_cpp_trigraph_) {
     return NULL;
   } else {
-    ::fun::string* temp = cpp_trigraph_;
-    cpp_trigraph_ = const_cast< ::fun::string*>(_default_cpp_trigraph_);
+    ::std::string* temp = cpp_trigraph_;
+    cpp_trigraph_ = const_cast< ::std::string*>(_default_cpp_trigraph_);
     return temp;
   }
 }
-inline void TestExtremeDefaultValues::set_allocated_cpp_trigraph(::fun::string* cpp_trigraph) {
+inline void TestExtremeDefaultValues::set_allocated_cpp_trigraph(::std::string* cpp_trigraph) {
   if (cpp_trigraph_ != _default_cpp_trigraph_) {
     delete cpp_trigraph_;
   }
@@ -15186,12 +15186,12 @@ inline void TestExtremeDefaultValues::set_allocated_cpp_trigraph(::fun::string* 
     cpp_trigraph_ = cpp_trigraph;
   } else {
     clear_has_cpp_trigraph();
-    cpp_trigraph_ = const_cast< ::fun::string*>(_default_cpp_trigraph_);
+    cpp_trigraph_ = const_cast< ::std::string*>(_default_cpp_trigraph_);
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestExtremeDefaultValues.cpp_trigraph)
 }
 
-// optional fun::string string_with_zero = 23 [default = "hel\000lo"];
+// optional string string_with_zero = 23 [default = "hel\000lo"];
 inline bool TestExtremeDefaultValues::has_string_with_zero() const {
   return (_has_bits_[0] & 0x00400000u) != 0;
 }
@@ -15207,14 +15207,14 @@ inline void TestExtremeDefaultValues::clear_string_with_zero() {
   }
   clear_has_string_with_zero();
 }
-inline const ::fun::string& TestExtremeDefaultValues::string_with_zero() const {
+inline const ::std::string& TestExtremeDefaultValues::string_with_zero() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestExtremeDefaultValues.string_with_zero)
   return *string_with_zero_;
 }
-inline void TestExtremeDefaultValues::set_string_with_zero(const ::fun::string& value) {
+inline void TestExtremeDefaultValues::set_string_with_zero(const ::std::string& value) {
   set_has_string_with_zero();
   if (string_with_zero_ == _default_string_with_zero_) {
-    string_with_zero_ = new ::fun::string;
+    string_with_zero_ = new ::std::string;
   }
   string_with_zero_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestExtremeDefaultValues.string_with_zero)
@@ -15222,7 +15222,7 @@ inline void TestExtremeDefaultValues::set_string_with_zero(const ::fun::string& 
 inline void TestExtremeDefaultValues::set_string_with_zero(const char* value) {
   set_has_string_with_zero();
   if (string_with_zero_ == _default_string_with_zero_) {
-    string_with_zero_ = new ::fun::string;
+    string_with_zero_ = new ::std::string;
   }
   string_with_zero_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestExtremeDefaultValues.string_with_zero)
@@ -15230,30 +15230,30 @@ inline void TestExtremeDefaultValues::set_string_with_zero(const char* value) {
 inline void TestExtremeDefaultValues::set_string_with_zero(const char* value, size_t size) {
   set_has_string_with_zero();
   if (string_with_zero_ == _default_string_with_zero_) {
-    string_with_zero_ = new ::fun::string;
+    string_with_zero_ = new ::std::string;
   }
   string_with_zero_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestExtremeDefaultValues.string_with_zero)
 }
-inline ::fun::string* TestExtremeDefaultValues::mutable_string_with_zero() {
+inline ::std::string* TestExtremeDefaultValues::mutable_string_with_zero() {
   set_has_string_with_zero();
   if (string_with_zero_ == _default_string_with_zero_) {
-    string_with_zero_ = new ::fun::string(*_default_string_with_zero_);
+    string_with_zero_ = new ::std::string(*_default_string_with_zero_);
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestExtremeDefaultValues.string_with_zero)
   return string_with_zero_;
 }
-inline ::fun::string* TestExtremeDefaultValues::release_string_with_zero() {
+inline ::std::string* TestExtremeDefaultValues::release_string_with_zero() {
   clear_has_string_with_zero();
   if (string_with_zero_ == _default_string_with_zero_) {
     return NULL;
   } else {
-    ::fun::string* temp = string_with_zero_;
-    string_with_zero_ = const_cast< ::fun::string*>(_default_string_with_zero_);
+    ::std::string* temp = string_with_zero_;
+    string_with_zero_ = const_cast< ::std::string*>(_default_string_with_zero_);
     return temp;
   }
 }
-inline void TestExtremeDefaultValues::set_allocated_string_with_zero(::fun::string* string_with_zero) {
+inline void TestExtremeDefaultValues::set_allocated_string_with_zero(::std::string* string_with_zero) {
   if (string_with_zero_ != _default_string_with_zero_) {
     delete string_with_zero_;
   }
@@ -15262,7 +15262,7 @@ inline void TestExtremeDefaultValues::set_allocated_string_with_zero(::fun::stri
     string_with_zero_ = string_with_zero;
   } else {
     clear_has_string_with_zero();
-    string_with_zero_ = const_cast< ::fun::string*>(_default_string_with_zero_);
+    string_with_zero_ = const_cast< ::std::string*>(_default_string_with_zero_);
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestExtremeDefaultValues.string_with_zero)
 }
@@ -15283,14 +15283,14 @@ inline void TestExtremeDefaultValues::clear_bytes_with_zero() {
   }
   clear_has_bytes_with_zero();
 }
-inline const ::fun::string& TestExtremeDefaultValues::bytes_with_zero() const {
+inline const ::std::string& TestExtremeDefaultValues::bytes_with_zero() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestExtremeDefaultValues.bytes_with_zero)
   return *bytes_with_zero_;
 }
-inline void TestExtremeDefaultValues::set_bytes_with_zero(const ::fun::string& value) {
+inline void TestExtremeDefaultValues::set_bytes_with_zero(const ::std::string& value) {
   set_has_bytes_with_zero();
   if (bytes_with_zero_ == _default_bytes_with_zero_) {
-    bytes_with_zero_ = new ::fun::string;
+    bytes_with_zero_ = new ::std::string;
   }
   bytes_with_zero_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestExtremeDefaultValues.bytes_with_zero)
@@ -15298,7 +15298,7 @@ inline void TestExtremeDefaultValues::set_bytes_with_zero(const ::fun::string& v
 inline void TestExtremeDefaultValues::set_bytes_with_zero(const char* value) {
   set_has_bytes_with_zero();
   if (bytes_with_zero_ == _default_bytes_with_zero_) {
-    bytes_with_zero_ = new ::fun::string;
+    bytes_with_zero_ = new ::std::string;
   }
   bytes_with_zero_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestExtremeDefaultValues.bytes_with_zero)
@@ -15306,30 +15306,30 @@ inline void TestExtremeDefaultValues::set_bytes_with_zero(const char* value) {
 inline void TestExtremeDefaultValues::set_bytes_with_zero(const void* value, size_t size) {
   set_has_bytes_with_zero();
   if (bytes_with_zero_ == _default_bytes_with_zero_) {
-    bytes_with_zero_ = new ::fun::string;
+    bytes_with_zero_ = new ::std::string;
   }
   bytes_with_zero_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestExtremeDefaultValues.bytes_with_zero)
 }
-inline ::fun::string* TestExtremeDefaultValues::mutable_bytes_with_zero() {
+inline ::std::string* TestExtremeDefaultValues::mutable_bytes_with_zero() {
   set_has_bytes_with_zero();
   if (bytes_with_zero_ == _default_bytes_with_zero_) {
-    bytes_with_zero_ = new ::fun::string(*_default_bytes_with_zero_);
+    bytes_with_zero_ = new ::std::string(*_default_bytes_with_zero_);
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestExtremeDefaultValues.bytes_with_zero)
   return bytes_with_zero_;
 }
-inline ::fun::string* TestExtremeDefaultValues::release_bytes_with_zero() {
+inline ::std::string* TestExtremeDefaultValues::release_bytes_with_zero() {
   clear_has_bytes_with_zero();
   if (bytes_with_zero_ == _default_bytes_with_zero_) {
     return NULL;
   } else {
-    ::fun::string* temp = bytes_with_zero_;
-    bytes_with_zero_ = const_cast< ::fun::string*>(_default_bytes_with_zero_);
+    ::std::string* temp = bytes_with_zero_;
+    bytes_with_zero_ = const_cast< ::std::string*>(_default_bytes_with_zero_);
     return temp;
   }
 }
-inline void TestExtremeDefaultValues::set_allocated_bytes_with_zero(::fun::string* bytes_with_zero) {
+inline void TestExtremeDefaultValues::set_allocated_bytes_with_zero(::std::string* bytes_with_zero) {
   if (bytes_with_zero_ != _default_bytes_with_zero_) {
     delete bytes_with_zero_;
   }
@@ -15338,12 +15338,12 @@ inline void TestExtremeDefaultValues::set_allocated_bytes_with_zero(::fun::strin
     bytes_with_zero_ = bytes_with_zero;
   } else {
     clear_has_bytes_with_zero();
-    bytes_with_zero_ = const_cast< ::fun::string*>(_default_bytes_with_zero_);
+    bytes_with_zero_ = const_cast< ::std::string*>(_default_bytes_with_zero_);
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestExtremeDefaultValues.bytes_with_zero)
 }
 
-// optional fun::string string_piece_with_zero = 25 [default = "ab\000c", ctype = STRING_PIECE];
+// optional string string_piece_with_zero = 25 [default = "ab\000c", ctype = STRING_PIECE];
 inline bool TestExtremeDefaultValues::has_string_piece_with_zero() const {
   return (_has_bits_[0] & 0x01000000u) != 0;
 }
@@ -15359,14 +15359,14 @@ inline void TestExtremeDefaultValues::clear_string_piece_with_zero() {
   }
   clear_has_string_piece_with_zero();
 }
-inline const ::fun::string& TestExtremeDefaultValues::string_piece_with_zero() const {
+inline const ::std::string& TestExtremeDefaultValues::string_piece_with_zero() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestExtremeDefaultValues.string_piece_with_zero)
   return *string_piece_with_zero_;
 }
-inline void TestExtremeDefaultValues::set_string_piece_with_zero(const ::fun::string& value) {
+inline void TestExtremeDefaultValues::set_string_piece_with_zero(const ::std::string& value) {
   set_has_string_piece_with_zero();
   if (string_piece_with_zero_ == _default_string_piece_with_zero_) {
-    string_piece_with_zero_ = new ::fun::string;
+    string_piece_with_zero_ = new ::std::string;
   }
   string_piece_with_zero_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestExtremeDefaultValues.string_piece_with_zero)
@@ -15374,7 +15374,7 @@ inline void TestExtremeDefaultValues::set_string_piece_with_zero(const ::fun::st
 inline void TestExtremeDefaultValues::set_string_piece_with_zero(const char* value) {
   set_has_string_piece_with_zero();
   if (string_piece_with_zero_ == _default_string_piece_with_zero_) {
-    string_piece_with_zero_ = new ::fun::string;
+    string_piece_with_zero_ = new ::std::string;
   }
   string_piece_with_zero_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestExtremeDefaultValues.string_piece_with_zero)
@@ -15382,30 +15382,30 @@ inline void TestExtremeDefaultValues::set_string_piece_with_zero(const char* val
 inline void TestExtremeDefaultValues::set_string_piece_with_zero(const char* value, size_t size) {
   set_has_string_piece_with_zero();
   if (string_piece_with_zero_ == _default_string_piece_with_zero_) {
-    string_piece_with_zero_ = new ::fun::string;
+    string_piece_with_zero_ = new ::std::string;
   }
   string_piece_with_zero_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestExtremeDefaultValues.string_piece_with_zero)
 }
-inline ::fun::string* TestExtremeDefaultValues::mutable_string_piece_with_zero() {
+inline ::std::string* TestExtremeDefaultValues::mutable_string_piece_with_zero() {
   set_has_string_piece_with_zero();
   if (string_piece_with_zero_ == _default_string_piece_with_zero_) {
-    string_piece_with_zero_ = new ::fun::string(*_default_string_piece_with_zero_);
+    string_piece_with_zero_ = new ::std::string(*_default_string_piece_with_zero_);
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestExtremeDefaultValues.string_piece_with_zero)
   return string_piece_with_zero_;
 }
-inline ::fun::string* TestExtremeDefaultValues::release_string_piece_with_zero() {
+inline ::std::string* TestExtremeDefaultValues::release_string_piece_with_zero() {
   clear_has_string_piece_with_zero();
   if (string_piece_with_zero_ == _default_string_piece_with_zero_) {
     return NULL;
   } else {
-    ::fun::string* temp = string_piece_with_zero_;
-    string_piece_with_zero_ = const_cast< ::fun::string*>(_default_string_piece_with_zero_);
+    ::std::string* temp = string_piece_with_zero_;
+    string_piece_with_zero_ = const_cast< ::std::string*>(_default_string_piece_with_zero_);
     return temp;
   }
 }
-inline void TestExtremeDefaultValues::set_allocated_string_piece_with_zero(::fun::string* string_piece_with_zero) {
+inline void TestExtremeDefaultValues::set_allocated_string_piece_with_zero(::std::string* string_piece_with_zero) {
   if (string_piece_with_zero_ != _default_string_piece_with_zero_) {
     delete string_piece_with_zero_;
   }
@@ -15414,12 +15414,12 @@ inline void TestExtremeDefaultValues::set_allocated_string_piece_with_zero(::fun
     string_piece_with_zero_ = string_piece_with_zero;
   } else {
     clear_has_string_piece_with_zero();
-    string_piece_with_zero_ = const_cast< ::fun::string*>(_default_string_piece_with_zero_);
+    string_piece_with_zero_ = const_cast< ::std::string*>(_default_string_piece_with_zero_);
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestExtremeDefaultValues.string_piece_with_zero)
 }
 
-// optional fun::string cord_with_zero = 26 [default = "12\0003", ctype = CORD];
+// optional string cord_with_zero = 26 [default = "12\0003", ctype = CORD];
 inline bool TestExtremeDefaultValues::has_cord_with_zero() const {
   return (_has_bits_[0] & 0x02000000u) != 0;
 }
@@ -15435,14 +15435,14 @@ inline void TestExtremeDefaultValues::clear_cord_with_zero() {
   }
   clear_has_cord_with_zero();
 }
-inline const ::fun::string& TestExtremeDefaultValues::cord_with_zero() const {
+inline const ::std::string& TestExtremeDefaultValues::cord_with_zero() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestExtremeDefaultValues.cord_with_zero)
   return *cord_with_zero_;
 }
-inline void TestExtremeDefaultValues::set_cord_with_zero(const ::fun::string& value) {
+inline void TestExtremeDefaultValues::set_cord_with_zero(const ::std::string& value) {
   set_has_cord_with_zero();
   if (cord_with_zero_ == _default_cord_with_zero_) {
-    cord_with_zero_ = new ::fun::string;
+    cord_with_zero_ = new ::std::string;
   }
   cord_with_zero_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestExtremeDefaultValues.cord_with_zero)
@@ -15450,7 +15450,7 @@ inline void TestExtremeDefaultValues::set_cord_with_zero(const ::fun::string& va
 inline void TestExtremeDefaultValues::set_cord_with_zero(const char* value) {
   set_has_cord_with_zero();
   if (cord_with_zero_ == _default_cord_with_zero_) {
-    cord_with_zero_ = new ::fun::string;
+    cord_with_zero_ = new ::std::string;
   }
   cord_with_zero_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestExtremeDefaultValues.cord_with_zero)
@@ -15458,30 +15458,30 @@ inline void TestExtremeDefaultValues::set_cord_with_zero(const char* value) {
 inline void TestExtremeDefaultValues::set_cord_with_zero(const char* value, size_t size) {
   set_has_cord_with_zero();
   if (cord_with_zero_ == _default_cord_with_zero_) {
-    cord_with_zero_ = new ::fun::string;
+    cord_with_zero_ = new ::std::string;
   }
   cord_with_zero_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestExtremeDefaultValues.cord_with_zero)
 }
-inline ::fun::string* TestExtremeDefaultValues::mutable_cord_with_zero() {
+inline ::std::string* TestExtremeDefaultValues::mutable_cord_with_zero() {
   set_has_cord_with_zero();
   if (cord_with_zero_ == _default_cord_with_zero_) {
-    cord_with_zero_ = new ::fun::string(*_default_cord_with_zero_);
+    cord_with_zero_ = new ::std::string(*_default_cord_with_zero_);
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestExtremeDefaultValues.cord_with_zero)
   return cord_with_zero_;
 }
-inline ::fun::string* TestExtremeDefaultValues::release_cord_with_zero() {
+inline ::std::string* TestExtremeDefaultValues::release_cord_with_zero() {
   clear_has_cord_with_zero();
   if (cord_with_zero_ == _default_cord_with_zero_) {
     return NULL;
   } else {
-    ::fun::string* temp = cord_with_zero_;
-    cord_with_zero_ = const_cast< ::fun::string*>(_default_cord_with_zero_);
+    ::std::string* temp = cord_with_zero_;
+    cord_with_zero_ = const_cast< ::std::string*>(_default_cord_with_zero_);
     return temp;
   }
 }
-inline void TestExtremeDefaultValues::set_allocated_cord_with_zero(::fun::string* cord_with_zero) {
+inline void TestExtremeDefaultValues::set_allocated_cord_with_zero(::std::string* cord_with_zero) {
   if (cord_with_zero_ != _default_cord_with_zero_) {
     delete cord_with_zero_;
   }
@@ -15490,12 +15490,12 @@ inline void TestExtremeDefaultValues::set_allocated_cord_with_zero(::fun::string
     cord_with_zero_ = cord_with_zero;
   } else {
     clear_has_cord_with_zero();
-    cord_with_zero_ = const_cast< ::fun::string*>(_default_cord_with_zero_);
+    cord_with_zero_ = const_cast< ::std::string*>(_default_cord_with_zero_);
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestExtremeDefaultValues.cord_with_zero)
 }
 
-// optional fun::string replacement_string = 27 [default = "${unknown}"];
+// optional string replacement_string = 27 [default = "${unknown}"];
 inline bool TestExtremeDefaultValues::has_replacement_string() const {
   return (_has_bits_[0] & 0x04000000u) != 0;
 }
@@ -15511,14 +15511,14 @@ inline void TestExtremeDefaultValues::clear_replacement_string() {
   }
   clear_has_replacement_string();
 }
-inline const ::fun::string& TestExtremeDefaultValues::replacement_string() const {
+inline const ::std::string& TestExtremeDefaultValues::replacement_string() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestExtremeDefaultValues.replacement_string)
   return *replacement_string_;
 }
-inline void TestExtremeDefaultValues::set_replacement_string(const ::fun::string& value) {
+inline void TestExtremeDefaultValues::set_replacement_string(const ::std::string& value) {
   set_has_replacement_string();
   if (replacement_string_ == _default_replacement_string_) {
-    replacement_string_ = new ::fun::string;
+    replacement_string_ = new ::std::string;
   }
   replacement_string_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestExtremeDefaultValues.replacement_string)
@@ -15526,7 +15526,7 @@ inline void TestExtremeDefaultValues::set_replacement_string(const ::fun::string
 inline void TestExtremeDefaultValues::set_replacement_string(const char* value) {
   set_has_replacement_string();
   if (replacement_string_ == _default_replacement_string_) {
-    replacement_string_ = new ::fun::string;
+    replacement_string_ = new ::std::string;
   }
   replacement_string_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestExtremeDefaultValues.replacement_string)
@@ -15534,30 +15534,30 @@ inline void TestExtremeDefaultValues::set_replacement_string(const char* value) 
 inline void TestExtremeDefaultValues::set_replacement_string(const char* value, size_t size) {
   set_has_replacement_string();
   if (replacement_string_ == _default_replacement_string_) {
-    replacement_string_ = new ::fun::string;
+    replacement_string_ = new ::std::string;
   }
   replacement_string_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestExtremeDefaultValues.replacement_string)
 }
-inline ::fun::string* TestExtremeDefaultValues::mutable_replacement_string() {
+inline ::std::string* TestExtremeDefaultValues::mutable_replacement_string() {
   set_has_replacement_string();
   if (replacement_string_ == _default_replacement_string_) {
-    replacement_string_ = new ::fun::string(*_default_replacement_string_);
+    replacement_string_ = new ::std::string(*_default_replacement_string_);
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestExtremeDefaultValues.replacement_string)
   return replacement_string_;
 }
-inline ::fun::string* TestExtremeDefaultValues::release_replacement_string() {
+inline ::std::string* TestExtremeDefaultValues::release_replacement_string() {
   clear_has_replacement_string();
   if (replacement_string_ == _default_replacement_string_) {
     return NULL;
   } else {
-    ::fun::string* temp = replacement_string_;
-    replacement_string_ = const_cast< ::fun::string*>(_default_replacement_string_);
+    ::std::string* temp = replacement_string_;
+    replacement_string_ = const_cast< ::std::string*>(_default_replacement_string_);
     return temp;
   }
 }
-inline void TestExtremeDefaultValues::set_allocated_replacement_string(::fun::string* replacement_string) {
+inline void TestExtremeDefaultValues::set_allocated_replacement_string(::std::string* replacement_string) {
   if (replacement_string_ != _default_replacement_string_) {
     delete replacement_string_;
   }
@@ -15566,7 +15566,7 @@ inline void TestExtremeDefaultValues::set_allocated_replacement_string(::fun::st
     replacement_string_ = replacement_string;
   } else {
     clear_has_replacement_string();
-    replacement_string_ = const_cast< ::fun::string*>(_default_replacement_string_);
+    replacement_string_ = const_cast< ::std::string*>(_default_replacement_string_);
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestExtremeDefaultValues.replacement_string)
 }
@@ -15604,7 +15604,7 @@ inline void SparseEnumMessage::set_sparse_enum(::protobuf_unittest::TestSparseEn
 
 // OneString
 
-// optional fun::string data = 1;
+// optional string data = 1;
 inline bool OneString::has_data() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -15620,14 +15620,14 @@ inline void OneString::clear_data() {
   }
   clear_has_data();
 }
-inline const ::fun::string& OneString::data() const {
+inline const ::std::string& OneString::data() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.OneString.data)
   return *data_;
 }
-inline void OneString::set_data(const ::fun::string& value) {
+inline void OneString::set_data(const ::std::string& value) {
   set_has_data();
   if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    data_ = new ::fun::string;
+    data_ = new ::std::string;
   }
   data_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.OneString.data)
@@ -15635,7 +15635,7 @@ inline void OneString::set_data(const ::fun::string& value) {
 inline void OneString::set_data(const char* value) {
   set_has_data();
   if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    data_ = new ::fun::string;
+    data_ = new ::std::string;
   }
   data_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.OneString.data)
@@ -15643,30 +15643,30 @@ inline void OneString::set_data(const char* value) {
 inline void OneString::set_data(const char* value, size_t size) {
   set_has_data();
   if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    data_ = new ::fun::string;
+    data_ = new ::std::string;
   }
   data_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.OneString.data)
 }
-inline ::fun::string* OneString::mutable_data() {
+inline ::std::string* OneString::mutable_data() {
   set_has_data();
   if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    data_ = new ::fun::string;
+    data_ = new ::std::string;
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.OneString.data)
   return data_;
 }
-inline ::fun::string* OneString::release_data() {
+inline ::std::string* OneString::release_data() {
   clear_has_data();
   if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::fun::string* temp = data_;
-    data_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::std::string* temp = data_;
+    data_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void OneString::set_allocated_data(::fun::string* data) {
+inline void OneString::set_allocated_data(::std::string* data) {
   if (data_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete data_;
   }
@@ -15675,7 +15675,7 @@ inline void OneString::set_allocated_data(::fun::string* data) {
     data_ = data;
   } else {
     clear_has_data();
-    data_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    data_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.OneString.data)
 }
@@ -15684,22 +15684,22 @@ inline void OneString::set_allocated_data(::fun::string* data) {
 
 // MoreString
 
-// repeated fun::string data = 1;
+// repeated string data = 1;
 inline int MoreString::data_size() const {
   return data_.size();
 }
 inline void MoreString::clear_data() {
   data_.Clear();
 }
-inline const ::fun::string& MoreString::data(int index) const {
+inline const ::std::string& MoreString::data(int index) const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.MoreString.data)
   return data_.Get(index);
 }
-inline ::fun::string* MoreString::mutable_data(int index) {
+inline ::std::string* MoreString::mutable_data(int index) {
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.MoreString.data)
   return data_.Mutable(index);
 }
-inline void MoreString::set_data(int index, const ::fun::string& value) {
+inline void MoreString::set_data(int index, const ::std::string& value) {
   // @@protoc_insertion_point(field_set:protobuf_unittest.MoreString.data)
   data_.Mutable(index)->assign(value);
 }
@@ -15712,10 +15712,10 @@ inline void MoreString::set_data(int index, const char* value, size_t size) {
     reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.MoreString.data)
 }
-inline ::fun::string* MoreString::add_data() {
+inline ::std::string* MoreString::add_data() {
   return data_.Add();
 }
-inline void MoreString::add_data(const ::fun::string& value) {
+inline void MoreString::add_data(const ::std::string& value) {
   data_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:protobuf_unittest.MoreString.data)
 }
@@ -15727,12 +15727,12 @@ inline void MoreString::add_data(const char* value, size_t size) {
   data_.Add()->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:protobuf_unittest.MoreString.data)
 }
-inline const ::google::protobuf::RepeatedPtrField< ::fun::string>&
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
 MoreString::data() const {
   // @@protoc_insertion_point(field_list:protobuf_unittest.MoreString.data)
   return data_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::fun::string>*
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 MoreString::mutable_data() {
   // @@protoc_insertion_point(field_mutable_list:protobuf_unittest.MoreString.data)
   return &data_;
@@ -15758,14 +15758,14 @@ inline void OneBytes::clear_data() {
   }
   clear_has_data();
 }
-inline const ::fun::string& OneBytes::data() const {
+inline const ::std::string& OneBytes::data() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.OneBytes.data)
   return *data_;
 }
-inline void OneBytes::set_data(const ::fun::string& value) {
+inline void OneBytes::set_data(const ::std::string& value) {
   set_has_data();
   if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    data_ = new ::fun::string;
+    data_ = new ::std::string;
   }
   data_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.OneBytes.data)
@@ -15773,7 +15773,7 @@ inline void OneBytes::set_data(const ::fun::string& value) {
 inline void OneBytes::set_data(const char* value) {
   set_has_data();
   if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    data_ = new ::fun::string;
+    data_ = new ::std::string;
   }
   data_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.OneBytes.data)
@@ -15781,30 +15781,30 @@ inline void OneBytes::set_data(const char* value) {
 inline void OneBytes::set_data(const void* value, size_t size) {
   set_has_data();
   if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    data_ = new ::fun::string;
+    data_ = new ::std::string;
   }
   data_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.OneBytes.data)
 }
-inline ::fun::string* OneBytes::mutable_data() {
+inline ::std::string* OneBytes::mutable_data() {
   set_has_data();
   if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    data_ = new ::fun::string;
+    data_ = new ::std::string;
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.OneBytes.data)
   return data_;
 }
-inline ::fun::string* OneBytes::release_data() {
+inline ::std::string* OneBytes::release_data() {
   clear_has_data();
   if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::fun::string* temp = data_;
-    data_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::std::string* temp = data_;
+    data_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void OneBytes::set_allocated_data(::fun::string* data) {
+inline void OneBytes::set_allocated_data(::std::string* data) {
   if (data_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete data_;
   }
@@ -15813,7 +15813,7 @@ inline void OneBytes::set_allocated_data(::fun::string* data) {
     data_ = data;
   } else {
     clear_has_data();
-    data_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    data_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.OneBytes.data)
 }
@@ -15829,15 +15829,15 @@ inline int MoreBytes::data_size() const {
 inline void MoreBytes::clear_data() {
   data_.Clear();
 }
-inline const ::fun::string& MoreBytes::data(int index) const {
+inline const ::std::string& MoreBytes::data(int index) const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.MoreBytes.data)
   return data_.Get(index);
 }
-inline ::fun::string* MoreBytes::mutable_data(int index) {
+inline ::std::string* MoreBytes::mutable_data(int index) {
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.MoreBytes.data)
   return data_.Mutable(index);
 }
-inline void MoreBytes::set_data(int index, const ::fun::string& value) {
+inline void MoreBytes::set_data(int index, const ::std::string& value) {
   // @@protoc_insertion_point(field_set:protobuf_unittest.MoreBytes.data)
   data_.Mutable(index)->assign(value);
 }
@@ -15850,10 +15850,10 @@ inline void MoreBytes::set_data(int index, const void* value, size_t size) {
     reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.MoreBytes.data)
 }
-inline ::fun::string* MoreBytes::add_data() {
+inline ::std::string* MoreBytes::add_data() {
   return data_.Add();
 }
-inline void MoreBytes::add_data(const ::fun::string& value) {
+inline void MoreBytes::add_data(const ::std::string& value) {
   data_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:protobuf_unittest.MoreBytes.data)
 }
@@ -15865,12 +15865,12 @@ inline void MoreBytes::add_data(const void* value, size_t size) {
   data_.Add()->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:protobuf_unittest.MoreBytes.data)
 }
-inline const ::google::protobuf::RepeatedPtrField< ::fun::string>&
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
 MoreBytes::data() const {
   // @@protoc_insertion_point(field_list:protobuf_unittest.MoreBytes.data)
   return data_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::fun::string>*
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 MoreBytes::mutable_data() {
   // @@protoc_insertion_point(field_mutable_list:protobuf_unittest.MoreBytes.data)
   return &data_;
@@ -16044,7 +16044,7 @@ inline void TestOneof_FooGroup::set_a(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestOneof.FooGroup.a)
 }
 
-// optional fun::string b = 6;
+// optional string b = 6;
 inline bool TestOneof_FooGroup::has_b() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -16060,14 +16060,14 @@ inline void TestOneof_FooGroup::clear_b() {
   }
   clear_has_b();
 }
-inline const ::fun::string& TestOneof_FooGroup::b() const {
+inline const ::std::string& TestOneof_FooGroup::b() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestOneof.FooGroup.b)
   return *b_;
 }
-inline void TestOneof_FooGroup::set_b(const ::fun::string& value) {
+inline void TestOneof_FooGroup::set_b(const ::std::string& value) {
   set_has_b();
   if (b_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    b_ = new ::fun::string;
+    b_ = new ::std::string;
   }
   b_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestOneof.FooGroup.b)
@@ -16075,7 +16075,7 @@ inline void TestOneof_FooGroup::set_b(const ::fun::string& value) {
 inline void TestOneof_FooGroup::set_b(const char* value) {
   set_has_b();
   if (b_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    b_ = new ::fun::string;
+    b_ = new ::std::string;
   }
   b_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestOneof.FooGroup.b)
@@ -16083,30 +16083,30 @@ inline void TestOneof_FooGroup::set_b(const char* value) {
 inline void TestOneof_FooGroup::set_b(const char* value, size_t size) {
   set_has_b();
   if (b_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    b_ = new ::fun::string;
+    b_ = new ::std::string;
   }
   b_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestOneof.FooGroup.b)
 }
-inline ::fun::string* TestOneof_FooGroup::mutable_b() {
+inline ::std::string* TestOneof_FooGroup::mutable_b() {
   set_has_b();
   if (b_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    b_ = new ::fun::string;
+    b_ = new ::std::string;
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestOneof.FooGroup.b)
   return b_;
 }
-inline ::fun::string* TestOneof_FooGroup::release_b() {
+inline ::std::string* TestOneof_FooGroup::release_b() {
   clear_has_b();
   if (b_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::fun::string* temp = b_;
-    b_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::std::string* temp = b_;
+    b_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void TestOneof_FooGroup::set_allocated_b(::fun::string* b) {
+inline void TestOneof_FooGroup::set_allocated_b(::std::string* b) {
   if (b_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete b_;
   }
@@ -16115,7 +16115,7 @@ inline void TestOneof_FooGroup::set_allocated_b(::fun::string* b) {
     b_ = b;
   } else {
     clear_has_b();
-    b_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    b_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestOneof.FooGroup.b)
 }
@@ -16151,7 +16151,7 @@ inline void TestOneof::set_foo_int(::google::protobuf::int32 value) {
   foo_.foo_int_ = value;
 }
 
-// optional fun::string foo_string = 2;
+// optional string foo_string = 2;
 inline bool TestOneof::has_foo_string() const {
   return foo_case() == kFooString;
 }
@@ -16164,17 +16164,17 @@ inline void TestOneof::clear_foo_string() {
     clear_has_foo();
   }
 }
-inline const ::fun::string& TestOneof::foo_string() const {
+inline const ::std::string& TestOneof::foo_string() const {
   if (has_foo_string()) {
     return *foo_.foo_string_;
   }
   return ::google::protobuf::internal::GetEmptyStringAlreadyInited();
 }
-inline void TestOneof::set_foo_string(const ::fun::string& value) {
+inline void TestOneof::set_foo_string(const ::std::string& value) {
   if (!has_foo_string()) {
     clear_foo();
     set_has_foo_string();
-    foo_.foo_string_ = new ::fun::string;
+    foo_.foo_string_ = new ::std::string;
   }
   foo_.foo_string_->assign(value);
 }
@@ -16182,7 +16182,7 @@ inline void TestOneof::set_foo_string(const char* value) {
   if (!has_foo_string()) {
     clear_foo();
     set_has_foo_string();
-    foo_.foo_string_ = new ::fun::string;
+    foo_.foo_string_ = new ::std::string;
   }
   foo_.foo_string_->assign(value);
 }
@@ -16190,30 +16190,30 @@ inline void TestOneof::set_foo_string(const char* value, size_t size) {
   if (!has_foo_string()) {
     clear_foo();
     set_has_foo_string();
-    foo_.foo_string_ = new ::fun::string;
+    foo_.foo_string_ = new ::std::string;
   }
   foo_.foo_string_->assign(
       reinterpret_cast<const char*>(value), size);
 }
-inline ::fun::string* TestOneof::mutable_foo_string() {
+inline ::std::string* TestOneof::mutable_foo_string() {
   if (!has_foo_string()) {
     clear_foo();
     set_has_foo_string();
-    foo_.foo_string_ = new ::fun::string;
+    foo_.foo_string_ = new ::std::string;
   }
   return foo_.foo_string_;
 }
-inline ::fun::string* TestOneof::release_foo_string() {
+inline ::std::string* TestOneof::release_foo_string() {
   if (has_foo_string()) {
     clear_has_foo();
-    ::fun::string* temp = foo_.foo_string_;
+    ::std::string* temp = foo_.foo_string_;
     foo_.foo_string_ = NULL;
     return temp;
   } else {
     return NULL;
   }
 }
-inline void TestOneof::set_allocated_foo_string(::fun::string* foo_string) {
+inline void TestOneof::set_allocated_foo_string(::std::string* foo_string) {
   clear_foo();
   if (foo_string) {
     set_has_foo_string();
@@ -16344,7 +16344,7 @@ inline void TestOneofBackwardsCompatible_FooGroup::set_a(::google::protobuf::int
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestOneofBackwardsCompatible.FooGroup.a)
 }
 
-// optional fun::string b = 6;
+// optional string b = 6;
 inline bool TestOneofBackwardsCompatible_FooGroup::has_b() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -16360,14 +16360,14 @@ inline void TestOneofBackwardsCompatible_FooGroup::clear_b() {
   }
   clear_has_b();
 }
-inline const ::fun::string& TestOneofBackwardsCompatible_FooGroup::b() const {
+inline const ::std::string& TestOneofBackwardsCompatible_FooGroup::b() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestOneofBackwardsCompatible.FooGroup.b)
   return *b_;
 }
-inline void TestOneofBackwardsCompatible_FooGroup::set_b(const ::fun::string& value) {
+inline void TestOneofBackwardsCompatible_FooGroup::set_b(const ::std::string& value) {
   set_has_b();
   if (b_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    b_ = new ::fun::string;
+    b_ = new ::std::string;
   }
   b_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestOneofBackwardsCompatible.FooGroup.b)
@@ -16375,7 +16375,7 @@ inline void TestOneofBackwardsCompatible_FooGroup::set_b(const ::fun::string& va
 inline void TestOneofBackwardsCompatible_FooGroup::set_b(const char* value) {
   set_has_b();
   if (b_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    b_ = new ::fun::string;
+    b_ = new ::std::string;
   }
   b_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestOneofBackwardsCompatible.FooGroup.b)
@@ -16383,30 +16383,30 @@ inline void TestOneofBackwardsCompatible_FooGroup::set_b(const char* value) {
 inline void TestOneofBackwardsCompatible_FooGroup::set_b(const char* value, size_t size) {
   set_has_b();
   if (b_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    b_ = new ::fun::string;
+    b_ = new ::std::string;
   }
   b_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestOneofBackwardsCompatible.FooGroup.b)
 }
-inline ::fun::string* TestOneofBackwardsCompatible_FooGroup::mutable_b() {
+inline ::std::string* TestOneofBackwardsCompatible_FooGroup::mutable_b() {
   set_has_b();
   if (b_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    b_ = new ::fun::string;
+    b_ = new ::std::string;
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestOneofBackwardsCompatible.FooGroup.b)
   return b_;
 }
-inline ::fun::string* TestOneofBackwardsCompatible_FooGroup::release_b() {
+inline ::std::string* TestOneofBackwardsCompatible_FooGroup::release_b() {
   clear_has_b();
   if (b_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::fun::string* temp = b_;
-    b_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::std::string* temp = b_;
+    b_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void TestOneofBackwardsCompatible_FooGroup::set_allocated_b(::fun::string* b) {
+inline void TestOneofBackwardsCompatible_FooGroup::set_allocated_b(::std::string* b) {
   if (b_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete b_;
   }
@@ -16415,7 +16415,7 @@ inline void TestOneofBackwardsCompatible_FooGroup::set_allocated_b(::fun::string
     b_ = b;
   } else {
     clear_has_b();
-    b_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    b_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestOneofBackwardsCompatible.FooGroup.b)
 }
@@ -16448,7 +16448,7 @@ inline void TestOneofBackwardsCompatible::set_foo_int(::google::protobuf::int32 
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestOneofBackwardsCompatible.foo_int)
 }
 
-// optional fun::string foo_string = 2;
+// optional string foo_string = 2;
 inline bool TestOneofBackwardsCompatible::has_foo_string() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -16464,14 +16464,14 @@ inline void TestOneofBackwardsCompatible::clear_foo_string() {
   }
   clear_has_foo_string();
 }
-inline const ::fun::string& TestOneofBackwardsCompatible::foo_string() const {
+inline const ::std::string& TestOneofBackwardsCompatible::foo_string() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestOneofBackwardsCompatible.foo_string)
   return *foo_string_;
 }
-inline void TestOneofBackwardsCompatible::set_foo_string(const ::fun::string& value) {
+inline void TestOneofBackwardsCompatible::set_foo_string(const ::std::string& value) {
   set_has_foo_string();
   if (foo_string_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    foo_string_ = new ::fun::string;
+    foo_string_ = new ::std::string;
   }
   foo_string_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestOneofBackwardsCompatible.foo_string)
@@ -16479,7 +16479,7 @@ inline void TestOneofBackwardsCompatible::set_foo_string(const ::fun::string& va
 inline void TestOneofBackwardsCompatible::set_foo_string(const char* value) {
   set_has_foo_string();
   if (foo_string_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    foo_string_ = new ::fun::string;
+    foo_string_ = new ::std::string;
   }
   foo_string_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestOneofBackwardsCompatible.foo_string)
@@ -16487,30 +16487,30 @@ inline void TestOneofBackwardsCompatible::set_foo_string(const char* value) {
 inline void TestOneofBackwardsCompatible::set_foo_string(const char* value, size_t size) {
   set_has_foo_string();
   if (foo_string_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    foo_string_ = new ::fun::string;
+    foo_string_ = new ::std::string;
   }
   foo_string_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestOneofBackwardsCompatible.foo_string)
 }
-inline ::fun::string* TestOneofBackwardsCompatible::mutable_foo_string() {
+inline ::std::string* TestOneofBackwardsCompatible::mutable_foo_string() {
   set_has_foo_string();
   if (foo_string_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    foo_string_ = new ::fun::string;
+    foo_string_ = new ::std::string;
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestOneofBackwardsCompatible.foo_string)
   return foo_string_;
 }
-inline ::fun::string* TestOneofBackwardsCompatible::release_foo_string() {
+inline ::std::string* TestOneofBackwardsCompatible::release_foo_string() {
   clear_has_foo_string();
   if (foo_string_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::fun::string* temp = foo_string_;
-    foo_string_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::std::string* temp = foo_string_;
+    foo_string_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void TestOneofBackwardsCompatible::set_allocated_foo_string(::fun::string* foo_string) {
+inline void TestOneofBackwardsCompatible::set_allocated_foo_string(::std::string* foo_string) {
   if (foo_string_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete foo_string_;
   }
@@ -16519,7 +16519,7 @@ inline void TestOneofBackwardsCompatible::set_allocated_foo_string(::fun::string
     foo_string_ = foo_string;
   } else {
     clear_has_foo_string();
-    foo_string_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    foo_string_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestOneofBackwardsCompatible.foo_string)
 }
@@ -16634,7 +16634,7 @@ inline void TestOneof2_FooGroup::set_a(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestOneof2.FooGroup.a)
 }
 
-// optional fun::string b = 10;
+// optional string b = 10;
 inline bool TestOneof2_FooGroup::has_b() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -16650,14 +16650,14 @@ inline void TestOneof2_FooGroup::clear_b() {
   }
   clear_has_b();
 }
-inline const ::fun::string& TestOneof2_FooGroup::b() const {
+inline const ::std::string& TestOneof2_FooGroup::b() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestOneof2.FooGroup.b)
   return *b_;
 }
-inline void TestOneof2_FooGroup::set_b(const ::fun::string& value) {
+inline void TestOneof2_FooGroup::set_b(const ::std::string& value) {
   set_has_b();
   if (b_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    b_ = new ::fun::string;
+    b_ = new ::std::string;
   }
   b_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestOneof2.FooGroup.b)
@@ -16665,7 +16665,7 @@ inline void TestOneof2_FooGroup::set_b(const ::fun::string& value) {
 inline void TestOneof2_FooGroup::set_b(const char* value) {
   set_has_b();
   if (b_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    b_ = new ::fun::string;
+    b_ = new ::std::string;
   }
   b_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestOneof2.FooGroup.b)
@@ -16673,30 +16673,30 @@ inline void TestOneof2_FooGroup::set_b(const char* value) {
 inline void TestOneof2_FooGroup::set_b(const char* value, size_t size) {
   set_has_b();
   if (b_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    b_ = new ::fun::string;
+    b_ = new ::std::string;
   }
   b_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestOneof2.FooGroup.b)
 }
-inline ::fun::string* TestOneof2_FooGroup::mutable_b() {
+inline ::std::string* TestOneof2_FooGroup::mutable_b() {
   set_has_b();
   if (b_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    b_ = new ::fun::string;
+    b_ = new ::std::string;
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestOneof2.FooGroup.b)
   return b_;
 }
-inline ::fun::string* TestOneof2_FooGroup::release_b() {
+inline ::std::string* TestOneof2_FooGroup::release_b() {
   clear_has_b();
   if (b_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::fun::string* temp = b_;
-    b_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::std::string* temp = b_;
+    b_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void TestOneof2_FooGroup::set_allocated_b(::fun::string* b) {
+inline void TestOneof2_FooGroup::set_allocated_b(::std::string* b) {
   if (b_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete b_;
   }
@@ -16705,7 +16705,7 @@ inline void TestOneof2_FooGroup::set_allocated_b(::fun::string* b) {
     b_ = b;
   } else {
     clear_has_b();
-    b_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    b_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestOneof2.FooGroup.b)
 }
@@ -16799,7 +16799,7 @@ inline void TestOneof2::set_foo_int(::google::protobuf::int32 value) {
   foo_.foo_int_ = value;
 }
 
-// optional fun::string foo_string = 2;
+// optional string foo_string = 2;
 inline bool TestOneof2::has_foo_string() const {
   return foo_case() == kFooString;
 }
@@ -16812,17 +16812,17 @@ inline void TestOneof2::clear_foo_string() {
     clear_has_foo();
   }
 }
-inline const ::fun::string& TestOneof2::foo_string() const {
+inline const ::std::string& TestOneof2::foo_string() const {
   if (has_foo_string()) {
     return *foo_.foo_string_;
   }
   return ::google::protobuf::internal::GetEmptyStringAlreadyInited();
 }
-inline void TestOneof2::set_foo_string(const ::fun::string& value) {
+inline void TestOneof2::set_foo_string(const ::std::string& value) {
   if (!has_foo_string()) {
     clear_foo();
     set_has_foo_string();
-    foo_.foo_string_ = new ::fun::string;
+    foo_.foo_string_ = new ::std::string;
   }
   foo_.foo_string_->assign(value);
 }
@@ -16830,7 +16830,7 @@ inline void TestOneof2::set_foo_string(const char* value) {
   if (!has_foo_string()) {
     clear_foo();
     set_has_foo_string();
-    foo_.foo_string_ = new ::fun::string;
+    foo_.foo_string_ = new ::std::string;
   }
   foo_.foo_string_->assign(value);
 }
@@ -16838,30 +16838,30 @@ inline void TestOneof2::set_foo_string(const char* value, size_t size) {
   if (!has_foo_string()) {
     clear_foo();
     set_has_foo_string();
-    foo_.foo_string_ = new ::fun::string;
+    foo_.foo_string_ = new ::std::string;
   }
   foo_.foo_string_->assign(
       reinterpret_cast<const char*>(value), size);
 }
-inline ::fun::string* TestOneof2::mutable_foo_string() {
+inline ::std::string* TestOneof2::mutable_foo_string() {
   if (!has_foo_string()) {
     clear_foo();
     set_has_foo_string();
-    foo_.foo_string_ = new ::fun::string;
+    foo_.foo_string_ = new ::std::string;
   }
   return foo_.foo_string_;
 }
-inline ::fun::string* TestOneof2::release_foo_string() {
+inline ::std::string* TestOneof2::release_foo_string() {
   if (has_foo_string()) {
     clear_has_foo();
-    ::fun::string* temp = foo_.foo_string_;
+    ::std::string* temp = foo_.foo_string_;
     foo_.foo_string_ = NULL;
     return temp;
   } else {
     return NULL;
   }
 }
-inline void TestOneof2::set_allocated_foo_string(::fun::string* foo_string) {
+inline void TestOneof2::set_allocated_foo_string(::std::string* foo_string) {
   clear_foo();
   if (foo_string) {
     set_has_foo_string();
@@ -16869,7 +16869,7 @@ inline void TestOneof2::set_allocated_foo_string(::fun::string* foo_string) {
   }
 }
 
-// optional fun::string foo_cord = 3 [ctype = CORD];
+// optional string foo_cord = 3 [ctype = CORD];
 inline bool TestOneof2::has_foo_cord() const {
   return foo_case() == kFooCord;
 }
@@ -16882,17 +16882,17 @@ inline void TestOneof2::clear_foo_cord() {
     clear_has_foo();
   }
 }
-inline const ::fun::string& TestOneof2::foo_cord() const {
+inline const ::std::string& TestOneof2::foo_cord() const {
   if (has_foo_cord()) {
     return *foo_.foo_cord_;
   }
   return ::google::protobuf::internal::GetEmptyStringAlreadyInited();
 }
-inline void TestOneof2::set_foo_cord(const ::fun::string& value) {
+inline void TestOneof2::set_foo_cord(const ::std::string& value) {
   if (!has_foo_cord()) {
     clear_foo();
     set_has_foo_cord();
-    foo_.foo_cord_ = new ::fun::string;
+    foo_.foo_cord_ = new ::std::string;
   }
   foo_.foo_cord_->assign(value);
 }
@@ -16900,7 +16900,7 @@ inline void TestOneof2::set_foo_cord(const char* value) {
   if (!has_foo_cord()) {
     clear_foo();
     set_has_foo_cord();
-    foo_.foo_cord_ = new ::fun::string;
+    foo_.foo_cord_ = new ::std::string;
   }
   foo_.foo_cord_->assign(value);
 }
@@ -16908,30 +16908,30 @@ inline void TestOneof2::set_foo_cord(const char* value, size_t size) {
   if (!has_foo_cord()) {
     clear_foo();
     set_has_foo_cord();
-    foo_.foo_cord_ = new ::fun::string;
+    foo_.foo_cord_ = new ::std::string;
   }
   foo_.foo_cord_->assign(
       reinterpret_cast<const char*>(value), size);
 }
-inline ::fun::string* TestOneof2::mutable_foo_cord() {
+inline ::std::string* TestOneof2::mutable_foo_cord() {
   if (!has_foo_cord()) {
     clear_foo();
     set_has_foo_cord();
-    foo_.foo_cord_ = new ::fun::string;
+    foo_.foo_cord_ = new ::std::string;
   }
   return foo_.foo_cord_;
 }
-inline ::fun::string* TestOneof2::release_foo_cord() {
+inline ::std::string* TestOneof2::release_foo_cord() {
   if (has_foo_cord()) {
     clear_has_foo();
-    ::fun::string* temp = foo_.foo_cord_;
+    ::std::string* temp = foo_.foo_cord_;
     foo_.foo_cord_ = NULL;
     return temp;
   } else {
     return NULL;
   }
 }
-inline void TestOneof2::set_allocated_foo_cord(::fun::string* foo_cord) {
+inline void TestOneof2::set_allocated_foo_cord(::std::string* foo_cord) {
   clear_foo();
   if (foo_cord) {
     set_has_foo_cord();
@@ -16939,7 +16939,7 @@ inline void TestOneof2::set_allocated_foo_cord(::fun::string* foo_cord) {
   }
 }
 
-// optional fun::string foo_string_piece = 4 [ctype = STRING_PIECE];
+// optional string foo_string_piece = 4 [ctype = STRING_PIECE];
 inline bool TestOneof2::has_foo_string_piece() const {
   return foo_case() == kFooStringPiece;
 }
@@ -16952,17 +16952,17 @@ inline void TestOneof2::clear_foo_string_piece() {
     clear_has_foo();
   }
 }
-inline const ::fun::string& TestOneof2::foo_string_piece() const {
+inline const ::std::string& TestOneof2::foo_string_piece() const {
   if (has_foo_string_piece()) {
     return *foo_.foo_string_piece_;
   }
   return ::google::protobuf::internal::GetEmptyStringAlreadyInited();
 }
-inline void TestOneof2::set_foo_string_piece(const ::fun::string& value) {
+inline void TestOneof2::set_foo_string_piece(const ::std::string& value) {
   if (!has_foo_string_piece()) {
     clear_foo();
     set_has_foo_string_piece();
-    foo_.foo_string_piece_ = new ::fun::string;
+    foo_.foo_string_piece_ = new ::std::string;
   }
   foo_.foo_string_piece_->assign(value);
 }
@@ -16970,7 +16970,7 @@ inline void TestOneof2::set_foo_string_piece(const char* value) {
   if (!has_foo_string_piece()) {
     clear_foo();
     set_has_foo_string_piece();
-    foo_.foo_string_piece_ = new ::fun::string;
+    foo_.foo_string_piece_ = new ::std::string;
   }
   foo_.foo_string_piece_->assign(value);
 }
@@ -16978,30 +16978,30 @@ inline void TestOneof2::set_foo_string_piece(const char* value, size_t size) {
   if (!has_foo_string_piece()) {
     clear_foo();
     set_has_foo_string_piece();
-    foo_.foo_string_piece_ = new ::fun::string;
+    foo_.foo_string_piece_ = new ::std::string;
   }
   foo_.foo_string_piece_->assign(
       reinterpret_cast<const char*>(value), size);
 }
-inline ::fun::string* TestOneof2::mutable_foo_string_piece() {
+inline ::std::string* TestOneof2::mutable_foo_string_piece() {
   if (!has_foo_string_piece()) {
     clear_foo();
     set_has_foo_string_piece();
-    foo_.foo_string_piece_ = new ::fun::string;
+    foo_.foo_string_piece_ = new ::std::string;
   }
   return foo_.foo_string_piece_;
 }
-inline ::fun::string* TestOneof2::release_foo_string_piece() {
+inline ::std::string* TestOneof2::release_foo_string_piece() {
   if (has_foo_string_piece()) {
     clear_has_foo();
-    ::fun::string* temp = foo_.foo_string_piece_;
+    ::std::string* temp = foo_.foo_string_piece_;
     foo_.foo_string_piece_ = NULL;
     return temp;
   } else {
     return NULL;
   }
 }
-inline void TestOneof2::set_allocated_foo_string_piece(::fun::string* foo_string_piece) {
+inline void TestOneof2::set_allocated_foo_string_piece(::std::string* foo_string_piece) {
   clear_foo();
   if (foo_string_piece) {
     set_has_foo_string_piece();
@@ -17022,17 +17022,17 @@ inline void TestOneof2::clear_foo_bytes() {
     clear_has_foo();
   }
 }
-inline const ::fun::string& TestOneof2::foo_bytes() const {
+inline const ::std::string& TestOneof2::foo_bytes() const {
   if (has_foo_bytes()) {
     return *foo_.foo_bytes_;
   }
   return ::google::protobuf::internal::GetEmptyStringAlreadyInited();
 }
-inline void TestOneof2::set_foo_bytes(const ::fun::string& value) {
+inline void TestOneof2::set_foo_bytes(const ::std::string& value) {
   if (!has_foo_bytes()) {
     clear_foo();
     set_has_foo_bytes();
-    foo_.foo_bytes_ = new ::fun::string;
+    foo_.foo_bytes_ = new ::std::string;
   }
   foo_.foo_bytes_->assign(value);
 }
@@ -17040,7 +17040,7 @@ inline void TestOneof2::set_foo_bytes(const char* value) {
   if (!has_foo_bytes()) {
     clear_foo();
     set_has_foo_bytes();
-    foo_.foo_bytes_ = new ::fun::string;
+    foo_.foo_bytes_ = new ::std::string;
   }
   foo_.foo_bytes_->assign(value);
 }
@@ -17048,30 +17048,30 @@ inline void TestOneof2::set_foo_bytes(const void* value, size_t size) {
   if (!has_foo_bytes()) {
     clear_foo();
     set_has_foo_bytes();
-    foo_.foo_bytes_ = new ::fun::string;
+    foo_.foo_bytes_ = new ::std::string;
   }
   foo_.foo_bytes_->assign(
       reinterpret_cast<const char*>(value), size);
 }
-inline ::fun::string* TestOneof2::mutable_foo_bytes() {
+inline ::std::string* TestOneof2::mutable_foo_bytes() {
   if (!has_foo_bytes()) {
     clear_foo();
     set_has_foo_bytes();
-    foo_.foo_bytes_ = new ::fun::string;
+    foo_.foo_bytes_ = new ::std::string;
   }
   return foo_.foo_bytes_;
 }
-inline ::fun::string* TestOneof2::release_foo_bytes() {
+inline ::std::string* TestOneof2::release_foo_bytes() {
   if (has_foo_bytes()) {
     clear_has_foo();
-    ::fun::string* temp = foo_.foo_bytes_;
+    ::std::string* temp = foo_.foo_bytes_;
     foo_.foo_bytes_ = NULL;
     return temp;
   } else {
     return NULL;
   }
 }
-inline void TestOneof2::set_allocated_foo_bytes(::fun::string* foo_bytes) {
+inline void TestOneof2::set_allocated_foo_bytes(::std::string* foo_bytes) {
   clear_foo();
   if (foo_bytes) {
     set_has_foo_bytes();
@@ -17263,7 +17263,7 @@ inline void TestOneof2::set_bar_int(::google::protobuf::int32 value) {
   bar_.bar_int_ = value;
 }
 
-// optional fun::string bar_string = 13 [default = "STRING"];
+// optional string bar_string = 13 [default = "STRING"];
 inline bool TestOneof2::has_bar_string() const {
   return bar_case() == kBarString;
 }
@@ -17276,17 +17276,17 @@ inline void TestOneof2::clear_bar_string() {
     clear_has_bar();
   }
 }
-inline const ::fun::string& TestOneof2::bar_string() const {
+inline const ::std::string& TestOneof2::bar_string() const {
   if (has_bar_string()) {
     return *bar_.bar_string_;
   }
   return *_default_bar_string_;
 }
-inline void TestOneof2::set_bar_string(const ::fun::string& value) {
+inline void TestOneof2::set_bar_string(const ::std::string& value) {
   if (!has_bar_string()) {
     clear_bar();
     set_has_bar_string();
-    bar_.bar_string_ = new ::fun::string;
+    bar_.bar_string_ = new ::std::string;
   }
   bar_.bar_string_->assign(value);
 }
@@ -17294,7 +17294,7 @@ inline void TestOneof2::set_bar_string(const char* value) {
   if (!has_bar_string()) {
     clear_bar();
     set_has_bar_string();
-    bar_.bar_string_ = new ::fun::string;
+    bar_.bar_string_ = new ::std::string;
   }
   bar_.bar_string_->assign(value);
 }
@@ -17302,30 +17302,30 @@ inline void TestOneof2::set_bar_string(const char* value, size_t size) {
   if (!has_bar_string()) {
     clear_bar();
     set_has_bar_string();
-    bar_.bar_string_ = new ::fun::string;
+    bar_.bar_string_ = new ::std::string;
   }
   bar_.bar_string_->assign(
       reinterpret_cast<const char*>(value), size);
 }
-inline ::fun::string* TestOneof2::mutable_bar_string() {
+inline ::std::string* TestOneof2::mutable_bar_string() {
   if (!has_bar_string()) {
     clear_bar();
     set_has_bar_string();
-    bar_.bar_string_ = new ::fun::string(*_default_bar_string_);
+    bar_.bar_string_ = new ::std::string(*_default_bar_string_);
   }
   return bar_.bar_string_;
 }
-inline ::fun::string* TestOneof2::release_bar_string() {
+inline ::std::string* TestOneof2::release_bar_string() {
   if (has_bar_string()) {
     clear_has_bar();
-    ::fun::string* temp = bar_.bar_string_;
+    ::std::string* temp = bar_.bar_string_;
     bar_.bar_string_ = NULL;
     return temp;
   } else {
     return NULL;
   }
 }
-inline void TestOneof2::set_allocated_bar_string(::fun::string* bar_string) {
+inline void TestOneof2::set_allocated_bar_string(::std::string* bar_string) {
   clear_bar();
   if (bar_string) {
     set_has_bar_string();
@@ -17333,7 +17333,7 @@ inline void TestOneof2::set_allocated_bar_string(::fun::string* bar_string) {
   }
 }
 
-// optional fun::string bar_cord = 14 [default = "CORD", ctype = CORD];
+// optional string bar_cord = 14 [default = "CORD", ctype = CORD];
 inline bool TestOneof2::has_bar_cord() const {
   return bar_case() == kBarCord;
 }
@@ -17346,17 +17346,17 @@ inline void TestOneof2::clear_bar_cord() {
     clear_has_bar();
   }
 }
-inline const ::fun::string& TestOneof2::bar_cord() const {
+inline const ::std::string& TestOneof2::bar_cord() const {
   if (has_bar_cord()) {
     return *bar_.bar_cord_;
   }
   return *_default_bar_cord_;
 }
-inline void TestOneof2::set_bar_cord(const ::fun::string& value) {
+inline void TestOneof2::set_bar_cord(const ::std::string& value) {
   if (!has_bar_cord()) {
     clear_bar();
     set_has_bar_cord();
-    bar_.bar_cord_ = new ::fun::string;
+    bar_.bar_cord_ = new ::std::string;
   }
   bar_.bar_cord_->assign(value);
 }
@@ -17364,7 +17364,7 @@ inline void TestOneof2::set_bar_cord(const char* value) {
   if (!has_bar_cord()) {
     clear_bar();
     set_has_bar_cord();
-    bar_.bar_cord_ = new ::fun::string;
+    bar_.bar_cord_ = new ::std::string;
   }
   bar_.bar_cord_->assign(value);
 }
@@ -17372,30 +17372,30 @@ inline void TestOneof2::set_bar_cord(const char* value, size_t size) {
   if (!has_bar_cord()) {
     clear_bar();
     set_has_bar_cord();
-    bar_.bar_cord_ = new ::fun::string;
+    bar_.bar_cord_ = new ::std::string;
   }
   bar_.bar_cord_->assign(
       reinterpret_cast<const char*>(value), size);
 }
-inline ::fun::string* TestOneof2::mutable_bar_cord() {
+inline ::std::string* TestOneof2::mutable_bar_cord() {
   if (!has_bar_cord()) {
     clear_bar();
     set_has_bar_cord();
-    bar_.bar_cord_ = new ::fun::string(*_default_bar_cord_);
+    bar_.bar_cord_ = new ::std::string(*_default_bar_cord_);
   }
   return bar_.bar_cord_;
 }
-inline ::fun::string* TestOneof2::release_bar_cord() {
+inline ::std::string* TestOneof2::release_bar_cord() {
   if (has_bar_cord()) {
     clear_has_bar();
-    ::fun::string* temp = bar_.bar_cord_;
+    ::std::string* temp = bar_.bar_cord_;
     bar_.bar_cord_ = NULL;
     return temp;
   } else {
     return NULL;
   }
 }
-inline void TestOneof2::set_allocated_bar_cord(::fun::string* bar_cord) {
+inline void TestOneof2::set_allocated_bar_cord(::std::string* bar_cord) {
   clear_bar();
   if (bar_cord) {
     set_has_bar_cord();
@@ -17403,7 +17403,7 @@ inline void TestOneof2::set_allocated_bar_cord(::fun::string* bar_cord) {
   }
 }
 
-// optional fun::string bar_string_piece = 15 [default = "SPIECE", ctype = STRING_PIECE];
+// optional string bar_string_piece = 15 [default = "SPIECE", ctype = STRING_PIECE];
 inline bool TestOneof2::has_bar_string_piece() const {
   return bar_case() == kBarStringPiece;
 }
@@ -17416,17 +17416,17 @@ inline void TestOneof2::clear_bar_string_piece() {
     clear_has_bar();
   }
 }
-inline const ::fun::string& TestOneof2::bar_string_piece() const {
+inline const ::std::string& TestOneof2::bar_string_piece() const {
   if (has_bar_string_piece()) {
     return *bar_.bar_string_piece_;
   }
   return *_default_bar_string_piece_;
 }
-inline void TestOneof2::set_bar_string_piece(const ::fun::string& value) {
+inline void TestOneof2::set_bar_string_piece(const ::std::string& value) {
   if (!has_bar_string_piece()) {
     clear_bar();
     set_has_bar_string_piece();
-    bar_.bar_string_piece_ = new ::fun::string;
+    bar_.bar_string_piece_ = new ::std::string;
   }
   bar_.bar_string_piece_->assign(value);
 }
@@ -17434,7 +17434,7 @@ inline void TestOneof2::set_bar_string_piece(const char* value) {
   if (!has_bar_string_piece()) {
     clear_bar();
     set_has_bar_string_piece();
-    bar_.bar_string_piece_ = new ::fun::string;
+    bar_.bar_string_piece_ = new ::std::string;
   }
   bar_.bar_string_piece_->assign(value);
 }
@@ -17442,30 +17442,30 @@ inline void TestOneof2::set_bar_string_piece(const char* value, size_t size) {
   if (!has_bar_string_piece()) {
     clear_bar();
     set_has_bar_string_piece();
-    bar_.bar_string_piece_ = new ::fun::string;
+    bar_.bar_string_piece_ = new ::std::string;
   }
   bar_.bar_string_piece_->assign(
       reinterpret_cast<const char*>(value), size);
 }
-inline ::fun::string* TestOneof2::mutable_bar_string_piece() {
+inline ::std::string* TestOneof2::mutable_bar_string_piece() {
   if (!has_bar_string_piece()) {
     clear_bar();
     set_has_bar_string_piece();
-    bar_.bar_string_piece_ = new ::fun::string(*_default_bar_string_piece_);
+    bar_.bar_string_piece_ = new ::std::string(*_default_bar_string_piece_);
   }
   return bar_.bar_string_piece_;
 }
-inline ::fun::string* TestOneof2::release_bar_string_piece() {
+inline ::std::string* TestOneof2::release_bar_string_piece() {
   if (has_bar_string_piece()) {
     clear_has_bar();
-    ::fun::string* temp = bar_.bar_string_piece_;
+    ::std::string* temp = bar_.bar_string_piece_;
     bar_.bar_string_piece_ = NULL;
     return temp;
   } else {
     return NULL;
   }
 }
-inline void TestOneof2::set_allocated_bar_string_piece(::fun::string* bar_string_piece) {
+inline void TestOneof2::set_allocated_bar_string_piece(::std::string* bar_string_piece) {
   clear_bar();
   if (bar_string_piece) {
     set_has_bar_string_piece();
@@ -17486,17 +17486,17 @@ inline void TestOneof2::clear_bar_bytes() {
     clear_has_bar();
   }
 }
-inline const ::fun::string& TestOneof2::bar_bytes() const {
+inline const ::std::string& TestOneof2::bar_bytes() const {
   if (has_bar_bytes()) {
     return *bar_.bar_bytes_;
   }
   return *_default_bar_bytes_;
 }
-inline void TestOneof2::set_bar_bytes(const ::fun::string& value) {
+inline void TestOneof2::set_bar_bytes(const ::std::string& value) {
   if (!has_bar_bytes()) {
     clear_bar();
     set_has_bar_bytes();
-    bar_.bar_bytes_ = new ::fun::string;
+    bar_.bar_bytes_ = new ::std::string;
   }
   bar_.bar_bytes_->assign(value);
 }
@@ -17504,7 +17504,7 @@ inline void TestOneof2::set_bar_bytes(const char* value) {
   if (!has_bar_bytes()) {
     clear_bar();
     set_has_bar_bytes();
-    bar_.bar_bytes_ = new ::fun::string;
+    bar_.bar_bytes_ = new ::std::string;
   }
   bar_.bar_bytes_->assign(value);
 }
@@ -17512,30 +17512,30 @@ inline void TestOneof2::set_bar_bytes(const void* value, size_t size) {
   if (!has_bar_bytes()) {
     clear_bar();
     set_has_bar_bytes();
-    bar_.bar_bytes_ = new ::fun::string;
+    bar_.bar_bytes_ = new ::std::string;
   }
   bar_.bar_bytes_->assign(
       reinterpret_cast<const char*>(value), size);
 }
-inline ::fun::string* TestOneof2::mutable_bar_bytes() {
+inline ::std::string* TestOneof2::mutable_bar_bytes() {
   if (!has_bar_bytes()) {
     clear_bar();
     set_has_bar_bytes();
-    bar_.bar_bytes_ = new ::fun::string(*_default_bar_bytes_);
+    bar_.bar_bytes_ = new ::std::string(*_default_bar_bytes_);
   }
   return bar_.bar_bytes_;
 }
-inline ::fun::string* TestOneof2::release_bar_bytes() {
+inline ::std::string* TestOneof2::release_bar_bytes() {
   if (has_bar_bytes()) {
     clear_has_bar();
-    ::fun::string* temp = bar_.bar_bytes_;
+    ::std::string* temp = bar_.bar_bytes_;
     bar_.bar_bytes_ = NULL;
     return temp;
   } else {
     return NULL;
   }
 }
-inline void TestOneof2::set_allocated_bar_bytes(::fun::string* bar_bytes) {
+inline void TestOneof2::set_allocated_bar_bytes(::std::string* bar_bytes) {
   clear_bar();
   if (bar_bytes) {
     set_has_bar_bytes();
@@ -17595,7 +17595,7 @@ inline void TestOneof2::set_baz_int(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestOneof2.baz_int)
 }
 
-// optional fun::string baz_string = 19 [default = "BAZ"];
+// optional string baz_string = 19 [default = "BAZ"];
 inline bool TestOneof2::has_baz_string() const {
   return (_has_bits_[0] & 0x00010000u) != 0;
 }
@@ -17611,14 +17611,14 @@ inline void TestOneof2::clear_baz_string() {
   }
   clear_has_baz_string();
 }
-inline const ::fun::string& TestOneof2::baz_string() const {
+inline const ::std::string& TestOneof2::baz_string() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestOneof2.baz_string)
   return *baz_string_;
 }
-inline void TestOneof2::set_baz_string(const ::fun::string& value) {
+inline void TestOneof2::set_baz_string(const ::std::string& value) {
   set_has_baz_string();
   if (baz_string_ == _default_baz_string_) {
-    baz_string_ = new ::fun::string;
+    baz_string_ = new ::std::string;
   }
   baz_string_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestOneof2.baz_string)
@@ -17626,7 +17626,7 @@ inline void TestOneof2::set_baz_string(const ::fun::string& value) {
 inline void TestOneof2::set_baz_string(const char* value) {
   set_has_baz_string();
   if (baz_string_ == _default_baz_string_) {
-    baz_string_ = new ::fun::string;
+    baz_string_ = new ::std::string;
   }
   baz_string_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestOneof2.baz_string)
@@ -17634,30 +17634,30 @@ inline void TestOneof2::set_baz_string(const char* value) {
 inline void TestOneof2::set_baz_string(const char* value, size_t size) {
   set_has_baz_string();
   if (baz_string_ == _default_baz_string_) {
-    baz_string_ = new ::fun::string;
+    baz_string_ = new ::std::string;
   }
   baz_string_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestOneof2.baz_string)
 }
-inline ::fun::string* TestOneof2::mutable_baz_string() {
+inline ::std::string* TestOneof2::mutable_baz_string() {
   set_has_baz_string();
   if (baz_string_ == _default_baz_string_) {
-    baz_string_ = new ::fun::string(*_default_baz_string_);
+    baz_string_ = new ::std::string(*_default_baz_string_);
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestOneof2.baz_string)
   return baz_string_;
 }
-inline ::fun::string* TestOneof2::release_baz_string() {
+inline ::std::string* TestOneof2::release_baz_string() {
   clear_has_baz_string();
   if (baz_string_ == _default_baz_string_) {
     return NULL;
   } else {
-    ::fun::string* temp = baz_string_;
-    baz_string_ = const_cast< ::fun::string*>(_default_baz_string_);
+    ::std::string* temp = baz_string_;
+    baz_string_ = const_cast< ::std::string*>(_default_baz_string_);
     return temp;
   }
 }
-inline void TestOneof2::set_allocated_baz_string(::fun::string* baz_string) {
+inline void TestOneof2::set_allocated_baz_string(::std::string* baz_string) {
   if (baz_string_ != _default_baz_string_) {
     delete baz_string_;
   }
@@ -17666,7 +17666,7 @@ inline void TestOneof2::set_allocated_baz_string(::fun::string* baz_string) {
     baz_string_ = baz_string;
   } else {
     clear_has_baz_string();
-    baz_string_ = const_cast< ::fun::string*>(_default_baz_string_);
+    baz_string_ = const_cast< ::std::string*>(_default_baz_string_);
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestOneof2.baz_string)
 }
@@ -17748,7 +17748,7 @@ inline void TestRequiredOneof::set_foo_int(::google::protobuf::int32 value) {
   foo_.foo_int_ = value;
 }
 
-// optional fun::string foo_string = 2;
+// optional string foo_string = 2;
 inline bool TestRequiredOneof::has_foo_string() const {
   return foo_case() == kFooString;
 }
@@ -17761,17 +17761,17 @@ inline void TestRequiredOneof::clear_foo_string() {
     clear_has_foo();
   }
 }
-inline const ::fun::string& TestRequiredOneof::foo_string() const {
+inline const ::std::string& TestRequiredOneof::foo_string() const {
   if (has_foo_string()) {
     return *foo_.foo_string_;
   }
   return ::google::protobuf::internal::GetEmptyStringAlreadyInited();
 }
-inline void TestRequiredOneof::set_foo_string(const ::fun::string& value) {
+inline void TestRequiredOneof::set_foo_string(const ::std::string& value) {
   if (!has_foo_string()) {
     clear_foo();
     set_has_foo_string();
-    foo_.foo_string_ = new ::fun::string;
+    foo_.foo_string_ = new ::std::string;
   }
   foo_.foo_string_->assign(value);
 }
@@ -17779,7 +17779,7 @@ inline void TestRequiredOneof::set_foo_string(const char* value) {
   if (!has_foo_string()) {
     clear_foo();
     set_has_foo_string();
-    foo_.foo_string_ = new ::fun::string;
+    foo_.foo_string_ = new ::std::string;
   }
   foo_.foo_string_->assign(value);
 }
@@ -17787,30 +17787,30 @@ inline void TestRequiredOneof::set_foo_string(const char* value, size_t size) {
   if (!has_foo_string()) {
     clear_foo();
     set_has_foo_string();
-    foo_.foo_string_ = new ::fun::string;
+    foo_.foo_string_ = new ::std::string;
   }
   foo_.foo_string_->assign(
       reinterpret_cast<const char*>(value), size);
 }
-inline ::fun::string* TestRequiredOneof::mutable_foo_string() {
+inline ::std::string* TestRequiredOneof::mutable_foo_string() {
   if (!has_foo_string()) {
     clear_foo();
     set_has_foo_string();
-    foo_.foo_string_ = new ::fun::string;
+    foo_.foo_string_ = new ::std::string;
   }
   return foo_.foo_string_;
 }
-inline ::fun::string* TestRequiredOneof::release_foo_string() {
+inline ::std::string* TestRequiredOneof::release_foo_string() {
   if (has_foo_string()) {
     clear_has_foo();
-    ::fun::string* temp = foo_.foo_string_;
+    ::std::string* temp = foo_.foo_string_;
     foo_.foo_string_ = NULL;
     return temp;
   } else {
     return NULL;
   }
 }
-inline void TestRequiredOneof::set_allocated_foo_string(::fun::string* foo_string) {
+inline void TestRequiredOneof::set_allocated_foo_string(::std::string* foo_string) {
   clear_foo();
   if (foo_string) {
     set_has_foo_string();
@@ -18918,22 +18918,22 @@ inline void TestDynamicExtensions::set_allocated_dynamic_message_extension(::pro
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestDynamicExtensions.dynamic_message_extension)
 }
 
-// repeated fun::string repeated_extension = 2005;
+// repeated string repeated_extension = 2005;
 inline int TestDynamicExtensions::repeated_extension_size() const {
   return repeated_extension_.size();
 }
 inline void TestDynamicExtensions::clear_repeated_extension() {
   repeated_extension_.Clear();
 }
-inline const ::fun::string& TestDynamicExtensions::repeated_extension(int index) const {
+inline const ::std::string& TestDynamicExtensions::repeated_extension(int index) const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestDynamicExtensions.repeated_extension)
   return repeated_extension_.Get(index);
 }
-inline ::fun::string* TestDynamicExtensions::mutable_repeated_extension(int index) {
+inline ::std::string* TestDynamicExtensions::mutable_repeated_extension(int index) {
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestDynamicExtensions.repeated_extension)
   return repeated_extension_.Mutable(index);
 }
-inline void TestDynamicExtensions::set_repeated_extension(int index, const ::fun::string& value) {
+inline void TestDynamicExtensions::set_repeated_extension(int index, const ::std::string& value) {
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestDynamicExtensions.repeated_extension)
   repeated_extension_.Mutable(index)->assign(value);
 }
@@ -18946,10 +18946,10 @@ inline void TestDynamicExtensions::set_repeated_extension(int index, const char*
     reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestDynamicExtensions.repeated_extension)
 }
-inline ::fun::string* TestDynamicExtensions::add_repeated_extension() {
+inline ::std::string* TestDynamicExtensions::add_repeated_extension() {
   return repeated_extension_.Add();
 }
-inline void TestDynamicExtensions::add_repeated_extension(const ::fun::string& value) {
+inline void TestDynamicExtensions::add_repeated_extension(const ::std::string& value) {
   repeated_extension_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:protobuf_unittest.TestDynamicExtensions.repeated_extension)
 }
@@ -18961,12 +18961,12 @@ inline void TestDynamicExtensions::add_repeated_extension(const char* value, siz
   repeated_extension_.Add()->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:protobuf_unittest.TestDynamicExtensions.repeated_extension)
 }
-inline const ::google::protobuf::RepeatedPtrField< ::fun::string>&
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
 TestDynamicExtensions::repeated_extension() const {
   // @@protoc_insertion_point(field_list:protobuf_unittest.TestDynamicExtensions.repeated_extension)
   return repeated_extension_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::fun::string>*
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 TestDynamicExtensions::mutable_repeated_extension() {
   // @@protoc_insertion_point(field_mutable_list:protobuf_unittest.TestDynamicExtensions.repeated_extension)
   return &repeated_extension_;
@@ -19771,7 +19771,7 @@ TestParsingMerge::mutable_repeatedgroup() {
 
 // TestCommentInjectionMessage
 
-// optional fun::string a = 1 [default = "*/ <- Neither should this."];
+// optional string a = 1 [default = "*/ <- Neither should this."];
 inline bool TestCommentInjectionMessage::has_a() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -19787,14 +19787,14 @@ inline void TestCommentInjectionMessage::clear_a() {
   }
   clear_has_a();
 }
-inline const ::fun::string& TestCommentInjectionMessage::a() const {
+inline const ::std::string& TestCommentInjectionMessage::a() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestCommentInjectionMessage.a)
   return *a_;
 }
-inline void TestCommentInjectionMessage::set_a(const ::fun::string& value) {
+inline void TestCommentInjectionMessage::set_a(const ::std::string& value) {
   set_has_a();
   if (a_ == _default_a_) {
-    a_ = new ::fun::string;
+    a_ = new ::std::string;
   }
   a_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestCommentInjectionMessage.a)
@@ -19802,7 +19802,7 @@ inline void TestCommentInjectionMessage::set_a(const ::fun::string& value) {
 inline void TestCommentInjectionMessage::set_a(const char* value) {
   set_has_a();
   if (a_ == _default_a_) {
-    a_ = new ::fun::string;
+    a_ = new ::std::string;
   }
   a_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestCommentInjectionMessage.a)
@@ -19810,30 +19810,30 @@ inline void TestCommentInjectionMessage::set_a(const char* value) {
 inline void TestCommentInjectionMessage::set_a(const char* value, size_t size) {
   set_has_a();
   if (a_ == _default_a_) {
-    a_ = new ::fun::string;
+    a_ = new ::std::string;
   }
   a_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestCommentInjectionMessage.a)
 }
-inline ::fun::string* TestCommentInjectionMessage::mutable_a() {
+inline ::std::string* TestCommentInjectionMessage::mutable_a() {
   set_has_a();
   if (a_ == _default_a_) {
-    a_ = new ::fun::string(*_default_a_);
+    a_ = new ::std::string(*_default_a_);
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestCommentInjectionMessage.a)
   return a_;
 }
-inline ::fun::string* TestCommentInjectionMessage::release_a() {
+inline ::std::string* TestCommentInjectionMessage::release_a() {
   clear_has_a();
   if (a_ == _default_a_) {
     return NULL;
   } else {
-    ::fun::string* temp = a_;
-    a_ = const_cast< ::fun::string*>(_default_a_);
+    ::std::string* temp = a_;
+    a_ = const_cast< ::std::string*>(_default_a_);
     return temp;
   }
 }
-inline void TestCommentInjectionMessage::set_allocated_a(::fun::string* a) {
+inline void TestCommentInjectionMessage::set_allocated_a(::std::string* a) {
   if (a_ != _default_a_) {
     delete a_;
   }
@@ -19842,7 +19842,7 @@ inline void TestCommentInjectionMessage::set_allocated_a(::fun::string* a) {
     a_ = a;
   } else {
     clear_has_a();
-    a_ = const_cast< ::fun::string*>(_default_a_);
+    a_ = const_cast< ::std::string*>(_default_a_);
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestCommentInjectionMessage.a)
 }

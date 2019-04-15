@@ -353,7 +353,7 @@ inline bool WireFormatLite::ReadPackedFixedSizePrimitive(
   // to a malicious user-supplied "length" above.  So we have a fast
   // path that pre-allocates when the "length" is less than a bound.
   // We determine the bound by calling BytesUntilTotalBytesLimit() and
-  // BytesUntilLimit().  These return -1 to mean "no limit fun::set".
+  // BytesUntilLimit().  These return -1 to mean "no limit set".
   // There are four cases:
   // TotalBytesLimit  Limit
   // -1               -1     Use slow path.
@@ -740,7 +740,7 @@ inline uint8* WireFormatLite::WriteEnumToArray(int field_number,
 }
 
 inline uint8* WireFormatLite::WriteStringToArray(int field_number,
-                                                 const fun::string& value,
+                                                 const string& value,
                                                  uint8* target) {
   // String is for UTF-8 text only
   // WARNING:  In wire_format.cc, both strings and bytes are handled by
@@ -750,7 +750,7 @@ inline uint8* WireFormatLite::WriteStringToArray(int field_number,
   return io::CodedOutputStream::WriteStringWithSizeToArray(value, target);
 }
 inline uint8* WireFormatLite::WriteBytesToArray(int field_number,
-                                                const fun::string& value,
+                                                const string& value,
                                                 uint8* target) {
   target = WriteTagToArray(field_number, WIRETYPE_LENGTH_DELIMITED, target);
   return io::CodedOutputStream::WriteStringWithSizeToArray(value, target);
@@ -819,11 +819,11 @@ inline int WireFormatLite::EnumSize(int value) {
   return io::CodedOutputStream::VarintSize32SignExtended(value);
 }
 
-inline int WireFormatLite::StringSize(const fun::string& value) {
+inline int WireFormatLite::StringSize(const string& value) {
   return io::CodedOutputStream::VarintSize32(value.size()) +
          value.size();
 }
-inline int WireFormatLite::BytesSize(const fun::string& value) {
+inline int WireFormatLite::BytesSize(const string& value) {
   return io::CodedOutputStream::VarintSize32(value.size()) +
          value.size();
 }

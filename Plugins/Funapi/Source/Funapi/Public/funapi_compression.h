@@ -28,18 +28,18 @@ enum class FUNAPI_API CompressionType : int {
 class FunapiCompressionImpl;
 class FUNAPI_API FunapiCompression : public std::enable_shared_from_this<FunapiCompression> {
  public:
-  typedef fun::map<fun::string, fun::string> HeaderFields;
+  typedef std::map<std::string, std::string> HeaderFields;
 
   FunapiCompression();
   virtual ~FunapiCompression();
 
   void SetCompressionType(const CompressionType type);
 #if FUNAPI_HAVE_ZSTD
-  void SetZstdDictBase64String(const fun::string &zstd_dict_base64string);
+  void SetZstdDictBase64String(const std::string &zstd_dict_base64string);
 #endif
 
-  bool Compress(HeaderFields &header_fields, fun::vector<uint8_t> &body);
-  bool Decompress(HeaderFields &header_fields, fun::vector<uint8_t> &body);
+  bool Compress(HeaderFields &header_fields, std::vector<uint8_t> &body);
+  bool Decompress(HeaderFields &header_fields, std::vector<uint8_t> &body);
 
   void SetHeaderFieldsForHttpSend (HeaderFields &header_fields);
   void SetHeaderFieldsForHttpRecv (HeaderFields &header_fields);

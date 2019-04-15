@@ -48,8 +48,6 @@
 #ifndef GOOGLE_PROTOBUF_COMMON_H__
 #define GOOGLE_PROTOBUF_COMMON_H__
 
-#include <funapi_std_allocator.h>
-
 #include <assert.h>
 #include <stdlib.h>
 #include <cstddef>
@@ -188,8 +186,8 @@ static const int kMinHeaderVersionForProtoc = 2006000;
 void LIBPROTOBUF_EXPORT VerifyVersion(int headerVersion, int minLibraryVersion,
                                       const char* filename);
 
-// Converts a numeric version number to a fun::string.
-fun::string LIBPROTOBUF_EXPORT VersionString(int version);
+// Converts a numeric version number to a string.
+std::string LIBPROTOBUF_EXPORT VersionString(int version);
 
 }  // namespace internal
 
@@ -705,7 +703,7 @@ class LIBPROTOBUF_EXPORT LogMessage {
   LogMessage(LogLevel level, const char* filename, int line);
   ~LogMessage();
 
-  LogMessage& operator<<(const fun::string& value);
+  LogMessage& operator<<(const std::string& value);
   LogMessage& operator<<(const char* value);
   LogMessage& operator<<(char value);
   LogMessage& operator<<(int value);
@@ -721,7 +719,7 @@ class LIBPROTOBUF_EXPORT LogMessage {
   LogLevel level_;
   const char* filename_;
   int line_;
-  fun::string message_;
+  std::string message_;
 };
 
 // Used to make the entire "LOG(BLAH) << etc." expression have a void return
@@ -816,13 +814,13 @@ T* CheckNotNull(const char* /* file */, int /* line */,
 #endif  // !NDEBUG
 
 typedef void LogHandler(LogLevel level, const char* filename, int line,
-                        const fun::string& message);
+                        const std::string& message);
 
 // The protobuf library sometimes writes warning and error messages to
 // stderr.  These messages are primarily useful for developers, but may
 // also help end users figure out a problem.  If you would prefer that
 // these messages be sent somewhere other than stderr, call SetLogHandler()
-// to fun::set your own handler.  This returns the old handler.  Set the handler
+// to set your own handler.  This returns the old handler.  Set the handler
 // to NULL to ignore log messages (but see also LogSilencer, below).
 //
 // Obviously, SetLogHandler is not thread-safe.  You should only call it
@@ -854,7 +852,7 @@ class LIBPROTOBUF_EXPORT LogSilencer {
 // in service.h.
 //
 // To automatically construct a Closure which calls a particular function or
-// method with a particular fun::set of parameters, use the NewCallback() function.
+// method with a particular set of parameters, use the NewCallback() function.
 // Example:
 //   void FooDone(const FooResponse* response) {
 //     ...
@@ -898,12 +896,12 @@ class LIBPROTOBUF_EXPORT LogSilencer {
 // Note that NewCallback() is a bit touchy regarding argument types.  Generally,
 // the values you provide for the parameter bindings must exactly match the
 // types accepted by the callback function.  For example:
-//   void Foo(fun::string s);
-//   NewCallback(&Foo, "foo");          // WON'T WORK:  const char* != fun::string
-//   NewCallback(&Foo, fun::string("foo"));  // WORKS
+//   void Foo(string s);
+//   NewCallback(&Foo, "foo");          // WON'T WORK:  const char* != string
+//   NewCallback(&Foo, string("foo"));  // WORKS
 // Also note that the arguments cannot be references:
-//   void Foo(const fun::string& s);
-//   fun::string my_str;
+//   void Foo(const string& s);
+//   string my_str;
 //   NewCallback(&Foo, my_str);  // WON'T WORK:  Can't use referecnes.
 // However, correctly-typed pointers will work just fine.
 class LIBPROTOBUF_EXPORT Closure {
@@ -1255,7 +1253,7 @@ LIBPROTOBUF_EXPORT void OnShutdown(void (*func)());
 #if PROTOBUF_USE_EXCEPTIONS
 class FatalException : public std::exception {
  public:
-  FatalException(const char* filename, int line, const fun::string& message)
+  FatalException(const char* filename, int line, const std::string& message)
       : filename_(filename), line_(line), message_(message) {}
   virtual ~FatalException() throw();
 
@@ -1263,12 +1261,12 @@ class FatalException : public std::exception {
 
   const char* filename() const { return filename_; }
   int line() const { return line_; }
-  const fun::string& message() const { return message_; }
+  const std::string& message() const { return message_; }
 
  private:
   const char* filename_;
   const int line_;
-  const fun::string message_;
+  const std::string message_;
 };
 #endif
 

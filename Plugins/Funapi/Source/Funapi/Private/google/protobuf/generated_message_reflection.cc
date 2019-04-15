@@ -48,12 +48,12 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-int StringSpaceUsedExcludingSelf(const fun::string& str) {
+int StringSpaceUsedExcludingSelf(const string& str) {
   const void* start = &str;
   const void* end = &str + 1;
 
   if (start <= str.data() && str.data() < end) {
-    // The fun::string's data is stored inside the fun::string object itself.
+    // The string's data is stored inside the string object itself.
     return 0;
   } else {
     return str.capacity();
@@ -61,7 +61,7 @@ int StringSpaceUsedExcludingSelf(const fun::string& str) {
 }
 
 bool ParseNamedEnum(const EnumDescriptor* descriptor,
-                    const fun::string& name,
+                    const string& name,
                     int* value) {
   const EnumValueDescriptor* d = descriptor->FindValueByName(name);
   if (d == NULL) return false;
@@ -69,14 +69,14 @@ bool ParseNamedEnum(const EnumDescriptor* descriptor,
   return true;
 }
 
-const fun::string& NameOfEnum(const EnumDescriptor* descriptor, int value) {
+const string& NameOfEnum(const EnumDescriptor* descriptor, int value) {
   const EnumValueDescriptor* d = descriptor->FindValueByNumber(value);
   return (d == NULL ? GetEmptyString() : d->name());
 }
 
 // ===================================================================
 // Helpers for reporting usage errors (e.g. trying to use GetInt32() on
-// a fun::string field).
+// a string field).
 
 namespace {
 
@@ -267,9 +267,9 @@ int GeneratedMessageReflection::SpaceUsed(const Message& message) const {
 
         case FieldDescriptor::CPPTYPE_STRING:
           switch (field->options().ctype()) {
-            default:  // TODO(kenton):  Support other fun::string reps.
+            default:  // TODO(kenton):  Support other string reps.
             case FieldOptions::STRING:
-              total_size += GetRaw<RepeatedPtrField<fun::string> >(message, field)
+              total_size += GetRaw<RepeatedPtrField<string> >(message, field)
                               .SpaceUsedExcludingSelf();
               break;
           }
@@ -301,18 +301,18 @@ int GeneratedMessageReflection::SpaceUsed(const Message& message) const {
 
         case FieldDescriptor::CPPTYPE_STRING: {
           switch (field->options().ctype()) {
-            default:  // TODO(kenton):  Support other fun::string reps.
+            default:  // TODO(kenton):  Support other string reps.
             case FieldOptions::STRING: {
-              const fun::string* ptr = GetField<const fun::string*>(message, field);
+              const string* ptr = GetField<const string*>(message, field);
 
-              // Initially, the fun::string points to the default value stored in
-              // the prototype. Only count the fun::string if it has been changed
+              // Initially, the string points to the default value stored in
+              // the prototype. Only count the string if it has been changed
               // from the default value.
-              const fun::string* default_ptr = DefaultRaw<const fun::string*>(field);
+              const string* default_ptr = DefaultRaw<const string*>(field);
 
               if (ptr != default_ptr) {
-                // fun::string fields are represented by just a pointer, so also
-                // include sizeof(fun::string) as well.
+                // string fields are represented by just a pointer, so also
+                // include sizeof(string) as well.
                 total_size += sizeof(*ptr) + StringSpaceUsedExcludingSelf(*ptr);
               }
               break;
@@ -394,10 +394,10 @@ void GeneratedMessageReflection::SwapField(
 
       case FieldDescriptor::CPPTYPE_STRING:
         switch (field->options().ctype()) {
-          default:  // TODO(kenton):  Support other fun::string reps.
+          default:  // TODO(kenton):  Support other string reps.
           case FieldOptions::STRING:
-            std::swap(*MutableRaw<fun::string*>(message1, field),
-                      *MutableRaw<fun::string*>(message2, field));
+            std::swap(*MutableRaw<string*>(message1, field),
+                      *MutableRaw<string*>(message2, field));
             break;
         }
         break;
@@ -424,7 +424,7 @@ void GeneratedMessageReflection::SwapOneofField(
   bool temp_bool;
   int temp_int;
   Message* temp_message = nullptr;
-  fun::string temp_string;
+  string temp_string;
 
   // Stores message1's oneof field to a temp variable.
   const FieldDescriptor* field1 = nullptr;
@@ -578,7 +578,7 @@ void GeneratedMessageReflection::Swap(
 void GeneratedMessageReflection::SwapFields(
     Message* message1,
     Message* message2,
-    const fun::vector<const FieldDescriptor*>& fields) const {
+    const vector<const FieldDescriptor*>& fields) const {
   if (message1 == message2) return;
 
   // TODO(kenton):  Other Reflection methods should probably check this too.
@@ -597,7 +597,7 @@ void GeneratedMessageReflection::SwapFields(
     << "\").  Note that the exact same class is required; not just the same "
        "descriptor.";
 
-  fun::set<int> swapped_oneof;
+  std::set<int> swapped_oneof;
 
   for (int i = 0; i < (int)fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
@@ -690,7 +690,7 @@ void GeneratedMessageReflection::ClearField(
     if (HasBit(*message, field)) {
       ClearBit(message, field);
 
-      // We need to fun::set the field back to its default value.
+      // We need to set the field back to its default value.
       switch (field->cpp_type()) {
 #define CLEAR_TYPE(CPPTYPE, TYPE)                                            \
         case FieldDescriptor::CPPTYPE_##CPPTYPE:                             \
@@ -714,10 +714,10 @@ void GeneratedMessageReflection::ClearField(
 
         case FieldDescriptor::CPPTYPE_STRING: {
           switch (field->options().ctype()) {
-            default:  // TODO(kenton):  Support other fun::string reps.
+            default:  // TODO(kenton):  Support other string reps.
             case FieldOptions::STRING:
-              const fun::string* default_ptr = DefaultRaw<const fun::string*>(field);
-              fun::string** value = MutableRaw<fun::string*>(message, field);
+              const string* default_ptr = DefaultRaw<const string*>(field);
+              string** value = MutableRaw<string*>(message, field);
               if (*value != default_ptr) {
                 if (field->has_default_value()) {
                   (*value)->assign(field->default_value_string());
@@ -754,9 +754,9 @@ void GeneratedMessageReflection::ClearField(
 
       case FieldDescriptor::CPPTYPE_STRING: {
         switch (field->options().ctype()) {
-          default:  // TODO(kenton):  Support other fun::string reps.
+          default:  // TODO(kenton):  Support other string reps.
           case FieldOptions::STRING:
-            MutableRaw<RepeatedPtrField<fun::string> >(message, field)->Clear();
+            MutableRaw<RepeatedPtrField<string> >(message, field)->Clear();
             break;
         }
         break;
@@ -800,9 +800,9 @@ void GeneratedMessageReflection::RemoveLast(
 
       case FieldDescriptor::CPPTYPE_STRING:
         switch (field->options().ctype()) {
-          default:  // TODO(kenton):  Support other fun::string reps.
+          default:  // TODO(kenton):  Support other string reps.
           case FieldOptions::STRING:
-            MutableRaw<RepeatedPtrField<fun::string> >(message, field)->RemoveLast();
+            MutableRaw<RepeatedPtrField<string> >(message, field)->RemoveLast();
             break;
         }
         break;
@@ -878,10 +878,10 @@ struct FieldNumberSorter {
 
 void GeneratedMessageReflection::ListFields(
     const Message& message,
-    fun::vector<const FieldDescriptor*>* output) const {
+    vector<const FieldDescriptor*>* output) const {
   output->clear();
 
-  // Optimization:  The default instance never has any fields set
+  // Optimization:  The default instance never has any fields set.
   if (&message == default_instance_) return;
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -985,7 +985,7 @@ DEFINE_PRIMITIVE_ACCESSORS(Bool  , bool  , bool  , BOOL  )
 
 // -------------------------------------------------------------------
 
-fun::string GeneratedMessageReflection::GetString(
+string GeneratedMessageReflection::GetString(
     const Message& message, const FieldDescriptor* field) const {
   USAGE_CHECK_ALL(GetString, SINGULAR, STRING);
   if (field->is_extension()) {
@@ -993,9 +993,9 @@ fun::string GeneratedMessageReflection::GetString(
                                               field->default_value_string());
   } else {
     switch (field->options().ctype()) {
-      default:  // TODO(kenton):  Support other fun::string reps.
+      default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING:
-        return *GetField<const fun::string*>(message, field);
+        return *GetField<const string*>(message, field);
     }
 
     GOOGLE_LOG(FATAL) << "Can't get here.";
@@ -1003,18 +1003,18 @@ fun::string GeneratedMessageReflection::GetString(
   }
 }
 
-const fun::string& GeneratedMessageReflection::GetStringReference(
+const string& GeneratedMessageReflection::GetStringReference(
     const Message& message,
-    const FieldDescriptor* field, fun::string* scratch) const {
+    const FieldDescriptor* field, string* scratch) const {
   USAGE_CHECK_ALL(GetStringReference, SINGULAR, STRING);
   if (field->is_extension()) {
     return GetExtensionSet(message).GetString(field->number(),
                                               field->default_value_string());
   } else {
     switch (field->options().ctype()) {
-      default:  // TODO(kenton):  Support other fun::string reps.
+      default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING:
-        return *GetField<const fun::string*>(message, field);
+        return *GetField<const string*>(message, field);
     }
 
     GOOGLE_LOG(FATAL) << "Can't get here.";
@@ -1025,22 +1025,22 @@ const fun::string& GeneratedMessageReflection::GetStringReference(
 
 void GeneratedMessageReflection::SetString(
     Message* message, const FieldDescriptor* field,
-    const fun::string& value) const {
+    const string& value) const {
   USAGE_CHECK_ALL(SetString, SINGULAR, STRING);
   if (field->is_extension()) {
     return MutableExtensionSet(message)->SetString(field->number(),
                                                    field->type(), value, field);
   } else {
     switch (field->options().ctype()) {
-      default:  // TODO(kenton):  Support other fun::string reps.
+      default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING: {
         if (field->containing_oneof() && !HasOneofField(*message, field)) {
           ClearOneof(message, field->containing_oneof());
-          *MutableField<fun::string*>(message, field) = new fun::string;
+          *MutableField<string*>(message, field) = new string;
         }
-        fun::string** ptr = MutableField<fun::string*>(message, field);
-        if (*ptr == DefaultRaw<const fun::string*>(field)) {
-          *ptr = new fun::string(value);
+        string** ptr = MutableField<string*>(message, field);
+        if (*ptr == DefaultRaw<const string*>(field)) {
+          *ptr = new string(value);
         } else {
           (*ptr)->assign(value);
         }
@@ -1051,16 +1051,16 @@ void GeneratedMessageReflection::SetString(
 }
 
 
-fun::string GeneratedMessageReflection::GetRepeatedString(
+string GeneratedMessageReflection::GetRepeatedString(
     const Message& message, const FieldDescriptor* field, int index) const {
   USAGE_CHECK_ALL(GetRepeatedString, REPEATED, STRING);
   if (field->is_extension()) {
     return GetExtensionSet(message).GetRepeatedString(field->number(), index);
   } else {
     switch (field->options().ctype()) {
-      default:  // TODO(kenton):  Support other fun::string reps.
+      default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING:
-        return GetRepeatedPtrField<fun::string>(message, field, index);
+        return GetRepeatedPtrField<string>(message, field, index);
     }
 
     GOOGLE_LOG(FATAL) << "Can't get here.";
@@ -1068,17 +1068,17 @@ fun::string GeneratedMessageReflection::GetRepeatedString(
   }
 }
 
-const fun::string& GeneratedMessageReflection::GetRepeatedStringReference(
+const string& GeneratedMessageReflection::GetRepeatedStringReference(
     const Message& message, const FieldDescriptor* field,
-    int index, fun::string* scratch) const {
+    int index, string* scratch) const {
   USAGE_CHECK_ALL(GetRepeatedStringReference, REPEATED, STRING);
   if (field->is_extension()) {
     return GetExtensionSet(message).GetRepeatedString(field->number(), index);
   } else {
     switch (field->options().ctype()) {
-      default:  // TODO(kenton):  Support other fun::string reps.
+      default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING:
-        return GetRepeatedPtrField<fun::string>(message, field, index);
+        return GetRepeatedPtrField<string>(message, field, index);
     }
 
     GOOGLE_LOG(FATAL) << "Can't get here.";
@@ -1089,16 +1089,16 @@ const fun::string& GeneratedMessageReflection::GetRepeatedStringReference(
 
 void GeneratedMessageReflection::SetRepeatedString(
     Message* message, const FieldDescriptor* field,
-    int index, const fun::string& value) const {
+    int index, const string& value) const {
   USAGE_CHECK_ALL(SetRepeatedString, REPEATED, STRING);
   if (field->is_extension()) {
     MutableExtensionSet(message)->SetRepeatedString(
       field->number(), index, value);
   } else {
     switch (field->options().ctype()) {
-      default:  // TODO(kenton):  Support other fun::string reps.
+      default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING:
-        *MutableRepeatedField<fun::string>(message, field, index) = value;
+        *MutableRepeatedField<string>(message, field, index) = value;
         break;
     }
   }
@@ -1107,16 +1107,16 @@ void GeneratedMessageReflection::SetRepeatedString(
 
 void GeneratedMessageReflection::AddString(
     Message* message, const FieldDescriptor* field,
-    const fun::string& value) const {
+    const string& value) const {
   USAGE_CHECK_ALL(AddString, REPEATED, STRING);
   if (field->is_extension()) {
     MutableExtensionSet(message)->AddString(field->number(),
                                             field->type(), value, field);
   } else {
     switch (field->options().ctype()) {
-      default:  // TODO(kenton):  Support other fun::string reps.
+      default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING:
-        *AddField<fun::string>(message, field) = value;
+        *AddField<string>(message, field) = value;
         break;
     }
   }
@@ -1410,7 +1410,7 @@ const FieldDescriptor* GeneratedMessageReflection::GetOneofFieldDescriptor(
 // -----------------------------------------------------------------------------
 
 const FieldDescriptor* GeneratedMessageReflection::FindKnownExtensionByName(
-    const fun::string& name) const {
+    const string& name) const {
   if (extensions_offset_ == -1) return NULL;
 
   const FieldDescriptor* result = descriptor_pool_->FindExtensionByName(name);
@@ -1590,9 +1590,9 @@ inline void GeneratedMessageReflection::ClearOneof(
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_STRING: {
         switch (field->options().ctype()) {
-          default:  // TODO(kenton):  Support other fun::string reps.
+          default:  // TODO(kenton):  Support other string reps.
           case FieldOptions::STRING:
-            delete *MutableRaw<fun::string*>(message, field);
+            delete *MutableRaw<string*>(message, field);
             break;
         }
         break;

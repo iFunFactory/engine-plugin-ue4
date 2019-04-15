@@ -51,13 +51,13 @@ class FunapiWebsocketImpl : public std::enable_shared_from_this<FunapiWebsocketI
   void Connect(const char* hostname_or_ip,
                const int sever_port,
                const bool use_wss,
-               const fun::string &ca_file_path,
+               const std::string &ca_file_path,
                const ConnectCompletionHandler &connect_completion_handler,
                const CloseHandler &close_handler,
                const SendHandler &send_handler,
                const RecvHandler &recv_handler);
 
-  bool Send(const fun::vector<uint8_t> &body,
+  bool Send(const std::vector<uint8_t> &body,
             const bool is_binary,
             const SendCompletionHandler &send_completion_handler);
 
@@ -143,7 +143,7 @@ int FunapiWebsocketImpl::OnCallback(struct lws *wsi, enum lws_callback_reasons r
 
     case LWS_CALLBACK_CLIENT_RECEIVE:
     {
-      fun::vector<uint8_t> receiving(len);
+      std::vector<uint8_t> receiving(len);
       memcpy (receiving.data(), in, len);
       recv_handler_(static_cast<int>(len), receiving);
     }
@@ -212,7 +212,7 @@ void FunapiWebsocketImpl::Update() {
 void FunapiWebsocketImpl::Connect(const char* hostname_or_ip,
                                   const int server_port,
                                   const bool use_wss,
-                                  const fun::string &ca_file_path,
+                                  const std::string &ca_file_path,
                                   const ConnectCompletionHandler &connect_completion_handler,
                                   const CloseHandler &close_handler,
                                   const SendHandler &send_handler,
@@ -306,7 +306,7 @@ void FunapiWebsocketImpl::Connect(const char* hostname_or_ip,
 }
 
 
-bool FunapiWebsocketImpl::Send(const fun::vector<uint8_t> &body,
+bool FunapiWebsocketImpl::Send(const std::vector<uint8_t> &body,
                                const bool is_binary,
                                const SendCompletionHandler &send_completion_handler) {
 #if FUNAPI_HAVE_WEBSOCKET
@@ -408,7 +408,7 @@ void FunapiWebsocket::Connect(const char* hostname_or_ip,
 void FunapiWebsocket::Connect(const char* hostname_or_ip,
                               const int port,
                               const bool use_wss,
-                              const fun::string &ca_file_path,
+                              const std::string &ca_file_path,
                               const ConnectCompletionHandler &connect_completion_handler,
                               const CloseHandler &close_handler,
                               const SendHandler &send_handler,
@@ -424,7 +424,7 @@ void FunapiWebsocket::Connect(const char* hostname_or_ip,
 }
 
 
-bool FunapiWebsocket::Send(const fun::vector<uint8_t> &body,
+bool FunapiWebsocket::Send(const std::vector<uint8_t> &body,
                            const bool is_binary,
                            const SendCompletionHandler &send_completion_handler) {
   return impl_->Send(body, is_binary, send_completion_handler);

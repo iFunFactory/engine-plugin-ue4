@@ -12,10 +12,10 @@ class Encryptor1 : public Encryptor {
   virtual ~Encryptor1();
 
   EncryptionType GetEncryptionType();
-  static fun::string GetEncryptionName();
+  static std::string GetEncryptionName();
 
-  bool Encrypt(fun::vector<uint8_t> &body);
-  bool Decrypt(fun::vector<uint8_t> &body);
+  bool Encrypt(std::vector<uint8_t> &body);
+  bool Decrypt(std::vector<uint8_t> &body);
 };
 
 
@@ -32,17 +32,17 @@ EncryptionType Encryptor1::GetEncryptionType() {
 }
 
 
-fun::string Encryptor1::GetEncryptionName() {
+std::string Encryptor1::GetEncryptionName() {
   return "ife1";
 }
 
 
-bool Encryptor1::Encrypt(fun::vector<uint8_t> &body) {
+bool Encryptor1::Encrypt(std::vector<uint8_t> &body) {
   return true;
 }
 
 
-bool Encryptor1::Decrypt(fun::vector<uint8_t> &body) {
+bool Encryptor1::Decrypt(std::vector<uint8_t> &body) {
   return true;
 }
 
@@ -55,10 +55,10 @@ class Encryptor2 : public Encryptor {
   virtual ~Encryptor2();
 
   EncryptionType GetEncryptionType();
-  static fun::string GetEncryptionName();
+  static std::string GetEncryptionName();
 
-  bool Encrypt(fun::vector<uint8_t> &body);
-  bool Decrypt(fun::vector<uint8_t> &body);
+  bool Encrypt(std::vector<uint8_t> &body);
+  bool Decrypt(std::vector<uint8_t> &body);
 };
 
 
@@ -75,16 +75,16 @@ EncryptionType Encryptor2::GetEncryptionType() {
 }
 
 
-fun::string Encryptor2::GetEncryptionName() {
+std::string Encryptor2::GetEncryptionName() {
   return "ife2";
 }
 
 
-bool Encryptor2::Encrypt(fun::vector<uint8_t> &body) {
+bool Encryptor2::Encrypt(std::vector<uint8_t> &body) {
   return true;
 }
 
 
-bool Encryptor2::Decrypt(fun::vector<uint8_t> &body) {
+bool Encryptor2::Decrypt(std::vector<uint8_t> &body) {
   return true;
 }

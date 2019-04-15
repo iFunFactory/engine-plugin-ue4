@@ -48,11 +48,11 @@ namespace io {
 class ZeroCopyOutputStream;     // zero_copy_stream.h
 
 // This simple utility class assists in code generation.  It basically
-// allows the caller to define a fun::set of variables and then output some
+// allows the caller to define a set of variables and then output some
 // text with variable substitutions.  Example usage:
 //
 //   Printer printer(output, '$');
-//   fun::map<fun::string, fun::string> vars;
+//   map<string, string> vars;
 //   vars["name"] = "Bob";
 //   printer.Print(vars, "My name is $name$.");
 //
@@ -72,20 +72,20 @@ class LIBPROTOBUF_EXPORT Printer {
   // variable in the text is not defined, this will crash.  Variables to be
   // substituted are identified by their names surrounded by delimiter
   // characters (as given to the constructor).  The variable bindings are
-  // defined by the given fun::map.
-  void Print(const fun::map<fun::string, fun::string>& variables, const char* text);
+  // defined by the given map.
+  void Print(const map<string, string>& variables, const char* text);
 
   // Like the first Print(), except the substitutions are given as parameters.
   void Print(const char* text);
   // Like the first Print(), except the substitutions are given as parameters.
-  void Print(const char* text, const char* variable, const fun::string& value);
+  void Print(const char* text, const char* variable, const string& value);
   // Like the first Print(), except the substitutions are given as parameters.
-  void Print(const char* text, const char* variable1, const fun::string& value1,
-                               const char* variable2, const fun::string& value2);
+  void Print(const char* text, const char* variable1, const string& value1,
+                               const char* variable2, const string& value2);
   // Like the first Print(), except the substitutions are given as parameters.
-  void Print(const char* text, const char* variable1, const fun::string& value1,
-                               const char* variable2, const fun::string& value2,
-                               const char* variable3, const fun::string& value3);
+  void Print(const char* text, const char* variable1, const string& value1,
+                               const char* variable2, const string& value2,
+                               const char* variable3, const string& value3);
   // TODO(kenton):  Overloaded versions with more variables?  Three seems
   //   to be enough.
 
@@ -98,11 +98,11 @@ class LIBPROTOBUF_EXPORT Printer {
   // level is zero.
   void Outdent();
 
-  // Write a fun::string to the output buffer.
+  // Write a string to the output buffer.
   // This method does not look for newlines to add indentation.
-  void PrintRaw(const fun::string& data);
+  void PrintRaw(const string& data);
 
-  // Write a zero-delimited fun::string to output buffer.
+  // Write a zero-delimited string to output buffer.
   // This method does not look for newlines to add indentation.
   void PrintRaw(const char* data);
 
@@ -122,7 +122,7 @@ class LIBPROTOBUF_EXPORT Printer {
   char* buffer_;
   int buffer_size_;
 
-  fun::string indent_;
+  string indent_;
   bool at_start_of_line_;
   bool failed_;
 

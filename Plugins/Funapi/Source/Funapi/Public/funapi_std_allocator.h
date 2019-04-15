@@ -17,14 +17,34 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include <unordered_set>
-
-#include <Core/Public/HAL/UnrealMemory.h>
 
 namespace fun {
 
-#ifdef FUNAPI_UE4_PLATFORM_IOS
+#ifdef FUNAPI_COCOS2D
 
+typedef std::stringstream stringstream;
+typedef std::string string;
+typedef std::ostringstream ostringstream;
+
+template<typename _Ty>
+using vector = std::vector<_Ty>;
+
+template<typename _Ty>
+using deque = std::deque<_Ty>;
+
+template<typename _Ty>
+using queue = std::queue<_Ty>;
+
+template<typename _Ty>
+using set = std::set<_Ty, std::less<_Ty>>;
+
+template<typename _Kty, typename _Ty>
+using map = std::map<_Kty, _Ty>;
+
+template<typename _Kty, typename _Ty>
+using unordered_map = std::unordered_map<_Kty, _Ty>;
+
+#elif FUNAPI_UE4
 // NOTE(sungjin): Create an STL compatible allocator to manage the memory explicitly.
 // You may have to use these containers in several platforms like iPhone XS,
 // which has been struggling with a heap corruption problem.
@@ -65,7 +85,6 @@ class funapi_allocator : public std::allocator<T>
 typedef std::basic_stringstream<char, std::char_traits<char>, funapi_allocator<char>> stringstream;
 typedef std::basic_string<char, std::char_traits<char>, funapi_allocator<char>> string;
 typedef std::basic_ostringstream<char, std::char_traits<char>, funapi_allocator<char>> ostringstream;
-typedef std::basic_istringstream<char, std::char_traits<char>, funapi_allocator<char>> istringstream;
 
 template<typename _Ty>
 using vector = std::vector<_Ty, funapi_allocator<_Ty>>;
@@ -79,10 +98,6 @@ using queue = std::queue<_Ty, deque<_Ty>>;
 template<typename _Ty>
 using set = std::set<_Ty, std::less<_Ty>, funapi_allocator<_Ty>>;
 
-
-template<typename _Ty>
-using unordered_set = std::unordered_set<_Ty, std::hash<_Ty>, std::equal_to<_Ty>, funapi_allocator<_Ty>>;
-
 template<typename _Kty, typename _Ty>
 using map = std::map<_Kty, _Ty, std::less<_Kty>, funapi_allocator<std::pair<const _Kty, _Ty>>>;
 
@@ -90,35 +105,7 @@ template<typename _Kty, typename _Ty>
 using unordered_map =
   std::unordered_map<_Kty, _Ty, std::hash<_Kty>, std::equal_to<_Kty>, funapi_allocator<std::pair<const _Kty, _Ty>>>;
 
-#else // Non-IOS platform
-
-typedef std::basic_stringstream<char, std::char_traits<char>, std::allocator<char>> stringstream;
-typedef std::basic_string<char, std::char_traits<char>, std::allocator<char>> string;
-typedef std::basic_ostringstream<char, std::char_traits<char>, std::allocator<char>> ostringstream;
-typedef std::basic_istringstream<char, std::char_traits<char>, std::allocator<char>> istringstream;
-
-template<typename _Ty>
-using vector = std::vector<_Ty>;
-
-template<typename _Ty>
-using deque = std::deque<_Ty>;
-
-template<typename _Ty>
-using queue = std::queue<_Ty>;
-
-template<typename _Ty>
-using set = std::set<_Ty, std::less<_Ty>>;
-
-template<typename _Ty>
-using unordered_set = std::unordered_set<_Ty>;
-
-template<typename _Kty, typename _Ty>
-using map = std::map<_Kty, _Ty>;
-
-template<typename _Kty, typename _Ty>
-using unordered_map = std::unordered_map<_Kty, _Ty>;
-
-#endif
+#endif // FUNAPI_UE4
 
 } // fun namespace
 

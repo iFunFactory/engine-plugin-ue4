@@ -501,7 +501,7 @@ inline void protobuf_AssignDescriptorsOnce() {
                  &protobuf_AssignDesc_google_2fprotobuf_2funittest_5fcustom_5foptions_2eproto);
 }
 
-void protobuf_RegisterTypes(const ::fun::string&) {
+void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     TestMessageWithCustomOptions_descriptor_, &TestMessageWithCustomOptions::default_instance());
@@ -1056,7 +1056,7 @@ TestMessageWithCustomOptions::TestMessageWithCustomOptions(const TestMessageWith
 void TestMessageWithCustomOptions::SharedCtor() {
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
-  field1_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  field1_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -1114,7 +1114,7 @@ bool TestMessageWithCustomOptions::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional fun::string field1 = 1 [ctype = CORD];
+      // optional string field1 = 1 [ctype = CORD];
       case 1: {
         if (tag == 10) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
@@ -1155,7 +1155,7 @@ failure:
 void TestMessageWithCustomOptions::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:protobuf_unittest.TestMessageWithCustomOptions)
-  // optional fun::string field1 = 1 [ctype = CORD];
+  // optional string field1 = 1 [ctype = CORD];
   if (has_field1()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->field1().data(), this->field1().length(),
@@ -1175,7 +1175,7 @@ void TestMessageWithCustomOptions::SerializeWithCachedSizes(
 ::google::protobuf::uint8* TestMessageWithCustomOptions::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:protobuf_unittest.TestMessageWithCustomOptions)
-  // optional fun::string field1 = 1 [ctype = CORD];
+  // optional string field1 = 1 [ctype = CORD];
   if (has_field1()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->field1().data(), this->field1().length(),
@@ -1198,7 +1198,7 @@ int TestMessageWithCustomOptions::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional fun::string field1 = 1 [ctype = CORD];
+    // optional string field1 = 1 [ctype = CORD];
     if (has_field1()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -5255,7 +5255,7 @@ AggregateMessageSetElement::AggregateMessageSetElement(const AggregateMessageSet
 void AggregateMessageSetElement::SharedCtor() {
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
-  s_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  s_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -5313,7 +5313,7 @@ bool AggregateMessageSetElement::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional fun::string s = 1;
+      // optional string s = 1;
       case 1: {
         if (tag == 10) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
@@ -5354,7 +5354,7 @@ failure:
 void AggregateMessageSetElement::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:protobuf_unittest.AggregateMessageSetElement)
-  // optional fun::string s = 1;
+  // optional string s = 1;
   if (has_s()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->s().data(), this->s().length(),
@@ -5374,7 +5374,7 @@ void AggregateMessageSetElement::SerializeWithCachedSizes(
 ::google::protobuf::uint8* AggregateMessageSetElement::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:protobuf_unittest.AggregateMessageSetElement)
-  // optional fun::string s = 1;
+  // optional string s = 1;
   if (has_s()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->s().data(), this->s().length(),
@@ -5397,7 +5397,7 @@ int AggregateMessageSetElement::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional fun::string s = 1;
+    // optional string s = 1;
     if (has_s()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -5512,7 +5512,7 @@ void Aggregate::SharedCtor() {
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
   i_ = 0;
-  s_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  s_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   sub_ = NULL;
   file_ = NULL;
   mset_ = NULL;
@@ -5602,7 +5602,7 @@ bool Aggregate::MergePartialFromCodedStream(
         break;
       }
 
-      // optional fun::string s = 2;
+      // optional string s = 2;
       case 2: {
         if (tag == 18) {
          parse_s:
@@ -5688,7 +5688,7 @@ void Aggregate::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->i(), output);
   }
 
-  // optional fun::string s = 2;
+  // optional string s = 2;
   if (has_s()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->s().data(), this->s().length(),
@@ -5731,7 +5731,7 @@ void Aggregate::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->i(), target);
   }
 
-  // optional fun::string s = 2;
+  // optional string s = 2;
   if (has_s()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->s().data(), this->s().length(),
@@ -5782,7 +5782,7 @@ int Aggregate::ByteSize() const {
           this->i());
     }
 
-    // optional fun::string s = 2;
+    // optional string s = 2;
     if (has_s()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -6780,11 +6780,11 @@ void AggregateService_Stub::Method(::google::protobuf::RpcController* controller
 ::google::protobuf::internal::ExtensionIdentifier< ::google::protobuf::MessageOptions,
     ::google::protobuf::internal::PrimitiveTypeTraits< double >, 1, false >
   double_opt(kDoubleOptFieldNumber, 0);
-const ::fun::string string_opt_default("");
+const ::std::string string_opt_default("");
 ::google::protobuf::internal::ExtensionIdentifier< ::google::protobuf::MessageOptions,
     ::google::protobuf::internal::StringTypeTraits, 9, false >
   string_opt(kStringOptFieldNumber, string_opt_default);
-const ::fun::string bytes_opt_default("");
+const ::std::string bytes_opt_default("");
 ::google::protobuf::internal::ExtensionIdentifier< ::google::protobuf::MessageOptions,
     ::google::protobuf::internal::StringTypeTraits, 12, false >
   bytes_opt(kBytesOptFieldNumber, bytes_opt_default);

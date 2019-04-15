@@ -34,9 +34,9 @@
 //
 // RepeatedField and RepeatedPtrField are used by generated protocol message
 // classes to manipulate repeated fields.  These classes are very similar to
-// STL's fun::vector, but include a number of optimizations found to be useful
+// STL's vector, but include a number of optimizations found to be useful
 // specifically in the case of Protocol Buffers.  RepeatedPtrField is
-// particularly different from STL fun::vector as it manages ownership of the
+// particularly different from STL vector as it manages ownership of the
 // pointers that it contains.
 //
 // Typically, clients should not need to access RepeatedField objects directly,
@@ -98,7 +98,7 @@ inline int CalculateReserve(Iter begin, Iter end) {
 // RepeatedField is used to represent repeated fields of a primitive type (in
 // other words, everything except strings and nested Messages).  Most users will
 // not ever use a RepeatedField directly; they will use the get-by-index,
-// fun::set-by-index, and add accessors that are generated for all repeated fields.
+// set-by-index, and add accessors that are generated for all repeated fields.
 template <typename Element>
 class RepeatedField {
  public:
@@ -404,11 +404,11 @@ inline const Message& GenericTypeHandler<Message>::default_instance() {
 // TODO(kenton):  There has to be a better way.
 class LIBPROTOBUF_EXPORT StringTypeHandlerBase {
  public:
-  typedef fun::string Type;
-  static fun::string* New();
-  static void Delete(fun::string* value);
-  static void Clear(fun::string* value) { value->clear(); }
-  static void Merge(const fun::string& from, fun::string* to) { *to = from; }
+  typedef string Type;
+  static string* New();
+  static void Delete(string* value);
+  static void Clear(string* value) { value->clear(); }
+  static void Merge(const string& from, string* to) { *to = from; }
   static const Type& default_instance() {
     return ::google::protobuf::internal::GetEmptyString();
   }
@@ -416,7 +416,7 @@ class LIBPROTOBUF_EXPORT StringTypeHandlerBase {
 
 class StringTypeHandler : public StringTypeHandlerBase {
  public:
-  static int SpaceUsed(const fun::string& value)  {
+  static int SpaceUsed(const string& value)  {
     return sizeof(value) + StringSpaceUsedExcludingSelf(value);
   }
 };
@@ -1057,7 +1057,7 @@ class RepeatedPtrField<Element>::TypeHandler
 };
 
 template <>
-class RepeatedPtrField<fun::string>::TypeHandler
+class RepeatedPtrField<string>::TypeHandler
     : public internal::StringTypeHandler {
 };
 

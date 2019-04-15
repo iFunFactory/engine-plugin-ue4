@@ -25,7 +25,7 @@ class FunapiAddrInfo : public std::enable_shared_from_this<FunapiAddrInfo> {
 
   static std::shared_ptr<FunapiAddrInfo> Create();
 
-  fun::string GetString();
+  std::string GetString();
   std::shared_ptr<FunapiAddrInfoImpl> GetImpl();
 
  private:
@@ -39,20 +39,20 @@ class FunapiTcp : public std::enable_shared_from_this<FunapiTcp> {
   typedef std::function<void(const bool is_failed,
                              const bool is_timed_out,
                              const int error_code,
-                             const fun::string &error_string,
+                             const std::string &error_string,
                              std::shared_ptr<FunapiAddrInfo> addrinfo_res)> ConnectCompletionHandler;
 
   typedef std::function<void(const bool is_failed,
                              const int error_code,
-                             const fun::string &error_string,
+                             const std::string &error_string,
                              const int read_length,
-                             fun::vector<uint8_t> &receiving)> RecvHandler;
+                             std::vector<uint8_t> &receiving)> RecvHandler;
 
   typedef std::function<void()> SendHandler;
 
   typedef std::function<void(const bool is_failed,
                              const int error_code,
-                             const fun::string &error_string,
+                             const std::string &error_string,
                              const int sent_length)> SendCompletionHandler;
 
   FunapiTcp();
@@ -73,7 +73,7 @@ class FunapiTcp : public std::enable_shared_from_this<FunapiTcp> {
                const time_t connect_timeout_seconds,
                const bool disable_nagle,
                const bool use_tls,
-               const fun::string &cert_file_path,
+               const std::string &cert_file_path,
                const ConnectCompletionHandler &connect_completion_handler,
                const SendHandler &send_handler,
                const RecvHandler &recv_handler);
@@ -81,7 +81,7 @@ class FunapiTcp : public std::enable_shared_from_this<FunapiTcp> {
   void Connect(std::shared_ptr<FunapiAddrInfo> addrinfo,
                const ConnectCompletionHandler &connect_completion_handler);
 
-  bool Send(const fun::vector<uint8_t> &body,
+  bool Send(const std::vector<uint8_t> &body,
             const SendCompletionHandler &send_completion_handler);
 
   int GetSocket();
@@ -97,19 +97,19 @@ class FunapiUdp : public std::enable_shared_from_this<FunapiUdp> {
  public:
   typedef std::function<void(const bool is_failed,
                              const int error_code,
-                             const fun::string &error_string)> InitHandler;
+                             const std::string &error_string)> InitHandler;
 
   typedef std::function<void(const bool is_failed,
                              const int error_code,
-                             const fun::string &error_string,
+                             const std::string &error_string,
                              const int read_length,
-                             fun::vector<uint8_t> &receiving)> RecvHandler;
+                             std::vector<uint8_t> &receiving)> RecvHandler;
 
   typedef std::function<void()> SendHandler;
 
   typedef std::function<void(const bool is_failed,
                              const int error_code,
-                             const fun::string &error_string,
+                             const std::string &error_string,
                              const int sent_length)> SendCompletionHandler;
 
   FunapiUdp() = delete;
@@ -126,7 +126,7 @@ class FunapiUdp : public std::enable_shared_from_this<FunapiUdp> {
                                            const SendHandler &send_handler,
                                            const RecvHandler &recv_handler);
 
-  bool Send(const fun::vector<uint8_t> &body, const SendCompletionHandler &send_completion_handler);
+  bool Send(const std::vector<uint8_t> &body, const SendCompletionHandler &send_completion_handler);
 
   int GetSocket();
   void OnSelect(const fd_set rset, const fd_set wset, const fd_set eset);

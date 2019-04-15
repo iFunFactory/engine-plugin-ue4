@@ -132,7 +132,7 @@ bool FFunapiLibProtobufDynamicMessageTest::RunTest(const FString& Parameters)
 
   // DynamicMessageTest, Defaults
   {
-    // Check that all default values are fun::set correctly in the initial message.
+    // Check that all default values are set correctly in the initial message.
     google::protobuf::TestUtil::ReflectionTester reflection_tester(descriptor_);
     reflection_tester.ExpectClearViaReflection(*prototype_);
   }
@@ -221,7 +221,7 @@ bool FFunapiLibProtobufDynamicMessageTest::RunTest(const FString& Parameters)
     verify(google::protobuf::unittest::TestOneof2::BAR == reflection->GetEnum(
       *message, descriptor->FindFieldByName("bar_enum"))->number());
 
-    // Check fun::set functions.
+    // Check set functions.
     google::protobuf::TestUtil::ReflectionTester reflection_tester(oneof_descriptor_);
     reflection_tester.SetOneofViaReflection(message.get());
     reflection_tester.ExpectOneofSetViaReflection(*message);

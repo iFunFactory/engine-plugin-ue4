@@ -114,9 +114,9 @@ FindOrDieNoPrint(Collection& collection,  // NOLINT
 // WARNING: If a temporary object is passed as the default "value,"
 // this function will return a reference to that temporary object,
 // which will be destroyed at the end of the statement. A common
-// example: if you have a fun::map with fun::string values, and you pass a char*
+// example: if you have a map with string values, and you pass a char*
 // as the default "value," either use the returned value immediately
-// or store it in a fun::string (not fun::string&).
+// or store it in a string (not string&).
 // Details: http://go/findwithdefault
 template <class Collection>
 const typename Collection::value_type::second_type&
@@ -156,7 +156,7 @@ FindOrNull(Collection& collection,  // NOLINT
 }
 
 // Returns the pointer value associated with the given key. If none is found,
-// NULL is returned. The function is designed to be used with a fun::map of keys to
+// NULL is returned. The function is designed to be used with a map of keys to
 // pointers.
 //
 // This function does not distinguish between a missing key and a key mapped
@@ -187,7 +187,7 @@ FindPtrOrNull(Collection& collection,  // NOLINT
   return it->second;
 }
 
-// Finds the pointer value associated with the given key in a fun::map whose values
+// Finds the pointer value associated with the given key in a map whose values
 // are linked_ptrs. Returns NULL if key is not found.
 template <class Collection>
 typename Collection::value_type::second_type::element_type*
@@ -262,7 +262,7 @@ bool ContainsKeyValuePair(const Collection& collection,
 
 // Inserts the given key-value pair into the collection. Returns true if and
 // only if the key from the given pair didn't previously exist. Otherwise, the
-// value in the fun::map is replaced with the value from the given pair.
+// value in the map is replaced with the value from the given pair.
 template <class Collection>
 bool InsertOrUpdate(Collection* const collection,
                     const typename Collection::value_type& vt) {
@@ -294,8 +294,8 @@ void InsertOrUpdateMany(Collection* const collection,
   }
 }
 
-// Change the value associated with a particular key in a fun::map or hash_map
-// of the form fun::map<Key, Value*> which owns the objects pointed to by the
+// Change the value associated with a particular key in a map or hash_map
+// of the form map<Key, Value*> which owns the objects pointed to by the
 // value pointers.  If there was an existing value for the key, it is deleted.
 // True indicates an insert took place, false indicates an update + delete.
 template <class Collection>
@@ -371,7 +371,7 @@ void InsertOrDieNoPrint(
 // Inserts a new key and default-initialized value. Dies if the key was already
 // present. Returns a reference to the value. Example usage:
 //
-// fun::map<int, SomeProto> m;
+// map<int, SomeProto> m;
 // SomeProto& proto = InsertKeyOrDie(&m, 3);
 // proto.set_field("foo");
 template <class Collection>
@@ -413,8 +413,8 @@ LookupOrInsert(Collection* const collection,
 // the results in "count_map" with element as the key and count as the value.
 //
 // Example:
-//   fun::vector<fun::string> v = {"a", "b", "c", "a", "b"};
-//   fun::map<fun::string, int> m;
+//   vector<string> v = {"a", "b", "c", "a", "b"};
+//   map<string, int> m;
 //   AddTokenCounts(v, 1, &m);
 //   assert(m["a"] == 2);
 //   assert(m["b"] == 2);
@@ -434,9 +434,9 @@ void AddTokenCounts(
 }
 
 // Returns a reference to the value associated with key. If not found, a value
-// is default constructed on the heap and added to the fun::map.
+// is default constructed on the heap and added to the map.
 //
-// This function is useful for containers of the form fun::map<Key, Value*>, where
+// This function is useful for containers of the form map<Key, Value*>, where
 // inserting a new key, value pair involves constructing a new heap-allocated
 // Value, and storing a pointer to that in the collection.
 template <class Collection>
@@ -490,8 +490,8 @@ LookupOrInsertNew(Collection* const collection,
 // shared pointer. Finding an element must be performed using FindPtr*() and
 // cannot be done with FindLinkedPtr*() even though it compiles.
 
-// Lookup a key in a fun::map or hash_map whose values are linked_ptrs.  If it is
-// missing, fun::set collection[key].reset(new Value::element_type) and return that.
+// Lookup a key in a map or hash_map whose values are linked_ptrs.  If it is
+// missing, set collection[key].reset(new Value::element_type) and return that.
 // Value::element_type must be default constructable.
 template <class Collection>
 typename Collection::value_type::second_type::element_type*
@@ -527,8 +527,8 @@ LookupOrInsertNewLinkedPtr(
   return ret.first->second.get();
 }
 
-// Lookup a key in a fun::map or hash_map whose values are shared_ptrs.  If it is
-// missing, fun::set collection[key].reset(new Value::element_type). Unlike
+// Lookup a key in a map or hash_map whose values are shared_ptrs.  If it is
+// missing, set collection[key].reset(new Value::element_type). Unlike
 // LookupOrInsertNewLinkedPtr, this function returns the shared_ptr instead of
 // the raw pointer. Value::element_type must be default constructable.
 template <class Collection>
@@ -649,7 +649,7 @@ InsertOrReturnExisting(
 // collection.
 //
 // Examples:
-//   fun::map<fun::string, MyType*> my_map;
+//   map<string, MyType*> my_map;
 //
 // One line cleanup:
 //     delete EraseKeyReturnValuePtr(&my_map, "abc");
@@ -701,7 +701,7 @@ void AppendKeysFromMap(const MapContainer& map_container,
 }
 
 // A more specialized overload of AppendKeysFromMap to optimize reallocations
-// for the common case in which we're appending keys to a fun::vector and hence can
+// for the common case in which we're appending keys to a vector and hence can
 // (and sometimes should) call reserve() first.
 //
 // (It would be possible to play SFINAE games to call reserve() for any
@@ -709,16 +709,16 @@ void AppendKeysFromMap(const MapContainer& map_container,
 // without the complexity of a SFINAE-based solution.)
 template <class MapContainer, class KeyType>
 void AppendKeysFromMap(const MapContainer& map_container,
-                       fun::vector<KeyType>* key_container) {
+                       vector<KeyType>* key_container) {
   GOOGLE_CHECK(key_container != NULL);
   // We now have the opportunity to call reserve(). Calling reserve() every
   // time is a bad idea for some use cases: libstdc++'s implementation of
-  // fun::vector<>::reserve() resizes the fun::vector's backing store to exactly the
+  // vector<>::reserve() resizes the vector's backing store to exactly the
   // given size (unless it's already at least that big). Because of this,
   // the use case that involves appending a lot of small maps (total size
-  // N) one by one to a fun::vector would be O(N^2). But never calling reserve()
+  // N) one by one to a vector would be O(N^2). But never calling reserve()
   // loses the opportunity to improve the use case of adding from a large
-  // fun::map to an empty fun::vector (this improves performance by up to 33%). A
+  // map to an empty vector (this improves performance by up to 33%). A
   // number of heuristics are possible; see the discussion in
   // cl/34081696. Here we use the simplest one.
   if (key_container->empty()) {
@@ -745,7 +745,7 @@ void AppendValuesFromMap(const MapContainer& map_container,
 }
 
 // A more specialized overload of AppendValuesFromMap to optimize reallocations
-// for the common case in which we're appending values to a fun::vector and hence
+// for the common case in which we're appending values to a vector and hence
 // can (and sometimes should) call reserve() first.
 //
 // (It would be possible to play SFINAE games to call reserve() for any
@@ -753,7 +753,7 @@ void AppendValuesFromMap(const MapContainer& map_container,
 // without the complexity of a SFINAE-based solution.)
 template <class MapContainer, class ValueType>
 void AppendValuesFromMap(const MapContainer& map_container,
-                         fun::vector<ValueType>* value_container) {
+                         vector<ValueType>* value_container) {
   GOOGLE_CHECK(value_container != NULL);
   // See AppendKeysFromMap for why this is done.
   if (value_container->empty()) {

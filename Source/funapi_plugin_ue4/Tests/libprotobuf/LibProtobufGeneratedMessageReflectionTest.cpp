@@ -68,7 +68,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiLibProtobufGeneratedMessageReflectionTes
 bool FFunapiLibProtobufGeneratedMessageReflectionTest::RunTest(const FString& Parameters)
 {
   // Shorthand to get a FieldDescriptor for a field of unittest::TestAllTypes.
-  auto F = [](const fun::string& name) -> const google::protobuf::FieldDescriptor* {
+  auto F = [](const std::string& name) -> const google::protobuf::FieldDescriptor* {
     const google::protobuf::FieldDescriptor* result =
     google::protobuf::unittest::TestAllTypes::descriptor()->FindFieldByName(name);
     GOOGLE_CHECK(result != NULL);
@@ -77,7 +77,7 @@ bool FFunapiLibProtobufGeneratedMessageReflectionTest::RunTest(const FString& Pa
 
   // GeneratedMessageReflectionTest, Defaults
   {
-    // Check that all default values are fun::set correctly in the initial message.
+    // Check that all default values are set correctly in the initial message.
     google::protobuf::unittest::TestAllTypes message;
     google::protobuf::TestUtil::ReflectionTester reflection_tester(
       google::protobuf::unittest::TestAllTypes::descriptor());
@@ -88,7 +88,7 @@ bool FFunapiLibProtobufGeneratedMessageReflectionTest::RunTest(const FString& Pa
 
     // Messages should return pointers to default instances until first use.
     // (This is not checked by ExpectClear() since it is not actually true after
-    // the fields have been fun::set and then cleared.)
+    // the fields have been set and then cleared.)
     verify(&google::protobuf::unittest::TestAllTypes::OptionalGroup::default_instance() ==
       &reflection->GetMessage(message, F("optionalgroup")));
     verify(&google::protobuf::unittest::TestAllTypes::NestedMessage::default_instance() ==
@@ -117,24 +117,24 @@ bool FFunapiLibProtobufGeneratedMessageReflectionTest::RunTest(const FString& Pa
 
   // GeneratedMessageReflectionTest, GetStringReference
   {
-    // Test that GetStringReference() returns the underlying fun::string when it is
-    // a normal fun::string field.
+    // Test that GetStringReference() returns the underlying string when it is
+    // a normal string field.
     google::protobuf::unittest::TestAllTypes message;
     message.set_optional_string("foo");
     message.add_repeated_string("foo");
 
     const google::protobuf::Reflection* reflection = message.GetReflection();
-    fun::string scratch;
+    std::string scratch;
 
     verify(&message.optional_string() ==
       &reflection->GetStringReference(message, F("optional_string"), &scratch))
-      // << "For simple fun::string fields, GetStringReference() should return a "
-      // "reference to the underlying fun::string.";
+      // << "For simple string fields, GetStringReference() should return a "
+      // "reference to the underlying string.";
     verify(&message.repeated_string(0) ==
       &reflection->GetRepeatedStringReference(message, F("repeated_string"),
         0, &scratch))
-      // << "For simple fun::string fields, GetRepeatedStringReference() should return "
-      //"a reference to the underlying fun::string.";
+      // << "For simple string fields, GetRepeatedStringReference() should return "
+      //"a reference to the underlying string.";
   }
 
 
@@ -236,7 +236,7 @@ bool FFunapiLibProtobufGeneratedMessageReflectionTest::RunTest(const FString& Pa
     message2.set_optional_string("hello");
     message2.mutable_repeated_int64()->Add(30);
 
-    fun::vector<const google::protobuf::FieldDescriptor*> fields;
+    std::vector<const google::protobuf::FieldDescriptor*> fields;
     const google::protobuf::Descriptor* descriptor = message1.GetDescriptor();
     fields.push_back(descriptor->FindFieldByName("optional_double"));
     fields.push_back(descriptor->FindFieldByName("repeated_int32"));
@@ -270,7 +270,7 @@ bool FFunapiLibProtobufGeneratedMessageReflectionTest::RunTest(const FString& Pa
 
     google::protobuf::TestUtil::SetAllFields(&message2);
 
-    fun::vector<const google::protobuf::FieldDescriptor*> fields;
+    std::vector<const google::protobuf::FieldDescriptor*> fields;
     const google::protobuf::Reflection* reflection = message1.GetReflection();
     reflection->ListFields(message2, &fields);
     reflection->SwapFields(&message1, &message2, fields);
@@ -286,7 +286,7 @@ bool FFunapiLibProtobufGeneratedMessageReflectionTest::RunTest(const FString& Pa
 
     google::protobuf::TestUtil::SetAllExtensions(&message1);
 
-    fun::vector<const google::protobuf::FieldDescriptor*> fields;
+    std::vector<const google::protobuf::FieldDescriptor*> fields;
     const google::protobuf::Reflection* reflection = message1.GetReflection();
     reflection->ListFields(message1, &fields);
     reflection->SwapFields(&message1, &message2, fields);
@@ -325,7 +325,7 @@ bool FFunapiLibProtobufGeneratedMessageReflectionTest::RunTest(const FString& Pa
     google::protobuf::unittest::TestOneof2 message1, message2;
     google::protobuf::TestUtil::SetOneof1(&message1);
 
-    fun::vector<const google::protobuf::FieldDescriptor*> fields;
+    std::vector<const google::protobuf::FieldDescriptor*> fields;
     const google::protobuf::Descriptor* descriptor = message1.GetDescriptor();
     for (int i = 0; i < descriptor->field_count(); i++) {
       fields.push_back(descriptor->field(i));
@@ -588,7 +588,7 @@ bool FFunapiLibProtobufGeneratedMessageReflectionTest::RunTest(const FString& Pa
     google::protobuf::TestUtil::SetOneof1(&message);
 
     const google::protobuf::Reflection* reflection = message.GetReflection();
-    fun::vector<const google::protobuf::FieldDescriptor*> fields;
+    std::vector<const google::protobuf::FieldDescriptor*> fields;
     reflection->ListFields(message, &fields);
     verify(4 == fields.size());
   }
@@ -711,11 +711,11 @@ bool FFunapiLibProtobufGeneratedMessageReflectionTest::RunTest(const FString& Pa
     google::protobuf::TestUtil::ReflectionTester reflection_tester(
       google::protobuf::unittest::TestAllTypes::descriptor());
 
-    // When nothing is fun::set, we expect all released messages to be NULL.
+    // When nothing is set, we expect all released messages to be NULL.
     reflection_tester.ExpectMessagesReleasedViaReflection(
       &message, google::protobuf::TestUtil::ReflectionTester::IS_NULL);
 
-    // After fields are fun::set we should get non-NULL releases.
+    // After fields are set we should get non-NULL releases.
     reflection_tester.SetAllFieldsViaReflection(&message);
     reflection_tester.ExpectMessagesReleasedViaReflection(
       &message, google::protobuf::TestUtil::ReflectionTester::NOT_NULL);
@@ -738,11 +738,11 @@ bool FFunapiLibProtobufGeneratedMessageReflectionTest::RunTest(const FString& Pa
     google::protobuf::TestUtil::ReflectionTester reflection_tester(
       google::protobuf::unittest::TestAllExtensions::descriptor());
 
-    // When nothing is fun::set, we expect all released messages to be NULL.
+    // When nothing is set, we expect all released messages to be NULL.
     reflection_tester.ExpectMessagesReleasedViaReflection(
       &message, google::protobuf::TestUtil::ReflectionTester::IS_NULL);
 
-    // After fields are fun::set we should get non-NULL releases.
+    // After fields are set we should get non-NULL releases.
     reflection_tester.SetAllFieldsViaReflection(&message);
     reflection_tester.ExpectMessagesReleasedViaReflection(
       &message, google::protobuf::TestUtil::ReflectionTester::NOT_NULL);

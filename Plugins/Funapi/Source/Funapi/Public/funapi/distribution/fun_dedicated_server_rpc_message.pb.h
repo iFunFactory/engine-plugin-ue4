@@ -93,25 +93,25 @@ class FUNAPI_API FunDedicatedServerRpcMessage : public ::google::protobuf::Messa
   inline bool has_xid() const;
   inline void clear_xid();
   static const int kXidFieldNumber = 1;
-  inline const ::fun::string& xid() const;
-  inline void set_xid(const ::fun::string& value);
+  inline const ::std::string& xid() const;
+  inline void set_xid(const ::std::string& value);
   inline void set_xid(const char* value);
   inline void set_xid(const void* value, size_t size);
-  inline ::fun::string* mutable_xid();
-  inline ::fun::string* release_xid();
-  inline void set_allocated_xid(::fun::string* xid);
+  inline ::std::string* mutable_xid();
+  inline ::std::string* release_xid();
+  inline void set_allocated_xid(::std::string* xid);
 
-  // required fun::string type = 2;
+  // required string type = 2;
   inline bool has_type() const;
   inline void clear_type();
   static const int kTypeFieldNumber = 2;
-  inline const ::fun::string& type() const;
-  inline void set_type(const ::fun::string& value);
+  inline const ::std::string& type() const;
+  inline void set_type(const ::std::string& value);
   inline void set_type(const char* value);
   inline void set_type(const char* value, size_t size);
-  inline ::fun::string* mutable_type();
-  inline ::fun::string* release_type();
-  inline void set_allocated_type(::fun::string* type);
+  inline ::std::string* mutable_type();
+  inline ::std::string* release_type();
+  inline void set_allocated_type(::std::string* type);
 
   // required bool is_request = 3;
   inline bool has_is_request() const;
@@ -136,8 +136,8 @@ class FUNAPI_API FunDedicatedServerRpcMessage : public ::google::protobuf::Messa
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::fun::string* xid_;
-  ::fun::string* type_;
+  ::std::string* xid_;
+  ::std::string* type_;
   bool is_request_;
   friend void FUNAPI_API protobuf_AddDesc_funapi_2fdistribution_2ffun_5fdedicated_5fserver_5frpc_5fmessage_2eproto();
   friend void protobuf_AssignDesc_funapi_2fdistribution_2ffun_5fdedicated_5fserver_5frpc_5fmessage_2eproto();
@@ -201,17 +201,17 @@ class FUNAPI_API FunDedicatedServerRpcSystemMessage : public ::google::protobuf:
 
   // accessors -------------------------------------------------------
 
-  // optional fun::string data = 1;
+  // optional string data = 1;
   inline bool has_data() const;
   inline void clear_data();
   static const int kDataFieldNumber = 1;
-  inline const ::fun::string& data() const;
-  inline void set_data(const ::fun::string& value);
+  inline const ::std::string& data() const;
+  inline void set_data(const ::std::string& value);
   inline void set_data(const char* value);
   inline void set_data(const char* value, size_t size);
-  inline ::fun::string* mutable_data();
-  inline ::fun::string* release_data();
-  inline void set_allocated_data(::fun::string* data);
+  inline ::std::string* mutable_data();
+  inline ::std::string* release_data();
+  inline void set_allocated_data(::std::string* data);
 
   // @@protoc_insertion_point(class_scope:FunDedicatedServerRpcSystemMessage)
  private:
@@ -222,7 +222,7 @@ class FUNAPI_API FunDedicatedServerRpcSystemMessage : public ::google::protobuf:
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::fun::string* data_;
+  ::std::string* data_;
   friend void FUNAPI_API protobuf_AddDesc_funapi_2fdistribution_2ffun_5fdedicated_5fserver_5frpc_5fmessage_2eproto();
   friend void protobuf_AssignDesc_funapi_2fdistribution_2ffun_5fdedicated_5fserver_5frpc_5fmessage_2eproto();
   friend void protobuf_ShutdownFile_funapi_2fdistribution_2ffun_5fdedicated_5fserver_5frpc_5fmessage_2eproto();
@@ -257,14 +257,14 @@ inline void FunDedicatedServerRpcMessage::clear_xid() {
   }
   clear_has_xid();
 }
-inline const ::fun::string& FunDedicatedServerRpcMessage::xid() const {
+inline const ::std::string& FunDedicatedServerRpcMessage::xid() const {
   // @@protoc_insertion_point(field_get:FunDedicatedServerRpcMessage.xid)
   return *xid_;
 }
-inline void FunDedicatedServerRpcMessage::set_xid(const ::fun::string& value) {
+inline void FunDedicatedServerRpcMessage::set_xid(const ::std::string& value) {
   set_has_xid();
   if (xid_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    xid_ = new ::fun::string;
+    xid_ = new ::std::string;
   }
   xid_->assign(value);
   // @@protoc_insertion_point(field_set:FunDedicatedServerRpcMessage.xid)
@@ -272,7 +272,7 @@ inline void FunDedicatedServerRpcMessage::set_xid(const ::fun::string& value) {
 inline void FunDedicatedServerRpcMessage::set_xid(const char* value) {
   set_has_xid();
   if (xid_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    xid_ = new ::fun::string;
+    xid_ = new ::std::string;
   }
   xid_->assign(value);
   // @@protoc_insertion_point(field_set_char:FunDedicatedServerRpcMessage.xid)
@@ -280,30 +280,30 @@ inline void FunDedicatedServerRpcMessage::set_xid(const char* value) {
 inline void FunDedicatedServerRpcMessage::set_xid(const void* value, size_t size) {
   set_has_xid();
   if (xid_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    xid_ = new ::fun::string;
+    xid_ = new ::std::string;
   }
   xid_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:FunDedicatedServerRpcMessage.xid)
 }
-inline ::fun::string* FunDedicatedServerRpcMessage::mutable_xid() {
+inline ::std::string* FunDedicatedServerRpcMessage::mutable_xid() {
   set_has_xid();
   if (xid_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    xid_ = new ::fun::string;
+    xid_ = new ::std::string;
   }
   // @@protoc_insertion_point(field_mutable:FunDedicatedServerRpcMessage.xid)
   return xid_;
 }
-inline ::fun::string* FunDedicatedServerRpcMessage::release_xid() {
+inline ::std::string* FunDedicatedServerRpcMessage::release_xid() {
   clear_has_xid();
   if (xid_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::fun::string* temp = xid_;
-    xid_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::std::string* temp = xid_;
+    xid_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void FunDedicatedServerRpcMessage::set_allocated_xid(::fun::string* xid) {
+inline void FunDedicatedServerRpcMessage::set_allocated_xid(::std::string* xid) {
   if (xid_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete xid_;
   }
@@ -312,12 +312,12 @@ inline void FunDedicatedServerRpcMessage::set_allocated_xid(::fun::string* xid) 
     xid_ = xid;
   } else {
     clear_has_xid();
-    xid_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    xid_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:FunDedicatedServerRpcMessage.xid)
 }
 
-// required fun::string type = 2;
+// required string type = 2;
 inline bool FunDedicatedServerRpcMessage::has_type() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -333,14 +333,14 @@ inline void FunDedicatedServerRpcMessage::clear_type() {
   }
   clear_has_type();
 }
-inline const ::fun::string& FunDedicatedServerRpcMessage::type() const {
+inline const ::std::string& FunDedicatedServerRpcMessage::type() const {
   // @@protoc_insertion_point(field_get:FunDedicatedServerRpcMessage.type)
   return *type_;
 }
-inline void FunDedicatedServerRpcMessage::set_type(const ::fun::string& value) {
+inline void FunDedicatedServerRpcMessage::set_type(const ::std::string& value) {
   set_has_type();
   if (type_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    type_ = new ::fun::string;
+    type_ = new ::std::string;
   }
   type_->assign(value);
   // @@protoc_insertion_point(field_set:FunDedicatedServerRpcMessage.type)
@@ -348,7 +348,7 @@ inline void FunDedicatedServerRpcMessage::set_type(const ::fun::string& value) {
 inline void FunDedicatedServerRpcMessage::set_type(const char* value) {
   set_has_type();
   if (type_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    type_ = new ::fun::string;
+    type_ = new ::std::string;
   }
   type_->assign(value);
   // @@protoc_insertion_point(field_set_char:FunDedicatedServerRpcMessage.type)
@@ -356,30 +356,30 @@ inline void FunDedicatedServerRpcMessage::set_type(const char* value) {
 inline void FunDedicatedServerRpcMessage::set_type(const char* value, size_t size) {
   set_has_type();
   if (type_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    type_ = new ::fun::string;
+    type_ = new ::std::string;
   }
   type_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:FunDedicatedServerRpcMessage.type)
 }
-inline ::fun::string* FunDedicatedServerRpcMessage::mutable_type() {
+inline ::std::string* FunDedicatedServerRpcMessage::mutable_type() {
   set_has_type();
   if (type_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    type_ = new ::fun::string;
+    type_ = new ::std::string;
   }
   // @@protoc_insertion_point(field_mutable:FunDedicatedServerRpcMessage.type)
   return type_;
 }
-inline ::fun::string* FunDedicatedServerRpcMessage::release_type() {
+inline ::std::string* FunDedicatedServerRpcMessage::release_type() {
   clear_has_type();
   if (type_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::fun::string* temp = type_;
-    type_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::std::string* temp = type_;
+    type_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void FunDedicatedServerRpcMessage::set_allocated_type(::fun::string* type) {
+inline void FunDedicatedServerRpcMessage::set_allocated_type(::std::string* type) {
   if (type_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete type_;
   }
@@ -388,7 +388,7 @@ inline void FunDedicatedServerRpcMessage::set_allocated_type(::fun::string* type
     type_ = type;
   } else {
     clear_has_type();
-    type_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    type_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:FunDedicatedServerRpcMessage.type)
 }
@@ -421,7 +421,7 @@ inline void FunDedicatedServerRpcMessage::set_is_request(bool value) {
 
 // FunDedicatedServerRpcSystemMessage
 
-// optional fun::string data = 1;
+// optional string data = 1;
 inline bool FunDedicatedServerRpcSystemMessage::has_data() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -437,14 +437,14 @@ inline void FunDedicatedServerRpcSystemMessage::clear_data() {
   }
   clear_has_data();
 }
-inline const ::fun::string& FunDedicatedServerRpcSystemMessage::data() const {
+inline const ::std::string& FunDedicatedServerRpcSystemMessage::data() const {
   // @@protoc_insertion_point(field_get:FunDedicatedServerRpcSystemMessage.data)
   return *data_;
 }
-inline void FunDedicatedServerRpcSystemMessage::set_data(const ::fun::string& value) {
+inline void FunDedicatedServerRpcSystemMessage::set_data(const ::std::string& value) {
   set_has_data();
   if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    data_ = new ::fun::string;
+    data_ = new ::std::string;
   }
   data_->assign(value);
   // @@protoc_insertion_point(field_set:FunDedicatedServerRpcSystemMessage.data)
@@ -452,7 +452,7 @@ inline void FunDedicatedServerRpcSystemMessage::set_data(const ::fun::string& va
 inline void FunDedicatedServerRpcSystemMessage::set_data(const char* value) {
   set_has_data();
   if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    data_ = new ::fun::string;
+    data_ = new ::std::string;
   }
   data_->assign(value);
   // @@protoc_insertion_point(field_set_char:FunDedicatedServerRpcSystemMessage.data)
@@ -460,30 +460,30 @@ inline void FunDedicatedServerRpcSystemMessage::set_data(const char* value) {
 inline void FunDedicatedServerRpcSystemMessage::set_data(const char* value, size_t size) {
   set_has_data();
   if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    data_ = new ::fun::string;
+    data_ = new ::std::string;
   }
   data_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:FunDedicatedServerRpcSystemMessage.data)
 }
-inline ::fun::string* FunDedicatedServerRpcSystemMessage::mutable_data() {
+inline ::std::string* FunDedicatedServerRpcSystemMessage::mutable_data() {
   set_has_data();
   if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    data_ = new ::fun::string;
+    data_ = new ::std::string;
   }
   // @@protoc_insertion_point(field_mutable:FunDedicatedServerRpcSystemMessage.data)
   return data_;
 }
-inline ::fun::string* FunDedicatedServerRpcSystemMessage::release_data() {
+inline ::std::string* FunDedicatedServerRpcSystemMessage::release_data() {
   clear_has_data();
   if (data_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::fun::string* temp = data_;
-    data_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::std::string* temp = data_;
+    data_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void FunDedicatedServerRpcSystemMessage::set_allocated_data(::fun::string* data) {
+inline void FunDedicatedServerRpcSystemMessage::set_allocated_data(::std::string* data) {
   if (data_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete data_;
   }
@@ -492,7 +492,7 @@ inline void FunDedicatedServerRpcSystemMessage::set_allocated_data(::fun::string
     data_ = data;
   } else {
     clear_has_data();
-    data_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    data_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:FunDedicatedServerRpcSystemMessage.data)
 }

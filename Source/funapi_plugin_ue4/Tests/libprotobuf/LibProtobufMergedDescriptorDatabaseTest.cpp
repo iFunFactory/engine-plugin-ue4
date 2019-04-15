@@ -79,12 +79,12 @@ bool FFunapiLibProtobufMergedDescriptorDatabaseTest::RunTest(const FString& Para
   };
 
   auto ExpectContainsType = [](const google::protobuf::FileDescriptorProto& proto,
-                               const fun::string& type_name) ->bool {
+                               const std::string& type_name) ->bool {
     for (int i = 0; i < proto.message_type_size(); i++) {
       if (proto.message_type(i).name() == type_name) return true;
     }
 
-    fun::stringstream ss;
+    std::stringstream ss;
     ss << "\"" << proto.name()
       << "\" did not contain expected type \""
       << type_name << "\".";
@@ -272,7 +272,7 @@ bool FFunapiLibProtobufMergedDescriptorDatabaseTest::RunTest(const FString& Para
   // FindAllExtensionNumbers
   {
     // Message only has extension in database1_
-    fun::vector<int> numbers;
+    std::vector<int> numbers;
     verify(forward_merged_.FindAllExtensionNumbers("Foo", &numbers));
     verify(1 == numbers.size());
     verify(3 == numbers[0]);
@@ -280,7 +280,7 @@ bool FFunapiLibProtobufMergedDescriptorDatabaseTest::RunTest(const FString& Para
 
   {
     // Message only has extension in database2_
-    fun::vector<int> numbers;
+    std::vector<int> numbers;
     verify(forward_merged_.FindAllExtensionNumbers("Bar", &numbers));
     verify(1 == numbers.size());
     verify(5 == numbers[0]);
@@ -288,7 +288,7 @@ bool FFunapiLibProtobufMergedDescriptorDatabaseTest::RunTest(const FString& Para
 
   {
     // Merge results from the two databases.
-    fun::vector<int> numbers;
+    std::vector<int> numbers;
     verify(forward_merged_.FindAllExtensionNumbers("Baz", &numbers));
     verify(2 == numbers.size());
     sort(numbers.begin(), numbers.end());
@@ -297,7 +297,7 @@ bool FFunapiLibProtobufMergedDescriptorDatabaseTest::RunTest(const FString& Para
   }
 
   {
-    fun::vector<int> numbers;
+    std::vector<int> numbers;
     verify(reverse_merged_.FindAllExtensionNumbers("Baz", &numbers));
     verify(2 == numbers.size());
     sort(numbers.begin(), numbers.end());
@@ -307,7 +307,7 @@ bool FFunapiLibProtobufMergedDescriptorDatabaseTest::RunTest(const FString& Para
 
   {
     // Can't find extensions for a non-existent message.
-    fun::vector<int> numbers;
+    std::vector<int> numbers;
     verify(false == reverse_merged_.FindAllExtensionNumbers("Blah", &numbers));
   }
   // // // //
@@ -320,39 +320,39 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiLibProtobufDescriptorUnittest, "LibProto
 bool FFunapiLibProtobufDescriptorUnittest::RunTest(const FString& Parameters)
 {
   // Some helpers to make assembling descriptors faster.
-  auto AddMessage = [](google::protobuf::FileDescriptorProto* file, const fun::string& name) -> google::protobuf::DescriptorProto* {
+  auto AddMessage = [](google::protobuf::FileDescriptorProto* file, const std::string& name) -> google::protobuf::DescriptorProto* {
     google::protobuf::DescriptorProto* result = file->add_message_type();
     result->set_name(name);
     return result;
   };
 
-  auto AddNestedMessage = [](google::protobuf::DescriptorProto* parent, const fun::string& name) -> google::protobuf::DescriptorProto* {
+  auto AddNestedMessage = [](google::protobuf::DescriptorProto* parent, const std::string& name) -> google::protobuf::DescriptorProto* {
     google::protobuf::DescriptorProto* result = parent->add_nested_type();
     result->set_name(name);
     return result;
   };
 
-  auto AddEnum = [](google::protobuf::FileDescriptorProto* file, const fun::string& name) -> google::protobuf::EnumDescriptorProto* {
+  auto AddEnum = [](google::protobuf::FileDescriptorProto* file, const std::string& name) -> google::protobuf::EnumDescriptorProto* {
     google::protobuf::EnumDescriptorProto* result = file->add_enum_type();
     result->set_name(name);
     return result;
   };
 
-  auto AddNestedEnum = [](google::protobuf::DescriptorProto* parent, const fun::string& name) -> google::protobuf::EnumDescriptorProto* {
+  auto AddNestedEnum = [](google::protobuf::DescriptorProto* parent, const std::string& name) -> google::protobuf::EnumDescriptorProto* {
     google::protobuf::EnumDescriptorProto* result = parent->add_enum_type();
     result->set_name(name);
     return result;
   };
 
   auto AddService = [](google::protobuf::FileDescriptorProto* file,
-    const fun::string& name) -> google::protobuf::ServiceDescriptorProto* {
+    const std::string& name) -> google::protobuf::ServiceDescriptorProto* {
     google::protobuf::ServiceDescriptorProto* result = file->add_service();
     result->set_name(name);
     return result;
   };
 
   auto AddField = [](google::protobuf::DescriptorProto* parent,
-    const fun::string& name, int number,
+    const std::string& name, int number,
     google::protobuf::FieldDescriptorProto::Label label,
     google::protobuf::FieldDescriptorProto::Type type) -> google::protobuf::FieldDescriptorProto* {
     google::protobuf::FieldDescriptorProto* result = parent->add_field();
@@ -364,8 +364,8 @@ bool FFunapiLibProtobufDescriptorUnittest::RunTest(const FString& Parameters)
   };
 
   auto AddExtension = [](google::protobuf::FileDescriptorProto* file,
-    const fun::string& extendee,
-    const fun::string& name, int number,
+    const std::string& extendee,
+    const std::string& name, int number,
     google::protobuf::FieldDescriptorProto::Label label,
     google::protobuf::FieldDescriptorProto::Type type) -> google::protobuf::FieldDescriptorProto* {
     google::protobuf::FieldDescriptorProto* result = file->add_extension();
@@ -378,8 +378,8 @@ bool FFunapiLibProtobufDescriptorUnittest::RunTest(const FString& Parameters)
   };
 
   auto AddNestedExtension = [](google::protobuf::DescriptorProto* parent,
-    const fun::string& extendee,
-    const fun::string& name, int number,
+    const std::string& extendee,
+    const std::string& name, int number,
     google::protobuf::FieldDescriptorProto::Label label,
     google::protobuf::FieldDescriptorProto::Type type) -> google::protobuf::FieldDescriptorProto* {
     google::protobuf::FieldDescriptorProto* result = parent->add_extension();
@@ -400,7 +400,7 @@ bool FFunapiLibProtobufDescriptorUnittest::RunTest(const FString& Parameters)
   };
 
   auto AddEnumValue = [](google::protobuf::EnumDescriptorProto* enum_proto,
-    const fun::string& name, int number) -> google::protobuf::EnumValueDescriptorProto* {
+    const std::string& name, int number) -> google::protobuf::EnumValueDescriptorProto* {
     google::protobuf::EnumValueDescriptorProto* result = enum_proto->add_value();
     result->set_name(name);
     result->set_number(number);
@@ -408,9 +408,9 @@ bool FFunapiLibProtobufDescriptorUnittest::RunTest(const FString& Parameters)
   };
 
   auto AddMethod = [](google::protobuf::ServiceDescriptorProto* service,
-    const fun::string& name,
-    const fun::string& input_type,
-    const fun::string& output_type) -> google::protobuf::MethodDescriptorProto* {
+    const std::string& name,
+    const std::string& input_type,
+    const std::string& output_type) -> google::protobuf::MethodDescriptorProto* {
     google::protobuf::MethodDescriptorProto* result = service->add_method();
     result->set_name(name);
     result->set_input_type(input_type);
@@ -420,7 +420,7 @@ bool FFunapiLibProtobufDescriptorUnittest::RunTest(const FString& Parameters)
 
   // Empty enums technically aren't allowed.  We need to insert a dummy value
   // into them.
-  auto AddEmptyEnum = [&AddEnumValue, &AddEnum](google::protobuf::FileDescriptorProto* file, const fun::string& name) {
+  auto AddEmptyEnum = [&AddEnumValue, &AddEnum](google::protobuf::FileDescriptorProto* file, const std::string& name) {
     AddEnumValue(AddEnum(file, name), name + "_DUMMY", 1);
   };
 
@@ -650,7 +650,7 @@ bool FFunapiLibProtobufDescriptorUnittest::RunTest(const FString& Parameters)
       //   enum TestEnum {}
       //
       //   message TestMessage {
-      //     required fun::string      foo = 1;
+      //     required string      foo = 1;
       //     optional TestEnum    bar = 6;
       //     repeated TestForeign baz = 500000000;
       //     optional group       qux = 15 {}
@@ -659,9 +659,9 @@ bool FFunapiLibProtobufDescriptorUnittest::RunTest(const FString& Parameters)
       //   // in "bar.proto"
       //   package corge.grault;
       //   message TestMessage2 {
-      //     required fun::string foo = 1;
-      //     required fun::string bar = 2;
-      //     required fun::string quux = 6;
+      //     required string foo = 1;
+      //     required string bar = 2;
+      //     required string quux = 6;
       //   }
       //
       // We cheat and use TestForeign as the type for qux rather than create
@@ -918,7 +918,7 @@ bool FFunapiLibProtobufDescriptorUnittest::RunTest(const FString& Parameters)
       //   message TestOneof {
       //     optional int32 a = 1;
       //     oneof foo {
-      //       fun::string b = 2;
+      //       string b = 2;
       //       TestOneof c = 3;
       //     }
       //     oneof bar {
@@ -1898,7 +1898,7 @@ baz2_ = enum2_->value(1);
 
     // ExtensionDescriptorTest, FindAllExtensions
     {
-      fun::vector<const google::protobuf::FieldDescriptor*> extensions;
+      std::vector<const google::protobuf::FieldDescriptor*> extensions;
       pool_.FindAllExtensions(foo_, &extensions);
       verify(4 == extensions.size());
       verify(10 == extensions[0]->number());
@@ -2023,24 +2023,24 @@ baz2_ = enum2_->value(1);
 
       typedef google::protobuf::FieldDescriptor FD;  // avoid ugly line wrapping
 
-      verify("double" == fun::string(GetTypeNameForFieldType(FD::TYPE_DOUBLE)));
-      verify("float" == fun::string(GetTypeNameForFieldType(FD::TYPE_FLOAT)));
-      verify("int64" == fun::string(GetTypeNameForFieldType(FD::TYPE_INT64)));
-      verify("uint64" == fun::string(GetTypeNameForFieldType(FD::TYPE_UINT64)));
-      verify("int32" == fun::string(GetTypeNameForFieldType(FD::TYPE_INT32)));
-      verify("fixed64" == fun::string(GetTypeNameForFieldType(FD::TYPE_FIXED64)));
-      verify("fixed32" == fun::string(GetTypeNameForFieldType(FD::TYPE_FIXED32)));
-      verify("bool" == fun::string(GetTypeNameForFieldType(FD::TYPE_BOOL)));
-      verify("fun::string" == fun::string(GetTypeNameForFieldType(FD::TYPE_STRING)));
-      verify("group" == fun::string(GetTypeNameForFieldType(FD::TYPE_GROUP)));
-      verify("message" == fun::string(GetTypeNameForFieldType(FD::TYPE_MESSAGE)));
-      verify("bytes" == fun::string(GetTypeNameForFieldType(FD::TYPE_BYTES)));
-      verify("uint32" == fun::string(GetTypeNameForFieldType(FD::TYPE_UINT32)));
-      verify("enum" == fun::string(GetTypeNameForFieldType(FD::TYPE_ENUM)));
-      verify("sfixed32" == fun::string(GetTypeNameForFieldType(FD::TYPE_SFIXED32)));
-      verify("sfixed64" == fun::string(GetTypeNameForFieldType(FD::TYPE_SFIXED64)));
-      verify("sint32" == fun::string(GetTypeNameForFieldType(FD::TYPE_SINT32)));
-      verify("sint64" == fun::string(GetTypeNameForFieldType(FD::TYPE_SINT64)));
+      verify("double" == std::string(GetTypeNameForFieldType(FD::TYPE_DOUBLE)));
+      verify("float" == std::string(GetTypeNameForFieldType(FD::TYPE_FLOAT)));
+      verify("int64" == std::string(GetTypeNameForFieldType(FD::TYPE_INT64)));
+      verify("uint64" == std::string(GetTypeNameForFieldType(FD::TYPE_UINT64)));
+      verify("int32" == std::string(GetTypeNameForFieldType(FD::TYPE_INT32)));
+      verify("fixed64" == std::string(GetTypeNameForFieldType(FD::TYPE_FIXED64)));
+      verify("fixed32" == std::string(GetTypeNameForFieldType(FD::TYPE_FIXED32)));
+      verify("bool" == std::string(GetTypeNameForFieldType(FD::TYPE_BOOL)));
+      verify("string" == std::string(GetTypeNameForFieldType(FD::TYPE_STRING)));
+      verify("group" == std::string(GetTypeNameForFieldType(FD::TYPE_GROUP)));
+      verify("message" == std::string(GetTypeNameForFieldType(FD::TYPE_MESSAGE)));
+      verify("bytes" == std::string(GetTypeNameForFieldType(FD::TYPE_BYTES)));
+      verify("uint32" == std::string(GetTypeNameForFieldType(FD::TYPE_UINT32)));
+      verify("enum" == std::string(GetTypeNameForFieldType(FD::TYPE_ENUM)));
+      verify("sfixed32" == std::string(GetTypeNameForFieldType(FD::TYPE_SFIXED32)));
+      verify("sfixed64" == std::string(GetTypeNameForFieldType(FD::TYPE_SFIXED64)));
+      verify("sint32" == std::string(GetTypeNameForFieldType(FD::TYPE_SINT32)));
+      verify("sint64" == std::string(GetTypeNameForFieldType(FD::TYPE_SINT64)));
     }
 
     // MiscTest, StaticTypeNames
@@ -2049,24 +2049,24 @@ baz2_ = enum2_->value(1);
 
       typedef google::protobuf::FieldDescriptor FD;  // avoid ugly line wrapping
 
-      verify("double" == fun::string(FD::TypeName(FD::TYPE_DOUBLE)));
-      verify("float" == fun::string(FD::TypeName(FD::TYPE_FLOAT)));
-      verify("int64" == fun::string(FD::TypeName(FD::TYPE_INT64)));
-      verify("uint64" == fun::string(FD::TypeName(FD::TYPE_UINT64)));
-      verify("int32" == fun::string(FD::TypeName(FD::TYPE_INT32)));
-      verify("fixed64" == fun::string(FD::TypeName(FD::TYPE_FIXED64)));
-      verify("fixed32" == fun::string(FD::TypeName(FD::TYPE_FIXED32)));
-      verify("bool" == fun::string(FD::TypeName(FD::TYPE_BOOL)));
-      verify("fun::string" == fun::string(FD::TypeName(FD::TYPE_STRING)));
-      verify("group" == fun::string(FD::TypeName(FD::TYPE_GROUP)));
-      verify("message" == fun::string(FD::TypeName(FD::TYPE_MESSAGE)));
-      verify("bytes" == fun::string(FD::TypeName(FD::TYPE_BYTES)));
-      verify("uint32" == fun::string(FD::TypeName(FD::TYPE_UINT32)));
-      verify("enum" == fun::string(FD::TypeName(FD::TYPE_ENUM)));
-      verify("sfixed32" == fun::string(FD::TypeName(FD::TYPE_SFIXED32)));
-      verify("sfixed64" == fun::string(FD::TypeName(FD::TYPE_SFIXED64)));
-      verify("sint32" == fun::string(FD::TypeName(FD::TYPE_SINT32)));
-      verify("sint64" == fun::string(FD::TypeName(FD::TYPE_SINT64)));
+      verify("double" == std::string(FD::TypeName(FD::TYPE_DOUBLE)));
+      verify("float" == std::string(FD::TypeName(FD::TYPE_FLOAT)));
+      verify("int64" == std::string(FD::TypeName(FD::TYPE_INT64)));
+      verify("uint64" == std::string(FD::TypeName(FD::TYPE_UINT64)));
+      verify("int32" == std::string(FD::TypeName(FD::TYPE_INT32)));
+      verify("fixed64" == std::string(FD::TypeName(FD::TYPE_FIXED64)));
+      verify("fixed32" == std::string(FD::TypeName(FD::TYPE_FIXED32)));
+      verify("bool" == std::string(FD::TypeName(FD::TYPE_BOOL)));
+      verify("string" == std::string(FD::TypeName(FD::TYPE_STRING)));
+      verify("group" == std::string(FD::TypeName(FD::TYPE_GROUP)));
+      verify("message" == std::string(FD::TypeName(FD::TYPE_MESSAGE)));
+      verify("bytes" == std::string(FD::TypeName(FD::TYPE_BYTES)));
+      verify("uint32" == std::string(FD::TypeName(FD::TYPE_UINT32)));
+      verify("enum" == std::string(FD::TypeName(FD::TYPE_ENUM)));
+      verify("sfixed32" == std::string(FD::TypeName(FD::TYPE_SFIXED32)));
+      verify("sfixed64" == std::string(FD::TypeName(FD::TYPE_SFIXED64)));
+      verify("sint32" == std::string(FD::TypeName(FD::TYPE_SINT32)));
+      verify("sint64" == std::string(FD::TypeName(FD::TYPE_SINT64)));
     }
 
     // MiscTest, CppTypes
@@ -2101,24 +2101,24 @@ baz2_ = enum2_->value(1);
 
       typedef google::protobuf::FieldDescriptor FD;  // avoid ugly line wrapping
 
-      verify("double" == fun::string(GetCppTypeNameForFieldType(FD::TYPE_DOUBLE)));
-      verify("float" == fun::string(GetCppTypeNameForFieldType(FD::TYPE_FLOAT)));
-      verify("int64" == fun::string(GetCppTypeNameForFieldType(FD::TYPE_INT64)));
-      verify("uint64" == fun::string(GetCppTypeNameForFieldType(FD::TYPE_UINT64)));
-      verify("int32" == fun::string(GetCppTypeNameForFieldType(FD::TYPE_INT32)));
-      verify("uint64" == fun::string(GetCppTypeNameForFieldType(FD::TYPE_FIXED64)));
-      verify("uint32" == fun::string(GetCppTypeNameForFieldType(FD::TYPE_FIXED32)));
-      verify("bool" == fun::string(GetCppTypeNameForFieldType(FD::TYPE_BOOL)));
-      verify("fun::string" == fun::string(GetCppTypeNameForFieldType(FD::TYPE_STRING)));
-      verify("message" == fun::string(GetCppTypeNameForFieldType(FD::TYPE_GROUP)));
-      verify("message" == fun::string(GetCppTypeNameForFieldType(FD::TYPE_MESSAGE)));
-      verify("fun::string" == fun::string(GetCppTypeNameForFieldType(FD::TYPE_BYTES)));
-      verify("uint32" == fun::string(GetCppTypeNameForFieldType(FD::TYPE_UINT32)));
-      verify("enum" == fun::string(GetCppTypeNameForFieldType(FD::TYPE_ENUM)));
-      verify("int32" == fun::string(GetCppTypeNameForFieldType(FD::TYPE_SFIXED32)));
-      verify("int64" == fun::string(GetCppTypeNameForFieldType(FD::TYPE_SFIXED64)));
-      verify("int32" == fun::string(GetCppTypeNameForFieldType(FD::TYPE_SINT32)));
-      verify("int64" == fun::string(GetCppTypeNameForFieldType(FD::TYPE_SINT64)));
+      verify("double" == std::string(GetCppTypeNameForFieldType(FD::TYPE_DOUBLE)));
+      verify("float" == std::string(GetCppTypeNameForFieldType(FD::TYPE_FLOAT)));
+      verify("int64" == std::string(GetCppTypeNameForFieldType(FD::TYPE_INT64)));
+      verify("uint64" == std::string(GetCppTypeNameForFieldType(FD::TYPE_UINT64)));
+      verify("int32" == std::string(GetCppTypeNameForFieldType(FD::TYPE_INT32)));
+      verify("uint64" == std::string(GetCppTypeNameForFieldType(FD::TYPE_FIXED64)));
+      verify("uint32" == std::string(GetCppTypeNameForFieldType(FD::TYPE_FIXED32)));
+      verify("bool" == std::string(GetCppTypeNameForFieldType(FD::TYPE_BOOL)));
+      verify("string" == std::string(GetCppTypeNameForFieldType(FD::TYPE_STRING)));
+      verify("message" == std::string(GetCppTypeNameForFieldType(FD::TYPE_GROUP)));
+      verify("message" == std::string(GetCppTypeNameForFieldType(FD::TYPE_MESSAGE)));
+      verify("string" == std::string(GetCppTypeNameForFieldType(FD::TYPE_BYTES)));
+      verify("uint32" == std::string(GetCppTypeNameForFieldType(FD::TYPE_UINT32)));
+      verify("enum" == std::string(GetCppTypeNameForFieldType(FD::TYPE_ENUM)));
+      verify("int32" == std::string(GetCppTypeNameForFieldType(FD::TYPE_SFIXED32)));
+      verify("int64" == std::string(GetCppTypeNameForFieldType(FD::TYPE_SFIXED64)));
+      verify("int32" == std::string(GetCppTypeNameForFieldType(FD::TYPE_SINT32)));
+      verify("int64" == std::string(GetCppTypeNameForFieldType(FD::TYPE_SINT64)));
     }
 
     // MiscTest, StaticCppTypeNames
@@ -2127,16 +2127,16 @@ baz2_ = enum2_->value(1);
 
       typedef google::protobuf::FieldDescriptor FD;  // avoid ugly line wrapping
 
-      verify("int32" == fun::string(FD::CppTypeName(FD::CPPTYPE_INT32)));
-      verify("int64" == fun::string(FD::CppTypeName(FD::CPPTYPE_INT64)));
-      verify("uint32" == fun::string(FD::CppTypeName(FD::CPPTYPE_UINT32)));
-      verify("uint64" == fun::string(FD::CppTypeName(FD::CPPTYPE_UINT64)));
-      verify("double" == fun::string(FD::CppTypeName(FD::CPPTYPE_DOUBLE)));
-      verify("float" == fun::string(FD::CppTypeName(FD::CPPTYPE_FLOAT)));
-      verify("bool" == fun::string(FD::CppTypeName(FD::CPPTYPE_BOOL)));
-      verify("enum" == fun::string(FD::CppTypeName(FD::CPPTYPE_ENUM)));
-      verify("fun::string" == fun::string(FD::CppTypeName(FD::CPPTYPE_STRING)));
-      verify("message" == fun::string(FD::CppTypeName(FD::CPPTYPE_MESSAGE)));
+      verify("int32" == std::string(FD::CppTypeName(FD::CPPTYPE_INT32)));
+      verify("int64" == std::string(FD::CppTypeName(FD::CPPTYPE_INT64)));
+      verify("uint32" == std::string(FD::CppTypeName(FD::CPPTYPE_UINT32)));
+      verify("uint64" == std::string(FD::CppTypeName(FD::CPPTYPE_UINT64)));
+      verify("double" == std::string(FD::CppTypeName(FD::CPPTYPE_DOUBLE)));
+      verify("float" == std::string(FD::CppTypeName(FD::CPPTYPE_FLOAT)));
+      verify("bool" == std::string(FD::CppTypeName(FD::CPPTYPE_BOOL)));
+      verify("enum" == std::string(FD::CppTypeName(FD::CPPTYPE_ENUM)));
+      verify("string" == std::string(FD::CppTypeName(FD::CPPTYPE_STRING)));
+      verify("message" == std::string(FD::CppTypeName(FD::CPPTYPE_MESSAGE)));
     }
 
     // MiscTest, MessageType
@@ -2221,7 +2221,7 @@ baz2_ = enum2_->value(1);
         ->set_default_value("10e100");
       AddField(message_proto, "bool", 7, label, FD::TYPE_BOOL)
         ->set_default_value("true");
-      AddField(message_proto, "fun::string", 8, label, FD::TYPE_STRING)
+      AddField(message_proto, "string", 8, label, FD::TYPE_STRING)
         ->set_default_value("hello");
       AddField(message_proto, "data", 9, label, FD::TYPE_BYTES)
         ->set_default_value("\\001\\002\\003");
@@ -2236,7 +2236,7 @@ baz2_ = enum2_->value(1);
       AddField(message_proto, "empty_string", 11, label, FD::TYPE_STRING)
         ->set_default_value("");
 
-      // Add a second fun::set of fields with implicit defalut values.
+      // Add a second set of fields with implicit defalut values.
       AddField(message_proto, "implicit_int32", 21, label, FD::TYPE_INT32);
       AddField(message_proto, "implicit_int64", 22, label, FD::TYPE_INT64);
       AddField(message_proto, "implicit_uint32", 23, label, FD::TYPE_UINT32);
@@ -2344,10 +2344,10 @@ baz2_ = enum2_->value(1);
       const google::protobuf::FieldDescriptor* foo = message->field(0);
       const google::protobuf::FieldDescriptor* bar = message->field(1);
 
-      // "foo" had no options fun::set, so it should return the default options.
+      // "foo" had no options set, so it should return the default options.
       verify(&google::protobuf::FieldOptions::default_instance() == &foo->options());
 
-      // "bar" had options set
+      // "bar" had options set.
       // EXPECT_NE(&google::protobuf::FieldOptions::default_instance(), options);
       verify(&google::protobuf::FieldOptions::default_instance() != options);
       verify(bar->options().has_ctype());
@@ -2611,9 +2611,9 @@ baz2_ = enum2_->value(1);
         const google::protobuf::FileDescriptor* file = BuildFile(option_proto);
         verify(file != NULL);
 
-        // Verify that no extension options were fun::set, but they were left as
+        // Verify that no extension options were set, but they were left as
         // uninterpreted_options.
-        fun::vector<const google::protobuf::FieldDescriptor*> fields;
+        std::vector<const google::protobuf::FieldDescriptor*> fields;
         file->options().GetReflection()->ListFields(file->options(), &fields);
         verify(2 == fields.size());
         verify(file->options().has_optimize_for());
@@ -2715,7 +2715,7 @@ baz2_ = enum2_->value(1);
       message->options().GetExtension(protobuf_unittest::message_opt1));
     verify(GOOGLE_LONGLONG(8765432109) ==
       field->options().GetExtension(protobuf_unittest::field_opt1));
-    verify(42 ==  // Check that we get the default for an option we don't set
+    verify(42 ==  // Check that we get the default for an option we don't set.
       field->options().GetExtension(protobuf_unittest::field_opt2));
     verify(-789 ==
       enm->options().GetExtension(protobuf_unittest::enum_opt1));
@@ -2774,7 +2774,7 @@ baz2_ = enum2_->value(1);
     verify("Hello, \"World\"" ==
       options->GetExtension(protobuf_unittest::string_opt));
 
-    verify(fun::string("Hello\0World", 11) ==
+    verify(std::string("Hello\0World", 11) ==
       options->GetExtension(protobuf_unittest::bytes_opt));
 
     verify(protobuf_unittest::DummyMessageContainingEnum::TEST_OPTION_ENUM_TYPE2 ==
@@ -2889,7 +2889,7 @@ baz2_ = enum2_->value(1);
   {
     // This tests a bug which previously existed in custom options parsing.  The
     // bug occurred when you defined a custom option with message type and then
-    // fun::set three fields of that option on a single definition (see the example
+    // set three fields of that option on a single definition (see the example
     // below).  The bug is a bit hard to explain, so check the change history if
     // you want to know more.
     google::protobuf::DescriptorPool pool;
@@ -3205,13 +3205,13 @@ baz2_ = enum2_->value(1);
     MockErrorCollector() {}
     ~MockErrorCollector() {}
 
-    fun::string text_;
-    fun::string warning_text_;
+    std::string text_;
+    std::string warning_text_;
 
     // implements ErrorCollector ---------------------------------------
-    void AddError(const fun::string& filename,
-      const fun::string& element_name, const google::protobuf::Message* descriptor,
-      ErrorLocation location, const fun::string& message) {
+    void AddError(const std::string& filename,
+      const std::string& element_name, const google::protobuf::Message* descriptor,
+      ErrorLocation location, const std::string& message) {
       const char* location_name = NULL;
       switch (location) {
         case NAME: location_name = "NAME"; break;
@@ -3232,9 +3232,9 @@ baz2_ = enum2_->value(1);
     }
 
     // implements ErrorCollector ---------------------------------------
-    void AddWarning(const fun::string& filename, const fun::string& element_name,
+    void AddWarning(const std::string& filename, const std::string& element_name,
       const google::protobuf::Message* descriptor, ErrorLocation location,
-      const fun::string& message) {
+      const std::string& message) {
       const char* location_name = NULL;
       switch (location) {
       case NAME: location_name = "NAME"; break;
@@ -3262,7 +3262,7 @@ baz2_ = enum2_->value(1);
 
     // Parse file_text as a FileDescriptorProto in text format and add it
     // to the DescriptorPool.  Expect no errors.
-    auto BuildFile = [&pool_](const fun::string& file_text)
+    auto BuildFile = [&pool_](const std::string& file_text)
     {
       google::protobuf::FileDescriptorProto file_proto;
       verify(google::protobuf::TextFormat::ParseFromString(file_text, &file_proto));
@@ -3272,8 +3272,8 @@ baz2_ = enum2_->value(1);
     // Parse file_text as a FileDescriptorProto in text format and add it
     // to the DescriptorPool.  Expect errors to be produced which match the
     // given error text.
-    auto BuildFileWithErrors = [&pool_](const fun::string& file_text,
-      const fun::string& expected_errors) {
+    auto BuildFileWithErrors = [&pool_](const std::string& file_text,
+      const std::string& expected_errors) {
       google::protobuf::FileDescriptorProto file_proto;
       verify(google::protobuf::TextFormat::ParseFromString(file_text, &file_proto));
 
@@ -3285,8 +3285,8 @@ baz2_ = enum2_->value(1);
     // Parse file_text as a FileDescriptorProto in text format and add it
     // to the DescriptorPool.  Expect errors to be produced which match the
     // given warning text.
-    auto BuildFileWithWarnings = [&pool_](const fun::string& file_text,
-      const fun::string& expected_warnings) {
+    auto BuildFileWithWarnings = [&pool_](const std::string& file_text,
+      const std::string& expected_warnings) {
       google::protobuf::FileDescriptorProto file_proto;
       verify(google::protobuf::TextFormat::ParseFromString(file_text, &file_proto));
 
@@ -3698,7 +3698,7 @@ baz2_ = enum2_->value(1);
         "              type_name: \"Foo\" }"
         "}",
 
-        "foo.proto: Foo.foo: EXTENDEE: FieldDescriptorProto.extendee not fun::set for "
+        "foo.proto: Foo.foo: EXTENDEE: FieldDescriptorProto.extendee not set for "
         "extension field.\n");
     }
 
@@ -3719,7 +3719,7 @@ baz2_ = enum2_->value(1);
         "          type_name: \"Foo\" extendee: \"Bar\" }"
         "}",
 
-        "foo.proto: Foo.foo: EXTENDEE: FieldDescriptorProto.extendee fun::set for "
+        "foo.proto: Foo.foo: EXTENDEE: FieldDescriptorProto.extendee set for "
         "non-extension field.\n");
     }
 
@@ -4702,7 +4702,7 @@ baz2_ = enum2_->value(1);
         "}\n",
 
         "foo.proto: TestMessage.foo: OPTION_NAME: Option \"ctype\" was "
-        "already set\n");
+        "already set.\n");
     }
 
     // ValidationErrorTest, InvalidOptionName
@@ -5151,8 +5151,8 @@ baz2_ = enum2_->value(1);
         "                                        is_extension: true } "
         "                                 identifier_value: \"QUUX\" } }",
 
-        "foo.proto: foo.proto: OPTION_VALUE: Value must be quoted fun::string for "
-        "fun::string option \"foo\".\n");
+        "foo.proto: foo.proto: OPTION_VALUE: Value must be quoted string for "
+        "string option \"foo\".\n");
     }
 
     // ValidationErrorTest, DuplicateExtensionFieldNumber
@@ -5181,7 +5181,7 @@ baz2_ = enum2_->value(1);
     // Helper function for tests that check for aggregate value parsing
     // errors.  The "value" argument is embedded inside the
     // "uninterpreted_option" portion of the result.
-    auto EmbedAggregateValue = [](const char* value) -> fun::string  {
+    auto EmbedAggregateValue = [](const char* value) -> std::string  {
       return google::protobuf::strings::Substitute(
         "name: \"foo.proto\" "
         "dependency: \"google/protobuf/descriptor.proto\" "
@@ -5205,8 +5205,8 @@ baz2_ = enum2_->value(1);
       BuildFileWithErrors(
         EmbedAggregateValue("string_value: \"\""),
         "foo.proto: foo.proto: OPTION_VALUE: Option \"foo\" is a message. "
-        "To fun::set the entire message, use syntax like "
-        "\"foo = { <proto text format> }\". To fun::set fields within it, use "
+        "To set the entire message, use syntax like "
+        "\"foo = { <proto text format> }\". To set fields within it, use "
         "syntax like \"foo.foo = value\".\n");
     }
 
@@ -5293,7 +5293,7 @@ baz2_ = enum2_->value(1);
         "service { name: \"Foo\" }",
 
         "foo.proto: Foo: NAME: Files with optimize_for = LITE_RUNTIME cannot "
-        "define services unless you fun::set both options cc_generic_services and "
+        "define services unless you set both options cc_generic_services and "
         "java_generic_sevices to false.\n");
 
       BuildFile(
@@ -5374,7 +5374,7 @@ baz2_ = enum2_->value(1);
         "message_type { name: \"Foo\" } ",
         &file_proto));
 
-      fun::vector<fun::string> errors;
+      std::vector<std::string> errors;
 
       {
         google::protobuf::ScopedMemoryLog log;
@@ -5402,7 +5402,7 @@ baz2_ = enum2_->value(1);
         "}",
         "foo.proto: Bar: NUMBER: "
         "\"ENUM_B\" uses the same enum value as \"ENUM_A\". "
-        "If this is intended, fun::set 'option allow_alias = true;' to the enum "
+        "If this is intended, set 'option allow_alias = true;' to the enum "
         "definition.\n");
     }
 
@@ -5518,7 +5518,7 @@ baz2_ = enum2_->value(1);
       ~ErrorDescriptorDatabase() {}
 
       // implements DescriptorDatabase ---------------------------------
-      bool FindFileByName(const fun::string& filename,
+      bool FindFileByName(const std::string& filename,
         google::protobuf::FileDescriptorProto* output) {
         // error.proto and error2.proto cyclically import each other.
         if (filename == "error.proto") {
@@ -5537,11 +5537,11 @@ baz2_ = enum2_->value(1);
           return false;
         }
       }
-      bool FindFileContainingSymbol(const fun::string& symbol_name,
+      bool FindFileContainingSymbol(const std::string& symbol_name,
         google::protobuf::FileDescriptorProto* output) {
         return false;
       }
-      bool FindFileContainingExtension(const fun::string& containing_type,
+      bool FindFileContainingExtension(const std::string& containing_type,
         int field_number,
         google::protobuf::FileDescriptorProto* output) {
         return false;
@@ -5567,17 +5567,17 @@ baz2_ = enum2_->value(1);
       }
 
       // implements DescriptorDatabase ---------------------------------
-      bool FindFileByName(const fun::string& filename,
+      bool FindFileByName(const std::string& filename,
         google::protobuf::FileDescriptorProto* output) {
         ++call_count_;
         return wrapped_db_->FindFileByName(filename, output);
       }
-      bool FindFileContainingSymbol(const fun::string& symbol_name,
+      bool FindFileContainingSymbol(const std::string& symbol_name,
         google::protobuf::FileDescriptorProto* output) {
         ++call_count_;
         return wrapped_db_->FindFileContainingSymbol(symbol_name, output);
       }
-      bool FindFileContainingExtension(const fun::string& containing_type,
+      bool FindFileContainingExtension(const std::string& containing_type,
         int field_number,
         google::protobuf::FileDescriptorProto* output) {
         ++call_count_;
@@ -5598,15 +5598,15 @@ baz2_ = enum2_->value(1);
       google::protobuf::DescriptorDatabase* wrapped_db_;
 
       // implements DescriptorDatabase ---------------------------------
-      bool FindFileByName(const fun::string& filename,
+      bool FindFileByName(const std::string& filename,
         google::protobuf::FileDescriptorProto* output) {
         return wrapped_db_->FindFileByName(filename, output);
       }
-      bool FindFileContainingSymbol(const fun::string& symbol_name,
+      bool FindFileContainingSymbol(const std::string& symbol_name,
         google::protobuf::FileDescriptorProto* output) {
         return FindFileByName("foo.proto", output);
       }
-      bool FindFileContainingExtension(const fun::string& containing_type,
+      bool FindFileContainingExtension(const std::string& containing_type,
         int field_number,
         google::protobuf::FileDescriptorProto* output) {
         return FindFileByName("foo.proto", output);
@@ -5716,7 +5716,7 @@ baz2_ = enum2_->value(1);
       for (int i = 0; i < 2; ++i) {
         // Repeat the lookup twice, to check that we get consistent
         // results despite the fallback database lookup mutating the pool.
-        fun::vector<const google::protobuf::FieldDescriptor*> extensions;
+        std::vector<const google::protobuf::FieldDescriptor*> extensions;
         pool.FindAllExtensions(foo, &extensions);
         verify(1 == extensions.size());
         verify(5 == extensions[0]->number());
@@ -5728,7 +5728,7 @@ baz2_ = enum2_->value(1);
       ErrorDescriptorDatabase error_database;
       google::protobuf::DescriptorPool pool(&error_database);
 
-      fun::vector<fun::string> errors;
+      std::vector<std::string> errors;
 
       {
         google::protobuf::ScopedMemoryLog log;
@@ -5897,7 +5897,7 @@ baz2_ = enum2_->value(1);
       ~ExponentialErrorDatabase() {}
 
       // implements DescriptorDatabase ---------------------------------
-      bool FindFileByName(const fun::string& filename,
+      bool FindFileByName(const std::string& filename,
         google::protobuf::FileDescriptorProto* output) {
         int file_num = -1;
         FullMatch(filename, "file", ".proto", &file_num);
@@ -5908,7 +5908,7 @@ baz2_ = enum2_->value(1);
           return false;
         }
       }
-      bool FindFileContainingSymbol(const fun::string& symbol_name,
+      bool FindFileContainingSymbol(const std::string& symbol_name,
         google::protobuf::FileDescriptorProto* output) {
         int file_num = -1;
         FullMatch(symbol_name, "Message", "", &file_num);
@@ -5919,16 +5919,16 @@ baz2_ = enum2_->value(1);
           return false;
         }
       }
-      bool FindFileContainingExtension(const fun::string& containing_type,
+      bool FindFileContainingExtension(const std::string& containing_type,
         int field_number,
         google::protobuf::FileDescriptorProto* output) {
         return false;
       }
 
     private:
-      void FullMatch(const fun::string& name,
-        const fun::string& begin_with,
-        const fun::string& end_with,
+      void FullMatch(const std::string& name,
+        const std::string& begin_with,
+        const std::string& end_with,
         int* file_num) {
         int begin_size = begin_with.size();
         int end_size = end_with.size();

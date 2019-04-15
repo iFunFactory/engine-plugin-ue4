@@ -33,22 +33,22 @@ class FunapiHttpImpl : public std::enable_shared_from_this<FunapiHttpImpl> {
   typedef FunapiHttp::HeaderFields HeaderFields;
 
   FunapiHttpImpl();
-  FunapiHttpImpl(const fun::string &path);
+  FunapiHttpImpl(const std::string &path);
   virtual ~FunapiHttpImpl();
 
-  void PostRequest(const fun::string &url,
+  void PostRequest(const std::string &url,
                    const HeaderFields &header,
-                   const fun::vector<uint8_t> &body,
+                   const std::vector<uint8_t> &body,
                    const ErrorHandler &error_handler,
                    const CompletionHandler &completion_handler);
 
-  void GetRequest(const fun::string &url,
+  void GetRequest(const std::string &url,
                   const HeaderFields &header,
                   const ErrorHandler &error_handler,
                   const CompletionHandler &completion_handler);
 
-  void DownloadRequest(const fun::string &url,
-                       const fun::string &path,
+  void DownloadRequest(const std::string &url,
+                       const std::string &path,
                        const HeaderFields &header,
                        const ErrorHandler &error_handler,
                        const ProgressHandler &progress_handler,
@@ -64,13 +64,13 @@ class FunapiHttpImpl : public std::enable_shared_from_this<FunapiHttpImpl> {
 
   // https://curl.haxx.se/docs/caextract.html
   // https://curl.haxx.se/ca/cacert.pem
-  fun::string cert_file_path_;
+  std::string cert_file_path_;
 
-  const fun::string UrlEncode(const fun::string& url);
+  const std::string UrlEncode(const std::string& url);
 
   static size_t OnResponse(void *data, size_t size, size_t count, void *cb);
-  void OnResponseHeader(void *data, const size_t len, fun::vector<fun::string> &headers);
-  void OnResponseBody(void *data, const size_t len, fun::vector<uint8_t> &receiving);
+  void OnResponseHeader(void *data, const size_t len, std::vector<std::string> &headers);
+  void OnResponseBody(void *data, const size_t len, std::vector<uint8_t> &receiving);
   void OnResponseFile(void *data, const size_t len, FILE *fp);
 
   // Maximum time allowed for DNS lookup and TCP connect and receive.
@@ -83,7 +83,7 @@ FunapiHttpImpl::FunapiHttpImpl() : cert_file_path_("") {
 }
 
 
-FunapiHttpImpl::FunapiHttpImpl(const fun::string &path) : cert_file_path_(path) {
+FunapiHttpImpl::FunapiHttpImpl(const std::string &path) : cert_file_path_(path) {
   Init();
 }
 
@@ -112,14 +112,14 @@ void FunapiHttpImpl::Cleanup() {
 //
 // This code is written with reference to https://stackoverflow.com/a/17708801.
 //
-const fun::string FunapiHttpImpl::UrlEncode(const fun::string& url)
+const std::string FunapiHttpImpl::UrlEncode(const std::string& url)
 {
-    fun::ostringstream escaped;
+    std::ostringstream escaped;
     escaped.fill('0');
     escaped << std::hex;
 
-    for (fun::string::const_iterator i = url.begin(), n = url.end(); i != n; ++i) {
-        fun::string::value_type c = (*i);
+    for (std::string::const_iterator i = url.begin(), n = url.end(); i != n; ++i) {
+        std::string::value_type c = (*i);
 
         // Keep alphanumeric and other accepted characters intact
         if (isalnum(c) || c == ':' || c == '/' || c == '.' || c == '-' || c == '_' || c == '~') {
@@ -137,8 +137,8 @@ const fun::string FunapiHttpImpl::UrlEncode(const fun::string& url)
 }
 
 
-void FunapiHttpImpl::DownloadRequest(const fun::string &url,
-                                     const fun::string &path,
+void FunapiHttpImpl::DownloadRequest(const std::string &url,
+                                     const std::string &path,
                                      const HeaderFields &header,
                                      const ErrorHandler &error_handler,
                                      const ProgressHandler &progress_handler,
@@ -151,8 +151,8 @@ void FunapiHttpImpl::DownloadRequest(const fun::string &url,
         return;
     }
 
-    fun::vector<fun::string> header_receiving;
-    fun::vector<uint8_t> body_receiving;
+    std::vector<std::string> header_receiving;
+    std::vector<uint8_t> body_receiving;
 
     FILE *fp = fopen(path.c_str(), "wb");
     if (fp == NULL)
@@ -177,7 +177,7 @@ void FunapiHttpImpl::DownloadRequest(const fun::string &url,
     struct curl_slist *chunk = NULL;
     for (auto it : header)
     {
-        fun::stringstream ss;
+        std::stringstream ss;
         ss << it.first << ": " << it.second;
         chunk = curl_slist_append(chunk, ss.str().c_str());
     }
@@ -187,7 +187,7 @@ void FunapiHttpImpl::DownloadRequest(const fun::string &url,
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
     }
 
-    const fun::string& encoded_url = UrlEncode(url);
+    const std::string& encoded_url = UrlEncode(url);
     curl_easy_setopt(curl, CURLOPT_URL, encoded_url.c_str());
 
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout_seconds_);
@@ -195,7 +195,7 @@ void FunapiHttpImpl::DownloadRequest(const fun::string &url,
     #ifdef DEBUG_LOG
     /* Switch on full protocol/debug output while testing */
     curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-    /* disable progress meter, fun::set to 0L to enable and disable debug output */
+    /* disable progress meter, set to 0L to enable and disable debug output */
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
     #endif // DEBUG_LOG
 
@@ -237,12 +237,12 @@ void FunapiHttpImpl::DownloadRequest(const fun::string &url,
 }
 
 
-void FunapiHttpImpl::GetRequest(const fun::string &url,
+void FunapiHttpImpl::GetRequest(const std::string &url,
                                             const HeaderFields &header,
                                             const ErrorHandler &error_handler,
                                             const CompletionHandler &completion_handler) {
-  fun::vector<fun::string> header_receiving;
-  fun::vector<uint8_t> body_receiving;
+  std::vector<std::string> header_receiving;
+  std::vector<uint8_t> body_receiving;
 
   ResponseCallback receive_header_cb = [this, &header_receiving](void* data, const size_t len){
     OnResponseHeader(data, len, header_receiving);
@@ -254,7 +254,7 @@ void FunapiHttpImpl::GetRequest(const fun::string &url,
   CURL *curl = curl_easy_init();
   struct curl_slist *chunk = NULL;
   for (auto it : header) {
-    fun::stringstream ss;
+    std::stringstream ss;
     ss << it.first << ": " << it.second;
     chunk = curl_slist_append(chunk, ss.str().c_str());
   }
@@ -295,13 +295,13 @@ void FunapiHttpImpl::GetRequest(const fun::string &url,
 }
 
 
-void FunapiHttpImpl::PostRequest(const fun::string &url,
+void FunapiHttpImpl::PostRequest(const std::string &url,
                                  const HeaderFields &header,
-                                 const fun::vector<uint8_t> &body,
+                                 const std::vector<uint8_t> &body,
                                  const ErrorHandler &error_handler,
                                  const CompletionHandler &completion_handler) {
-  fun::vector<fun::string> header_receiving;
-  fun::vector<uint8_t> body_receiving;
+  std::vector<std::string> header_receiving;
+  std::vector<uint8_t> body_receiving;
 
   ResponseCallback receive_header_cb = [this, &header_receiving](void* data, const size_t len){
     OnResponseHeader(data, len, header_receiving);
@@ -310,10 +310,10 @@ void FunapiHttpImpl::PostRequest(const fun::string &url,
     OnResponseBody(data, len, body_receiving);
   };
 
-  // fun::set http header
+  // set http header
   struct curl_slist *chunk = NULL;
   for (auto it : header) {
-    fun::stringstream ss;
+    std::stringstream ss;
     ss << it.first << ": " << it.second;
 
     // DebugUtils::Log("ss.str() = %s", ss.str().c_str());
@@ -363,7 +363,7 @@ void FunapiHttpImpl::PostRequest(const fun::string &url,
       completion_handler(header_receiving, body_receiving);
     }
     else {
-      fun::stringstream ss;
+      std::stringstream ss;
       ss << "http response code " << response_code;
       error_handler(static_cast<int>(response_code), ss.str());
     }
@@ -375,12 +375,12 @@ void FunapiHttpImpl::PostRequest(const fun::string &url,
 }
 
 
-void FunapiHttpImpl::OnResponseHeader(void *data, const size_t len, fun::vector<fun::string> &headers) {
-  headers.push_back(fun::string((char*)data, (char*)data+len));
+void FunapiHttpImpl::OnResponseHeader(void *data, const size_t len, std::vector<std::string> &headers) {
+  headers.push_back(std::string((char*)data, (char*)data+len));
 }
 
 
-void FunapiHttpImpl::OnResponseBody(void *data, const size_t len, fun::vector<uint8_t> &receiving) {
+void FunapiHttpImpl::OnResponseBody(void *data, const size_t len, std::vector<uint8_t> &receiving) {
   receiving.insert(receiving.end(), (uint8_t*)data, (uint8_t*)data + len);
 }
 
@@ -415,7 +415,7 @@ FunapiHttp::FunapiHttp() : impl_(std::make_shared<FunapiHttpImpl>()) {
 }
 
 
-FunapiHttp::FunapiHttp(const fun::string &path) : impl_(std::make_shared<FunapiHttpImpl>(path)) {
+FunapiHttp::FunapiHttp(const std::string &path) : impl_(std::make_shared<FunapiHttpImpl>(path)) {
 }
 
 
@@ -429,21 +429,21 @@ std::shared_ptr<FunapiHttp> FunapiHttp::Create() {
 }
 
 
-std::shared_ptr<FunapiHttp> FunapiHttp::Create(const fun::string &path) {
+std::shared_ptr<FunapiHttp> FunapiHttp::Create(const std::string &path) {
   return std::make_shared<FunapiHttp>(path);
 }
 
 
-void FunapiHttp::PostRequest(const fun::string &url,
+void FunapiHttp::PostRequest(const std::string &url,
                              const HeaderFields &header,
-                             const fun::vector<uint8_t> &body,
+                             const std::vector<uint8_t> &body,
                              const ErrorHandler &error_handler,
                              const CompletionHandler &completion_handler) {
   impl_->PostRequest(url, header, body, error_handler, completion_handler);
 }
 
 
-void FunapiHttp::GetRequest(const fun::string &url,
+void FunapiHttp::GetRequest(const std::string &url,
                 const HeaderFields &header,
                 const ErrorHandler &error_handler,
                             const CompletionHandler &completion_handler) {
@@ -451,8 +451,8 @@ void FunapiHttp::GetRequest(const fun::string &url,
 }
 
 
-void FunapiHttp::DownloadRequest(const fun::string &url,
-                                 const fun::string &path,
+void FunapiHttp::DownloadRequest(const std::string &url,
+                                 const std::string &path,
                                  const HeaderFields &header,
                                  const ErrorHandler &error_handler,
                                  const ProgressHandler &progress_handler,

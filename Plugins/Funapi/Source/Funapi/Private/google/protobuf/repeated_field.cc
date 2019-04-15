@@ -73,10 +73,10 @@ void RepeatedPtrFieldBase::Swap(RepeatedPtrFieldBase* other) {
   other->total_size_     = swap_total_size;
 }
 
-fun::string* StringTypeHandlerBase::New() {
-  return new fun::string;
+string* StringTypeHandlerBase::New() {
+  return new string;
 }
-void StringTypeHandlerBase::Delete(fun::string* value) {
+void StringTypeHandlerBase::Delete(string* value) {
   delete value;
 }
 

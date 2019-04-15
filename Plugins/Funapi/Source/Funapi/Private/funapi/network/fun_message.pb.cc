@@ -61,7 +61,7 @@ inline void protobuf_AssignDescriptorsOnce() {
                  &protobuf_AssignDesc_funapi_2fnetwork_2ffun_5fmessage_2eproto);
 }
 
-void protobuf_RegisterTypes(const ::fun::string&) {
+void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     FunMessage_descriptor_, &FunMessage::default_instance());
@@ -129,8 +129,8 @@ FunMessage::FunMessage(const FunMessage& from)
 void FunMessage::SharedCtor() {
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
-  sid_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  msgtype_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  sid_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  msgtype_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   seq_ = 0u;
   ack_ = 0u;
   urgent_ = false;
@@ -230,7 +230,7 @@ bool FunMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional fun::string msgtype = 2;
+      // optional string msgtype = 2;
       case 2: {
         if (tag == 18) {
          parse_msgtype:
@@ -343,7 +343,7 @@ void FunMessage::SerializeWithCachedSizes(
       1, this->sid(), output);
   }
 
-  // optional fun::string msgtype = 2;
+  // optional string msgtype = 2;
   if (has_msgtype()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->msgtype().data(), this->msgtype().length(),
@@ -394,7 +394,7 @@ void FunMessage::SerializeWithCachedSizes(
         1, this->sid(), target);
   }
 
-  // optional fun::string msgtype = 2;
+  // optional string msgtype = 2;
   if (has_msgtype()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->msgtype().data(), this->msgtype().length(),
@@ -448,7 +448,7 @@ int FunMessage::ByteSize() const {
           this->sid());
     }
 
-    // optional fun::string msgtype = 2;
+    // optional string msgtype = 2;
     if (has_msgtype()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(

@@ -179,7 +179,6 @@ public class Funapi : ModuleRules
     else if (Target.Platform == UnrealTargetPlatform.IOS)
     {
       // PublicDefinitions.Add("WITH_HOT_RELOAD=0");
-      PublicDefinitions.Add("FUNAPI_UE4_PLATFORM_IOS=1");
 
       PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include", "iOS"));
 

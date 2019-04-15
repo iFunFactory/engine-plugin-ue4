@@ -81,7 +81,7 @@ void Message::CopyFrom(const Message& from) {
   ReflectionOps::Copy(from, this);
 }
 
-fun::string Message::GetTypeName() const {
+string Message::GetTypeName() const {
   return GetDescriptor()->full_name();
 }
 
@@ -93,12 +93,12 @@ bool Message::IsInitialized() const {
   return ReflectionOps::IsInitialized(*this);
 }
 
-void Message::FindInitializationErrors(fun::vector<fun::string>* errors) const {
+void Message::FindInitializationErrors(vector<string>* errors) const {
   return ReflectionOps::FindInitializationErrors(*this, "", errors);
 }
 
-fun::string Message::InitializationErrorString() const {
-  fun::vector<fun::string> errors;
+string Message::InitializationErrorString() const {
+  vector<string> errors;
   FindInitializationErrors(&errors);
   return Join(errors, ", ");
 }
@@ -236,7 +236,7 @@ class GeneratedMessageFactory : public MessageFactory {
 
   static GeneratedMessageFactory* singleton();
 
-  typedef void RegistrationFunc(const fun::string&);
+  typedef void RegistrationFunc(const string&);
   void RegisterFile(const char* file, RegistrationFunc* registration_func);
   void RegisterType(const Descriptor* descriptor, const Message* prototype);
 
@@ -347,7 +347,7 @@ MessageFactory* MessageFactory::generated_factory() {
 }
 
 void MessageFactory::InternalRegisterGeneratedFile(
-    const char* filename, void (*register_messages)(const fun::string&)) {
+    const char* filename, void (*register_messages)(const string&)) {
   GeneratedMessageFactory::singleton()->RegisterFile(filename,
                                                      register_messages);
 }

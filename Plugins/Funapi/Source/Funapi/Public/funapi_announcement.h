@@ -15,22 +15,22 @@ class FunapiAnnouncementInfoImpl;
 class FUNAPI_API FunapiAnnouncementInfo : public std::enable_shared_from_this<FunapiAnnouncementInfo> {
  public:
   FunapiAnnouncementInfo() = delete;
-  FunapiAnnouncementInfo(const fun::string &date,
-                   const fun::string &message,
-                   const fun::string &subject,
-                   const fun::string &image_md5,
-                   const fun::string &image_url,
-                   const fun::string &link_url,
-                   const fun::string &file_path);
+  FunapiAnnouncementInfo(const std::string &date,
+                   const std::string &message,
+                   const std::string &subject,
+                   const std::string &image_md5,
+                   const std::string &image_url,
+                   const std::string &link_url,
+                   const std::string &file_path);
   virtual ~FunapiAnnouncementInfo();
 
-  const fun::string& GetDate();
-  const fun::string& GetMessageText();
-  const fun::string& GetSubject();
-  const fun::string& GetImageMd5();
-  const fun::string& GetImageUrl();
-  const fun::string& GetLinkUrl();
-  const fun::string& GetFilePath();
+  const std::string& GetDate();
+  const std::string& GetMessageText();
+  const std::string& GetSubject();
+  const std::string& GetImageMd5();
+  const std::string& GetImageUrl();
+  const std::string& GetLinkUrl();
+  const std::string& GetFilePath();
 
  private:
   std::shared_ptr<FunapiAnnouncementInfoImpl> impl_;
@@ -49,14 +49,14 @@ class FUNAPI_API FunapiAnnouncement : public std::enable_shared_from_this<Funapi
   };
 
   typedef std::function<void(const std::shared_ptr<FunapiAnnouncement>&,
-                             const fun::vector<std::shared_ptr<FunapiAnnouncementInfo>>&,
+                             const std::vector<std::shared_ptr<FunapiAnnouncementInfo>>&,
                              const ResultCode)> CompletionHandler;
 
   FunapiAnnouncement() = delete;
-  FunapiAnnouncement(const fun::string &url, const fun::string &path);
+  FunapiAnnouncement(const std::string &url, const std::string &path);
   virtual ~FunapiAnnouncement();
 
-  static std::shared_ptr<FunapiAnnouncement> Create(const fun::string &url, const fun::string &path);
+  static std::shared_ptr<FunapiAnnouncement> Create(const std::string &url, const std::string &path);
 
   void AddCompletionCallback(const CompletionHandler &handler);
   void RequestList(int max_count);

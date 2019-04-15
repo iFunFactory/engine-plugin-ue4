@@ -54,11 +54,11 @@ message FileDescriptorSet {
 
 // Describes a complete .proto file.
 message FileDescriptorProto {
-  optional fun::string name = 1;       // file name, relative to root of source tree
-  optional fun::string package = 2;    // e.g. "foo", "foo.bar", etc.
+  optional string name = 1;       // file name, relative to root of source tree
+  optional string package = 2;    // e.g. "foo", "foo.bar", etc.
 
   // Names of files imported by this file.
-  repeated fun::string dependency = 3;
+  repeated string dependency = 3;
   // Indexes of the public imported files in the dependency list above.
   repeated int32 public_dependency = 10;
   // Indexes of the weak imported files in the dependency list.
@@ -82,7 +82,7 @@ message FileDescriptorProto {
 
 // Describes a message type.
 message DescriptorProto {
-  optional fun::string name = 1;
+  optional string name = 1;
 
   repeated FieldDescriptorProto field = 2;
   repeated FieldDescriptorProto extension = 6;
@@ -140,12 +140,12 @@ message FieldDescriptorProto {
     // TODO(sanjay): Should we add LABEL_MAP?
   };
 
-  optional fun::string name = 1;
+  optional string name = 1;
   optional int32 number = 3;
   optional Label label = 4;
 
-  // If type_name is fun::set, this need not be set  If both this and type_name
-  // are fun::set, this must be one of TYPE_ENUM, TYPE_MESSAGE or TYPE_GROUP.
+  // If type_name is set, this need not be set.  If both this and type_name
+  // are set, this must be one of TYPE_ENUM, TYPE_MESSAGE or TYPE_GROUP.
   optional Type type = 5;
 
   // For message and enum types, this is the name of the type.  If the name
@@ -153,22 +153,22 @@ message FieldDescriptorProto {
   // rules are used to find the type (i.e. first the nested types within this
   // message are searched, then within the parent, on up to the root
   // namespace).
-  optional fun::string type_name = 6;
+  optional string type_name = 6;
 
   // For extensions, this is the name of the type being extended.  It is
   // resolved in the same manner as type_name.
-  optional fun::string extendee = 2;
+  optional string extendee = 2;
 
   // For numeric types, contains the original text representation of the value.
   // For booleans, "true" or "false".
   // For strings, contains the default text contents (not escaped in any way).
   // For bytes, contains the C escaped value.  All bytes >= 128 are escaped.
   // TODO(kenton):  Base-64 encode?
-  optional fun::string default_value = 7;
+  optional string default_value = 7;
 
-  // If fun::set, gives the index of a oneof in the containing type's oneof_decl
+  // If set, gives the index of a oneof in the containing type's oneof_decl
   // list.  This field is a member of that oneof.  Extensions of a oneof should
-  // not fun::set this since the oneof to which they belong will be inferred based
+  // not set this since the oneof to which they belong will be inferred based
   // on the extension range containing the extension's field number.
   optional int32 oneof_index = 9;
 
@@ -177,12 +177,12 @@ message FieldDescriptorProto {
 
 // Describes a oneof.
 message OneofDescriptorProto {
-  optional fun::string name = 1;
+  optional string name = 1;
 }
 
 // Describes an enum type.
 message EnumDescriptorProto {
-  optional fun::string name = 1;
+  optional string name = 1;
 
   repeated EnumValueDescriptorProto value = 2;
 
@@ -191,7 +191,7 @@ message EnumDescriptorProto {
 
 // Describes a value within an enum.
 message EnumValueDescriptorProto {
-  optional fun::string name = 1;
+  optional string name = 1;
   optional int32 number = 2;
 
   optional EnumValueOptions options = 3;
@@ -199,7 +199,7 @@ message EnumValueDescriptorProto {
 
 // Describes a service.
 message ServiceDescriptorProto {
-  optional fun::string name = 1;
+  optional string name = 1;
   repeated MethodDescriptorProto method = 2;
 
   optional ServiceOptions options = 3;
@@ -207,12 +207,12 @@ message ServiceDescriptorProto {
 
 // Describes a method of a service.
 message MethodDescriptorProto {
-  optional fun::string name = 1;
+  optional string name = 1;
 
   // Input and output type names.  These are resolved in the same way as
   // FieldDescriptorProto.type_name, but must refer to a message type.
-  optional fun::string input_type = 2;
-  optional fun::string output_type = 3;
+  optional string input_type = 2;
+  optional string output_type = 3;
 
   optional MethodOptions options = 4;
 }
@@ -247,7 +247,7 @@ message MethodDescriptorProto {
 //   putting them in a sub-message. See the Custom Options section of the docs
 //   for examples:
 //   https://developers.google.com/protocol-buffers/docs/proto#options
-//   If this turns out to be popular, a web service will be fun::set up
+//   If this turns out to be popular, a web service will be set up
 //   to automatically assign option numbers.
 
 
@@ -257,17 +257,17 @@ message FileOptions {
   // placed.  By default, the proto package is used, but this is often
   // inappropriate because proto packages do not normally start with backwards
   // domain names.
-  optional fun::string java_package = 1;
+  optional string java_package = 1;
 
 
-  // If fun::set, all the classes from the .proto file are wrapped in a single
+  // If set, all the classes from the .proto file are wrapped in a single
   // outer class with the given name.  This applies to both Proto1
   // (equivalent to the old "--one_java_file" option) and Proto2 (where
   // a .proto always translates to a single class, but you may want to
   // explicitly choose the class name).
-  optional fun::string java_outer_classname = 8;
+  optional string java_outer_classname = 8;
 
-  // If fun::set true, then the Java code generator will generate a separate .java
+  // If set true, then the Java code generator will generate a separate .java
   // file for each top-level message, enum, and service defined in the .proto
   // file.  Thus, these types will *not* be nested inside the outer class
   // named by java_outer_classname.  However, the outer class will still be
@@ -275,7 +275,7 @@ message FileOptions {
   // top-level extensions defined in the file.
   optional bool java_multiple_files = 10 [default=false];
 
-  // If fun::set true, then the Java code generator will generate equals() and
+  // If set true, then the Java code generator will generate equals() and
   // hashCode() methods for all messages defined in the .proto file.
   // - In the full runtime, this is purely a speed optimization, as the
   // AbstractMessage base class includes reflection-based implementations of
@@ -287,9 +287,9 @@ message FileOptions {
   // will be consistent across runtimes or versions of the protocol compiler.)
   optional bool java_generate_equals_and_hash = 20 [default=false];
 
-  // If fun::set true, then the Java2 code generator will generate code that
+  // If set true, then the Java2 code generator will generate code that
   // throws an exception whenever an attempt is made to assign a non-UTF-8
-  // byte sequence to a fun::string field.
+  // byte sequence to a string field.
   // Message reflection will do the same.
   // However, an extension field still accepts non-UTF-8 byte sequences.
   // This option has no effect on when used with the lite runtime.
@@ -307,7 +307,7 @@ message FileOptions {
 
   // Sets the Go package where structs generated from this .proto will be
   // placed.  There is no default.
-  optional fun::string go_package = 11;
+  optional string go_package = 11;
 
 
 
@@ -320,7 +320,7 @@ message FileOptions {
   // Generic services are now considered deprecated in favor of using plugins
   // that generate code specific to your particular RPC system.  Therefore,
   // these default to false.  Old code which depends on generic services should
-  // explicitly fun::set them to true.
+  // explicitly set them to true.
   optional bool cc_generic_services = 16 [default=false];
   optional bool java_generic_services = 17 [default=false];
   optional bool py_generic_services = 18 [default=false];
@@ -437,18 +437,18 @@ message FieldOptions {
   optional bool deprecated = 3 [default=false];
 
   // EXPERIMENTAL.  DO NOT USE.
-  // For "fun::map" fields, the name of the field in the enclosed type that
-  // is the key for this fun::map.  For example, suppose we have:
+  // For "map" fields, the name of the field in the enclosed type that
+  // is the key for this map.  For example, suppose we have:
   //   message Item {
-  //     required fun::string name = 1;
-  //     required fun::string value = 2;
+  //     required string name = 1;
+  //     required string value = 2;
   //   }
   //   message Config {
   //     repeated Item items = 1 [experimental_map_key="name"];
   //   }
-  // In this situation, the fun::map key for Item will be fun::set to "name".
+  // In this situation, the map key for Item will be set to "name".
   // TODO: Fully-implement this, then remove the "experimental_" prefix.
-  optional fun::string experimental_map_key = 9;
+  optional string experimental_map_key = 9;
 
   // For Google-internal migration only. Do not use.
   optional bool weak = 10 [default=false];
@@ -543,25 +543,25 @@ message MethodOptions {
 // or produced by Descriptor::CopyTo()) will never have UninterpretedOptions
 // in them.
 message UninterpretedOption {
-  // The name of the uninterpreted option.  Each fun::string represents a segment in
+  // The name of the uninterpreted option.  Each string represents a segment in
   // a dot-separated name.  is_extension is true iff a segment represents an
   // extension (denoted with parentheses in options specs in .proto files).
   // E.g.,{ ["foo", false], ["bar.baz", true], ["qux", false] } represents
   // "foo.(bar.baz).qux".
   message NamePart {
-    required fun::string name_part = 1;
+    required string name_part = 1;
     required bool is_extension = 2;
   }
   repeated NamePart name = 2;
 
   // The value of the uninterpreted option, in whatever type the tokenizer
-  // identified it as during parsing. Exactly one of these should be set
-  optional fun::string identifier_value = 3;
+  // identified it as during parsing. Exactly one of these should be set.
+  optional string identifier_value = 3;
   optional uint64 positive_int_value = 4;
   optional int64 negative_int_value = 5;
   optional double double_value = 6;
   optional bytes string_value = 7;
-  optional fun::string aggregate_value = 8;
+  optional string aggregate_value = 8;
 }
 
 // ===================================================================
@@ -577,10 +577,10 @@ message SourceCodeInfo {
   //
   // For example, say we have a file like:
   //   message Foo {
-  //     optional fun::string foo = 1;
+  //     optional string foo = 1;
   //   }
   // Let's look at just the field definition:
-  //   optional fun::string foo = 1;
+  //   optional string foo = 1;
   //   ^       ^^     ^^  ^  ^^^
   //   a       bc     de  f  ghi
   // We have the following locations:
@@ -593,7 +593,7 @@ message SourceCodeInfo {
   //
   // Notes:
   // - A location may refer to a repeated field itself (i.e. not to any
-  //   particular index within it).  This is used whenever a fun::set of elements are
+  //   particular index within it).  This is used whenever a set of elements are
   //   logically enclosed in a single code segment.  For example, an entire
   //   extend block (possibly containing multiple extension definitions) will
   //   have an outer location whose path refers to the "extensions" repeated
@@ -631,7 +631,7 @@ message SourceCodeInfo {
     // and DescriptorProto.field has field number 2:
     //   repeated FieldDescriptorProto field = 2;
     // and FieldDescriptorProto.name has field number 1:
-    //   optional fun::string name = 1;
+    //   optional string name = 1;
     //
     // Thus, the above path gives the location of a field name.  If we removed
     // the last element:
@@ -665,7 +665,7 @@ message SourceCodeInfo {
     //   // Comment attached to bar.
     //   optional int32 bar = 2;
     //
-    //   optional fun::string baz = 3;
+    //   optional string baz = 3;
     //   // Comment attached to baz.
     //   // Another line attached to baz.
     //
@@ -674,14 +674,14 @@ message SourceCodeInfo {
     //   // Another line attached to qux.
     //   optional double qux = 4;
     //
-    //   optional fun::string corge = 5;
+    //   optional string corge = 5;
     //   /* Block comment attached
     //    * to corge.  Leading asterisks
     //    * will be removed. */
     //   /* Block comment attached to
     //    * grault. */
     //   optional int32 grault = 6;
-    optional fun::string leading_comments = 3;
-    optional fun::string trailing_comments = 4;
+    optional string leading_comments = 3;
+    optional string trailing_comments = 4;
   }
 }

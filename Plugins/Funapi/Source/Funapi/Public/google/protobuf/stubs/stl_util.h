@@ -44,7 +44,7 @@ namespace protobuf {
 // NOTE: for these three functions, we could just implement a DeleteObject
 // functor and then call for_each() on the range and functor, but this
 // requires us to pull in all of algorithm.h, which seems expensive.
-// For hash_[multi]fun::set, it is important that this deletes behind the iterator
+// For hash_[multi]set, it is important that this deletes behind the iterator
 // because the hash_set may call the hash function on the iterator when it is
 // advanced, which could result in the hash function trying to deference a
 // stale pointer.
@@ -59,34 +59,34 @@ void STLDeleteContainerPointers(ForwardIterator begin,
 }
 
 // Inside Google, this function implements a horrible, disgusting hack in which
-// we reach into the fun::string's private implementation and resize it without
+// we reach into the string's private implementation and resize it without
 // initializing the new bytes.  In some cases doing this can significantly
 // improve performance.  However, since it's totally non-portable it has no
 // place in open source code.  Feel free to fill this function in with your
 // own disgusting hack if you want the perf boost.
-inline void STLStringResizeUninitialized(fun::string* s, size_t new_size) {
+inline void STLStringResizeUninitialized(string* s, size_t new_size) {
   s->resize(new_size);
 }
 
-// Return a mutable char* pointing to a fun::string's internal buffer,
+// Return a mutable char* pointing to a string's internal buffer,
 // which may not be null-terminated. Writing through this pointer will
-// modify the fun::string.
+// modify the string.
 //
 // string_as_array(&str)[i] is valid for 0 <= i < str.size() until the
-// next call to a fun::string method that invalidates iterators.
+// next call to a string method that invalidates iterators.
 //
 // As of 2006-04, there is no standard-blessed way of getting a
-// mutable reference to a fun::string's internal buffer. However, issue 530
+// mutable reference to a string's internal buffer. However, issue 530
 // (http://www.open-std.org/JTC1/SC22/WG21/docs/lwg-active.html#530)
 // proposes this as the method. According to Matt Austern, this should
 // already work on all current implementations.
-inline char* string_as_array(fun::string* str) {
+inline char* string_as_array(string* str) {
   // DO NOT USE const_cast<char*>(str->data())! See the unittest for why.
   return str->empty() ? NULL : &*str->begin();
 }
 
 // STLDeleteElements() deletes all the elements in an STL container and clears
-// the container.  This function is suitable for use with a fun::vector, fun::set,
+// the container.  This function is suitable for use with a vector, set,
 // hash_set, or any other STL container which defines sensible begin(), end(),
 // and clear() methods.
 //

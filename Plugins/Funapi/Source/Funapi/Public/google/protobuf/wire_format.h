@@ -46,7 +46,7 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/wire_format_lite.h>
 
-// Do UTF-8 validation on fun::string type in Debug build only
+// Do UTF-8 validation on string type in Debug build only
 #ifndef NDEBUG
 #define GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
 #endif
@@ -227,7 +227,7 @@ class LIBPROTOBUF_EXPORT WireFormat {
     SERIALIZE,
   };
 
-  // Verifies that a fun::string field is valid UTF8, logging an error if not.
+  // Verifies that a string field is valid UTF8, logging an error if not.
   // This function will not be called by newly generated protobuf code
   // but remains present to support existing code.
   static void VerifyUTF8String(const char* data, int size, Operation op);
@@ -239,7 +239,7 @@ class LIBPROTOBUF_EXPORT WireFormat {
                                          const char* field_name);
 
  private:
-  // Verifies that a fun::string field is valid UTF8, logging an error if not.
+  // Verifies that a string field is valid UTF8, logging an error if not.
   static void VerifyUTF8StringFallback(
       const char* data,
       int size,

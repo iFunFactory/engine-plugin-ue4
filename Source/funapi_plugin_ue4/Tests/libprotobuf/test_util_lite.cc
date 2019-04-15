@@ -424,7 +424,7 @@ void TestUtilLite::ExpectClear(const unittest::TestAllTypesLite& message) {
   EXPECT_FALSE(message.has_optional_import_enum ());
 
 
-  // Optional fields without defaults are fun::set to zero or something like it.
+  // Optional fields without defaults are set to zero or something like it.
   EXPECT_EQ(0    , message.optional_int32   ());
   EXPECT_EQ(0    , message.optional_int64   ());
   EXPECT_EQ(0    , message.optional_uint32  ());
@@ -454,7 +454,7 @@ void TestUtilLite::ExpectClear(const unittest::TestAllTypesLite& message) {
   EXPECT_EQ(0, message.optional_foreign_message().c());
   EXPECT_EQ(0, message.optional_import_message ().d());
 
-  // Enums without defaults are fun::set to the first value in the enum.
+  // Enums without defaults are set to the first value in the enum.
   EXPECT_EQ(unittest::TestAllTypesLite::FOO , message.optional_nested_enum ());
   EXPECT_EQ(unittest::FOREIGN_LITE_FOO      , message.optional_foreign_enum());
   EXPECT_EQ(unittest_import::IMPORT_LITE_FOO, message.optional_import_enum ());
@@ -1164,7 +1164,7 @@ void TestUtilLite::ExpectAllExtensionsSet(
 
 void TestUtilLite::ExpectExtensionsClear(
     const unittest::TestAllExtensionsLite& message) {
-  fun::string serialized;
+  string serialized;
   ASSERT_TRUE(message.SerializeToString(&serialized));
   EXPECT_EQ("", serialized);
   EXPECT_EQ(0, message.ByteSize());
@@ -1198,7 +1198,7 @@ void TestUtilLite::ExpectExtensionsClear(
   EXPECT_FALSE(message.HasExtension(unittest::optional_import_enum_extension_lite ));
 
 
-  // Optional fields without defaults are fun::set to zero or something like it.
+  // Optional fields without defaults are set to zero or something like it.
   EXPECT_EQ(0    , message.GetExtension(unittest::optional_int32_extension_lite   ));
   EXPECT_EQ(0    , message.GetExtension(unittest::optional_int64_extension_lite   ));
   EXPECT_EQ(0    , message.GetExtension(unittest::optional_uint32_extension_lite  ));
@@ -1230,7 +1230,7 @@ void TestUtilLite::ExpectExtensionsClear(
   EXPECT_EQ(0, message.GetExtension(unittest::optional_public_import_message_extension_lite).e());
   EXPECT_EQ(0, message.GetExtension(unittest::optional_lazy_message_extension_lite         ).bb());
 
-  // Enums without defaults are fun::set to the first value in the enum.
+  // Enums without defaults are set to the first value in the enum.
   EXPECT_EQ(unittest::TestAllTypesLite::FOO , message.GetExtension(unittest::optional_nested_enum_extension_lite ));
   EXPECT_EQ(unittest::FOREIGN_LITE_FOO      , message.GetExtension(unittest::optional_foreign_enum_extension_lite));
   EXPECT_EQ(unittest_import::IMPORT_LITE_FOO, message.GetExtension(unittest::optional_import_enum_extension_lite ));

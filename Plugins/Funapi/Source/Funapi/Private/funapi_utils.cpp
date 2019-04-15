@@ -25,16 +25,16 @@ namespace fun {
 // FunapiUtil implementation.
 
 #ifdef FUNAPI_COCOS2D
-fun::string FunapiUtil::MD5String(const fun::string &file_name, bool use_front) {
+std::string FunapiUtil::MD5String(const std::string &file_name, bool use_front) {
   const size_t read_buffer_size = 1048576; // 1024*1024
   const size_t md5_buffer_size = 16;
-  fun::vector<unsigned char> buffer(read_buffer_size);
-  fun::vector<unsigned char> md5(md5_buffer_size);
+  std::vector<unsigned char> buffer(read_buffer_size);
+  std::vector<unsigned char> md5(md5_buffer_size);
   size_t length;
 
   FILE *fp = fopen(file_name.c_str(), "rb");
   if (!fp) {
-    return fun::string("");
+    return std::string("");
   }
 
   md5_state_t ctx;
@@ -51,7 +51,7 @@ fun::string FunapiUtil::MD5String(const fun::string &file_name, bool use_front) 
   md5_finish(&ctx, md5.data());
   fclose(fp);
 
-  fun::string ret(md5_buffer_size*2, 0);
+  std::string ret(md5_buffer_size*2, 0);
   char* c = const_cast<char*>(ret.data());
   for (int i = 0; i<md5_buffer_size; ++i, c+=2) {
     sprintf(c, "%02x", md5[i]);
@@ -63,17 +63,17 @@ fun::string FunapiUtil::MD5String(const fun::string &file_name, bool use_front) 
 
 
 #ifdef FUNAPI_UE4
-fun::string FunapiUtil::MD5String(const fun::string &file_name, bool use_front) {
+std::string FunapiUtil::MD5String(const std::string &file_name, bool use_front) {
   const size_t read_buffer_size = 1048576; // 1024*1024
   const size_t md5_buffer_size = 16;
-  fun::vector<unsigned char> buffer(read_buffer_size);
-  fun::vector<unsigned char> md5_buffer(read_buffer_size);
+  std::vector<unsigned char> buffer(read_buffer_size);
+  std::vector<unsigned char> md5_buffer(read_buffer_size);
   size_t length;
   FMD5 md5;
 
   FILE *fp = fopen(file_name.c_str(), "rb");
   if (!fp) {
-    return fun::string("");
+    return std::string("");
   }
 
   if (use_front) {
@@ -90,7 +90,7 @@ fun::string FunapiUtil::MD5String(const fun::string &file_name, bool use_front) 
 
   fclose(fp);
 
-  fun::string ret(md5_buffer_size*2, 0);
+  std::string ret(md5_buffer_size*2, 0);
   char* c = const_cast<char*>(ret.data());
   for (int i = 0; i<md5_buffer_size; ++i, c+=2) {
     sprintf(c, "%02x", md5_buffer[i]);
@@ -101,7 +101,7 @@ fun::string FunapiUtil::MD5String(const fun::string &file_name, bool use_front) 
 #endif // FUNAPI_UE4
 
 #ifdef FUNAPI_COCOS2D
-bool FunapiUtil::DecodeBase64(const fun::string &in, fun::vector<uint8_t> &out) {
+bool FunapiUtil::DecodeBase64(const std::string &in, std::vector<uint8_t> &out) {
   unsigned char *buffer = nullptr;
   auto len = cocos2d::base64Decode((unsigned char*)in.c_str(), (unsigned int)in.length(), &buffer);
   if (buffer) {
@@ -119,7 +119,7 @@ bool FunapiUtil::DecodeBase64(const fun::string &in, fun::vector<uint8_t> &out) 
 #endif
 
 #ifdef FUNAPI_UE4
-bool FunapiUtil::DecodeBase64(const fun::string &in, fun::vector<uint8_t> &out) {
+bool FunapiUtil::DecodeBase64(const std::string &in, std::vector<uint8_t> &out) {
   TArray<uint8> temp_array;
 
   bool ret = FBase64::Decode(FString(in.c_str()), temp_array);
@@ -144,7 +144,7 @@ int FunapiUtil::GetSocketErrorCode() {
 }
 
 
-fun::string FunapiUtil::GetSocketErrorString(const int code) {
+std::string FunapiUtil::GetSocketErrorString(const int code) {
 #ifdef FUNAPI_UE4_PLATFORM_WINDOWS
   {
     LPSTR temp_error_string = NULL;
@@ -152,7 +152,7 @@ fun::string FunapiUtil::GetSocketErrorString(const int code) {
     int size = ::FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
       0, code, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), (LPSTR)&temp_error_string, 0, 0);
 
-    fun::string ret = temp_error_string;
+    std::string ret = temp_error_string;
 
     LocalFree(temp_error_string);
 
@@ -166,7 +166,7 @@ fun::string FunapiUtil::GetSocketErrorString(const int code) {
 }
 
 
-fun::string FunapiUtil::StringFromBytes(const fun::string &uuid_str) {
+std::string FunapiUtil::StringFromBytes(const std::string &uuid_str) {
   if (uuid_str.length() >= 24) {
     if (uuid_str[8] == '-' &&
         uuid_str[13] == '-' &&
@@ -176,7 +176,7 @@ fun::string FunapiUtil::StringFromBytes(const fun::string &uuid_str) {
     }
   }
 
-  fun::stringstream ss;
+  std::stringstream ss;
   ss << std::hex << std::right;
   ss.fill(ss.widen('0'));
 
@@ -195,8 +195,8 @@ fun::string FunapiUtil::StringFromBytes(const fun::string &uuid_str) {
 }
 
 
-fun::string FunapiUtil::BytesFromString(const fun::string &uuid) {
-  fun::string uuid_str;
+std::string FunapiUtil::BytesFromString(const std::string &uuid) {
+  std::string uuid_str;
   uuid_str.resize(16);
   uint8_t *dest = reinterpret_cast<uint8_t*>(const_cast<char*>(uuid_str.c_str()));
 
@@ -227,7 +227,7 @@ bool FunapiUtil::SeqLess(const uint32_t x, const uint32_t y) {
   return (int32_t)(y - x) > 0;
 }
 
-bool FunapiUtil::IsFileExists(const fun::string &file_name) {
+bool FunapiUtil::IsFileExists(const std::string &file_name) {
 #ifdef FUNAPI_COCOS2D
   return cocos2d::FileUtils::getInstance()->isFileExist(file_name.c_str());
 #endif
@@ -240,7 +240,7 @@ bool FunapiUtil::IsFileExists(const fun::string &file_name) {
 };
 
 
-long FunapiUtil::GetFileSize(const fun::string &file_name) {
+long FunapiUtil::GetFileSize(const std::string &file_name) {
 #ifdef FUNAPI_COCOS2D
   return cocos2d::FileUtils::getInstance()->getFileSize(file_name.c_str());
 #endif

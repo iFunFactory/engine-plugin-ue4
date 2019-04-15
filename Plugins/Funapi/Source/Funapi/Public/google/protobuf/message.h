@@ -42,14 +42,14 @@
 // Say you have a message defined as:
 //
 //   message Foo {
-//     optional fun::string text = 1;
+//     optional string text = 1;
 //     repeated int32 numbers = 2;
 //   }
 //
 // Then, if you used the protocol compiler to generate a class from the above
 // definition, you could use it like so:
 //
-//   fun::string data;  // Will store a serialized version of the message.
+//   string data;  // Will store a serialized version of the message.
 //
 //   {
 //     // Create a message and serialize it.
@@ -190,15 +190,15 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   // a nice error message.
   void CheckInitialized() const;
 
-  // Slowly build a list of all required fields that are not set
+  // Slowly build a list of all required fields that are not set.
   // This is much, much slower than IsInitialized() as it is implemented
   // purely via reflection.  Generally, you should not call this unless you
   // have already determined that an error exists by calling IsInitialized().
-  void FindInitializationErrors(fun::vector<fun::string>* errors) const;
+  void FindInitializationErrors(vector<string>* errors) const;
 
   // Like FindInitializationErrors, but joins all the strings, delimited by
   // commas, and returns them.
-  fun::string InitializationErrorString() const;
+  string InitializationErrorString() const;
 
   // Clears all unknown fields from this message and all embedded messages.
   // Normally, if unknown tag numbers are encountered when parsing a message,
@@ -221,11 +221,11 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
 
   // Generates a human readable form of this message, useful for debugging
   // and other purposes.
-  fun::string DebugString() const;
+  string DebugString() const;
   // Like DebugString(), but with less whitespace.
-  fun::string ShortDebugString() const;
+  string ShortDebugString() const;
   // Like DebugString(), but do not escape UTF-8 byte sequences.
-  fun::string Utf8DebugString() const;
+  string Utf8DebugString() const;
   // Convenience function useful in GDB.  Prints DebugString() to stdout.
   void PrintDebugString() const;
 
@@ -247,12 +247,12 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   bool ParsePartialFromIstream(istream* input);
 
   // Serialize the message and write it to the given file descriptor.  All
-  // required fields must be set
+  // required fields must be set.
   bool SerializeToFileDescriptor(int file_descriptor) const;
   // Like SerializeToFileDescriptor(), but allows missing required fields.
   bool SerializePartialToFileDescriptor(int file_descriptor) const;
   // Serialize the message and write it to the given C++ ostream.  All
-  // required fields must be set
+  // required fields must be set.
   bool SerializeToOstream(ostream* output) const;
   // Like SerializeToOstream(), but allows missing required fields.
   bool SerializePartialToOstream(ostream* output) const;
@@ -262,7 +262,7 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   // These methods are pure-virtual in MessageLite, but Message provides
   // reflection-based default implementations.
 
-  virtual fun::string GetTypeName() const;
+  virtual string GetTypeName() const;
   virtual void Clear();
   virtual bool IsInitialized() const;
   virtual void CheckTypeAndMergeFrom(const MessageLite& other);
@@ -372,7 +372,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // Estimate the amount of memory used by the message object.
   virtual int SpaceUsed(const Message& message) const = 0;
 
-  // Check if the given non-repeated field is set
+  // Check if the given non-repeated field is set.
   virtual bool HasField(const Message& message,
                         const FieldDescriptor* field) const = 0;
 
@@ -385,8 +385,8 @@ class LIBPROTOBUF_EXPORT Reflection {
   virtual void ClearField(Message* message,
                           const FieldDescriptor* field) const = 0;
 
-  // Check if the oneof is set Returns ture if any field in oneof
-  // is fun::set, false otherwise.
+  // Check if the oneof is set. Returns ture if any field in oneof
+  // is set, false otherwise.
   // TODO(jieluo) - make it pure virtual after updating all
   // the subclasses.
   virtual bool HasOneof(const Message& message,
@@ -397,7 +397,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   virtual void ClearOneof(Message* message,
                           const OneofDescriptor* oneof_descriptor) const {}
 
-  // Returns the field descriptor if the oneof is set NULL otherwise.
+  // Returns the field descriptor if the oneof is set. NULL otherwise.
   // TODO(jieluo) - make it pure virtual.
   virtual const FieldDescriptor* GetOneofFieldDescriptor(
       const Message& message,
@@ -422,10 +422,10 @@ class LIBPROTOBUF_EXPORT Reflection {
   // Swap the complete contents of two messages.
   virtual void Swap(Message* message1, Message* message2) const = 0;
 
-  // Swap fields listed in fields fun::vector of two messages.
+  // Swap fields listed in fields vector of two messages.
   virtual void SwapFields(Message* message1,
                           Message* message2,
-                          const fun::vector<const FieldDescriptor*>& fields)
+                          const vector<const FieldDescriptor*>& fields)
       const = 0;
 
   // Swap two elements of a repeated field.
@@ -434,17 +434,17 @@ class LIBPROTOBUF_EXPORT Reflection {
                             int index1,
                             int index2) const = 0;
 
-  // List all fields of the message which are currently set  This includes
+  // List all fields of the message which are currently set.  This includes
   // extensions.  Singular fields will only be listed if HasField(field) would
   // return true and repeated fields will only be listed if FieldSize(field)
   // would return non-zero.  Fields (both normal fields and extension fields)
   // will be listed ordered by field number.
   virtual void ListFields(const Message& message,
-                          fun::vector<const FieldDescriptor*>* output) const = 0;
+                          vector<const FieldDescriptor*>* output) const = 0;
 
   // Singular field getters ------------------------------------------
   // These get the value of a non-repeated field.  They return the default
-  // value for fields that aren't set
+  // value for fields that aren't set.
 
   virtual int32  GetInt32 (const Message& message,
                            const FieldDescriptor* field) const = 0;
@@ -460,7 +460,7 @@ class LIBPROTOBUF_EXPORT Reflection {
                            const FieldDescriptor* field) const = 0;
   virtual bool   GetBool  (const Message& message,
                            const FieldDescriptor* field) const = 0;
-  virtual fun::string GetString(const Message& message,
+  virtual string GetString(const Message& message,
                            const FieldDescriptor* field) const = 0;
   virtual const EnumValueDescriptor* GetEnum(
       const Message& message, const FieldDescriptor* field) const = 0;
@@ -469,24 +469,24 @@ class LIBPROTOBUF_EXPORT Reflection {
                                     const FieldDescriptor* field,
                                     MessageFactory* factory = NULL) const = 0;
 
-  // Get a fun::string value without copying, if possible.
+  // Get a string value without copying, if possible.
   //
-  // GetString() necessarily returns a copy of the fun::string.  This can be
-  // inefficient when the fun::string is already stored in a fun::string object in the
+  // GetString() necessarily returns a copy of the string.  This can be
+  // inefficient when the string is already stored in a string object in the
   // underlying message.  GetStringReference() will return a reference to the
-  // underlying fun::string in this case.  Otherwise, it will copy the fun::string into
+  // underlying string in this case.  Otherwise, it will copy the string into
   // *scratch and return that.
   //
   // Note:  It is perfectly reasonable and useful to write code like:
   //     str = reflection->GetStringReference(field, &str);
-  //   This line would ensure that only one copy of the fun::string is made
+  //   This line would ensure that only one copy of the string is made
   //   regardless of the field's underlying representation.  When initializing
-  //   a newly-constructed fun::string, though, it's just as fast and more readable
+  //   a newly-constructed string, though, it's just as fast and more readable
   //   to use code like:
-  //     fun::string str = reflection->GetString(field);
-  virtual const fun::string& GetStringReference(const Message& message,
+  //     string str = reflection->GetString(field);
+  virtual const string& GetStringReference(const Message& message,
                                            const FieldDescriptor* field,
-                                           fun::string* scratch) const = 0;
+                                           string* scratch) const = 0;
 
 
   // Singular field mutators -----------------------------------------
@@ -508,7 +508,7 @@ class LIBPROTOBUF_EXPORT Reflection {
                          const FieldDescriptor* field, bool   value) const = 0;
   virtual void SetString(Message* message,
                          const FieldDescriptor* field,
-                         const fun::string& value) const = 0;
+                         const string& value) const = 0;
   virtual void SetEnum  (Message* message,
                          const FieldDescriptor* field,
                          const EnumValueDescriptor* value) const = 0;
@@ -568,7 +568,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   virtual bool   GetRepeatedBool  (const Message& message,
                                    const FieldDescriptor* field,
                                    int index) const = 0;
-  virtual fun::string GetRepeatedString(const Message& message,
+  virtual string GetRepeatedString(const Message& message,
                                    const FieldDescriptor* field,
                                    int index) const = 0;
   virtual const EnumValueDescriptor* GetRepeatedEnum(
@@ -579,9 +579,9 @@ class LIBPROTOBUF_EXPORT Reflection {
       const FieldDescriptor* field, int index) const = 0;
 
   // See GetStringReference(), above.
-  virtual const fun::string& GetRepeatedStringReference(
+  virtual const string& GetRepeatedStringReference(
       const Message& message, const FieldDescriptor* field,
-      int index, fun::string* scratch) const = 0;
+      int index, string* scratch) const = 0;
 
 
   // Repeated field mutators -----------------------------------------
@@ -610,7 +610,7 @@ class LIBPROTOBUF_EXPORT Reflection {
                                  int index, bool   value) const = 0;
   virtual void SetRepeatedString(Message* message,
                                  const FieldDescriptor* field,
-                                 int index, const fun::string& value) const = 0;
+                                 int index, const string& value) const = 0;
   virtual void SetRepeatedEnum(Message* message,
                                const FieldDescriptor* field, int index,
                                const EnumValueDescriptor* value) const = 0;
@@ -639,7 +639,7 @@ class LIBPROTOBUF_EXPORT Reflection {
                          const FieldDescriptor* field, bool   value) const = 0;
   virtual void AddString(Message* message,
                          const FieldDescriptor* field,
-                         const fun::string& value) const = 0;
+                         const string& value) const = 0;
   virtual void AddEnum  (Message* message,
                          const FieldDescriptor* field,
                          const EnumValueDescriptor* value) const = 0;
@@ -669,13 +669,13 @@ class LIBPROTOBUF_EXPORT Reflection {
   RepeatedField<T>* MutableRepeatedField(
       Message*, const FieldDescriptor*) const;
 
-  // for T = fun::string, google::protobuf::internal::StringPieceField
+  // for T = string, google::protobuf::internal::StringPieceField
   //         google::protobuf::Message & descendants.
   template<typename T>
   const RepeatedPtrField<T>& GetRepeatedPtrField(
       const Message&, const FieldDescriptor*) const;
 
-  // for T = fun::string, google::protobuf::internal::StringPieceField
+  // for T = string, google::protobuf::internal::StringPieceField
   //         google::protobuf::Message & descendants.
   template<typename T>
   RepeatedPtrField<T>* MutableRepeatedPtrField(
@@ -686,7 +686,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // Try to find an extension of this message type by fully-qualified field
   // name.  Returns NULL if no extension is known for this name or number.
   virtual const FieldDescriptor* FindKnownExtensionByName(
-      const fun::string& name) const = 0;
+      const string& name) const = 0;
 
   // Try to find an extension of this message type by field number.
   // Returns NULL if no extension is known for this name or number.
@@ -706,7 +706,7 @@ class LIBPROTOBUF_EXPORT Reflection {
       int ctype, const Descriptor* message_type) const = 0;
 
  private:
-  // Special version for specialized implementations of fun::string.  We can't call
+  // Special version for specialized implementations of string.  We can't call
   // MutableRawRepeatedField directly here because we don't have access to
   // FieldOptions::* which are defined in descriptor.pb.h.  Including that
   // file here is not possible because it would cause a circular include cycle.
@@ -765,9 +765,9 @@ class LIBPROTOBUF_EXPORT MessageFactory {
   // InternalRegisterGeneratedMessage() (below) to register each message type
   // in the file.  This strange mechanism is necessary because descriptors are
   // built lazily, so we can't register types by their descriptor until we
-  // know that the descriptor exists.  |filename| must be a permanent fun::string.
+  // know that the descriptor exists.  |filename| must be a permanent string.
   static void InternalRegisterGeneratedFile(
-      const char* filename, void (*register_messages)(const fun::string&));
+      const char* filename, void (*register_messages)(const string&));
 
   // For internal use only:  Registers a message type.  Called only by the
   // functions which are registered with InternalRegisterGeneratedFile(),
@@ -802,22 +802,22 @@ DECLARE_GET_REPEATED_FIELD(bool)
 
 // =============================================================================
 // Implementation details for {Get,Mutable}RawRepeatedPtrField.  We provide
-// specializations for <fun::string>, <StringPieceField> and <Message> and handle
+// specializations for <string>, <StringPieceField> and <Message> and handle
 // everything else with the default template which will match any type having
 // a method with signature "static const google::protobuf::Descriptor* descriptor()".
 // Such a type presumably is a descendant of google::protobuf::Message.
 
 template<>
-inline const RepeatedPtrField<fun::string>& Reflection::GetRepeatedPtrField<fun::string>(
+inline const RepeatedPtrField<string>& Reflection::GetRepeatedPtrField<string>(
     const Message& message, const FieldDescriptor* field) const {
-  return *static_cast<RepeatedPtrField<fun::string>* >(
+  return *static_cast<RepeatedPtrField<string>* >(
       MutableRawRepeatedString(const_cast<Message*>(&message), field, true));
 }
 
 template<>
-inline RepeatedPtrField<fun::string>* Reflection::MutableRepeatedPtrField<fun::string>(
+inline RepeatedPtrField<string>* Reflection::MutableRepeatedPtrField<string>(
     Message* message, const FieldDescriptor* field) const {
-  return static_cast<RepeatedPtrField<fun::string>* >(
+  return static_cast<RepeatedPtrField<string>* >(
       MutableRawRepeatedString(message, field, true));
 }
 

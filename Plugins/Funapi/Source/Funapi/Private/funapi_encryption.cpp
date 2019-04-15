@@ -45,15 +45,15 @@ class Encryptor : public std::enable_shared_from_this<Encryptor> {
   virtual ~Encryptor();
 
   static std::shared_ptr<Encryptor> Create(EncryptionType type);
-  static std::shared_ptr<Encryptor> Create(fun::string name);
+  static std::shared_ptr<Encryptor> Create(std::string name);
 
   virtual EncryptionType GetEncryptionType() = 0;
 
-  virtual void HandShake(const fun::string &key);
-  virtual const fun::string& GetHandShakeString();
+  virtual void HandShake(const std::string &key);
+  virtual const std::string& GetHandShakeString();
 
-  virtual bool Encrypt(fun::vector<uint8_t> &body) = 0;
-  virtual bool Decrypt(fun::vector<uint8_t> &body) = 0;
+  virtual bool Encrypt(std::vector<uint8_t> &body) = 0;
+  virtual bool Decrypt(std::vector<uint8_t> &body) = 0;
 
   bool IsHandShakeCompleted();
 
@@ -70,12 +70,12 @@ Encryptor::~Encryptor() {
 }
 
 
-void Encryptor::HandShake(const fun::string &key) {
+void Encryptor::HandShake(const std::string &key) {
 }
 
 
-const fun::string& Encryptor::GetHandShakeString() {
-  static fun::string empty_string("");
+const std::string& Encryptor::GetHandShakeString() {
+  static std::string empty_string("");
   return empty_string;
 }
 
@@ -92,10 +92,10 @@ public:
   virtual ~Encryptor0();
 
   EncryptionType GetEncryptionType();
-  static fun::string GetEncryptionName();
+  static std::string GetEncryptionName();
 
-  bool Encrypt(fun::vector<uint8_t> &body);
-  bool Decrypt(fun::vector<uint8_t> &body);
+  bool Encrypt(std::vector<uint8_t> &body);
+  bool Decrypt(std::vector<uint8_t> &body);
 };
 
 
@@ -112,17 +112,17 @@ EncryptionType Encryptor0::GetEncryptionType() {
 }
 
 
-fun::string Encryptor0::GetEncryptionName() {
+std::string Encryptor0::GetEncryptionName() {
   return "dummy";
 }
 
 
-bool Encryptor0::Encrypt(fun::vector<uint8_t> &body) {
+bool Encryptor0::Encrypt(std::vector<uint8_t> &body) {
   return true;
 }
 
 
-bool Encryptor0::Decrypt(fun::vector<uint8_t> &body) {
+bool Encryptor0::Decrypt(std::vector<uint8_t> &body) {
   return true;
 }
 
@@ -139,16 +139,16 @@ class EncryptorSodium : public Encryptor {
   EncryptorSodium();
   virtual ~EncryptorSodium() = default;
 
-  virtual const fun::string& GetHandShakeString();
+  virtual const std::string& GetHandShakeString();
 
  protected:
   static inline bool Unhexify(std::array<uint8_t, 32> *out,
-                              const fun::string &hex_str);
-  static inline fun::string Hexify(const uint8_t *v, size_t len);
-  fun::string GenerateSharedSecret(std::array<uint8_t, 64> *secret,
-                                   const fun::string &_server_pubkey);
+                              const std::string &hex_str);
+  static inline std::string Hexify(const uint8_t *v, size_t len);
+  std::string GenerateSharedSecret(std::array<uint8_t, 64> *secret,
+                                   const std::string &_server_pubkey);
 
-  fun::string handshake_string_;
+  std::string handshake_string_;
 };
 
 
@@ -161,14 +161,14 @@ EncryptorSodium::EncryptorSodium() {
 }
 
 
-const fun::string &EncryptorSodium::GetHandShakeString() {
+const std::string &EncryptorSodium::GetHandShakeString() {
   handshake_completed_ = true;
   return handshake_string_;
 }
 
 
 bool EncryptorSodium::Unhexify(std::array<uint8_t, 32> *out,
-                               const fun::string &hex_str) {
+                               const std::string &hex_str) {
   if (hex_str.size() != 64) {
     return false;
   }
@@ -180,8 +180,8 @@ bool EncryptorSodium::Unhexify(std::array<uint8_t, 32> *out,
 }
 
 
-fun::string EncryptorSodium::Hexify(const uint8_t *v, size_t len) {
-  fun::string s;
+std::string EncryptorSodium::Hexify(const uint8_t *v, size_t len) {
+  std::string s;
   s.resize(len * 2 + 1);
   ::sodium_bin2hex(&s[0], s.size(), v, len);
   s.resize(len*2);
@@ -189,8 +189,8 @@ fun::string EncryptorSodium::Hexify(const uint8_t *v, size_t len) {
 }
 
 
-fun::string EncryptorSodium::GenerateSharedSecret(std::array<uint8_t, 64> *secret,
-                                                  const fun::string &_server_pubkey) {
+std::string EncryptorSodium::GenerateSharedSecret(std::array<uint8_t, 64> *secret,
+                                                  const std::string &_server_pubkey) {
   std::array<uint8_t, 32> server_pubkey;
   if (!Unhexify(&server_pubkey, _server_pubkey)) {
     return "";  // error
@@ -224,18 +224,18 @@ class EncryptorChacha20 : public EncryptorSodium {
   virtual ~EncryptorChacha20();
 
   EncryptionType GetEncryptionType();
-  static fun::string GetEncryptionName();
+  static std::string GetEncryptionName();
 
-  void HandShake(const fun::string &key);
+  void HandShake(const std::string &key);
 
-  bool Encrypt(fun::vector<uint8_t> &body);
-  bool Decrypt(fun::vector<uint8_t> &body);
+  bool Encrypt(std::vector<uint8_t> &body);
+  bool Decrypt(std::vector<uint8_t> &body);
 
  private:
   void GenerateChacha20Secret(std::array<uint8_t, 32> *key,
                               std::array<uint8_t, 8> *enc_nonce,
                               std::array<uint8_t, 8> *dec_nonce,
-                              const fun::string &server_pubkey);
+                              const std::string &server_pubkey);
 
   std::array<uint8_t, 8> enc_nonce_;
   uint64_t enc_count_ = 0;
@@ -260,12 +260,12 @@ EncryptionType EncryptorChacha20::GetEncryptionType() {
 }
 
 
-fun::string EncryptorChacha20::GetEncryptionName() {
+std::string EncryptorChacha20::GetEncryptionName() {
   return "chacha20";
 }
 
 
-bool EncryptorChacha20::Encrypt(fun::vector<uint8_t> &body) {
+bool EncryptorChacha20::Encrypt(std::vector<uint8_t> &body) {
   if (handshake_completed_ == false)
     return false;
 
@@ -283,7 +283,7 @@ bool EncryptorChacha20::Encrypt(fun::vector<uint8_t> &body) {
 }
 
 
-bool EncryptorChacha20::Decrypt(fun::vector<uint8_t> &body) {
+bool EncryptorChacha20::Decrypt(std::vector<uint8_t> &body) {
   if (!body.empty()) {
     if (0 != ::crypto_stream_chacha20_xor_ic(body.data(),
                                              body.data(),
@@ -301,7 +301,7 @@ bool EncryptorChacha20::Decrypt(fun::vector<uint8_t> &body) {
 }
 
 
-void EncryptorChacha20::HandShake(const fun::string &key) {
+void EncryptorChacha20::HandShake(const std::string &key) {
   if (key.length() > 0) {
     GenerateChacha20Secret(&key_, &enc_nonce_, &dec_nonce_, key);
   }
@@ -311,7 +311,7 @@ void EncryptorChacha20::HandShake(const fun::string &key) {
 void EncryptorChacha20::GenerateChacha20Secret(std::array<uint8_t, 32> *key,
                                    std::array<uint8_t, 8> *enc_nonce,
                                    std::array<uint8_t, 8> *dec_nonce,
-                                   const fun::string &server_pubkey) {
+                                   const std::string &server_pubkey) {
   std::array<uint8_t, 64> secret;
 
   handshake_string_ = GenerateSharedSecret(&secret, server_pubkey);
@@ -326,10 +326,10 @@ public:
   EncryptorSodium();
   virtual ~EncryptorSodium() = default;
 
-  virtual const fun::string& GetHandShakeString();
+  virtual const std::string& GetHandShakeString();
 
 protected:
-  fun::string handshake_string_;
+  std::string handshake_string_;
 };
 
 
@@ -337,7 +337,7 @@ EncryptorSodium::EncryptorSodium() {
 }
 
 
-const fun::string &EncryptorSodium::GetHandShakeString() {
+const std::string &EncryptorSodium::GetHandShakeString() {
   handshake_completed_ = true;
   return handshake_string_;
 }
@@ -350,12 +350,12 @@ public:
   virtual ~EncryptorChacha20();
 
   EncryptionType GetEncryptionType();
-  static fun::string GetEncryptionName();
+  static std::string GetEncryptionName();
 
-  void HandShake(const fun::string &key);
+  void HandShake(const std::string &key);
 
-  bool Encrypt(fun::vector<uint8_t> &body);
-  bool Decrypt(fun::vector<uint8_t> &body);
+  bool Encrypt(std::vector<uint8_t> &body);
+  bool Decrypt(std::vector<uint8_t> &body);
 };
 
 
@@ -372,22 +372,22 @@ EncryptionType EncryptorChacha20::GetEncryptionType() {
 }
 
 
-fun::string EncryptorChacha20::GetEncryptionName() {
+std::string EncryptorChacha20::GetEncryptionName() {
   return "chacha20";
 }
 
 
-bool EncryptorChacha20::Encrypt(fun::vector<uint8_t> &body) {
+bool EncryptorChacha20::Encrypt(std::vector<uint8_t> &body) {
   return true;
 }
 
 
-bool EncryptorChacha20::Decrypt(fun::vector<uint8_t> &body) {
+bool EncryptorChacha20::Decrypt(std::vector<uint8_t> &body) {
   return true;
 }
 
 
-void EncryptorChacha20::HandShake(const fun::string &key) {
+void EncryptorChacha20::HandShake(const std::string &key) {
 }
 #endif // FUNAPI_HAVE_SODIUM
 
@@ -400,18 +400,18 @@ class EncryptorAes128 : public EncryptorSodium {
   virtual ~EncryptorAes128();
 
   EncryptionType GetEncryptionType();
-  static fun::string GetEncryptionName();
+  static std::string GetEncryptionName();
 
-  void HandShake(const fun::string &key);
+  void HandShake(const std::string &key);
 
-  bool Encrypt(fun::vector<uint8_t> &body);
-  bool Decrypt(fun::vector<uint8_t> &body);
+  bool Encrypt(std::vector<uint8_t> &body);
+  bool Decrypt(std::vector<uint8_t> &body);
 
  private:
   void GenerateAes128Secret(std::array<uint8_t, 1408> *key,
                             std::array<uint8_t, 16> *enc_nonce,
                             std::array<uint8_t, 16> *dec_nonce,
-                            const fun::string &server_pubkey);
+                            const std::string &server_pubkey);
 
   std::array<uint8_t, 16> enc_nonce_;
   std::array<uint8_t, 16> dec_nonce_;
@@ -434,12 +434,12 @@ EncryptionType EncryptorAes128::GetEncryptionType() {
 }
 
 
-fun::string EncryptorAes128::GetEncryptionName() {
+std::string EncryptorAes128::GetEncryptionName() {
   return "aes128";
 }
 
 
-bool EncryptorAes128::Encrypt(fun::vector<uint8_t> &body) {
+bool EncryptorAes128::Encrypt(std::vector<uint8_t> &body) {
   if (handshake_completed_ == false)
     return false;
 
@@ -456,7 +456,7 @@ bool EncryptorAes128::Encrypt(fun::vector<uint8_t> &body) {
 }
 
 
-bool EncryptorAes128::Decrypt(fun::vector<uint8_t> &body) {
+bool EncryptorAes128::Decrypt(std::vector<uint8_t> &body) {
   if (!body.empty()) {
     if (0 != ::crypto_stream_aes128ctr_xor_afternm(body.data(),
                                                    body.data(),
@@ -473,7 +473,7 @@ bool EncryptorAes128::Decrypt(fun::vector<uint8_t> &body) {
 }
 
 
-void EncryptorAes128::HandShake(const fun::string &key) {
+void EncryptorAes128::HandShake(const std::string &key) {
   if (key.length() > 0) {
     GenerateAes128Secret(&table_, &enc_nonce_, &dec_nonce_, key);
   }
@@ -483,7 +483,7 @@ void EncryptorAes128::HandShake(const fun::string &key) {
 void EncryptorAes128::GenerateAes128Secret(std::array<uint8_t, 1408> *key,
                                            std::array<uint8_t, 16> *enc_nonce,
                                            std::array<uint8_t, 16> *dec_nonce,
-                                           const fun::string &server_pubkey) {
+                                           const std::string &server_pubkey) {
   std::array<uint8_t, 64> secret;
   std::array<uint8_t, 16> _key;
 
@@ -504,12 +504,12 @@ class EncryptorAes128 : public EncryptorSodium {
   virtual ~EncryptorAes128();
 
   EncryptionType GetEncryptionType();
-  static fun::string GetEncryptionName();
+  static std::string GetEncryptionName();
 
-  void HandShake(const fun::string &key);
+  void HandShake(const std::string &key);
 
-  bool Encrypt(fun::vector<uint8_t> &body);
-  bool Decrypt(fun::vector<uint8_t> &body);
+  bool Encrypt(std::vector<uint8_t> &body);
+  bool Decrypt(std::vector<uint8_t> &body);
 };
 
 
@@ -526,22 +526,22 @@ EncryptionType EncryptorAes128::GetEncryptionType() {
 }
 
 
-fun::string EncryptorAes128::GetEncryptionName() {
+std::string EncryptorAes128::GetEncryptionName() {
   return "aes128";
 }
 
 
-bool EncryptorAes128::Encrypt(fun::vector<uint8_t> &body) {
+bool EncryptorAes128::Encrypt(std::vector<uint8_t> &body) {
   return true;
 }
 
 
-bool EncryptorAes128::Decrypt(fun::vector<uint8_t> &body) {
+bool EncryptorAes128::Decrypt(std::vector<uint8_t> &body) {
   return true;
 }
 
 
-void EncryptorAes128::HandShake(const fun::string &key) {
+void EncryptorAes128::HandShake(const std::string &key) {
 }
 #endif
 
@@ -566,7 +566,7 @@ std::shared_ptr<Encryptor> Encryptor::Create(EncryptionType type) {
 }
 
 
-std::shared_ptr<Encryptor> Encryptor::Create(fun::string name) {
+std::shared_ptr<Encryptor> Encryptor::Create(std::string name) {
   if (name.compare(Encryptor0::GetEncryptionName()) == 0)
     return std::make_shared<Encryptor0>();
   else if (name.compare(Encryptor1::GetEncryptionName()) == 0)
@@ -593,14 +593,14 @@ class FunapiEncryptionImpl : public std::enable_shared_from_this<FunapiEncryptio
   ~FunapiEncryptionImpl();
 
   void SetEncryptionType(EncryptionType type);
-  void SetEncryptionType(EncryptionType type, const fun::string &key);
+  void SetEncryptionType(EncryptionType type, const std::string &key);
 
   bool Encrypt(HeaderFields &header_fields,
-               fun::vector<uint8_t> &body,
+               std::vector<uint8_t> &body,
                const EncryptionType encryption_type);
   bool Decrypt(HeaderFields &header_fields,
-               fun::vector<uint8_t> &body,
-               fun::vector<EncryptionType>& encryption_types);
+               std::vector<uint8_t> &body,
+               std::vector<EncryptionType>& encryption_types);
 
   void SetHeaderFieldsForHttpSend (HeaderFields &header_fields);
   void SetHeaderFieldsForHttpRecv (HeaderFields &header_fields);
@@ -614,7 +614,7 @@ class FunapiEncryptionImpl : public std::enable_shared_from_this<FunapiEncryptio
   bool CreateEncryptor(const EncryptionType type);
 
   std::shared_ptr<Encryptor> GetEncryptor(EncryptionType type);
-  fun::map<EncryptionType, std::shared_ptr<Encryptor>> encryptors_;
+  std::map<EncryptionType, std::shared_ptr<Encryptor>> encryptors_;
   EncryptionType encryptor_type_ = EncryptionType::kDefaultEncryption;
 };
 
@@ -660,10 +660,10 @@ bool FunapiEncryptionImpl::CreateEncryptor(const EncryptionType type) {
 
 
 bool FunapiEncryptionImpl::Decrypt(HeaderFields &header_fields,
-                                   fun::vector<uint8_t> &body,
-                                   fun::vector<EncryptionType>& encryption_types) {
-  fun::string encryption_header;
-  fun::string encryption_str("");
+                                   std::vector<uint8_t> &body,
+                                   std::vector<EncryptionType>& encryption_types) {
+  std::string encryption_header;
+  std::string encryption_str("");
 
   HeaderFields::iterator it;
   it = header_fields.find(kLengthHeaderField);
@@ -674,7 +674,7 @@ bool FunapiEncryptionImpl::Decrypt(HeaderFields &header_fields,
     size_t index = it->second.find(kDelim1);
     encryption_header = it->second;
 
-    if (index != fun::string::npos) {
+    if (index != std::string::npos) {
       encryption_str = encryption_header.substr(0, index);
       encryption_header = encryption_header.substr(index+1);
     }
@@ -689,7 +689,7 @@ bool FunapiEncryptionImpl::Decrypt(HeaderFields &header_fields,
       size_t end = encryption_header.find(kDelim2);
       EncryptionType type;
 
-      while (end != fun::string::npos) {
+      while (end != std::string::npos) {
         type = static_cast<EncryptionType>(atoi(encryption_header.substr(begin, end-begin).c_str()));
         CreateEncryptor(type);
 
@@ -741,12 +741,12 @@ bool FunapiEncryptionImpl::Decrypt(HeaderFields &header_fields,
 
 
 bool FunapiEncryptionImpl::Encrypt(HeaderFields &header_fields,
-                                   fun::vector<uint8_t> &body,
+                                   std::vector<uint8_t> &body,
                                    const EncryptionType encryption_type) {
   std::shared_ptr<Encryptor> e = GetEncryptor(encryption_type);
 
   if (e) {
-    fun::stringstream ss_encryption_type;
+    std::stringstream ss_encryption_type;
     ss_encryption_type << static_cast<int>(e->GetEncryptionType());
 
     bool use_encrypt = true;
@@ -798,7 +798,7 @@ void FunapiEncryptionImpl::SetEncryptionType(EncryptionType type) {
 }
 
 
-void FunapiEncryptionImpl::SetEncryptionType(EncryptionType type, const fun::string &key) {
+void FunapiEncryptionImpl::SetEncryptionType(EncryptionType type, const std::string &key) {
   std::shared_ptr<Encryptor> e = Encryptor::Create(type);
   if (e) {
     encryptors_[type] = e;
@@ -873,21 +873,21 @@ void FunapiEncryption::SetEncryptionType(EncryptionType type) {
 }
 
 
-void FunapiEncryption::SetEncryptionType(EncryptionType type, const fun::string &key) {
+void FunapiEncryption::SetEncryptionType(EncryptionType type, const std::string &key) {
   return impl_->SetEncryptionType(type, key);
 }
 
 
 bool FunapiEncryption::Encrypt(HeaderFields &header_fields,
-                               fun::vector<uint8_t> &body,
+                               std::vector<uint8_t> &body,
                                const EncryptionType encryption_type) {
   return impl_->Encrypt(header_fields, body, encryption_type);
 }
 
 
 bool FunapiEncryption::Decrypt(HeaderFields &header_fields,
-                               fun::vector<uint8_t> &body,
-                               fun::vector<EncryptionType>& encryption_types) {
+                               std::vector<uint8_t> &body,
+                               std::vector<EncryptionType>& encryption_types) {
   return impl_->Decrypt(header_fields, body, encryption_types);
 }
 

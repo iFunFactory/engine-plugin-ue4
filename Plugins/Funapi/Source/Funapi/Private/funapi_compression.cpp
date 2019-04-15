@@ -40,8 +40,8 @@ class Compressor : public std::enable_shared_from_this<Compressor>
 
   virtual CompressionType GetCompressionType() = 0;
 
-  virtual bool Compress(const fun::vector<uint8_t> &in, fun::vector<uint8_t> &out) = 0;
-  virtual bool Decompress(const fun::vector<uint8_t> &in, fun::vector<uint8_t> &out) = 0;
+  virtual bool Compress(const std::vector<uint8_t> &in, std::vector<uint8_t> &out) = 0;
+  virtual bool Decompress(const std::vector<uint8_t> &in, std::vector<uint8_t> &out) = 0;
 };
 
 
@@ -58,8 +58,8 @@ class CompressorZlib : public Compressor
 
   CompressionType GetCompressionType();
 
-  bool Compress(const fun::vector<uint8_t> &in, fun::vector<uint8_t> &out);
-  bool Decompress(const fun::vector<uint8_t> &in, fun::vector<uint8_t> &out);
+  bool Compress(const std::vector<uint8_t> &in, std::vector<uint8_t> &out);
+  bool Decompress(const std::vector<uint8_t> &in, std::vector<uint8_t> &out);
 
  private:
   size_t GetMaximumLength(size_t in_size);
@@ -81,7 +81,7 @@ CompressionType CompressorZlib::GetCompressionType()
 }
 
 
-bool CompressorZlib::Compress(const fun::vector<uint8_t> &in, fun::vector<uint8_t> &out)
+bool CompressorZlib::Compress(const std::vector<uint8_t> &in, std::vector<uint8_t> &out)
 {
 #if FUNAPI_HAVE_ZLIB
   const size_t in_size = in.size();
@@ -125,7 +125,7 @@ bool CompressorZlib::Compress(const fun::vector<uint8_t> &in, fun::vector<uint8_
 }
 
 
-bool CompressorZlib::Decompress(const fun::vector<uint8_t> &in, fun::vector<uint8_t> &out)
+bool CompressorZlib::Decompress(const std::vector<uint8_t> &in, std::vector<uint8_t> &out)
 {
 #if FUNAPI_HAVE_ZLIB
   z_stream zstr;
@@ -172,10 +172,10 @@ class CompressorZstd : public Compressor
 
   CompressionType GetCompressionType();
 
-  bool Compress(const fun::vector<uint8_t> &in, fun::vector<uint8_t> &out);
-  bool Decompress(const fun::vector<uint8_t> &in, fun::vector<uint8_t> &out);
+  bool Compress(const std::vector<uint8_t> &in, std::vector<uint8_t> &out);
+  bool Decompress(const std::vector<uint8_t> &in, std::vector<uint8_t> &out);
 
-  void SetDictBase64String(const fun::string &zstd_dict_base64string);
+  void SetDictBase64String(const std::string &zstd_dict_base64string);
 
  private:
 #if FUNAPI_HAVE_ZSTD
@@ -236,7 +236,7 @@ size_t CompressorZstd::DoCompressSmall(::ZSTD_CCtx *ctxt, const void *src, size_
   }
   rv = ::ZSTD_compressBlock(ctxt, dst, dst_size, src, src_size);
   if (::ZSTD_isError(rv)) {
-    fun::stringstream ss;
+    std::stringstream ss;
     ss << __func__ << ": " << ::ZSTD_getErrorName(rv);
     DebugUtils::Log("%s", ss.str().c_str());
     return 0;
@@ -278,7 +278,7 @@ size_t CompressorZstd::DoDecompressSmall(::ZSTD_DCtx *ctxt, void *dst, size_t ds
 
   rv = ::ZSTD_decompressBlock(ctxt, dst, dst_size, src, src_size);
   if (::ZSTD_isError(rv)) {
-    fun::stringstream ss;
+    std::stringstream ss;
     ss << __func__ << ": " << ::ZSTD_getErrorName(rv);
     DebugUtils::Log("%s", ss.str().c_str());
     return 0;
@@ -300,7 +300,7 @@ size_t CompressorZstd::DoDecompress(::ZSTD_DCtx *ctxt, void *dst, size_t dst_siz
   }
 
   if (::ZSTD_isError(rv)) {
-    fun::stringstream ss;
+    std::stringstream ss;
     ss << __func__ << ": " << ::ZSTD_getErrorName(rv);
     DebugUtils::Log("%s", ss.str().c_str());
     return 0;
@@ -321,7 +321,7 @@ CompressionType CompressorZstd::GetCompressionType()
 }
 
 
-bool CompressorZstd::Compress(const fun::vector<uint8_t> &in, fun::vector<uint8_t> &out)
+bool CompressorZstd::Compress(const std::vector<uint8_t> &in, std::vector<uint8_t> &out)
 {
 #if FUNAPI_HAVE_ZSTD
   ::ZSTD_CCtx *ctxt = ::ZSTD_createCCtx();
@@ -361,7 +361,7 @@ bool CompressorZstd::Compress(const fun::vector<uint8_t> &in, fun::vector<uint8_
 }
 
 
-bool CompressorZstd::Decompress(const fun::vector<uint8_t> &in, fun::vector<uint8_t> &out)
+bool CompressorZstd::Decompress(const std::vector<uint8_t> &in, std::vector<uint8_t> &out)
 {
 #if FUNAPI_HAVE_ZSTD
   size_t expected_size = out.size();
@@ -395,9 +395,9 @@ bool CompressorZstd::Decompress(const fun::vector<uint8_t> &in, fun::vector<uint
 }
 
 
-void CompressorZstd::SetDictBase64String(const fun::string &zstd_dict_base64string) {
+void CompressorZstd::SetDictBase64String(const std::string &zstd_dict_base64string) {
 #if FUNAPI_HAVE_ZSTD
-  fun::vector<uint8_t> dict_buf;
+  std::vector<uint8_t> dict_buf;
   if (false == FunapiUtil::DecodeBase64(zstd_dict_base64string, dict_buf)) {
     DebugUtils::Log("Cannot decode zstd_dict");
   }
@@ -406,7 +406,7 @@ void CompressorZstd::SetDictBase64String(const fun::string &zstd_dict_base64stri
   ddict_ = ::ZSTD_createDDict(dict_buf.data(), dict_buf.size());
 
   if (cdict_ == NULL || ddict_ == NULL) {
-    fun::stringstream ss;
+    std::stringstream ss;
     ss << "Failed to load zstd dictionary object.";
     DebugUtils::Log("%s", ss.str().c_str());
   }
@@ -444,10 +444,10 @@ class FunapiCompressionImpl : public std::enable_shared_from_this<FunapiCompress
   virtual ~FunapiCompressionImpl();
 
   void SetCompressionType(const CompressionType type);
-  void SetZstdDictBase64String(const fun::string &zstd_dict_base64string);
+  void SetZstdDictBase64String(const std::string &zstd_dict_base64string);
 
-  bool Compress(HeaderFields &header_fields, fun::vector<uint8_t> &body);
-  bool Decompress(HeaderFields &header_fields, fun::vector<uint8_t> &body);
+  bool Compress(HeaderFields &header_fields, std::vector<uint8_t> &body);
+  bool Decompress(HeaderFields &header_fields, std::vector<uint8_t> &body);
 
   void SetHeaderFieldsForHttpSend (HeaderFields &header_fields);
   void SetHeaderFieldsForHttpRecv (HeaderFields &header_fields);
@@ -458,7 +458,7 @@ class FunapiCompressionImpl : public std::enable_shared_from_this<FunapiCompress
   bool CreateCompressor(const CompressionType type);
   std::shared_ptr<Compressor> GetCompressor(CompressionType type);
 
-  fun::map<CompressionType, std::shared_ptr<Compressor>> compressors_;
+  std::map<CompressionType, std::shared_ptr<Compressor>> compressors_;
   std::shared_ptr<Compressor> default_compressor_ = nullptr;
 };
 
@@ -500,14 +500,14 @@ bool FunapiCompressionImpl::CreateCompressor(const CompressionType type) {
 
 
 bool FunapiCompressionImpl::Decompress(HeaderFields &header_fields,
-                                       fun::vector<uint8_t> &body) {
+                                       std::vector<uint8_t> &body) {
   if (default_compressor_) {
     HeaderFields::iterator it;
     it = header_fields.find(kProtocolCompressionField);
     if (it != header_fields.end()) {
       size_t body_length = atoi(it->second.c_str());
       if (body_length > 0) {
-        fun::vector<uint8_t> in(body.cbegin(), body.cend());
+        std::vector<uint8_t> in(body.cbegin(), body.cend());
         body.resize(body_length);
         return default_compressor_->Decompress(in, body);
       }
@@ -518,16 +518,16 @@ bool FunapiCompressionImpl::Decompress(HeaderFields &header_fields,
 }
 
 
-bool FunapiCompressionImpl::Compress(HeaderFields &header_fields, fun::vector<uint8_t> &body) {
+bool FunapiCompressionImpl::Compress(HeaderFields &header_fields, std::vector<uint8_t> &body) {
   if (default_compressor_ && !body.empty()) {
-    fun::vector<uint8_t> in(body.cbegin(), body.cend());
+    std::vector<uint8_t> in(body.cbegin(), body.cend());
     if (default_compressor_->Compress(in, body)) {
       HeaderFields::iterator it = header_fields.find(kLengthHeaderField);
       if (it != header_fields.end()) {
         header_fields[kProtocolCompressionField] = it->second.c_str();
       }
 
-      fun::stringstream ss;
+      std::stringstream ss;
       ss << body.size();
       header_fields[kLengthHeaderField] = ss.str();
     }
@@ -575,7 +575,7 @@ bool FunapiCompressionImpl::HasCompression(const CompressionType type) {
 }
 
 
-void FunapiCompressionImpl::SetZstdDictBase64String(const fun::string &zstd_dict_base64string) {
+void FunapiCompressionImpl::SetZstdDictBase64String(const std::string &zstd_dict_base64string) {
 #if FUNAPI_HAVE_ZSTD
   if (zstd_dict_base64string.length() > 0) {
     if (false == HasCompression(CompressionType::kZstd)) {
@@ -610,18 +610,18 @@ void FunapiCompression::SetCompressionType(const CompressionType type) {
 
 
 #if FUNAPI_HAVE_ZSTD
-void FunapiCompression::SetZstdDictBase64String(const fun::string &zstd_dict_base64string) {
+void FunapiCompression::SetZstdDictBase64String(const std::string &zstd_dict_base64string) {
   return impl_->SetZstdDictBase64String(zstd_dict_base64string);
 }
 #endif
 
 
-bool FunapiCompression::Compress(HeaderFields &header_fields, fun::vector<uint8_t> &body) {
+bool FunapiCompression::Compress(HeaderFields &header_fields, std::vector<uint8_t> &body) {
   return impl_->Compress(header_fields, body);
 }
 
 
-bool FunapiCompression::Decompress(HeaderFields &header_fields, fun::vector<uint8_t> &body) {
+bool FunapiCompression::Decompress(HeaderFields &header_fields, std::vector<uint8_t> &body) {
   return impl_->Decompress(header_fields, body);
 }
 

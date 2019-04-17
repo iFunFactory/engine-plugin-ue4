@@ -118,8 +118,11 @@ public class Funapi : ModuleRules
     // definitions
     PublicDefinitions.Add("RAPIDJSON_HAS_STDSTRING=0");
     PublicDefinitions.Add("RAPIDJSON_HAS_CXX11_RVALUE_REFS=0");
+
     // definitions for zlib
-    PublicDefinitions.Add("_LARGEFILE64_SOURCE=0");
+    if (Target.Platform != UnrealTargetPlatform.Linux) {
+      PublicDefinitions.Add("_LARGEFILE64_SOURCE=0");
+    }
     PublicDefinitions.Add("_FILE_OFFSET_BITS=0");
 
     // Third party library

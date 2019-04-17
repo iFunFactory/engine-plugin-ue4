@@ -19,9 +19,7 @@
 #include "AllowWindowsPlatformTypes.h"
 #endif
 // Work around a conflict between a UI namespace defined by engine code and a typedef in OpenSSL
-#if PLATFORM_LINUX == 0
 #define UI UI_ST
-#endif
 THIRD_PARTY_INCLUDES_START
 #if FUNAPI_UE4_PLATFORM_ANDROID == 0
 #include "openssl/ssl.h"

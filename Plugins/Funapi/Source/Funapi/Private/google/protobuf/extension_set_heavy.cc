@@ -100,8 +100,8 @@ class DescriptorPoolExtensionFinder : public ExtensionFinder {
 
 void ExtensionSet::AppendToList(const Descriptor* containing_type,
                                 const DescriptorPool* pool,
-                                vector<const FieldDescriptor*>* output) const {
-  for (map<int, Extension>::const_iterator iter = extensions_.begin();
+                                fun::vector<const FieldDescriptor*>* output) const {
+  for (fun::map<int, Extension>::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     bool has = false;
     if (iter->second.is_repeated) {
@@ -150,7 +150,7 @@ inline WireFormatLite::FieldType field_type(FieldType type) {
 const MessageLite& ExtensionSet::GetMessage(int number,
                                             const Descriptor* message_type,
                                             MessageFactory* factory) const {
-  map<int, Extension>::const_iterator iter = extensions_.find(number);
+  fun::map<int, Extension>::const_iterator iter = extensions_.find(number);
   if (iter == extensions_.end() || iter->second.is_cleared) {
     // Not present.  Return the default value.
     return *factory->GetPrototype(message_type);
@@ -193,7 +193,7 @@ MessageLite* ExtensionSet::MutableMessage(const FieldDescriptor* descriptor,
 
 MessageLite* ExtensionSet::ReleaseMessage(const FieldDescriptor* descriptor,
                                           MessageFactory* factory) {
-  map<int, Extension>::iterator iter = extensions_.find(descriptor->number());
+  fun::map<int, Extension>::iterator iter = extensions_.find(descriptor->number());
   if (iter == extensions_.end()) {
     // Not present.  Return NULL.
     return NULL;
@@ -305,8 +305,8 @@ bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
 
 int ExtensionSet::SpaceUsedExcludingSelf() const {
   int total_size =
-      extensions_.size() * sizeof(map<int, Extension>::value_type);
-  for (map<int, Extension>::const_iterator iter = extensions_.begin(),
+      extensions_.size() * sizeof(fun::map<int, Extension>::value_type);
+  for (fun::map<int, Extension>::const_iterator iter = extensions_.begin(),
        end = extensions_.end();
        iter != end;
        ++iter) {
@@ -376,7 +376,7 @@ int ExtensionSet::Extension::SpaceUsedExcludingSelf() const {
 uint8* ExtensionSet::SerializeWithCachedSizesToArray(
     int start_field_number, int end_field_number,
     uint8* target) const {
-  map<int, Extension>::const_iterator iter;
+  fun::map<int, Extension>::const_iterator iter;
   for (iter = extensions_.lower_bound(start_field_number);
        iter != extensions_.end() && iter->first < end_field_number;
        ++iter) {
@@ -388,7 +388,7 @@ uint8* ExtensionSet::SerializeWithCachedSizesToArray(
 
 uint8* ExtensionSet::SerializeMessageSetWithCachedSizesToArray(
     uint8* target) const {
-  map<int, Extension>::const_iterator iter;
+  fun::map<int, Extension>::const_iterator iter;
   for (iter = extensions_.begin(); iter != extensions_.end(); ++iter) {
     target = iter->second.SerializeMessageSetItemWithCachedSizesToArray(
         iter->first, target);
@@ -513,7 +513,7 @@ uint8* ExtensionSet::Extension::SerializeMessageSetItemWithCachedSizesToArray(
     uint8* target) const {
   if (type != WireFormatLite::TYPE_MESSAGE || is_repeated) {
     // Not a valid MessageSet extension, but serialize it the normal way.
-    GOOGLE_LOG(WARNING) << "Invalid message set extension.";
+    GOOGLE_LOG(WARNING) << "Invalid message fun::set extension.";
     return SerializeFieldWithCachedSizesToArray(number, target);
   }
 
@@ -593,7 +593,7 @@ bool ExtensionSet::ParseMessageSetItem(io::CodedInputStream* input,
 
   // If we see message data before the type_id, we'll append it to this so
   // we can parse it later.
-  string message_data;
+  fun::string message_data;
 
   while (true) {
     const uint32 tag = input->ReadTag();
@@ -625,7 +625,7 @@ bool ExtensionSet::ParseMessageSetItem(io::CodedInputStream* input,
       case WireFormatLite::kMessageSetMessageTag: {
         if (last_type_id == 0) {
           // We haven't seen a type_id yet.  Append this data to message_data.
-          string temp;
+          fun::string temp;
           uint32 length;
           if (!input->ReadVarint32(&length)) return false;
           if (!input->ReadString(&temp, length)) return false;
@@ -719,7 +719,7 @@ int ExtensionSet::Extension::MessageSetItemByteSize(int number) const {
 
 void ExtensionSet::SerializeMessageSetWithCachedSizes(
     io::CodedOutputStream* output) const {
-  for (map<int, Extension>::const_iterator iter = extensions_.begin();
+  for (fun::map<int, Extension>::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     iter->second.SerializeMessageSetItemWithCachedSizes(iter->first, output);
   }
@@ -728,7 +728,7 @@ void ExtensionSet::SerializeMessageSetWithCachedSizes(
 int ExtensionSet::MessageSetByteSize() const {
   int total_size = 0;
 
-  for (map<int, Extension>::const_iterator iter = extensions_.begin();
+  for (fun::map<int, Extension>::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     total_size += iter->second.MessageSetItemByteSize(iter->first);
   }

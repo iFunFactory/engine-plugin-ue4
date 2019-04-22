@@ -86,8 +86,8 @@ void AssignParsingMergeMessages(
   msg3->set_optional_string("hello");
 }
 
-static std::string TestSourceDir() {
-  return std::string(TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir()))) + "../ThirdParty";
+static fun::string TestSourceDir() {
+  return fun::string(TCHAR_TO_UTF8(*(FPaths::ProjectSavedDir()))) + "../ThirdParty";
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiLibProtobufMessageTest, "LibProtobuf.MessageTest", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
@@ -101,10 +101,10 @@ bool FFunapiLibProtobufMessageTest::RunTest(const FString& Parameters)
 
     protobuf_unittest::TestAllTypes message;
     google::protobuf::TestUtil::SetAllFields(&message);
-    std::stringstream stream;
+    fun::stringstream stream;
 
-    std::string str1("foo");
-    std::string str2("bar");
+    fun::string str1("foo");
+    fun::string str2("bar");
 
     verify(message.SerializeToString(&str1));
     verify(message.AppendToString(&str2));
@@ -117,7 +117,7 @@ bool FFunapiLibProtobufMessageTest::RunTest(const FString& Parameters)
     verify(str2.substr(3) == str1);
 
     // GCC gives some sort of error if we try to just do stream.str() == str1.
-    std::string temp = stream.str();
+    fun::string temp = stream.str();
     verify(temp == str1);
 
     verify(message.SerializeAsString() == str1);
@@ -135,7 +135,7 @@ bool FFunapiLibProtobufMessageTest::RunTest(const FString& Parameters)
 
   // TEST(MessageTest, ParseFromFileDescriptor)
   {
-    std::string filename = TestSourceDir() +
+    fun::string filename = TestSourceDir() +
       "/google/protobuf/testdata/golden_message";
     int file = open(filename.c_str(), O_RDONLY | O_BINARY);
 
@@ -148,7 +148,7 @@ bool FFunapiLibProtobufMessageTest::RunTest(const FString& Parameters)
 
   // TEST(MessageTest, ParsePackedFromFileDescriptor)
   {
-    std::string filename =
+    fun::string filename =
       TestSourceDir() +
       "/google/protobuf/testdata/golden_packed_fields_message";
 
@@ -165,7 +165,7 @@ bool FFunapiLibProtobufMessageTest::RunTest(const FString& Parameters)
   {
     // TODO(kenton):  Test more helpers?  They're all two-liners so it seems
     //   like a waste of time.
-    std::string data;
+    fun::string data;
 
     {
       // Set up.
@@ -184,7 +184,7 @@ bool FFunapiLibProtobufMessageTest::RunTest(const FString& Parameters)
     {
       // Test ParseFromIstream.
       protobuf_unittest::TestAllTypes message;
-      std::stringstream stream(data);
+      fun::stringstream stream(data);
       verify(message.ParseFromIstream(&stream));
       verify(stream.eof());
       google::protobuf::TestUtil::ExpectAllFieldsSet(message);
@@ -192,7 +192,7 @@ bool FFunapiLibProtobufMessageTest::RunTest(const FString& Parameters)
 
     {
       // Test ParseFromBoundedZeroCopyStream.
-      std::string data_with_junk(data);
+      fun::string data_with_junk(data);
       data_with_junk.append("some junk on the end");
       google::protobuf::io::ArrayInputStream stream(data_with_junk.data(), data_with_junk.size());
       protobuf_unittest::TestAllTypes message;
@@ -213,7 +213,7 @@ bool FFunapiLibProtobufMessageTest::RunTest(const FString& Parameters)
   // TEST(MessageTest, ParseFailsIfNotInitialized)
   {
     google::protobuf::unittest::TestRequired message;
-    std::vector<std::string> errors;
+    fun::vector<fun::string> errors;
 
     {
       google::protobuf::ScopedMemoryLog log;
@@ -252,7 +252,7 @@ bool FFunapiLibProtobufMessageTest::RunTest(const FString& Parameters)
   // TEST(MessageTest, FindInitializationErrors)
   {
     google::protobuf::unittest::TestRequired message;
-    std::vector<std::string> errors;
+    fun::vector<fun::string> errors;
     message.FindInitializationErrors(&errors);
     verify(3 == errors.size());
     verify("a" == errors[0]);
@@ -310,7 +310,7 @@ bool FFunapiLibProtobufMessageTest::RunTest(const FString& Parameters)
 
 #undef ASSIGN_REPEATED_GROUP
 
-    std::string buffer;
+    fun::string buffer;
     generator.SerializeToString(&buffer);
     google::protobuf::unittest::TestParsingMerge parsing_merge;
     parsing_merge.ParseFromString(buffer);

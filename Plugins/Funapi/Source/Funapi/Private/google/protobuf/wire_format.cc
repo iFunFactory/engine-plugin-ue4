@@ -464,7 +464,7 @@ bool WireFormat::ParseAndMergeField(
     value_format = PACKED_FORMAT;
   } else {
     // We don't recognize this field. Either the field number is unknown
-    // or the wire type doesn't match. Put it in our unknown field set.
+    // or the wire type doesn't match. Put it in our unknown field set
     value_format = UNKNOWN;
   }
 
@@ -593,7 +593,7 @@ bool WireFormat::ParseAndMergeField(
 
       // Handle strings separately so that we can optimize the ctype=CORD case.
       case FieldDescriptor::TYPE_STRING: {
-        string value;
+        fun::string value;
         if (!WireFormatLite::ReadString(input, &value)) return false;
         VerifyUTF8StringNamedField(value.data(), value.length(), PARSE,
                                    field->name().c_str());
@@ -606,7 +606,7 @@ bool WireFormat::ParseAndMergeField(
       }
 
       case FieldDescriptor::TYPE_BYTES: {
-        string value;
+        fun::string value;
         if (!WireFormatLite::ReadBytes(input, &value)) return false;
         if (field->is_repeated()) {
           message_reflection->AddString(message, field, value);
@@ -668,7 +668,7 @@ bool WireFormat::ParseAndMergeMessageSetItem(
 
   // If we see message data before the type_id, we'll append it to this so
   // we can parse it later.
-  string message_data;
+  fun::string message_data;
 
   while (true) {
     uint32 tag = input->ReadTag();
@@ -700,7 +700,7 @@ bool WireFormat::ParseAndMergeMessageSetItem(
       case WireFormatLite::kMessageSetMessageTag: {
         if (last_type_id == 0) {
           // We haven't seen a type_id yet.  Append this data to message_data.
-          string temp;
+          fun::string temp;
           uint32 length;
           if (!input->ReadVarint32(&length)) return false;
           if (!input->ReadString(&temp, length)) return false;
@@ -739,7 +739,7 @@ void WireFormat::SerializeWithCachedSizes(
   const Reflection* message_reflection = message.GetReflection();
   int expected_endpoint = output->ByteCount() + size;
 
-  vector<const FieldDescriptor*> fields;
+  fun::vector<const FieldDescriptor*> fields;
   message_reflection->ListFields(message, &fields);
   for (int i = 0; i < (int)fields.size(); i++) {
     SerializeFieldWithCachedSizes(fields[i], message, output);
@@ -851,11 +851,11 @@ void WireFormat::SerializeFieldWithCachedSizes(
         break;
       }
 
-      // Handle strings separately so that we can get string references
+      // Handle strings separately so that we can get fun::string references
       // instead of copying.
       case FieldDescriptor::TYPE_STRING: {
-        string scratch;
-        const string& value = field->is_repeated() ?
+        fun::string scratch;
+        const fun::string& value = field->is_repeated() ?
           message_reflection->GetRepeatedStringReference(
             message, field, j, &scratch) :
           message_reflection->GetStringReference(message, field, &scratch);
@@ -866,8 +866,8 @@ void WireFormat::SerializeFieldWithCachedSizes(
       }
 
       case FieldDescriptor::TYPE_BYTES: {
-        string scratch;
-        const string& value = field->is_repeated() ?
+        fun::string scratch;
+        const fun::string& value = field->is_repeated() ?
           message_reflection->GetRepeatedStringReference(
             message, field, j, &scratch) :
           message_reflection->GetStringReference(message, field, &scratch);
@@ -910,7 +910,7 @@ int WireFormat::ByteSize(const Message& message) {
 
   int our_size = 0;
 
-  vector<const FieldDescriptor*> fields;
+  fun::vector<const FieldDescriptor*> fields;
   message_reflection->ListFields(message, &fields);
   for (int i = 0; i < (int)fields.size(); i++) {
     our_size += FieldByteSize(fields[i], message);
@@ -950,7 +950,7 @@ int WireFormat::FieldByteSize(
   int our_size = data_size;
   if (field->options().packed()) {
     if (data_size > 0) {
-      // Packed fields get serialized like a string, not their native type.
+      // Packed fields get serialized like a fun::string, not their native type.
       // Technically this doesn't really matter; the size only changes if it's
       // a GROUP
       our_size += TagSize(field->number(), FieldDescriptor::TYPE_STRING);
@@ -1030,13 +1030,13 @@ int WireFormat::FieldDataOnlyByteSize(
       break;
     }
 
-    // Handle strings separately so that we can get string references
+    // Handle strings separately so that we can get fun::string references
     // instead of copying.
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES: {
       for (int j = 0; j < count; j++) {
-        string scratch;
-        const string& value = field->is_repeated() ?
+        fun::string scratch;
+        const fun::string& value = field->is_repeated() ?
           message_reflection->GetRepeatedStringReference(
             message, field, j, &scratch) :
           message_reflection->GetStringReference(message, field, &scratch);
@@ -1083,7 +1083,7 @@ void WireFormat::VerifyUTF8StringFallback(const char* data,
         break;
       // no default case: have the compiler warn if a case is not covered.
     }
-    string quoted_field_name = "";
+    fun::string quoted_field_name = "";
     if (field_name != NULL) {
       quoted_field_name = StringPrintf(" '%s'", field_name);
     }

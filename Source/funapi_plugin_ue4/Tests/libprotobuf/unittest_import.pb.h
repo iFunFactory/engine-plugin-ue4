@@ -48,12 +48,12 @@ const ImportEnum ImportEnum_MAX = IMPORT_BAZ;
 const int ImportEnum_ARRAYSIZE = ImportEnum_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* ImportEnum_descriptor();
-inline const ::std::string& ImportEnum_Name(ImportEnum value) {
+inline const ::fun::string& ImportEnum_Name(ImportEnum value) {
   return ::google::protobuf::internal::NameOfEnum(
     ImportEnum_descriptor(), value);
 }
 inline bool ImportEnum_Parse(
-    const ::std::string& name, ImportEnum* value) {
+    const ::fun::string& name, ImportEnum* value) {
   return ::google::protobuf::internal::ParseNamedEnum<ImportEnum>(
     ImportEnum_descriptor(), name, value);
 }

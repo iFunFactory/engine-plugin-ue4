@@ -37,11 +37,11 @@ class FUNAPI_API FunapiThread : public std::enable_shared_from_this<FunapiThread
   typedef FunapiTasks::TaskHandler TaskHandler;
 
   FunapiThread() = delete;
-  FunapiThread(const std::string &thread_id);
+  FunapiThread(const fun::string &thread_id);
   virtual ~FunapiThread();
 
-  static std::shared_ptr<FunapiThread> Create(const std::string &thread_id);
-  static std::shared_ptr<FunapiThread> Get(const std::string &thread_id);
+  static std::shared_ptr<FunapiThread> Create(const fun::string &thread_id);
+  static std::shared_ptr<FunapiThread> Get(const fun::string &thread_id);
 
   void Push(const TaskHandler &task);
   int Size();

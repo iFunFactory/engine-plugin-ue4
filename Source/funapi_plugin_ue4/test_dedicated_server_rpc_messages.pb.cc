@@ -56,7 +56,7 @@ inline void protobuf_AssignDescriptorsOnce() {
                  &protobuf_AssignDesc_test_5fdedicated_5fserver_5frpc_5fmessages_2eproto);
 }
 
-void protobuf_RegisterTypes(const ::std::string&) {
+void protobuf_RegisterTypes(const ::fun::string&) {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     EchoDedicatedServerRpcMessage_descriptor_, &EchoDedicatedServerRpcMessage::default_instance());
@@ -126,7 +126,7 @@ EchoDedicatedServerRpcMessage::EchoDedicatedServerRpcMessage(const EchoDedicated
 void EchoDedicatedServerRpcMessage::SharedCtor() {
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
-  message_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  message_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -184,7 +184,7 @@ bool EchoDedicatedServerRpcMessage::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional string message = 1;
+      // optional fun::string message = 1;
       case 1: {
         if (tag == 10) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
@@ -225,7 +225,7 @@ failure:
 void EchoDedicatedServerRpcMessage::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:EchoDedicatedServerRpcMessage)
-  // optional string message = 1;
+  // optional fun::string message = 1;
   if (has_message()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->message().data(), this->message().length(),
@@ -245,7 +245,7 @@ void EchoDedicatedServerRpcMessage::SerializeWithCachedSizes(
 ::google::protobuf::uint8* EchoDedicatedServerRpcMessage::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:EchoDedicatedServerRpcMessage)
-  // optional string message = 1;
+  // optional fun::string message = 1;
   if (has_message()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->message().data(), this->message().length(),
@@ -268,7 +268,7 @@ int EchoDedicatedServerRpcMessage::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional string message = 1;
+    // optional fun::string message = 1;
     if (has_message()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(

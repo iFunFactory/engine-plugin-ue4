@@ -31,7 +31,7 @@ class FunapiTasksImpl : public std::enable_shared_from_this<FunapiTasksImpl> {
   virtual int Size();
 
  protected:
-  std::queue<std::shared_ptr<std::function<bool()>>> queue_;
+  fun::queue<std::shared_ptr<std::function<bool()>>> queue_;
   std::mutex mutex_;
 };
 
@@ -133,13 +133,13 @@ void FunapiTasks::UpdateAll() {
 class FunapiThreadImpl : public FunapiTasksImpl {
  public:
   FunapiThreadImpl() = delete;
-  FunapiThreadImpl(const std::string &thread_id);
+  FunapiThreadImpl(const fun::string &thread_id);
   virtual ~FunapiThreadImpl();
 
   void Push(const TaskHandler &task);
   void Join();
 
-  std::string GetThreadId();
+  fun::string GetThreadId();
 
  private:
   void Initialize();
@@ -150,11 +150,11 @@ class FunapiThreadImpl : public FunapiTasksImpl {
   std::thread thread_;
   bool run_ = false;
   std::condition_variable_any condition_;
-  std::string thread_id_;
+  fun::string thread_id_;
 };
 
 
-FunapiThreadImpl::FunapiThreadImpl(const std::string &thread_id) : thread_id_(thread_id) {
+FunapiThreadImpl::FunapiThreadImpl(const fun::string &thread_id) : thread_id_(thread_id) {
   Initialize();
 }
 
@@ -212,7 +212,7 @@ void FunapiThreadImpl::Join() {
 }
 
 
-std::string FunapiThreadImpl::GetThreadId() {
+fun::string FunapiThreadImpl::GetThreadId() {
   return thread_id_;
 }
 
@@ -220,7 +220,7 @@ std::string FunapiThreadImpl::GetThreadId() {
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiThread implementation.
 
-FunapiThread::FunapiThread(const std::string &thread_id)
+FunapiThread::FunapiThread(const fun::string &thread_id)
 : impl_(std::make_shared<FunapiThreadImpl>(thread_id)) {
 }
 
@@ -230,7 +230,7 @@ FunapiThread::~FunapiThread() {
 }
 
 
-std::shared_ptr<FunapiThread> FunapiThread::Create(const std::string &thread_id) {
+std::shared_ptr<FunapiThread> FunapiThread::Create(const fun::string &thread_id) {
   if (auto t = FunapiThread::Get(thread_id)) {
     return t;
   }
@@ -254,8 +254,8 @@ void FunapiThread::Join() {
 }
 
 
-std::shared_ptr<FunapiThread> FunapiThread::Get(const std::string &thread_id) {
-  static std::unordered_map<std::string, std::shared_ptr<FunapiThread>> map_threads;
+std::shared_ptr<FunapiThread> FunapiThread::Get(const fun::string &thread_id) {
+  static fun::unordered_map<fun::string, std::shared_ptr<FunapiThread>> map_threads;
   static std::mutex threads_mutex;
 
   std::unique_lock<std::mutex> lock(threads_mutex);

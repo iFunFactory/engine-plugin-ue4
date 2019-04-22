@@ -24,14 +24,14 @@
 #include "test_messages.pb.h"
 #include "funapi/service/multicast_message.pb.h"
 
-const std::string g_server_ip = "127.0.0.1";
+const fun::string g_server_ip = "127.0.0.1";
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEchoJson, "Funapi.Echo.E_Json", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
 bool FFunapiSessionTestEchoJson::RunTest(const FString& Parameters)
 {
-  std::string send_string = "Json Echo Message";
-  std::string server_ip = g_server_ip;
+  fun::string send_string = "Json Echo Message";
+  fun::string server_ip = g_server_ip;
 
   auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
   bool is_ok = true;
@@ -42,18 +42,18 @@ bool FFunapiSessionTestEchoJson::RunTest(const FString& Parameters)
       const std::shared_ptr<fun::FunapiSession> &s,
       const fun::TransportProtocol protocol,
       const fun::SessionEventType type,
-      const std::string &session_id,
+      const fun::string &session_id,
       const std::shared_ptr<fun::FunapiError> &error)
   {
     if (type == fun::SessionEventType::kOpened) {
       TSharedRef<FJsonObject> json_object = MakeShareable(new FJsonObject);
       json_object->SetStringField(FString("message"), FString(send_string.c_str()));
 
-      // Convert JSON document to string
+      // Convert JSON document to fun::string
       FString ouput_fstring;
       TSharedRef<TJsonWriter<TCHAR>> writer = TJsonWriterFactory<TCHAR>::Create(&ouput_fstring);
       FJsonSerializer::Serialize(json_object, writer);
-      std::string json_stiring = TCHAR_TO_ANSI(*ouput_fstring);
+      fun::string json_stiring = TCHAR_TO_ANSI(*ouput_fstring);
 
       s->SendMessage("echo", json_stiring);
     }
@@ -82,7 +82,7 @@ bool FFunapiSessionTestEchoJson::RunTest(const FString& Parameters)
     [&is_working, &is_ok, &send_string](
       const std::shared_ptr<fun::FunapiSession> &s,
       const fun::TransportProtocol protocol,
-      const std::string &msg_type, const std::string &json_string)
+      const fun::string &msg_type, const fun::string &json_string)
   {
     if (msg_type.compare("echo") == 0) {
       TSharedRef<TJsonReader<TCHAR>> Reader = TJsonReaderFactory<>::Create(*FString(json_string.c_str()));
@@ -120,8 +120,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestReconnectJson,
                                  EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
 bool FFunapiSessionTestReconnectJson::RunTest(const FString& Parameters) {
-  std::string send_string = "Json Echo Message";
-  std::string server_ip = g_server_ip;
+  fun::string send_string = "Json Echo Message";
+  fun::string server_ip = g_server_ip;
 
   auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
   bool is_ok = true;
@@ -132,7 +132,7 @@ bool FFunapiSessionTestReconnectJson::RunTest(const FString& Parameters) {
    (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
     const fun::SessionEventType type,
-    const std::string &session_id,
+    const fun::string &session_id,
     const std::shared_ptr<fun::FunapiError> &error)
   {
     if (type == fun::SessionEventType::kOpened) {
@@ -141,11 +141,11 @@ bool FFunapiSessionTestReconnectJson::RunTest(const FString& Parameters) {
       rapidjson::Value message_node(send_string.c_str(), msg.GetAllocator());
       msg.AddMember("message", message_node, msg.GetAllocator());
 
-      // Convert JSON document to string
+      // Convert JSON document to fun::string
       rapidjson::StringBuffer buffer;
       rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
       msg.Accept(writer);
-      std::string json_string = buffer.GetString();
+      fun::string json_string = buffer.GetString();
 
       s->SendMessage("echo", json_string);
     }
@@ -179,7 +179,7 @@ bool FFunapiSessionTestReconnectJson::RunTest(const FString& Parameters) {
   ([&is_working, &is_ok, &send_string]
    (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
-    const std::string &msg_type, const std::string &json_string)
+    const fun::string &msg_type, const fun::string &json_string)
   {
     if (msg_type.compare("echo") == 0) {
       is_ok = false;
@@ -189,7 +189,7 @@ bool FFunapiSessionTestReconnectJson::RunTest(const FString& Parameters) {
 
       verify(msg_recv.HasMember("message"));
 
-      std::string recv_string = msg_recv["message"].GetString();
+      fun::string recv_string = msg_recv["message"].GetString();
 
       verify(send_string.compare(recv_string) == 0);
 
@@ -222,11 +222,11 @@ bool FFunapiSessionTestReconnectJson::RunTest(const FString& Parameters) {
     rapidjson::Value message_node(send_string.c_str(), msg.GetAllocator());
     msg.AddMember("message", message_node, msg.GetAllocator());
 
-    // Convert JSON document to string
+    // Convert JSON document to fun::string
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     msg.Accept(writer);
-    std::string json_string = buffer.GetString();
+    fun::string json_string = buffer.GetString();
 
     session->SendMessage("echo", json_string);
   }
@@ -247,8 +247,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEchoProtobuf, "Funapi.Echo.E_
 
 bool FFunapiSessionTestEchoProtobuf::RunTest(const FString& Parameters)
 {
-  std::string send_string = "Protobuf Echo Message";
-  std::string server_ip = g_server_ip;
+  fun::string send_string = "Protobuf Echo Message";
+  fun::string server_ip = g_server_ip;
 
   auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
   bool is_ok = true;
@@ -259,7 +259,7 @@ bool FFunapiSessionTestEchoProtobuf::RunTest(const FString& Parameters)
       const std::shared_ptr<fun::FunapiSession> &s,
       const fun::TransportProtocol protocol,
       const fun::SessionEventType type,
-      const std::string &session_id,
+      const fun::string &session_id,
       const std::shared_ptr<fun::FunapiError> &error)
   {
     if (type == fun::SessionEventType::kOpened) {
@@ -332,44 +332,44 @@ bool FFunapiMulticastTestJson::RunTest(const FString& Parameters)
 {
   int user_count = 5;
   int send_count = 20;
-  std::string server_ip = g_server_ip;
+  fun::string server_ip = g_server_ip;
   fun::FunEncoding encoding = fun::FunEncoding::kJson;
   uint16_t port = 8112;
   bool with_session_reliability = false;
-  std::string multicast_test_channel = "multicast";
+  fun::string multicast_test_channel = "multicast";
 
-  std::vector<std::shared_ptr<fun::FunapiMulticast>> v_multicast;
+  fun::vector<std::shared_ptr<fun::FunapiMulticast>> v_multicast;
   bool is_ok = false;
   bool is_working = true;
 
   auto send_function = [](
     const std::shared_ptr<fun::FunapiMulticast>& m,
-    const std::string &channel_id,
+    const fun::string &channel_id,
     int number)
   {
     rapidjson::Document msg;
     msg.SetObject();
 
-    std::stringstream ss;
+    fun::stringstream ss;
     ss << number;
 
-    std::string temp_messsage = ss.str();
+    fun::string temp_messsage = ss.str();
     rapidjson::Value message_node(temp_messsage.c_str(), msg.GetAllocator());
     msg.AddMember(rapidjson::StringRef("message"), message_node, msg.GetAllocator());
 
-    // Convert JSON document to string
+    // Convert JSON document to fun::string
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     msg.Accept(writer);
-    std::string json_string = buffer.GetString();
+    fun::string json_string = buffer.GetString();
 
     m->SendToChannel(channel_id, json_string);
   };
 
   for (int i = 0; i<user_count; ++i) {
-    std::stringstream ss_sender;
+    fun::stringstream ss_sender;
     ss_sender << "user" << i;
-    std::string user_name = ss_sender.str();
+    fun::string user_name = ss_sender.str();
 
     auto funapi_multicast =
       fun::FunapiMulticast::Create(
@@ -382,8 +382,8 @@ bool FFunapiMulticastTestJson::RunTest(const FString& Parameters)
     funapi_multicast->AddJoinedCallback(
       [user_name, multicast_test_channel, &send_function](
         const std::shared_ptr<fun::FunapiMulticast>& m,
-        const std::string &channel_id,
-        const std::string &sender)
+        const fun::string &channel_id,
+        const fun::string &sender)
     {
       // send
       if (channel_id == multicast_test_channel) {
@@ -396,8 +396,8 @@ bool FFunapiMulticastTestJson::RunTest(const FString& Parameters)
     funapi_multicast->AddLeftCallback(
       [](
         const std::shared_ptr<fun::FunapiMulticast>& m,
-        const std::string &channel_id,
-        const std::string &sender)
+        const fun::string &channel_id,
+        const fun::string &sender)
     {
     });
 
@@ -421,7 +421,7 @@ bool FFunapiMulticastTestJson::RunTest(const FString& Parameters)
       [&is_ok, &is_working, multicast_test_channel](
         const std::shared_ptr<fun::FunapiMulticast>& m,
         const fun::SessionEventType type,
-        const std::string &session_id,
+        const fun::string &session_id,
         const std::shared_ptr<fun::FunapiError> &error)
     {
       if (type == fun::SessionEventType::kOpened) {
@@ -460,9 +460,9 @@ bool FFunapiMulticastTestJson::RunTest(const FString& Parameters)
       multicast_test_channel,
       [&is_ok, &is_working, multicast_test_channel, user_name, &send_function, &send_count](
         const std::shared_ptr<fun::FunapiMulticast>& m,
-        const std::string &channel_id,
-        const std::string &sender,
-        const std::string &json_string)
+        const fun::string &channel_id,
+        const fun::string &sender,
+        const fun::string &json_string)
     {
       if (sender == user_name) {
         rapidjson::Document msg_recv;
@@ -470,7 +470,7 @@ bool FFunapiMulticastTestJson::RunTest(const FString& Parameters)
 
         verify(msg_recv.HasMember("message"));
 
-        std::string recv_string = msg_recv["message"].GetString();
+        fun::string recv_string = msg_recv["message"].GetString();
         int number = atoi(recv_string.c_str());
 
         if (number >= send_count) {
@@ -502,22 +502,22 @@ bool FFunapiMulticastTestProtobuf::RunTest(const FString& Parameters)
 {
   int user_count = 5;
   int send_count = 20;
-  std::string server_ip = g_server_ip;
+  fun::string server_ip = g_server_ip;
   fun::FunEncoding encoding = fun::FunEncoding::kProtobuf;
   uint16_t port = 8122;
   bool with_session_reliability = false;
-  std::string multicast_test_channel = "multicast";
+  fun::string multicast_test_channel = "multicast";
 
-  std::vector<std::shared_ptr<fun::FunapiMulticast>> v_multicast;
+  fun::vector<std::shared_ptr<fun::FunapiMulticast>> v_multicast;
   bool is_ok = false;
   bool is_working = true;
 
   auto send_function = [](
     const std::shared_ptr<fun::FunapiMulticast>& m,
-    const std::string &channel_id,
+    const fun::string &channel_id,
     int number)
   {
-    std::stringstream ss;
+    fun::stringstream ss;
     ss << number;
 
     FunMessage msg;
@@ -529,9 +529,9 @@ bool FFunapiMulticastTestProtobuf::RunTest(const FString& Parameters)
   };
 
   for (int i = 0; i<user_count; ++i) {
-    std::stringstream ss_sender;
+    fun::stringstream ss_sender;
     ss_sender << "user" << i;
-    std::string user_name = ss_sender.str();
+    fun::string user_name = ss_sender.str();
 
     auto funapi_multicast =
       fun::FunapiMulticast::Create(
@@ -544,8 +544,8 @@ bool FFunapiMulticastTestProtobuf::RunTest(const FString& Parameters)
     funapi_multicast->AddJoinedCallback(
       [user_name, &multicast_test_channel, &send_function](
         const std::shared_ptr<fun::FunapiMulticast>& m,
-        const std::string &channel_id,
-        const std::string &sender)
+        const fun::string &channel_id,
+        const fun::string &sender)
     {
       // send
       if (channel_id == multicast_test_channel) {
@@ -558,7 +558,7 @@ bool FFunapiMulticastTestProtobuf::RunTest(const FString& Parameters)
     funapi_multicast->AddLeftCallback(
       [](
         const std::shared_ptr<fun::FunapiMulticast>& m,
-        const std::string &channel_id, const std::string &sender)
+        const fun::string &channel_id, const fun::string &sender)
     {
     });
 
@@ -582,7 +582,7 @@ bool FFunapiMulticastTestProtobuf::RunTest(const FString& Parameters)
       [&is_ok, &is_working, &multicast_test_channel](
         const std::shared_ptr<fun::FunapiMulticast>& m,
         const fun::SessionEventType type,
-        const std::string &session_id,
+        const fun::string &session_id,
         const std::shared_ptr<fun::FunapiError> &error)
     {
       if (type == fun::SessionEventType::kOpened) {
@@ -621,8 +621,8 @@ bool FFunapiMulticastTestProtobuf::RunTest(const FString& Parameters)
       multicast_test_channel,
       [&is_ok, &is_working, &multicast_test_channel, user_name, &send_function, &send_count](
         const std::shared_ptr<fun::FunapiMulticast> &m,
-        const std::string &channel_id,
-        const std::string &sender,
+        const fun::string &channel_id,
+        const fun::string &sender,
         const FunMessage& message)
     {
       if (sender == user_name) {
@@ -658,8 +658,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestRecvTimeout, "Funapi.RecvTime
 
 bool FFunapiSessionTestRecvTimeout::RunTest(const FString& Parameters)
 {
-  std::string send_string;
-  std::string server_ip = g_server_ip;
+  fun::string send_string;
+  fun::string server_ip = g_server_ip;
 
   auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
   bool is_ok = true;
@@ -670,7 +670,7 @@ bool FFunapiSessionTestRecvTimeout::RunTest(const FString& Parameters)
       const std::shared_ptr<fun::FunapiSession> &s,
       const fun::TransportProtocol protocol,
       const fun::SessionEventType type,
-      const std::string &session_id,
+      const fun::string &session_id,
       const std::shared_ptr<fun::FunapiError> &error)
   {
     if (type == fun::SessionEventType::kOpened) {
@@ -701,7 +701,7 @@ bool FFunapiSessionTestRecvTimeout::RunTest(const FString& Parameters)
   session->AddRecvTimeoutCallback(
     [&is_working, &is_ok](
       const std::shared_ptr<fun::FunapiSession> &s,
-      const std::string &msg_type)
+      const fun::string &msg_type)
   {
     is_ok = true;
     is_working = false;
@@ -724,7 +724,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestReliabilityJson, "Funapi.Sess
 bool FFunapiSessionTestReliabilityJson::RunTest(const FString& Parameters)
 {
   int send_count = 100;
-  std::string server_ip = g_server_ip;
+  fun::string server_ip = g_server_ip;
   fun::FunEncoding encoding = fun::FunEncoding::kJson;
   uint16_t port = 8212;
   bool with_session_reliability = true;
@@ -736,18 +736,18 @@ bool FFunapiSessionTestReliabilityJson::RunTest(const FString& Parameters)
     rapidjson::Document msg;
     msg.SetObject();
 
-    std::stringstream ss;
+    fun::stringstream ss;
     ss << number;
 
-    std::string temp_messsage = ss.str();
+    fun::string temp_messsage = ss.str();
     rapidjson::Value message_node(temp_messsage.c_str(), msg.GetAllocator());
     msg.AddMember(rapidjson::StringRef("message"), message_node, msg.GetAllocator());
 
-    // Convert JSON document to string
+    // Convert JSON document to fun::string
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     msg.Accept(writer);
-    std::string json_string = buffer.GetString();
+    fun::string json_string = buffer.GetString();
 
     s->SendMessage("echo", json_string);
   };
@@ -761,7 +761,7 @@ bool FFunapiSessionTestReliabilityJson::RunTest(const FString& Parameters)
       const std::shared_ptr<fun::FunapiSession> &s,
       const fun::TransportProtocol protocol,
       const fun::SessionEventType type,
-      const std::string &session_id,
+      const fun::string &session_id,
       const std::shared_ptr<fun::FunapiError> &error)
   {
     if (type == fun::SessionEventType::kOpened) {
@@ -793,7 +793,7 @@ bool FFunapiSessionTestReliabilityJson::RunTest(const FString& Parameters)
     [&is_working, &is_ok, &send_function, &send_count](
       const std::shared_ptr<fun::FunapiSession> &s,
       const fun::TransportProtocol protocol,
-      const std::string &msg_type, const std::string &json_string)
+      const fun::string &msg_type, const fun::string &json_string)
   {
     if (msg_type.compare("echo") == 0) {
       rapidjson::Document msg_recv;
@@ -801,7 +801,7 @@ bool FFunapiSessionTestReliabilityJson::RunTest(const FString& Parameters)
 
       verify(msg_recv.HasMember("message"));
 
-      std::string recv_string = msg_recv["message"].GetString();
+      fun::string recv_string = msg_recv["message"].GetString();
       int number = atoi(recv_string.c_str());
 
       if (number >= send_count) {
@@ -831,7 +831,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestReliabilityProtobuf, "Funapi.
 bool FFunapiSessionTestReliabilityProtobuf::RunTest(const FString& Parameters)
 {
   int send_count = 100;
-  std::string server_ip = g_server_ip;
+  fun::string server_ip = g_server_ip;
   fun::FunEncoding encoding = fun::FunEncoding::kProtobuf;
   uint16_t port = 8222;
   bool with_session_reliability = true;
@@ -840,7 +840,7 @@ bool FFunapiSessionTestReliabilityProtobuf::RunTest(const FString& Parameters)
     const std::shared_ptr<fun::FunapiSession>& s,
     int number)
   {
-    std::stringstream ss;
+    fun::stringstream ss;
     ss << number;
 
     // send
@@ -860,7 +860,7 @@ bool FFunapiSessionTestReliabilityProtobuf::RunTest(const FString& Parameters)
       const std::shared_ptr<fun::FunapiSession> &s,
       const fun::TransportProtocol protocol,
       const fun::SessionEventType type,
-      const std::string &session_id,
+      const fun::string &session_id,
       const std::shared_ptr<fun::FunapiError> &error)
   {
     if (type == fun::SessionEventType::kOpened) {
@@ -930,44 +930,44 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMulticastReliabilityJson, "Fu
 bool FFunapiSessionTestMulticastReliabilityJson::RunTest(const FString& Parameters) {
   int user_count = 10;
   int send_count = 100;
-  std::string server_ip = g_server_ip;
+  fun::string server_ip = g_server_ip;
   fun::FunEncoding encoding = fun::FunEncoding::kJson;
   uint16_t port = 8312;
   bool with_session_reliability = true;
-  std::string multicast_test_channel = "MulticastReliability";
+  fun::string multicast_test_channel = "MulticastReliability";
 
-  std::vector<std::shared_ptr<fun::FunapiMulticast>> v_multicast;
+  fun::vector<std::shared_ptr<fun::FunapiMulticast>> v_multicast;
   bool is_ok = false;
   bool is_working = true;
 
   auto send_function =[](
     const std::shared_ptr<fun::FunapiMulticast>& m,
-    const std::string &channel_id,
+    const fun::string &channel_id,
     int number)
   {
     rapidjson::Document msg;
     msg.SetObject();
 
-    std::stringstream ss;
+    fun::stringstream ss;
     ss << number;
 
-    std::string temp_messsage = ss.str();
+    fun::string temp_messsage = ss.str();
     rapidjson::Value message_node(temp_messsage.c_str(), msg.GetAllocator());
     msg.AddMember(rapidjson::StringRef("message"), message_node, msg.GetAllocator());
 
-    // Convert JSON document to string
+    // Convert JSON document to fun::string
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     msg.Accept(writer);
-    std::string json_string = buffer.GetString();
+    fun::string json_string = buffer.GetString();
 
     m->SendToChannel(channel_id, json_string);
   };
 
   for (int i = 0; i<user_count; ++i) {
-    std::stringstream ss_sender;
+    fun::stringstream ss_sender;
     ss_sender << "user" << i;
-    std::string user_name = ss_sender.str();
+    fun::string user_name = ss_sender.str();
 
     auto funapi_multicast = fun::FunapiMulticast::Create(
       user_name.c_str(),
@@ -979,8 +979,8 @@ bool FFunapiSessionTestMulticastReliabilityJson::RunTest(const FString& Paramete
     funapi_multicast->AddJoinedCallback(
       [user_name, multicast_test_channel, &send_function](
         const std::shared_ptr<fun::FunapiMulticast>& m,
-        const std::string &channel_id,
-        const std::string &sender)
+        const fun::string &channel_id,
+        const fun::string &sender)
     {
       // send
       if (channel_id == multicast_test_channel) {
@@ -992,8 +992,8 @@ bool FFunapiSessionTestMulticastReliabilityJson::RunTest(const FString& Paramete
 
     funapi_multicast->AddLeftCallback([](
       const std::shared_ptr<fun::FunapiMulticast>& m,
-      const std::string &channel_id,
-      const std::string &sender)
+      const fun::string &channel_id,
+      const fun::string &sender)
     {
     });
 
@@ -1017,7 +1017,7 @@ bool FFunapiSessionTestMulticastReliabilityJson::RunTest(const FString& Paramete
       [&is_ok, &is_working, multicast_test_channel](
         const std::shared_ptr<fun::FunapiMulticast>& m,
         const fun::SessionEventType type,
-        const std::string &session_id,
+        const fun::string &session_id,
         const std::shared_ptr<fun::FunapiError> &error)
     {
       if (type == fun::SessionEventType::kOpened) {
@@ -1056,9 +1056,9 @@ bool FFunapiSessionTestMulticastReliabilityJson::RunTest(const FString& Paramete
       multicast_test_channel,
       [&is_ok, &is_working, multicast_test_channel, user_name, &send_function, &send_count](
         const std::shared_ptr<fun::FunapiMulticast>& m,
-        const std::string &channel_id,
-        const std::string &sender,
-        const std::string &json_string)
+        const fun::string &channel_id,
+        const fun::string &sender,
+        const fun::string &json_string)
     {
       if (sender == user_name) {
         rapidjson::Document msg_recv;
@@ -1066,7 +1066,7 @@ bool FFunapiSessionTestMulticastReliabilityJson::RunTest(const FString& Paramete
 
         verify(msg_recv.HasMember("message"));
 
-        std::string recv_string = msg_recv["message"].GetString();
+        fun::string recv_string = msg_recv["message"].GetString();
         int number = atoi(recv_string.c_str());
 
         if (number >= send_count) {
@@ -1097,22 +1097,22 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMulticastReliabilityProtobuf,
 bool FFunapiSessionTestMulticastReliabilityProtobuf::RunTest(const FString& Parameters) {
   int user_count = 10;
   int send_count = 100;
-  std::string server_ip = g_server_ip;
+  fun::string server_ip = g_server_ip;
   fun::FunEncoding encoding = fun::FunEncoding::kProtobuf;
   uint16_t port = 8322;
   bool with_session_reliability = true;
-  std::string multicast_test_channel = "MulticastReliability";
+  fun::string multicast_test_channel = "MulticastReliability";
 
-  std::vector<std::shared_ptr<fun::FunapiMulticast>> v_multicast;
+  fun::vector<std::shared_ptr<fun::FunapiMulticast>> v_multicast;
   bool is_ok = false;
   bool is_working = true;
 
   auto send_function =[](
     const std::shared_ptr<fun::FunapiMulticast>& m,
-    const std::string &channel_id,
+    const fun::string &channel_id,
     int number)
   {
-    std::stringstream ss;
+    fun::stringstream ss;
     ss << number;
 
     FunMessage msg;
@@ -1124,9 +1124,9 @@ bool FFunapiSessionTestMulticastReliabilityProtobuf::RunTest(const FString& Para
   };
 
   for (int i = 0; i<user_count; ++i) {
-    std::stringstream ss_sender;
+    fun::stringstream ss_sender;
     ss_sender << "user" << i;
-    std::string user_name = ss_sender.str();
+    fun::string user_name = ss_sender.str();
 
     auto funapi_multicast = fun::FunapiMulticast::Create(
       user_name.c_str(),
@@ -1138,8 +1138,8 @@ bool FFunapiSessionTestMulticastReliabilityProtobuf::RunTest(const FString& Para
     funapi_multicast->AddJoinedCallback(
       [user_name, &multicast_test_channel, &send_function](
         const std::shared_ptr<fun::FunapiMulticast>& m,
-        const std::string &channel_id,
-        const std::string &sender)
+        const fun::string &channel_id,
+        const fun::string &sender)
     {
       // send
       if (channel_id == multicast_test_channel) {
@@ -1152,7 +1152,7 @@ bool FFunapiSessionTestMulticastReliabilityProtobuf::RunTest(const FString& Para
     funapi_multicast->AddLeftCallback(
       [](
         const std::shared_ptr<fun::FunapiMulticast>& m,
-        const std::string &channel_id, const std::string &sender)
+        const fun::string &channel_id, const fun::string &sender)
     {
     });
 
@@ -1176,7 +1176,7 @@ bool FFunapiSessionTestMulticastReliabilityProtobuf::RunTest(const FString& Para
       [&is_ok, &is_working, &multicast_test_channel](
         const std::shared_ptr<fun::FunapiMulticast>& m,
         const fun::SessionEventType type,
-        const std::string &session_id,
+        const fun::string &session_id,
         const std::shared_ptr<fun::FunapiError> &error)
     {
       if (type == fun::SessionEventType::kOpened) {
@@ -1215,8 +1215,8 @@ bool FFunapiSessionTestMulticastReliabilityProtobuf::RunTest(const FString& Para
       multicast_test_channel,
       [&is_ok, &is_working, &multicast_test_channel, user_name, &send_function, &send_count](
         const std::shared_ptr<fun::FunapiMulticast> &m,
-        const std::string &channel_id,
-        const std::string &sender,
+        const fun::string &channel_id,
+        const fun::string &sender,
         const FunMessage& message)
     {
       if (sender == user_name) {
@@ -1252,8 +1252,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMsgtypeIntegerEchoProtobuf, "
 
 bool FFunapiSessionTestMsgtypeIntegerEchoProtobuf::RunTest(const FString& Parameters)
 {
-  std::string send_string = "Protobuf Echo Message";
-  std::string server_ip = g_server_ip;
+  fun::string send_string = "Protobuf Echo Message";
+  fun::string server_ip = g_server_ip;
 
   auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
   bool is_ok = true;
@@ -1264,7 +1264,7 @@ bool FFunapiSessionTestMsgtypeIntegerEchoProtobuf::RunTest(const FString& Parame
       const std::shared_ptr<fun::FunapiSession> &s,
       const fun::TransportProtocol protocol,
       const fun::SessionEventType type,
-      const std::string &session_id,
+      const fun::string &session_id,
       const std::shared_ptr<fun::FunapiError> &error)
   {
     if (type == fun::SessionEventType::kOpened) {
@@ -1336,7 +1336,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMsgtypeIntegerEchoProtobuf2, 
 bool FFunapiSessionTestMsgtypeIntegerEchoProtobuf2::RunTest(const FString& Parameters)
 {
   int send_count = 100;
-  std::string server_ip = g_server_ip;
+  fun::string server_ip = g_server_ip;
   fun::FunEncoding encoding = fun::FunEncoding::kProtobuf;
   uint16_t port = 8422;
   bool with_session_reliability = true;
@@ -1345,7 +1345,7 @@ bool FFunapiSessionTestMsgtypeIntegerEchoProtobuf2::RunTest(const FString& Param
     const std::shared_ptr<fun::FunapiSession>& s,
     int number)
   {
-    std::stringstream ss;
+    fun::stringstream ss;
     ss << number;
 
     // send
@@ -1365,7 +1365,7 @@ bool FFunapiSessionTestMsgtypeIntegerEchoProtobuf2::RunTest(const FString& Param
       const std::shared_ptr<fun::FunapiSession> &s,
       const fun::TransportProtocol protocol,
       const fun::SessionEventType type,
-      const std::string &session_id,
+      const fun::string &session_id,
       const std::shared_ptr<fun::FunapiError> &error)
   {
     if (type == fun::SessionEventType::kOpened) {
@@ -1436,8 +1436,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestQueueJson,
 
 bool FFunapiSessionTestQueueJson::RunTest(const FString& Parameters)
 {
-  std::string send_string = "Json Echo Message";
-  std::string server_ip = g_server_ip;
+  fun::string send_string = "Json Echo Message";
+  fun::string server_ip = g_server_ip;
 
   auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
   bool is_ok = true;
@@ -1448,7 +1448,7 @@ bool FFunapiSessionTestQueueJson::RunTest(const FString& Parameters)
    (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
     const fun::SessionEventType type,
-    const std::string &session_id,
+    const fun::string &session_id,
     const std::shared_ptr<fun::FunapiError> &error)
   {
   });
@@ -1477,7 +1477,7 @@ bool FFunapiSessionTestQueueJson::RunTest(const FString& Parameters)
   ([&is_working, &is_ok, &send_string]
    (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
-    const std::string &msg_type, const std::string &json_string)
+    const fun::string &msg_type, const fun::string &json_string)
   {
     if (msg_type.compare("echo") == 0) {
       is_ok = false;
@@ -1487,7 +1487,7 @@ bool FFunapiSessionTestQueueJson::RunTest(const FString& Parameters)
 
       verify(msg_recv.HasMember("message"));
 
-      std::string recv_string = msg_recv["message"].GetString();
+      fun::string recv_string = msg_recv["message"].GetString();
 
       verify(send_string.compare(recv_string) == 0);
 
@@ -1505,11 +1505,11 @@ bool FFunapiSessionTestQueueJson::RunTest(const FString& Parameters)
     rapidjson::Value message_node(send_string.c_str(), msg.GetAllocator());
     msg.AddMember("message", message_node, msg.GetAllocator());
 
-    // Convert JSON document to string
+    // Convert JSON document to fun::string
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     msg.Accept(writer);
-    std::string json_string = buffer.GetString();
+    fun::string json_string = buffer.GetString();
 
     session->SendMessage("echo", json_string);
   }
@@ -1530,8 +1530,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestQueueJson10Times,
 
 bool FFunapiSessionTestQueueJson10Times::RunTest(const FString& Parameters)
 {
-  std::string send_string = "Json Echo Message";
-  std::string server_ip = g_server_ip;
+  fun::string send_string = "Json Echo Message";
+  fun::string server_ip = g_server_ip;
 
   auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
   bool is_ok = true;
@@ -1542,7 +1542,7 @@ bool FFunapiSessionTestQueueJson10Times::RunTest(const FString& Parameters)
    (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
     const fun::SessionEventType type,
-    const std::string &session_id,
+    const fun::string &session_id,
     const std::shared_ptr<fun::FunapiError> &error)
   {
   });
@@ -1571,7 +1571,7 @@ bool FFunapiSessionTestQueueJson10Times::RunTest(const FString& Parameters)
   ([&is_working, &is_ok, &send_string]
    (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
-    const std::string &msg_type, const std::string &json_string)
+    const fun::string &msg_type, const fun::string &json_string)
   {
     if (msg_type.compare("echo") == 0) {
       is_ok = false;
@@ -1581,7 +1581,7 @@ bool FFunapiSessionTestQueueJson10Times::RunTest(const FString& Parameters)
 
       verify(msg_recv.HasMember("message"));
 
-      std::string recv_string = msg_recv["message"].GetString();
+      fun::string recv_string = msg_recv["message"].GetString();
 
       if (send_string.compare(recv_string) == 0) {
        is_ok = true;
@@ -1595,21 +1595,21 @@ bool FFunapiSessionTestQueueJson10Times::RunTest(const FString& Parameters)
   // send
   {
     for (int i = 0; i < 10; ++i) {
-      // std::to_string is not supported on android, using std::stringstream instead.
-      std::stringstream ss_temp;
+      // std::to_string is not supported on android, using fun::stringstream instead.
+      fun::stringstream ss_temp;
       ss_temp <<  "hello world - " << static_cast<int>(i);
-      std::string temp_string = ss_temp.str();
+      fun::string temp_string = ss_temp.str();
 
       rapidjson::Document msg;
       msg.SetObject();
       rapidjson::Value message_node(temp_string.c_str(), msg.GetAllocator());
       msg.AddMember("message", message_node, msg.GetAllocator());
 
-      // Convert JSON document to string
+      // Convert JSON document to fun::string
       rapidjson::StringBuffer buffer;
       rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
       msg.Accept(writer);
-      std::string json_string = buffer.GetString();
+      fun::string json_string = buffer.GetString();
 
       session->SendMessage("echo", json_string);
     }
@@ -1620,11 +1620,11 @@ bool FFunapiSessionTestQueueJson10Times::RunTest(const FString& Parameters)
     rapidjson::Value message_node(send_string.c_str(), msg.GetAllocator());
     msg.AddMember("message", message_node, msg.GetAllocator());
 
-    // Convert JSON document to string
+    // Convert JSON document to fun::string
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     msg.Accept(writer);
-    std::string json_string = buffer.GetString();
+    fun::string json_string = buffer.GetString();
 
     session->SendMessage("echo", json_string);
   }
@@ -1646,8 +1646,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestQueueJsonMultitransport,
 
 bool FFunapiSessionTestQueueJsonMultitransport::RunTest(const FString& Parameters)
 {
-  std::string send_string = "Json Echo Message";
-  std::string server_ip = g_server_ip;
+  fun::string send_string = "Json Echo Message";
+  fun::string server_ip = g_server_ip;
 
   auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
   bool is_ok = true;
@@ -1658,7 +1658,7 @@ bool FFunapiSessionTestQueueJsonMultitransport::RunTest(const FString& Parameter
    (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
     const fun::SessionEventType type,
-    const std::string &session_id,
+    const fun::string &session_id,
     const std::shared_ptr<fun::FunapiError> &error)
   {
   });
@@ -1687,7 +1687,7 @@ bool FFunapiSessionTestQueueJsonMultitransport::RunTest(const FString& Parameter
   ([&is_working, &is_ok, &send_string]
    (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
-    const std::string &msg_type, const std::string &json_string)
+    const fun::string &msg_type, const fun::string &json_string)
   {
     if (msg_type.compare("echo") == 0) {
       is_ok = false;
@@ -1697,7 +1697,7 @@ bool FFunapiSessionTestQueueJsonMultitransport::RunTest(const FString& Parameter
 
       verify(msg_recv.HasMember("message"));
 
-      std::string recv_string = msg_recv["message"].GetString();
+      fun::string recv_string = msg_recv["message"].GetString();
 
       if (send_string.compare(recv_string) == 0) {
         is_ok = true;
@@ -1713,21 +1713,21 @@ bool FFunapiSessionTestQueueJsonMultitransport::RunTest(const FString& Parameter
   // send
   {
     for (int i = 0; i < 10; ++i) {
-      // std::to_string is not supported on android, using std::stringstream instead.
-      std::stringstream ss_temp;
+      // std::to_string is not supported on android, using fun::stringstream instead.
+      fun::stringstream ss_temp;
       ss_temp <<  "hello world - " << static_cast<int>(i);
-      std::string temp_string = ss_temp.str();
+      fun::string temp_string = ss_temp.str();
 
       rapidjson::Document msg;
       msg.SetObject();
       rapidjson::Value message_node(temp_string.c_str(), msg.GetAllocator());
       msg.AddMember("message", message_node, msg.GetAllocator());
 
-      // Convert JSON document to string
+      // Convert JSON document to fun::string
       rapidjson::StringBuffer buffer;
       rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
       msg.Accept(writer);
-      std::string json_string = buffer.GetString();
+      fun::string json_string = buffer.GetString();
 
       session->SendMessage("echo", json_string, fun::TransportProtocol::kHttp);
     }
@@ -1738,11 +1738,11 @@ bool FFunapiSessionTestQueueJsonMultitransport::RunTest(const FString& Parameter
     rapidjson::Value message_node(send_string.c_str(), msg.GetAllocator());
     msg.AddMember("message", message_node, msg.GetAllocator());
 
-    // Convert JSON document to string
+    // Convert JSON document to fun::string
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     msg.Accept(writer);
-    std::string json_string = buffer.GetString();
+    fun::string json_string = buffer.GetString();
 
     session->SendMessage("echo", json_string, fun::TransportProtocol::kHttp);
   }
@@ -1764,8 +1764,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEncJsonSodium,
 
 bool FFunapiSessionTestEncJsonSodium::RunTest(const FString& Parameters)
 {
-  std::string send_string = "Json Echo Message";
-  std::string server_ip = g_server_ip;
+  fun::string send_string = "Json Echo Message";
+  fun::string server_ip = g_server_ip;
 
   auto session = fun::FunapiSession::Create(server_ip.c_str(), true);
   bool is_ok = true;
@@ -1776,7 +1776,7 @@ bool FFunapiSessionTestEncJsonSodium::RunTest(const FString& Parameters)
    (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
     const fun::SessionEventType type,
-    const std::string &session_id,
+    const fun::string &session_id,
     const std::shared_ptr<fun::FunapiError> &error)
   {
   });
@@ -1805,7 +1805,7 @@ bool FFunapiSessionTestEncJsonSodium::RunTest(const FString& Parameters)
   ([&is_working, &is_ok, &send_string]
    (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
-    const std::string &msg_type, const std::string &json_string)
+    const fun::string &msg_type, const fun::string &json_string)
   {
     if (msg_type.compare("echo") == 0) {
       is_ok = false;
@@ -1815,7 +1815,7 @@ bool FFunapiSessionTestEncJsonSodium::RunTest(const FString& Parameters)
 
       verify(msg_recv.HasMember("message"));
 
-      std::string recv_string = msg_recv["message"].GetString();
+      fun::string recv_string = msg_recv["message"].GetString();
 
       if (send_string.compare(recv_string) == 0) {
         is_ok = true;
@@ -1834,21 +1834,21 @@ bool FFunapiSessionTestEncJsonSodium::RunTest(const FString& Parameters)
   // send
   {
     for (int i = 0; i < 10; ++i) {
-      // std::to_string is not supported on android, using std::stringstream instead.
-      std::stringstream ss_temp;
+      // std::to_string is not supported on android, using fun::stringstream instead.
+      fun::stringstream ss_temp;
       ss_temp <<  "hello world - " << static_cast<int>(i);
-      std::string temp_string = ss_temp.str();
+      fun::string temp_string = ss_temp.str();
 
       rapidjson::Document msg;
       msg.SetObject();
       rapidjson::Value message_node(temp_string.c_str(), msg.GetAllocator());
       msg.AddMember("message", message_node, msg.GetAllocator());
 
-      // Convert JSON document to string
+      // Convert JSON document to fun::string
       rapidjson::StringBuffer buffer;
       rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
       msg.Accept(writer);
-      std::string json_string = buffer.GetString();
+      fun::string json_string = buffer.GetString();
 
       session->SendMessage("echo", json_string);
     }
@@ -1859,11 +1859,11 @@ bool FFunapiSessionTestEncJsonSodium::RunTest(const FString& Parameters)
     rapidjson::Value message_node(send_string.c_str(), msg.GetAllocator());
     msg.AddMember("message", message_node, msg.GetAllocator());
 
-    // Convert JSON document to string
+    // Convert JSON document to fun::string
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     msg.Accept(writer);
-    std::string json_string = buffer.GetString();
+    fun::string json_string = buffer.GetString();
 
     session->SendMessage("echo", json_string);
   }
@@ -1884,8 +1884,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEncJsonChacha20,
 
 bool FFunapiSessionTestEncJsonChacha20::RunTest(const FString& Parameters)
 {
-  std::string send_string = "Json Echo Message";
-  std::string server_ip = g_server_ip;
+  fun::string send_string = "Json Echo Message";
+  fun::string server_ip = g_server_ip;
 
   auto session = fun::FunapiSession::Create(server_ip.c_str(), true);
   bool is_ok = true;
@@ -1896,7 +1896,7 @@ bool FFunapiSessionTestEncJsonChacha20::RunTest(const FString& Parameters)
    (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
     const fun::SessionEventType type,
-    const std::string &session_id,
+    const fun::string &session_id,
     const std::shared_ptr<fun::FunapiError> &error)
   {
   });
@@ -1925,7 +1925,7 @@ bool FFunapiSessionTestEncJsonChacha20::RunTest(const FString& Parameters)
   ([&is_working, &is_ok, &send_string]
    (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
-    const std::string &msg_type, const std::string &json_string)
+    const fun::string &msg_type, const fun::string &json_string)
   {
     if (msg_type.compare("echo") == 0) {
       is_ok = false;
@@ -1935,7 +1935,7 @@ bool FFunapiSessionTestEncJsonChacha20::RunTest(const FString& Parameters)
 
       verify(msg_recv.HasMember("message"));
 
-      std::string recv_string = msg_recv["message"].GetString();
+      fun::string recv_string = msg_recv["message"].GetString();
 
       if (send_string.compare(recv_string) == 0) {
         is_ok = true;
@@ -1952,21 +1952,21 @@ bool FFunapiSessionTestEncJsonChacha20::RunTest(const FString& Parameters)
   // send
   {
     for (int i = 0; i < 10; ++i) {
-      // std::to_string is not supported on android, using std::stringstream instead.
-      std::stringstream ss_temp;
+      // std::to_string is not supported on android, using fun::stringstream instead.
+      fun::stringstream ss_temp;
       ss_temp <<  "hello world - " << static_cast<int>(i);
-      std::string temp_string = ss_temp.str();
+      fun::string temp_string = ss_temp.str();
 
       rapidjson::Document msg;
       msg.SetObject();
       rapidjson::Value message_node(temp_string.c_str(), msg.GetAllocator());
       msg.AddMember("message", message_node, msg.GetAllocator());
 
-      // Convert JSON document to string
+      // Convert JSON document to fun::string
       rapidjson::StringBuffer buffer;
       rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
       msg.Accept(writer);
-      std::string json_string = buffer.GetString();
+      fun::string json_string = buffer.GetString();
 
       session->SendMessage("echo", json_string);
     }
@@ -1977,11 +1977,11 @@ bool FFunapiSessionTestEncJsonChacha20::RunTest(const FString& Parameters)
     rapidjson::Value message_node(send_string.c_str(), msg.GetAllocator());
     msg.AddMember("message", message_node, msg.GetAllocator());
 
-    // Convert JSON document to string
+    // Convert JSON document to fun::string
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     msg.Accept(writer);
-    std::string json_string = buffer.GetString();
+    fun::string json_string = buffer.GetString();
 
     session->SendMessage("echo", json_string);
   }
@@ -2002,8 +2002,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEncProtobufChacha20,
 
 bool FFunapiSessionTestEncProtobufChacha20::RunTest(const FString& Parameters)
 {
-  std::string send_string = "Protobuf Echo Message";
-  std::string server_ip = g_server_ip;
+  fun::string send_string = "Protobuf Echo Message";
+  fun::string server_ip = g_server_ip;
 
   auto session = fun::FunapiSession::Create(server_ip.c_str(), true);
   bool is_ok = true;
@@ -2014,7 +2014,7 @@ bool FFunapiSessionTestEncProtobufChacha20::RunTest(const FString& Parameters)
    (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
     const fun::SessionEventType type,
-    const std::string &session_id,
+    const fun::string &session_id,
     const std::shared_ptr<fun::FunapiError> &error)
   {
   });
@@ -2068,10 +2068,10 @@ bool FFunapiSessionTestEncProtobufChacha20::RunTest(const FString& Parameters)
   // send
   {
     for (int i = 0; i < 10; ++i) {
-      // std::to_string is not supported on android, using std::stringstream instead.
-      std::stringstream ss_temp;
+      // std::to_string is not supported on android, using fun::stringstream instead.
+      fun::stringstream ss_temp;
       ss_temp << "hello proto - " << static_cast<int>(i);
-      std::string temp_string = ss_temp.str();
+      fun::string temp_string = ss_temp.str();
 
       FunMessage msg;
       msg.set_msgtype("pbuf_echo");
@@ -2105,8 +2105,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEncJsonAes128,
 
 bool FFunapiSessionTestEncJsonAes128::RunTest(const FString& Parameters)
 {
-  std::string send_string = "Json Echo Message";
-  std::string server_ip = g_server_ip;
+  fun::string send_string = "Json Echo Message";
+  fun::string server_ip = g_server_ip;
 
   auto session = fun::FunapiSession::Create(server_ip.c_str(), true);
   bool is_ok = true;
@@ -2117,7 +2117,7 @@ bool FFunapiSessionTestEncJsonAes128::RunTest(const FString& Parameters)
    (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
     const fun::SessionEventType type,
-    const std::string &session_id,
+    const fun::string &session_id,
     const std::shared_ptr<fun::FunapiError> &error)
   {
   });
@@ -2146,7 +2146,7 @@ bool FFunapiSessionTestEncJsonAes128::RunTest(const FString& Parameters)
   ([&is_working, &is_ok, &send_string]
    (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
-    const std::string &msg_type, const std::string &json_string)
+    const fun::string &msg_type, const fun::string &json_string)
   {
     if (msg_type.compare("echo") == 0) {
       is_ok = false;
@@ -2156,7 +2156,7 @@ bool FFunapiSessionTestEncJsonAes128::RunTest(const FString& Parameters)
 
       verify(msg_recv.HasMember("message"));
 
-      std::string recv_string = msg_recv["message"].GetString();
+      fun::string recv_string = msg_recv["message"].GetString();
 
       if (send_string.compare(recv_string) == 0) {
         is_ok = true;
@@ -2173,21 +2173,21 @@ bool FFunapiSessionTestEncJsonAes128::RunTest(const FString& Parameters)
   // send
   {
     for (int i = 0; i < 10; ++i) {
-      // std::to_string is not supported on android, using std::stringstream instead.
-      std::stringstream ss_temp;
+      // std::to_string is not supported on android, using fun::stringstream instead.
+      fun::stringstream ss_temp;
       ss_temp <<  "hello world - " << static_cast<int>(i);
-      std::string temp_string = ss_temp.str();
+      fun::string temp_string = ss_temp.str();
 
       rapidjson::Document msg;
       msg.SetObject();
       rapidjson::Value message_node(temp_string.c_str(), msg.GetAllocator());
       msg.AddMember("message", message_node, msg.GetAllocator());
 
-      // Convert JSON document to string
+      // Convert JSON document to fun::string
       rapidjson::StringBuffer buffer;
       rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
       msg.Accept(writer);
-      std::string json_string = buffer.GetString();
+      fun::string json_string = buffer.GetString();
 
       session->SendMessage("echo", json_string);
     }
@@ -2198,11 +2198,11 @@ bool FFunapiSessionTestEncJsonAes128::RunTest(const FString& Parameters)
     rapidjson::Value message_node(send_string.c_str(), msg.GetAllocator());
     msg.AddMember("message", message_node, msg.GetAllocator());
 
-    // Convert JSON document to string
+    // Convert JSON document to fun::string
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     msg.Accept(writer);
-    std::string json_string = buffer.GetString();
+    fun::string json_string = buffer.GetString();
 
     session->SendMessage("echo", json_string);
   }
@@ -2223,8 +2223,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEncProtobufAes128,
 
 bool FFunapiSessionTestEncProtobufAes128::RunTest(const FString& Parameters)
 {
-  std::string send_string = "Protobuf Echo Message";
-  std::string server_ip = g_server_ip;
+  fun::string send_string = "Protobuf Echo Message";
+  fun::string server_ip = g_server_ip;
 
   auto session = fun::FunapiSession::Create(server_ip.c_str(), true);
   bool is_ok = true;
@@ -2235,7 +2235,7 @@ bool FFunapiSessionTestEncProtobufAes128::RunTest(const FString& Parameters)
    (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
     const fun::SessionEventType type,
-    const std::string &session_id,
+    const fun::string &session_id,
     const std::shared_ptr<fun::FunapiError> &error)
   {
   });
@@ -2289,10 +2289,10 @@ bool FFunapiSessionTestEncProtobufAes128::RunTest(const FString& Parameters)
   // send
   {
     for (int i = 0; i < 10; ++i) {
-      // std::to_string is not supported on android, using std::stringstream instead.
-      std::stringstream ss_temp;
+      // std::to_string is not supported on android, using fun::stringstream instead.
+      fun::stringstream ss_temp;
       ss_temp << "hello proto - " << static_cast<int>(i);
-      std::string temp_string = ss_temp.str();
+      fun::string temp_string = ss_temp.str();
 
       FunMessage msg;
       msg.set_msgtype("pbuf_echo");
@@ -2327,14 +2327,14 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMultithread,
 bool FFunapiSessionTestMultithread::RunTest(const FString& Parameters) {
   const int kMaxThread = 2;
   const int kMaxCount = 50;
-  std::vector<std::thread> temp_thread(kMaxThread);
-  std::vector<bool> v_completed(kMaxThread);
+  fun::vector<std::thread> temp_thread(kMaxThread);
+  fun::vector<bool> v_completed(kMaxThread);
   std::mutex complete_mutex;
 
   auto send_message = []
   (const std::shared_ptr<fun::FunapiSession>&s,
     const fun::TransportProtocol protocol,
-    const std::string &temp_string)
+    const fun::string &temp_string)
   {
     if (s->GetEncoding(protocol) == fun::FunEncoding::kJson) {
       rapidjson::Document msg;
@@ -2342,11 +2342,11 @@ bool FFunapiSessionTestMultithread::RunTest(const FString& Parameters) {
       rapidjson::Value message_node(temp_string.c_str(), msg.GetAllocator());
       msg.AddMember("message", message_node, msg.GetAllocator());
 
-      // Convert JSON document to string
+      // Convert JSON document to fun::string
       rapidjson::StringBuffer buffer;
       rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
       msg.Accept(writer);
-      std::string json_string = buffer.GetString();
+      fun::string json_string = buffer.GetString();
 
       s->SendMessage("echo", json_string);
     }
@@ -2363,7 +2363,7 @@ bool FFunapiSessionTestMultithread::RunTest(const FString& Parameters) {
   auto test_funapi_session =
     [&send_message, kMaxCount, &complete_mutex, &v_completed]
   (const int index,
-    const std::string &server_ip,
+    const fun::string &server_ip,
     const int server_port,
     const fun::TransportProtocol p,
     const fun::FunEncoding encoding,
@@ -2380,13 +2380,13 @@ bool FFunapiSessionTestMultithread::RunTest(const FString& Parameters) {
     (const std::shared_ptr<fun::FunapiSession> &s,
       const fun::TransportProtocol protocol,
       const fun::SessionEventType type,
-      const std::string &session_id,
+      const fun::string &session_id,
       const std::shared_ptr<fun::FunapiError> &error)
     {
       if (type == fun::SessionEventType::kOpened) {
-        std::stringstream ss_temp;
+        fun::stringstream ss_temp;
         ss_temp << static_cast<int>(0);
-        std::string temp_string = ss_temp.str();
+        fun::string temp_string = ss_temp.str();
         send_message(s, protocol, temp_string);
       }
     });
@@ -2410,8 +2410,8 @@ bool FFunapiSessionTestMultithread::RunTest(const FString& Parameters) {
     ([index, &send_message, &is_working, &is_ok, kMaxCount]
     (const std::shared_ptr<fun::FunapiSession> &s,
       const fun::TransportProtocol protocol,
-      const std::string &msg_type,
-      const std::string &json_string)
+      const fun::string &msg_type,
+      const fun::string &json_string)
     {
       if (msg_type.compare("echo") == 0) {
         rapidjson::Document msg_recv;
@@ -2429,9 +2429,9 @@ bool FFunapiSessionTestMultithread::RunTest(const FString& Parameters) {
           }
         }
 
-        std::stringstream ss_temp;
+        fun::stringstream ss_temp;
         ss_temp << static_cast<int>(count);
-        std::string temp_string = ss_temp.str();
+        fun::string temp_string = ss_temp.str();
         send_message(s, protocol, temp_string);
       }
     });
@@ -2455,9 +2455,9 @@ bool FFunapiSessionTestMultithread::RunTest(const FString& Parameters) {
           return;
         }
 
-        std::stringstream ss_temp;
+        fun::stringstream ss_temp;
         ss_temp << static_cast<int>(count);
-        std::string temp_string = ss_temp.str();
+        fun::string temp_string = ss_temp.str();
         send_message(s, protocol, temp_string);
       }
     });
@@ -2487,7 +2487,7 @@ bool FFunapiSessionTestMultithread::RunTest(const FString& Parameters) {
   for (int i = 0; i < kMaxThread; ++i) {
     fun::TransportProtocol protocol = fun::TransportProtocol::kTcp;
     fun::FunEncoding encoding = fun::FunEncoding::kProtobuf;
-    std::string server_ip = g_server_ip;
+    fun::string server_ip = g_server_ip;
     int server_port = 8022;
     bool with_session_reliability = false;
 
@@ -2535,14 +2535,14 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMultithreadUpdateAll, "Funapi
 bool FFunapiSessionTestMultithreadUpdateAll::RunTest(const FString& Parameters) {
   const int kMaxThread = 2;
   const int kMaxCount = 50;
-  std::vector<std::thread> temp_thread(kMaxThread);
-  std::vector<bool> v_completed(kMaxThread);
+  fun::vector<std::thread> temp_thread(kMaxThread);
+  fun::vector<bool> v_completed(kMaxThread);
   std::mutex complete_mutex;
 
   auto send_message = []
   (const std::shared_ptr<fun::FunapiSession>&s,
     const fun::TransportProtocol protocol,
-    const std::string &temp_string)
+    const fun::string &temp_string)
   {
     if (s->GetEncoding(protocol) == fun::FunEncoding::kJson) {
       rapidjson::Document msg;
@@ -2550,11 +2550,11 @@ bool FFunapiSessionTestMultithreadUpdateAll::RunTest(const FString& Parameters) 
       rapidjson::Value message_node(temp_string.c_str(), msg.GetAllocator());
       msg.AddMember("message", message_node, msg.GetAllocator());
 
-      // Convert JSON document to string
+      // Convert JSON document to fun::string
       rapidjson::StringBuffer buffer;
       rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
       msg.Accept(writer);
-      std::string json_string = buffer.GetString();
+      fun::string json_string = buffer.GetString();
 
       s->SendMessage("echo", json_string);
     }
@@ -2571,7 +2571,7 @@ bool FFunapiSessionTestMultithreadUpdateAll::RunTest(const FString& Parameters) 
   auto test_funapi_session =
     [&send_message, kMaxCount, &complete_mutex, &v_completed]
    (const int index,
-    const std::string &server_ip,
+    const fun::string &server_ip,
     const int server_port,
     const fun::TransportProtocol p,
     const fun::FunEncoding encoding,
@@ -2588,13 +2588,13 @@ bool FFunapiSessionTestMultithreadUpdateAll::RunTest(const FString& Parameters) 
     (const std::shared_ptr<fun::FunapiSession> &s,
       const fun::TransportProtocol protocol,
       const fun::SessionEventType type,
-      const std::string &session_id,
+      const fun::string &session_id,
       const std::shared_ptr<fun::FunapiError> &error)
     {
       if (type == fun::SessionEventType::kOpened) {
-        std::stringstream ss_temp;
+        fun::stringstream ss_temp;
         ss_temp << static_cast<int>(0);
-        std::string temp_string = ss_temp.str();
+        fun::string temp_string = ss_temp.str();
         send_message(s, protocol, temp_string);
       }
     });
@@ -2618,8 +2618,8 @@ bool FFunapiSessionTestMultithreadUpdateAll::RunTest(const FString& Parameters) 
     ([index, &send_message, &is_working, &is_ok, kMaxCount]
     (const std::shared_ptr<fun::FunapiSession> &s,
       const fun::TransportProtocol protocol,
-      const std::string &msg_type,
-      const std::string &json_string)
+      const fun::string &msg_type,
+      const fun::string &json_string)
     {
       if (msg_type.compare("echo") == 0) {
         rapidjson::Document msg_recv;
@@ -2637,9 +2637,9 @@ bool FFunapiSessionTestMultithreadUpdateAll::RunTest(const FString& Parameters) 
           }
         }
 
-        std::stringstream ss_temp;
+        fun::stringstream ss_temp;
         ss_temp << static_cast<int>(count);
-        std::string temp_string = ss_temp.str();
+        fun::string temp_string = ss_temp.str();
         send_message(s, protocol, temp_string);
       }
     });
@@ -2663,9 +2663,9 @@ bool FFunapiSessionTestMultithreadUpdateAll::RunTest(const FString& Parameters) 
           return;
         }
 
-        std::stringstream ss_temp;
+        fun::stringstream ss_temp;
         ss_temp << static_cast<int>(count);
-        std::string temp_string = ss_temp.str();
+        fun::string temp_string = ss_temp.str();
         send_message(s, protocol, temp_string);
       }
     });
@@ -2694,7 +2694,7 @@ bool FFunapiSessionTestMultithreadUpdateAll::RunTest(const FString& Parameters) 
   for (int i = 0; i < kMaxThread; ++i) {
     fun::TransportProtocol protocol = fun::TransportProtocol::kTcp;
     fun::FunEncoding encoding = fun::FunEncoding::kProtobuf;
-    std::string server_ip = g_server_ip;
+    fun::string server_ip = g_server_ip;
     int server_port = 8022;
     bool with_session_reliability = false;
 
@@ -2742,8 +2742,8 @@ bool FFunapiSessionTestMultithreadUpdateAll::RunTest(const FString& Parameters) 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestReconnectTcpSend10Times, "Funapi.Reconnect.TcpSend10Times", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
 bool FFunapiSessionTestReconnectTcpSend10Times::RunTest(const FString& Parameters) {
-  std::string send_string = "Json Echo Message";
-  std::string server_ip = g_server_ip;
+  fun::string send_string = "Json Echo Message";
+  fun::string server_ip = g_server_ip;
 
   auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
   bool is_ok = true;
@@ -2757,18 +2757,18 @@ bool FFunapiSessionTestReconnectTcpSend10Times::RunTest(const FString& Parameter
     rapidjson::Document msg;
     msg.SetObject();
 
-    std::stringstream ss;
+    fun::stringstream ss;
     ss << number;
 
-    std::string temp_messsage = ss.str();
+    fun::string temp_messsage = ss.str();
     rapidjson::Value message_node(temp_messsage.c_str(), msg.GetAllocator());
     msg.AddMember(rapidjson::StringRef("message"), message_node, msg.GetAllocator());
 
-    // Convert JSON document to string
+    // Convert JSON document to fun::string
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     msg.Accept(writer);
-    std::string json_string = buffer.GetString();
+    fun::string json_string = buffer.GetString();
 
     s->SendMessage("echo", json_string);
   };
@@ -2778,7 +2778,7 @@ bool FFunapiSessionTestReconnectTcpSend10Times::RunTest(const FString& Parameter
   (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
     const fun::SessionEventType type,
-    const std::string &session_id,
+    const fun::string &session_id,
     const std::shared_ptr<fun::FunapiError> &error)
   {
   });
@@ -2815,14 +2815,14 @@ bool FFunapiSessionTestReconnectTcpSend10Times::RunTest(const FString& Parameter
   ([&is_working, &is_ok, &send_string]
   (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
-    const std::string &msg_type, const std::string &json_string)
+    const fun::string &msg_type, const fun::string &json_string)
   {
     if (msg_type.compare("echo") == 0) {
       rapidjson::Document msg_recv;
       msg_recv.Parse<0>(json_string.c_str());
 
       if (msg_recv.HasMember("message")) {
-        std::string recv_string = msg_recv["message"].GetString();
+        fun::string recv_string = msg_recv["message"].GetString();
         if (send_string.compare(recv_string) == 0) {
           is_ok = true;
           is_working = false;
@@ -2852,11 +2852,11 @@ bool FFunapiSessionTestReconnectTcpSend10Times::RunTest(const FString& Parameter
     rapidjson::Value message_node(send_string.c_str(), msg.GetAllocator());
     msg.AddMember("message", message_node, msg.GetAllocator());
 
-    // Convert JSON document to string
+    // Convert JSON document to fun::string
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     msg.Accept(writer);
-    std::string json_string = buffer.GetString();
+    fun::string json_string = buffer.GetString();
 
     session->SendMessage("echo", json_string);
   }
@@ -2876,8 +2876,8 @@ bool FFunapiSessionTestReconnectTcpSend10Times::RunTest(const FString& Parameter
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestReconnectHttpSend10Times, "Funapi.Reconnect.HttpSend10Times", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
 bool FFunapiSessionTestReconnectHttpSend10Times::RunTest(const FString& Parameters) {
-  std::string send_string = "Json Echo Message";
-  std::string server_ip = g_server_ip;
+  fun::string send_string = "Json Echo Message";
+  fun::string server_ip = g_server_ip;
 
   auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
   bool is_ok = true;
@@ -2890,18 +2890,18 @@ bool FFunapiSessionTestReconnectHttpSend10Times::RunTest(const FString& Paramete
     rapidjson::Document msg;
     msg.SetObject();
 
-    std::stringstream ss;
+    fun::stringstream ss;
     ss << number;
 
-    std::string temp_messsage = ss.str();
+    fun::string temp_messsage = ss.str();
     rapidjson::Value message_node(temp_messsage.c_str(), msg.GetAllocator());
     msg.AddMember(rapidjson::StringRef("message"), message_node, msg.GetAllocator());
 
-    // Convert JSON document to string
+    // Convert JSON document to fun::string
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     msg.Accept(writer);
-    std::string json_string = buffer.GetString();
+    fun::string json_string = buffer.GetString();
 
     s->SendMessage("echo", json_string);
   };
@@ -2911,7 +2911,7 @@ bool FFunapiSessionTestReconnectHttpSend10Times::RunTest(const FString& Paramete
   (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
     const fun::SessionEventType type,
-    const std::string &session_id,
+    const fun::string &session_id,
     const std::shared_ptr<fun::FunapiError> &error)
   {
   });
@@ -2953,14 +2953,14 @@ bool FFunapiSessionTestReconnectHttpSend10Times::RunTest(const FString& Paramete
   ([&is_working, &is_ok, &send_string]
   (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
-    const std::string &msg_type, const std::string &json_string)
+    const fun::string &msg_type, const fun::string &json_string)
   {
     if (msg_type.compare("echo") == 0) {
       rapidjson::Document msg_recv;
       msg_recv.Parse<0>(json_string.c_str());
 
       if (msg_recv.HasMember("message")) {
-        std::string recv_string = msg_recv["message"].GetString();
+        fun::string recv_string = msg_recv["message"].GetString();
         if (send_string.compare(recv_string) == 0) {
           is_ok = true;
           is_working = false;
@@ -2990,11 +2990,11 @@ bool FFunapiSessionTestReconnectHttpSend10Times::RunTest(const FString& Paramete
     rapidjson::Value message_node(send_string.c_str(), msg.GetAllocator());
     msg.AddMember("message", message_node, msg.GetAllocator());
 
-    // Convert JSON document to string
+    // Convert JSON document to fun::string
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     msg.Accept(writer);
-    std::string json_string = buffer.GetString();
+    fun::string json_string = buffer.GetString();
 
     session->SendMessage("echo", json_string);
   }
@@ -3032,18 +3032,18 @@ bool FFunapiCompressionTestDict::RunTest(const FString& Parameters) {
   auto compression = std::make_shared<fun::FunapiCompression>();
   compression->SetZstdDictBase64String(dict);
 
-  std::string in_string = "{\"id\":12032,\"pos_x\":31.01,\"pos_z\":45.5293984741,\"dir_x\":-14.199799809265137,\"dir_z\":11.899918530274,\"look_x\":1.100000381469727,\"look_z\":11.600100381469727,\"_msgtype\":\"request_move\"}";
-  std::vector<uint8_t> v(in_string.cbegin(), in_string.cend());
+  fun::string in_string = "{\"id\":12032,\"pos_x\":31.01,\"pos_z\":45.5293984741,\"dir_x\":-14.199799809265137,\"dir_z\":11.899918530274,\"look_x\":1.100000381469727,\"look_z\":11.600100381469727,\"_msgtype\":\"request_move\"}";
+  fun::vector<uint8_t> v(in_string.cbegin(), in_string.cend());
 
   fun::FunapiCompression::HeaderFields headers;
-  std::stringstream ss;
+  fun::stringstream ss;
   ss << v.size();
   headers["LEN"] = ss.str();
 
   compression->Compress(headers, v);
   compression->Decompress(headers, v);
 
-  std::string out_string(v.cbegin(), v.cend());
+  fun::string out_string(v.cbegin(), v.cend());
 
   return (in_string.compare(out_string) == 0);
 #else
@@ -3055,8 +3055,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiTestTLSJson, "Funapi.Experimental.TLS_Js
 
 bool FFunapiTestTLSJson::RunTest(const FString& Parameters) {
 #if FUNAPI_HAVE_TCP_TLS
-  std::string send_string = "Json Echo Message";
-  std::string server_ip = g_server_ip;
+  fun::string send_string = "Json Echo Message";
+  fun::string server_ip = g_server_ip;
 
   auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
   bool is_ok = true;
@@ -3067,7 +3067,7 @@ bool FFunapiTestTLSJson::RunTest(const FString& Parameters) {
   (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
     const fun::SessionEventType type,
-    const std::string &session_id,
+    const fun::string &session_id,
     const std::shared_ptr<fun::FunapiError> &error)
   {
   });
@@ -3096,7 +3096,7 @@ bool FFunapiTestTLSJson::RunTest(const FString& Parameters) {
   ([&is_working, &is_ok, &send_string]
   (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
-    const std::string &msg_type, const std::string &json_string)
+    const fun::string &msg_type, const fun::string &json_string)
   {
     if (msg_type.compare("echo") == 0) {
       is_ok = false;
@@ -3106,7 +3106,7 @@ bool FFunapiTestTLSJson::RunTest(const FString& Parameters) {
 
       verify(msg_recv.HasMember("message"));
 
-      std::string recv_string = msg_recv["message"].GetString();
+      fun::string recv_string = msg_recv["message"].GetString();
 
       if (send_string.compare(recv_string) == 0) {
         is_ok = true;
@@ -3122,21 +3122,21 @@ bool FFunapiTestTLSJson::RunTest(const FString& Parameters) {
   // send
   {
     for (int i = 0; i < 10; ++i) {
-      // std::to_string is not supported on android, using std::stringstream instead.
-      std::stringstream ss_temp;
+      // std::to_string is not supported on android, using fun::stringstream instead.
+      fun::stringstream ss_temp;
       ss_temp <<  "hello world - " << static_cast<int>(i);
-      std::string temp_string = ss_temp.str();
+      fun::string temp_string = ss_temp.str();
 
       rapidjson::Document msg;
       msg.SetObject();
       rapidjson::Value message_node(temp_string.c_str(), msg.GetAllocator());
       msg.AddMember("message", message_node, msg.GetAllocator());
 
-      // Convert JSON document to string
+      // Convert JSON document to fun::string
       rapidjson::StringBuffer buffer;
       rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
       msg.Accept(writer);
-      std::string json_string = buffer.GetString();
+      fun::string json_string = buffer.GetString();
 
       session->SendMessage("echo", json_string);
     }
@@ -3147,11 +3147,11 @@ bool FFunapiTestTLSJson::RunTest(const FString& Parameters) {
     rapidjson::Value message_node(send_string.c_str(), msg.GetAllocator());
     msg.AddMember("message", message_node, msg.GetAllocator());
 
-    // Convert JSON document to string
+    // Convert JSON document to fun::string
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     msg.Accept(writer);
-    std::string json_string = buffer.GetString();
+    fun::string json_string = buffer.GetString();
 
     session->SendMessage("echo", json_string);
   }

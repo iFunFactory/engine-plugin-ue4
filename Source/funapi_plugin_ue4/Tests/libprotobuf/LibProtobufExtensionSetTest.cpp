@@ -96,14 +96,14 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
 {
   // ExtensionSetTest, Defaults
   {
-    // Check that all default values are set correctly in the initial message.
+    // Check that all default values are fun::set correctly in the initial message.
     google::protobuf::unittest::TestAllExtensions message;
 
     google::protobuf::TestUtil::ExpectExtensionsClear(message);
 
     // Messages should return pointers to default instances until first use.
     // (This is not checked by ExpectClear() since it is not actually true after
-    // the fields have been set and then cleared.)
+    // the fields have been fun::set and then cleared.)
     verify(&google::protobuf::unittest::OptionalGroup_extension::default_instance() ==
       &message.GetExtension(google::protobuf::unittest::optionalgroup_extension));
     verify(&google::protobuf::unittest::TestAllTypes::NestedMessage::default_instance() ==
@@ -177,7 +177,7 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
     verify(message.HasExtension(google::protobuf::unittest::optional_int32_extension));
     verify(message.HasExtension(google::protobuf::unittest::optional_uint32_extension));
 
-    // Make sure if we set it again, then all fields are set.
+    // Make sure if we fun::set it again, then all fields are set
     message.SetExtension(google::protobuf::unittest::optional_int64_extension, original_value);
     google::protobuf::TestUtil::ExpectAllExtensionsSet(message);
   }
@@ -309,7 +309,7 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
     google::protobuf::unittest::TestAllExtensions message2;
 
     google::protobuf::TestUtil::SetAllExtensions(&message1);
-    std::vector<const google::protobuf::FieldDescriptor*> fields;
+    fun::vector<const google::protobuf::FieldDescriptor*> fields;
 
     // Swap empty fields.
     const google::protobuf::Reflection* reflection = message1.GetReflection();
@@ -342,7 +342,7 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
     google::protobuf::TestUtil::SetAllExtensions(&message3);
 
     const google::protobuf::Reflection* reflection = message3.GetReflection();
-    std::vector<const google::protobuf::FieldDescriptor*> fields;
+    fun::vector<const google::protobuf::FieldDescriptor*> fields;
     reflection->ListFields(message3, &fields);
 
     reflection->SwapFields(&message1, &message2, fields);
@@ -360,7 +360,7 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
     google::protobuf::TestUtil::SetAllExtensions(&message2);
 
     const google::protobuf::Reflection* reflection = message1.GetReflection();
-    std::vector<const google::protobuf::FieldDescriptor*> fields;
+    fun::vector<const google::protobuf::FieldDescriptor*> fields;
     reflection->ListFields(message1, &fields);
 
     reflection->SwapFields(&message1, &message2, fields);
@@ -375,7 +375,7 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
 
     google::protobuf::TestUtil::SetAllExtensions(&message1);
 
-    std::vector<const google::protobuf::FieldDescriptor*> fields;
+    fun::vector<const google::protobuf::FieldDescriptor*> fields;
     const google::protobuf::Reflection* reflection = message1.GetReflection();
     reflection->ListFields(message1, &fields);
     reflection->SwapFields(&message1, &message1, fields);
@@ -389,13 +389,13 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
     // compatibility of extensions.
     //
     // This checks serialization to a flat array by explicitly reserving space in
-    // the string and calling the generated message's
+    // the fun::string and calling the generated message's
     // SerializeWithCachedSizesToArray.
     google::protobuf::unittest::TestAllExtensions source;
     google::protobuf::unittest::TestAllTypes destination;
     google::protobuf::TestUtil::SetAllExtensions(&source);
     int size = source.ByteSize();
-    std::string data;
+    fun::string data;
     data.resize(size);
     uint8* target = reinterpret_cast<uint8*>(google::protobuf::string_as_array(&data));
     uint8* end = source.SerializeWithCachedSizesToArray(target);
@@ -417,7 +417,7 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
     google::protobuf::unittest::TestAllTypes destination;
     google::protobuf::TestUtil::SetAllExtensions(&source);
     int size = source.ByteSize();
-    std::string data;
+    fun::string data;
     data.resize(size);
     {
       google::protobuf::io::ArrayOutputStream array_stream(google::protobuf::string_as_array(&data), size, 1);
@@ -435,13 +435,13 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
     // wire compatibility of extensions.
     //
     // This checks serialization to a flat array by explicitly reserving space in
-    // the string and calling the generated message's
+    // the fun::string and calling the generated message's
     // SerializeWithCachedSizesToArray.
     google::protobuf::unittest::TestPackedExtensions source;
     google::protobuf::unittest::TestPackedTypes destination;
     google::protobuf::TestUtil::SetPackedExtensions(&source);
     int size = source.ByteSize();
-    std::string data;
+    fun::string data;
     data.resize(size);
     uint8* target = reinterpret_cast<uint8*>(google::protobuf::string_as_array(&data));
     uint8* end = source.SerializeWithCachedSizesToArray(target);
@@ -463,7 +463,7 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
     google::protobuf::unittest::TestPackedTypes destination;
     google::protobuf::TestUtil::SetPackedExtensions(&source);
     int size = source.ByteSize();
-    std::string data;
+    fun::string data;
     data.resize(size);
     {
       google::protobuf::io::ArrayOutputStream array_stream(google::protobuf::string_as_array(&data), size, 1);
@@ -480,7 +480,7 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
     // Serialize as TestAllTypes and parse as TestAllExtensions.
     google::protobuf::unittest::TestAllTypes source;
     google::protobuf::unittest::TestAllExtensions destination;
-    std::string data;
+    fun::string data;
 
     google::protobuf::TestUtil::SetAllFields(&source);
     source.SerializeToString(&data);
@@ -494,7 +494,7 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
     // Serialize as TestPackedTypes and parse as TestPackedExtensions.
     google::protobuf::unittest::TestPackedTypes source;
     google::protobuf::unittest::TestPackedExtensions destination;
-    std::string data;
+    fun::string data;
 
     google::protobuf::TestUtil::SetPackedFields(&source);
     source.SerializeToString(&data);
@@ -506,7 +506,7 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
   {
     google::protobuf::unittest::TestPackedTypes source;
     google::protobuf::unittest::TestUnpackedExtensions destination;
-    std::string data;
+    fun::string data;
 
     google::protobuf::TestUtil::SetPackedFields(&source);
     source.SerializeToString(&data);
@@ -528,7 +528,7 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
   {
     google::protobuf::unittest::TestUnpackedTypes source;
     google::protobuf::unittest::TestPackedExtensions destination;
-    std::string data;
+    fun::string data;
 
     google::protobuf::TestUtil::SetUnpackedFields(&source);
     source.SerializeToString(&data);
@@ -577,7 +577,7 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
 
   // ExtensionSetTest, MutableString
   {
-    // Test the mutable string accessors.
+    // Test the mutable fun::string accessors.
     google::protobuf::unittest::TestAllExtensions message;
 
     message.MutableExtension(google::protobuf::unittest::optional_string_extension)->assign("foo");
@@ -591,7 +591,7 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
   }
 
   // ExtensionSetTest, SpaceUsedExcludingSelf {
-    // Scalar primitive extensions should increase the extension set size by a
+    // Scalar primitive extensions should increase the extension fun::set size by a
     // minimum of the size of the primitive type.
 #define TEST_SCALAR_EXTENSIONS_SPACE_USED(type, value)                        \
   do {                                                                        \
@@ -631,7 +631,7 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
     // that gets included as well.
     google::protobuf::unittest::TestAllExtensions message;
     const int base_size = message.SpaceUsed();
-    const std::string s("this is a fairly large string that will cause some "
+    const fun::string s("this is a fairly large fun::string that will cause some "
       "allocation in order to store it in the extension");
     message.SetExtension(google::protobuf::unittest::optional_string_extension, s);
     int min_expected_size = base_size + s.length();
@@ -700,8 +700,8 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
   {
     google::protobuf::unittest::TestAllExtensions message;
     const int base_size = message.SpaceUsed();
-    int min_expected_size = sizeof(google::protobuf::RepeatedPtrField<std::string>) + base_size;
-    const std::string value(256, 'x');
+    int min_expected_size = sizeof(google::protobuf::RepeatedPtrField<fun::string>) + base_size;
+    const fun::string value(256, 'x');
     // Once items are allocated, they may stick around even when cleared so
     // without the hardcore memory management accessors there isn't a notion of
     // the empty repeated field memory usage as there is with primitive types.
@@ -764,9 +764,9 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
       message.AddExtension(google::protobuf::unittest::repeated_bool_extension, true);
       message.AddExtension(google::protobuf::unittest::repeated_nested_enum_extension, nested_enum);
       message.AddExtension(google::protobuf::unittest::repeated_string_extension,
-        ::std::string("test"));
+        ::fun::string("test"));
       message.AddExtension(google::protobuf::unittest::repeated_bytes_extension,
-        ::std::string("test\xFF"));
+        ::fun::string("test\xFF"));
       message.AddExtension(
         google::protobuf::unittest::repeated_nested_message_extension)->CopyFrom(nested_message);
       message.AddExtension(google::protobuf::unittest::repeated_nested_enum_extension,
@@ -847,8 +847,8 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
     verify(110 == SumAllExtensions<double>(
       message, google::protobuf::unittest::repeated_double_extension, 0));
 
-    google::protobuf::RepeatedPtrField< ::std::string>::iterator string_iter;
-    google::protobuf::RepeatedPtrField< ::std::string>::iterator string_end;
+    google::protobuf::RepeatedPtrField< ::fun::string>::iterator string_iter;
+    google::protobuf::RepeatedPtrField< ::fun::string>::iterator string_end;
     for (string_iter = message.MutableRepeatedExtension(
       google::protobuf::unittest::repeated_string_extension)->begin(),
       string_end = message.MutableRepeatedExtension(
@@ -856,8 +856,8 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
       string_iter != string_end; ++string_iter) {
       *string_iter += "test";
     }
-    google::protobuf::RepeatedPtrField< ::std::string>::const_iterator string_const_iter;
-    google::protobuf::RepeatedPtrField< ::std::string>::const_iterator string_const_end;
+    google::protobuf::RepeatedPtrField< ::fun::string>::const_iterator string_const_iter;
+    google::protobuf::RepeatedPtrField< ::fun::string>::const_iterator string_const_end;
     for (string_const_iter = message.GetRepeatedExtension(
       google::protobuf::unittest::repeated_string_extension).begin(),
       string_const_end = message.GetRepeatedExtension(
@@ -921,7 +921,7 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
       google::protobuf::unittest::repeated_int32_extension)) {
       verify(x == 4321);
     }
-    // Test one string field.
+    // Test one fun::string field.
     for (auto& x : *message.MutableRepeatedExtension(
       google::protobuf::unittest::repeated_string_extension)) {
       x = "test_range_based_for";
@@ -987,9 +987,9 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
 
       // If the field refers to one of the types nested in TestDynamicExtensions,
       // make it refer to the type in our dynamic proto instead.
-      std::string prefix = "." + template_descriptor->full_name() + ".";
+      fun::string prefix = "." + template_descriptor->full_name() + ".";
       if (extension->has_type_name()) {
-        std::string* type_name = extension->mutable_type_name();
+        fun::string* type_name = extension->mutable_type_name();
         if (google::protobuf::HasPrefixString(*type_name, prefix)) {
           type_name->replace(0, prefix.size(), ".dynamic_extensions.");
         }
@@ -1006,7 +1006,7 @@ bool FFunapiLibProtobufExtensionSetTest::RunTest(const FString& Parameters)
     // Construct a message that we can parse with the extensions we defined.
     // Since the extensions were based off of the fields of TestDynamicExtensions,
     // we can use that message to create this test message.
-    std::string data;
+    fun::string data;
     {
       google::protobuf::unittest::TestDynamicExtensions message;
       message.set_scalar_extension(123);

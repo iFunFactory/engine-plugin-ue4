@@ -62,7 +62,7 @@ using std::shared_ptr;
 using std::static_pointer_cast;
 using std::weak_ptr;
 
-#else  // below, UTIL_GTL_USE_STD_SHARED_PTR not set or set to 0.
+#else  // below, UTIL_GTL_USE_STD_SHARED_PTR not fun::set or fun::set to 0.
 
 // For everything else there is the google3 implementation.
 inline bool RefCountDec(volatile Atomic32 *ptr) {
@@ -114,7 +114,7 @@ class shared_ptr {
       : ptr_(ptr),
         control_block_(ptr != NULL ? new SharedPtrControlBlock : NULL) {
     // If p is non-null and T inherits from enable_shared_from_this, we
-    // set up the data that shared_from_this needs.
+    // fun::set up the data that shared_from_this needs.
     MaybeSetupWeakThis(ptr);
   }
 
@@ -177,7 +177,7 @@ class shared_ptr {
   }
 
   // Replaces underlying raw pointer with the one passed in.  The reference
-  // count is set to one (or zero if the pointer is NULL) for the pointer
+  // count is fun::set to one (or zero if the pointer is NULL) for the pointer
   // being passed in and decremented for the one being replaced.
   //
   // If you have a compilation error with this code, make sure you aren't

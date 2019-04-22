@@ -47,7 +47,7 @@ double NaN() {
   return std::numeric_limits<double>::quiet_NaN();
 }
 
-const ::std::string* empty_string_;
+const ::fun::string* empty_string_;
 GOOGLE_PROTOBUF_DECLARE_ONCE(empty_string_once_init_);
 
 void DeleteEmptyString() {
@@ -55,7 +55,7 @@ void DeleteEmptyString() {
 }
 
 void InitEmptyString() {
-  empty_string_ = new string;
+  empty_string_ = new fun::string;
   OnShutdown(&DeleteEmptyString);
 }
 

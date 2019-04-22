@@ -92,25 +92,25 @@ class FUNAPI_API FunMessage : public ::google::protobuf::Message {
   inline bool has_sid() const;
   inline void clear_sid();
   static const int kSidFieldNumber = 1;
-  inline const ::std::string& sid() const;
-  inline void set_sid(const ::std::string& value);
+  inline const ::fun::string& sid() const;
+  inline void set_sid(const ::fun::string& value);
   inline void set_sid(const char* value);
   inline void set_sid(const void* value, size_t size);
-  inline ::std::string* mutable_sid();
-  inline ::std::string* release_sid();
-  inline void set_allocated_sid(::std::string* sid);
+  inline ::fun::string* mutable_sid();
+  inline ::fun::string* release_sid();
+  inline void set_allocated_sid(::fun::string* sid);
 
-  // optional string msgtype = 2;
+  // optional fun::string msgtype = 2;
   inline bool has_msgtype() const;
   inline void clear_msgtype();
   static const int kMsgtypeFieldNumber = 2;
-  inline const ::std::string& msgtype() const;
-  inline void set_msgtype(const ::std::string& value);
+  inline const ::fun::string& msgtype() const;
+  inline void set_msgtype(const ::fun::string& value);
   inline void set_msgtype(const char* value);
   inline void set_msgtype(const char* value, size_t size);
-  inline ::std::string* mutable_msgtype();
-  inline ::std::string* release_msgtype();
-  inline void set_allocated_msgtype(::std::string* msgtype);
+  inline ::fun::string* mutable_msgtype();
+  inline ::fun::string* release_msgtype();
+  inline void set_allocated_msgtype(::fun::string* msgtype);
 
   // optional uint32 seq = 3;
   inline bool has_seq() const;
@@ -162,8 +162,8 @@ class FUNAPI_API FunMessage : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::std::string* sid_;
-  ::std::string* msgtype_;
+  ::fun::string* sid_;
+  ::fun::string* msgtype_;
   ::google::protobuf::uint32 seq_;
   ::google::protobuf::uint32 ack_;
   bool urgent_;
@@ -198,14 +198,14 @@ inline void FunMessage::clear_sid() {
   }
   clear_has_sid();
 }
-inline const ::std::string& FunMessage::sid() const {
+inline const ::fun::string& FunMessage::sid() const {
   // @@protoc_insertion_point(field_get:FunMessage.sid)
   return *sid_;
 }
-inline void FunMessage::set_sid(const ::std::string& value) {
+inline void FunMessage::set_sid(const ::fun::string& value) {
   set_has_sid();
   if (sid_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    sid_ = new ::std::string;
+    sid_ = new ::fun::string;
   }
   sid_->assign(value);
   // @@protoc_insertion_point(field_set:FunMessage.sid)
@@ -213,7 +213,7 @@ inline void FunMessage::set_sid(const ::std::string& value) {
 inline void FunMessage::set_sid(const char* value) {
   set_has_sid();
   if (sid_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    sid_ = new ::std::string;
+    sid_ = new ::fun::string;
   }
   sid_->assign(value);
   // @@protoc_insertion_point(field_set_char:FunMessage.sid)
@@ -221,30 +221,30 @@ inline void FunMessage::set_sid(const char* value) {
 inline void FunMessage::set_sid(const void* value, size_t size) {
   set_has_sid();
   if (sid_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    sid_ = new ::std::string;
+    sid_ = new ::fun::string;
   }
   sid_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:FunMessage.sid)
 }
-inline ::std::string* FunMessage::mutable_sid() {
+inline ::fun::string* FunMessage::mutable_sid() {
   set_has_sid();
   if (sid_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    sid_ = new ::std::string;
+    sid_ = new ::fun::string;
   }
   // @@protoc_insertion_point(field_mutable:FunMessage.sid)
   return sid_;
 }
-inline ::std::string* FunMessage::release_sid() {
+inline ::fun::string* FunMessage::release_sid() {
   clear_has_sid();
   if (sid_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::std::string* temp = sid_;
-    sid_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::fun::string* temp = sid_;
+    sid_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void FunMessage::set_allocated_sid(::std::string* sid) {
+inline void FunMessage::set_allocated_sid(::fun::string* sid) {
   if (sid_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete sid_;
   }
@@ -253,12 +253,12 @@ inline void FunMessage::set_allocated_sid(::std::string* sid) {
     sid_ = sid;
   } else {
     clear_has_sid();
-    sid_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    sid_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:FunMessage.sid)
 }
 
-// optional string msgtype = 2;
+// optional fun::string msgtype = 2;
 inline bool FunMessage::has_msgtype() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -274,14 +274,14 @@ inline void FunMessage::clear_msgtype() {
   }
   clear_has_msgtype();
 }
-inline const ::std::string& FunMessage::msgtype() const {
+inline const ::fun::string& FunMessage::msgtype() const {
   // @@protoc_insertion_point(field_get:FunMessage.msgtype)
   return *msgtype_;
 }
-inline void FunMessage::set_msgtype(const ::std::string& value) {
+inline void FunMessage::set_msgtype(const ::fun::string& value) {
   set_has_msgtype();
   if (msgtype_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    msgtype_ = new ::std::string;
+    msgtype_ = new ::fun::string;
   }
   msgtype_->assign(value);
   // @@protoc_insertion_point(field_set:FunMessage.msgtype)
@@ -289,7 +289,7 @@ inline void FunMessage::set_msgtype(const ::std::string& value) {
 inline void FunMessage::set_msgtype(const char* value) {
   set_has_msgtype();
   if (msgtype_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    msgtype_ = new ::std::string;
+    msgtype_ = new ::fun::string;
   }
   msgtype_->assign(value);
   // @@protoc_insertion_point(field_set_char:FunMessage.msgtype)
@@ -297,30 +297,30 @@ inline void FunMessage::set_msgtype(const char* value) {
 inline void FunMessage::set_msgtype(const char* value, size_t size) {
   set_has_msgtype();
   if (msgtype_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    msgtype_ = new ::std::string;
+    msgtype_ = new ::fun::string;
   }
   msgtype_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:FunMessage.msgtype)
 }
-inline ::std::string* FunMessage::mutable_msgtype() {
+inline ::fun::string* FunMessage::mutable_msgtype() {
   set_has_msgtype();
   if (msgtype_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    msgtype_ = new ::std::string;
+    msgtype_ = new ::fun::string;
   }
   // @@protoc_insertion_point(field_mutable:FunMessage.msgtype)
   return msgtype_;
 }
-inline ::std::string* FunMessage::release_msgtype() {
+inline ::fun::string* FunMessage::release_msgtype() {
   clear_has_msgtype();
   if (msgtype_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::std::string* temp = msgtype_;
-    msgtype_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::fun::string* temp = msgtype_;
+    msgtype_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void FunMessage::set_allocated_msgtype(::std::string* msgtype) {
+inline void FunMessage::set_allocated_msgtype(::fun::string* msgtype) {
   if (msgtype_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete msgtype_;
   }
@@ -329,7 +329,7 @@ inline void FunMessage::set_allocated_msgtype(::std::string* msgtype) {
     msgtype_ = msgtype;
   } else {
     clear_has_msgtype();
-    msgtype_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    msgtype_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:FunMessage.msgtype)
 }

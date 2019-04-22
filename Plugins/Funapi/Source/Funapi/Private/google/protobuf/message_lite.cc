@@ -45,7 +45,7 @@ namespace protobuf {
 
 MessageLite::~MessageLite() {}
 
-string MessageLite::InitializationErrorString() const {
+fun::string MessageLite::InitializationErrorString() const {
   return "(cannot determine missing fields for lite message)";
 }
 
@@ -69,7 +69,7 @@ void ByteSizeConsistencyError(int byte_size_before_serialization,
   GOOGLE_LOG(FATAL) << "This shouldn't be called if all the sizes are equal.";
 }
 
-string InitializationErrorMessage(const char* action,
+fun::string InitializationErrorMessage(const char* action,
                                   const MessageLite& message) {
   // Note:  We want to avoid depending on strutil in the lite library, otherwise
   //   we'd use:
@@ -80,7 +80,7 @@ string InitializationErrorMessage(const char* action,
   //   action, message.GetTypeName(),
   //   message.InitializationErrorString());
 
-  string result;
+  fun::string result;
   result += "Can't ";
   result += action;
   result += " message of type \"";
@@ -195,11 +195,11 @@ bool MessageLite::ParsePartialFromBoundedZeroCopyStream(
          decoder.BytesUntilLimit() == 0;
 }
 
-bool MessageLite::ParseFromString(const string& data) {
+bool MessageLite::ParseFromString(const fun::string& data) {
   return InlineParseFromArray(data.data(), data.size(), this);
 }
 
-bool MessageLite::ParsePartialFromString(const string& data) {
+bool MessageLite::ParsePartialFromString(const fun::string& data) {
   return InlineParsePartialFromArray(data.data(), data.size(), this);
 }
 
@@ -269,12 +269,12 @@ bool MessageLite::SerializePartialToZeroCopyStream(
   return SerializePartialToCodedStream(&encoder);
 }
 
-bool MessageLite::AppendToString(string* output) const {
+bool MessageLite::AppendToString(fun::string* output) const {
   GOOGLE_DCHECK(IsInitialized()) << InitializationErrorMessage("serialize", *this);
   return AppendPartialToString(output);
 }
 
-bool MessageLite::AppendPartialToString(string* output) const {
+bool MessageLite::AppendPartialToString(fun::string* output) const {
   int old_size = output->size();
   int byte_size = ByteSize();
   STLStringResizeUninitialized(output, old_size + byte_size);
@@ -287,12 +287,12 @@ bool MessageLite::AppendPartialToString(string* output) const {
   return true;
 }
 
-bool MessageLite::SerializeToString(string* output) const {
+bool MessageLite::SerializeToString(fun::string* output) const {
   output->clear();
   return AppendToString(output);
 }
 
-bool MessageLite::SerializePartialToString(string* output) const {
+bool MessageLite::SerializePartialToString(fun::string* output) const {
   output->clear();
   return AppendPartialToString(output);
 }
@@ -313,19 +313,19 @@ bool MessageLite::SerializePartialToArray(void* data, int size) const {
   return true;
 }
 
-string MessageLite::SerializeAsString() const {
+fun::string MessageLite::SerializeAsString() const {
   // If the compiler implements the (Named) Return Value Optimization,
   // the local variable 'result' will not actually reside on the stack
   // of this function, but will be overlaid with the object that the
   // caller supplied for the return value to be constructed in.
-  string output;
+  fun::string output;
   if (!AppendToString(&output))
     output.clear();
   return output;
 }
 
-string MessageLite::SerializePartialAsString() const {
-  string output;
+fun::string MessageLite::SerializePartialAsString() const {
+  fun::string output;
   if (!AppendPartialToString(&output))
     output.clear();
   return output;

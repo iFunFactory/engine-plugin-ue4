@@ -144,7 +144,7 @@ inline void protobuf_AssignDescriptorsOnce() {
                  &protobuf_AssignDesc_funapi_2fservice_2fredirect_5fmessage_2eproto);
 }
 
-void protobuf_RegisterTypes(const ::std::string&) {
+void protobuf_RegisterTypes(const ::fun::string&) {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     FunRedirectMessage_descriptor_, &FunRedirectMessage::default_instance());
@@ -629,9 +629,9 @@ FunRedirectMessage::FunRedirectMessage(const FunRedirectMessage& from)
 void FunRedirectMessage::SharedCtor() {
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
-  host_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  token_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  flavor_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  host_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  token_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  flavor_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -710,7 +710,7 @@ bool FunRedirectMessage::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // required string host = 1;
+      // required fun::string host = 1;
       case 1: {
         if (tag == 10) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
@@ -740,7 +740,7 @@ bool FunRedirectMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // required string token = 3;
+      // required fun::string token = 3;
       case 3: {
         if (tag == 26) {
          parse_token:
@@ -757,7 +757,7 @@ bool FunRedirectMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // required string flavor = 4;
+      // required fun::string flavor = 4;
       case 4: {
         if (tag == 34) {
          parse_flavor:
@@ -774,7 +774,7 @@ bool FunRedirectMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated string target_tags = 5;
+      // repeated fun::string target_tags = 5;
       case 5: {
         if (tag == 42) {
          parse_target_tags:
@@ -793,7 +793,7 @@ bool FunRedirectMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated string current_tags = 6;
+      // repeated fun::string current_tags = 6;
       case 6: {
         if (tag == 50) {
          parse_current_tags:
@@ -837,7 +837,7 @@ failure:
 void FunRedirectMessage::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:FunRedirectMessage)
-  // required string host = 1;
+  // required fun::string host = 1;
   if (has_host()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->host().data(), this->host().length(),
@@ -853,7 +853,7 @@ void FunRedirectMessage::SerializeWithCachedSizes(
       2, this->ports(i), output);
   }
 
-  // required string token = 3;
+  // required fun::string token = 3;
   if (has_token()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->token().data(), this->token().length(),
@@ -863,7 +863,7 @@ void FunRedirectMessage::SerializeWithCachedSizes(
       3, this->token(), output);
   }
 
-  // required string flavor = 4;
+  // required fun::string flavor = 4;
   if (has_flavor()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->flavor().data(), this->flavor().length(),
@@ -873,7 +873,7 @@ void FunRedirectMessage::SerializeWithCachedSizes(
       4, this->flavor(), output);
   }
 
-  // repeated string target_tags = 5;
+  // repeated fun::string target_tags = 5;
   for (int i = 0; i < this->target_tags_size(); i++) {
   ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
     this->target_tags(i).data(), this->target_tags(i).length(),
@@ -883,7 +883,7 @@ void FunRedirectMessage::SerializeWithCachedSizes(
       5, this->target_tags(i), output);
   }
 
-  // repeated string current_tags = 6;
+  // repeated fun::string current_tags = 6;
   for (int i = 0; i < this->current_tags_size(); i++) {
   ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
     this->current_tags(i).data(), this->current_tags(i).length(),
@@ -903,7 +903,7 @@ void FunRedirectMessage::SerializeWithCachedSizes(
 ::google::protobuf::uint8* FunRedirectMessage::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:FunRedirectMessage)
-  // required string host = 1;
+  // required fun::string host = 1;
   if (has_host()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->host().data(), this->host().length(),
@@ -921,7 +921,7 @@ void FunRedirectMessage::SerializeWithCachedSizes(
         2, this->ports(i), target);
   }
 
-  // required string token = 3;
+  // required fun::string token = 3;
   if (has_token()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->token().data(), this->token().length(),
@@ -932,7 +932,7 @@ void FunRedirectMessage::SerializeWithCachedSizes(
         3, this->token(), target);
   }
 
-  // required string flavor = 4;
+  // required fun::string flavor = 4;
   if (has_flavor()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->flavor().data(), this->flavor().length(),
@@ -943,7 +943,7 @@ void FunRedirectMessage::SerializeWithCachedSizes(
         4, this->flavor(), target);
   }
 
-  // repeated string target_tags = 5;
+  // repeated fun::string target_tags = 5;
   for (int i = 0; i < this->target_tags_size(); i++) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->target_tags(i).data(), this->target_tags(i).length(),
@@ -953,7 +953,7 @@ void FunRedirectMessage::SerializeWithCachedSizes(
       WriteStringToArray(5, this->target_tags(i), target);
   }
 
-  // repeated string current_tags = 6;
+  // repeated fun::string current_tags = 6;
   for (int i = 0; i < this->current_tags_size(); i++) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->current_tags(i).data(), this->current_tags(i).length(),
@@ -975,21 +975,21 @@ int FunRedirectMessage::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required string host = 1;
+    // required fun::string host = 1;
     if (has_host()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->host());
     }
 
-    // required string token = 3;
+    // required fun::string token = 3;
     if (has_token()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->token());
     }
 
-    // required string flavor = 4;
+    // required fun::string flavor = 4;
     if (has_flavor()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -1005,14 +1005,14 @@ int FunRedirectMessage::ByteSize() const {
         this->ports(i));
   }
 
-  // repeated string target_tags = 5;
+  // repeated fun::string target_tags = 5;
   total_size += 1 * this->target_tags_size();
   for (int i = 0; i < this->target_tags_size(); i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
       this->target_tags(i));
   }
 
-  // repeated string current_tags = 6;
+  // repeated fun::string current_tags = 6;
   total_size += 1 * this->current_tags_size();
   for (int i = 0; i < this->current_tags_size(); i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -1154,7 +1154,7 @@ FunRedirectConnectMessage::FunRedirectConnectMessage(const FunRedirectConnectMes
 void FunRedirectConnectMessage::SharedCtor() {
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
-  token_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  token_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   result_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -1216,7 +1216,7 @@ bool FunRedirectConnectMessage::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional string token = 1;
+      // optional fun::string token = 1;
       case 1: {
         if (tag == 10) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
@@ -1277,7 +1277,7 @@ failure:
 void FunRedirectConnectMessage::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:FunRedirectConnectMessage)
-  // optional string token = 1;
+  // optional fun::string token = 1;
   if (has_token()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->token().data(), this->token().length(),
@@ -1303,7 +1303,7 @@ void FunRedirectConnectMessage::SerializeWithCachedSizes(
 ::google::protobuf::uint8* FunRedirectConnectMessage::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:FunRedirectConnectMessage)
-  // optional string token = 1;
+  // optional fun::string token = 1;
   if (has_token()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->token().data(), this->token().length(),
@@ -1332,7 +1332,7 @@ int FunRedirectConnectMessage::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional string token = 1;
+    // optional fun::string token = 1;
     if (has_token()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -1445,9 +1445,9 @@ FunDedicatedServerRedirectMessage::FunDedicatedServerRedirectMessage(const FunDe
 void FunDedicatedServerRedirectMessage::SharedCtor() {
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
-  host_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  host_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   port_ = 0;
-  token_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  token_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -1516,7 +1516,7 @@ bool FunDedicatedServerRedirectMessage::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // required string host = 1;
+      // required fun::string host = 1;
       case 1: {
         if (tag == 10) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
@@ -1547,7 +1547,7 @@ bool FunDedicatedServerRedirectMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // required string token = 3;
+      // required fun::string token = 3;
       case 3: {
         if (tag == 26) {
          parse_token:
@@ -1589,7 +1589,7 @@ failure:
 void FunDedicatedServerRedirectMessage::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:FunDedicatedServerRedirectMessage)
-  // required string host = 1;
+  // required fun::string host = 1;
   if (has_host()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->host().data(), this->host().length(),
@@ -1604,7 +1604,7 @@ void FunDedicatedServerRedirectMessage::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->port(), output);
   }
 
-  // required string token = 3;
+  // required fun::string token = 3;
   if (has_token()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->token().data(), this->token().length(),
@@ -1624,7 +1624,7 @@ void FunDedicatedServerRedirectMessage::SerializeWithCachedSizes(
 ::google::protobuf::uint8* FunDedicatedServerRedirectMessage::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:FunDedicatedServerRedirectMessage)
-  // required string host = 1;
+  // required fun::string host = 1;
   if (has_host()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->host().data(), this->host().length(),
@@ -1640,7 +1640,7 @@ void FunDedicatedServerRedirectMessage::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->port(), target);
   }
 
-  // required string token = 3;
+  // required fun::string token = 3;
   if (has_token()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->token().data(), this->token().length(),
@@ -1663,7 +1663,7 @@ int FunDedicatedServerRedirectMessage::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required string host = 1;
+    // required fun::string host = 1;
     if (has_host()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -1677,7 +1677,7 @@ int FunDedicatedServerRedirectMessage::ByteSize() const {
           this->port());
     }
 
-    // required string token = 3;
+    // required fun::string token = 3;
     if (has_token()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(

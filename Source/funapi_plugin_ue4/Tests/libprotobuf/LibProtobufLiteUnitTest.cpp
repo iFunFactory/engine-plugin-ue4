@@ -71,7 +71,7 @@ void SetAllTypesInEmptyMessageUnknownFields(
   protobuf_unittest::TestAllTypesLite message;
   google::protobuf::TestUtilLite::ExpectClear(message);
   google::protobuf::TestUtilLite::SetAllFields(&message);
-  string data = message.SerializeAsString();
+  fun::string data = message.SerializeAsString();
   empty_message->ParseFromString(data);
 }
 
@@ -83,7 +83,7 @@ void SetSomeTypesInEmptyMessageUnknownFields(
   message.set_optional_int64(102);
   message.set_optional_uint32(103);
   message.set_optional_uint64(104);
-  string data = message.SerializeAsString();
+  fun::string data = message.SerializeAsString();
   empty_message->ParseFromString(data);
 }
 
@@ -91,7 +91,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiLibProtobufLiteUnitTest, "LibProtobuf.Li
 
 bool FFunapiLibProtobufLiteUnitTest::RunTest(const FString& Parameters)
 {
-  string data, data2, packed_data;
+  fun::string data, data2, packed_data;
 
   {
     protobuf_unittest::TestAllTypesLite message, message2, message3;
@@ -114,7 +114,7 @@ bool FFunapiLibProtobufLiteUnitTest::RunTest(const FString& Parameters)
     google::protobuf::TestUtilLite::ExpectExtensionsClear(message);
     google::protobuf::TestUtilLite::SetAllExtensions(&message);
     message2.CopyFrom(message);
-    string extensions_data = message.SerializeAsString();
+    fun::string extensions_data = message.SerializeAsString();
     message3.ParseFromString(extensions_data);
     google::protobuf::TestUtilLite::ExpectAllExtensionsSet(message);
     google::protobuf::TestUtilLite::ExpectAllExtensionsSet(message2);
@@ -146,7 +146,7 @@ bool FFunapiLibProtobufLiteUnitTest::RunTest(const FString& Parameters)
     google::protobuf::TestUtilLite::ExpectPackedExtensionsClear(message);
     google::protobuf::TestUtilLite::SetPackedExtensions(&message);
     message2.CopyFrom(message);
-    string packed_extensions_data = message.SerializeAsString();
+    fun::string packed_extensions_data = message.SerializeAsString();
     GOOGLE_CHECK(packed_extensions_data == packed_data);
     message3.ParseFromString(packed_extensions_data);
     google::protobuf::TestUtilLite::ExpectPackedExtensionsSet(message);
@@ -190,7 +190,7 @@ bool FFunapiLibProtobufLiteUnitTest::RunTest(const FString& Parameters)
 
 #undef ASSIGN_REPEATED_GROUP
 
-    string buffer;
+    fun::string buffer;
     generator.SerializeToString(&buffer);
     google::protobuf::unittest::TestParsingMergeLite parsing_merge;
     parsing_merge.ParseFromString(buffer);
@@ -325,7 +325,7 @@ bool FFunapiLibProtobufLiteUnitTest::RunTest(const FString& Parameters)
   {
     // Test unknown enum value
     protobuf_unittest::TestAllTypesLite message;
-    string buffer;
+    fun::string buffer;
     {
       google::protobuf::io::StringOutputStream output_stream(&buffer);
       google::protobuf::io::CodedOutputStream coded_output(&output_stream);

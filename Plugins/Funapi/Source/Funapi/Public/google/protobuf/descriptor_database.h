@@ -69,20 +69,20 @@ class LIBPROTOBUF_EXPORT DescriptorDatabase {
 
   // Find a file by file name.  Fills in in *output and returns true if found.
   // Otherwise, returns false, leaving the contents of *output undefined.
-  virtual bool FindFileByName(const string& filename,
+  virtual bool FindFileByName(const fun::string& filename,
                               FileDescriptorProto* output) = 0;
 
   // Find the file that declares the given fully-qualified symbol name.
   // If found, fills in *output and returns true, otherwise returns false
   // and leaves *output undefined.
-  virtual bool FindFileContainingSymbol(const string& symbol_name,
+  virtual bool FindFileContainingSymbol(const fun::string& symbol_name,
                                         FileDescriptorProto* output) = 0;
 
   // Find the file which defines an extension extending the given message type
   // with the given field number.  If found, fills in *output and returns true,
   // otherwise returns false and leaves *output undefined.  containing_type
   // must be a fully-qualified type name.
-  virtual bool FindFileContainingExtension(const string& containing_type,
+  virtual bool FindFileContainingExtension(const fun::string& containing_type,
                                            int field_number,
                                            FileDescriptorProto* output) = 0;
 
@@ -96,8 +96,8 @@ class LIBPROTOBUF_EXPORT DescriptorDatabase {
   //
   // This method has a default implementation that always returns
   // false.
-  virtual bool FindAllExtensionNumbers(const string& /* extendee_type */,
-                                       vector<int>* /* output */) {
+  virtual bool FindAllExtensionNumbers(const fun::string& /* extendee_type */,
+                                       fun::vector<int>* /* output */) {
     return false;
   }
 
@@ -142,15 +142,15 @@ class LIBPROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
   bool AddAndOwn(const FileDescriptorProto* file);
 
   // implements DescriptorDatabase -----------------------------------
-  bool FindFileByName(const string& filename,
+  bool FindFileByName(const fun::string& filename,
                       FileDescriptorProto* output);
-  bool FindFileContainingSymbol(const string& symbol_name,
+  bool FindFileContainingSymbol(const fun::string& symbol_name,
                                 FileDescriptorProto* output);
-  bool FindFileContainingExtension(const string& containing_type,
+  bool FindFileContainingExtension(const fun::string& containing_type,
                                    int field_number,
                                    FileDescriptorProto* output);
-  bool FindAllExtensionNumbers(const string& extendee_type,
-                               vector<int>* output);
+  bool FindAllExtensionNumbers(const fun::string& extendee_type,
+                               fun::vector<int>* output);
 
  private:
   // So that it can use DescriptorIndex.
@@ -165,33 +165,33 @@ class LIBPROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
     // to the index.
     bool AddFile(const FileDescriptorProto& file,
                  Value value);
-    bool AddSymbol(const string& name, Value value);
+    bool AddSymbol(const fun::string& name, Value value);
     bool AddNestedExtensions(const DescriptorProto& message_type,
                              Value value);
     bool AddExtension(const FieldDescriptorProto& field,
                       Value value);
 
-    Value FindFile(const string& filename);
-    Value FindSymbol(const string& name);
-    Value FindExtension(const string& containing_type, int field_number);
-    bool FindAllExtensionNumbers(const string& containing_type,
-                                 vector<int>* output);
+    Value FindFile(const fun::string& filename);
+    Value FindSymbol(const fun::string& name);
+    Value FindExtension(const fun::string& containing_type, int field_number);
+    bool FindAllExtensionNumbers(const fun::string& containing_type,
+                                 fun::vector<int>* output);
 
    private:
-    map<string, Value> by_name_;
-    map<string, Value> by_symbol_;
-    map<pair<string, int>, Value> by_extension_;
+    fun::map<fun::string, Value> by_name_;
+    fun::map<fun::string, Value> by_symbol_;
+    fun::map<pair<fun::string, int>, Value> by_extension_;
 
-    // Invariant:  The by_symbol_ map does not contain any symbols which are
-    // prefixes of other symbols in the map.  For example, "foo.bar" is a
+    // Invariant:  The by_symbol_ fun::map does not contain any symbols which are
+    // prefixes of other symbols in the fun::map.  For example, "foo.bar" is a
     // prefix of "foo.bar.baz" (but is not a prefix of "foo.barbaz").
     //
     // This invariant is important because it means that given a symbol name,
-    // we can find a key in the map which is a prefix of the symbol in O(lg n)
+    // we can find a key in the fun::map which is a prefix of the symbol in O(lg n)
     // time, and we know that there is at most one such key.
     //
     // The prefix lookup algorithm works like so:
-    // 1) Find the last key in the map which is less than or equal to the
+    // 1) Find the last key in the fun::map which is less than or equal to the
     //    search key.
     // 2) If the found key is a prefix of the search key, then return it.
     //    Otherwise, there is no match.
@@ -223,7 +223,7 @@ class LIBPROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
     //    would make it sort after the search key.
     // 8) Therefore, if the found key is not equal to the match key, then the
     //    found key must be a sub-symbol of the match key.  However, this would
-    //    contradict our map invariant which says that no symbol in the map is
+    //    contradict our fun::map invariant which says that no symbol in the fun::map is
     //    a sub-symbol of any other.
     // 9) Therefore, the found key must match the match key.
     //
@@ -233,24 +233,24 @@ class LIBPROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
     // then it would be a match, and we're assuming the match key doesn't exist.
     // Therefore, step 2 will correctly return no match.
 
-    // Find the last entry in the by_symbol_ map whose key is less than or
+    // Find the last entry in the by_symbol_ fun::map whose key is less than or
     // equal to the given name.
-    typename map<string, Value>::iterator FindLastLessOrEqual(
-        const string& name);
+    typename fun::map<fun::string, Value>::iterator FindLastLessOrEqual(
+        const fun::string& name);
 
     // True if either the arguments are equal or super_symbol identifies a
     // parent symbol of sub_symbol (e.g. "foo.bar" is a parent of
     // "foo.bar.baz", but not a parent of "foo.barbaz").
-    bool IsSubSymbol(const string& sub_symbol, const string& super_symbol);
+    bool IsSubSymbol(const fun::string& sub_symbol, const fun::string& super_symbol);
 
     // Returns true if and only if all characters in the name are alphanumerics,
     // underscores, or periods.
-    bool ValidateSymbolName(const string& name);
+    bool ValidateSymbolName(const fun::string& name);
   };
 
 
   DescriptorIndex<const FileDescriptorProto*> index_;
-  vector<const FileDescriptorProto*> files_to_delete_;
+  fun::vector<const FileDescriptorProto*> files_to_delete_;
 
   // If file is non-NULL, copy it into *output and return true, otherwise
   // return false.
@@ -283,23 +283,23 @@ class LIBPROTOBUF_EXPORT EncodedDescriptorDatabase : public DescriptorDatabase {
   bool AddCopy(const void* encoded_file_descriptor, int size);
 
   // Like FindFileContainingSymbol but returns only the name of the file.
-  bool FindNameOfFileContainingSymbol(const string& symbol_name,
-                                      string* output);
+  bool FindNameOfFileContainingSymbol(const fun::string& symbol_name,
+                                      fun::string* output);
 
   // implements DescriptorDatabase -----------------------------------
-  bool FindFileByName(const string& filename,
+  bool FindFileByName(const fun::string& filename,
                       FileDescriptorProto* output);
-  bool FindFileContainingSymbol(const string& symbol_name,
+  bool FindFileContainingSymbol(const fun::string& symbol_name,
                                 FileDescriptorProto* output);
-  bool FindFileContainingExtension(const string& containing_type,
+  bool FindFileContainingExtension(const fun::string& containing_type,
                                    int field_number,
                                    FileDescriptorProto* output);
-  bool FindAllExtensionNumbers(const string& extendee_type,
-                               vector<int>* output);
+  bool FindAllExtensionNumbers(const fun::string& extendee_type,
+                               fun::vector<int>* output);
 
  private:
   SimpleDescriptorDatabase::DescriptorIndex<pair<const void*, int> > index_;
-  vector<void*> files_to_delete_;
+  fun::vector<void*> files_to_delete_;
 
   // If encoded_file.first is non-NULL, parse the data into *output and return
   // true, otherwise return false.
@@ -316,15 +316,15 @@ class LIBPROTOBUF_EXPORT DescriptorPoolDatabase : public DescriptorDatabase {
   ~DescriptorPoolDatabase();
 
   // implements DescriptorDatabase -----------------------------------
-  bool FindFileByName(const string& filename,
+  bool FindFileByName(const fun::string& filename,
                       FileDescriptorProto* output);
-  bool FindFileContainingSymbol(const string& symbol_name,
+  bool FindFileContainingSymbol(const fun::string& symbol_name,
                                 FileDescriptorProto* output);
-  bool FindFileContainingExtension(const string& containing_type,
+  bool FindFileContainingExtension(const fun::string& containing_type,
                                    int field_number,
                                    FileDescriptorProto* output);
-  bool FindAllExtensionNumbers(const string& extendee_type,
-                               vector<int>* output);
+  bool FindAllExtensionNumbers(const fun::string& extendee_type,
+                               fun::vector<int>* output);
 
  private:
   const DescriptorPool& pool_;
@@ -339,27 +339,27 @@ class LIBPROTOBUF_EXPORT MergedDescriptorDatabase : public DescriptorDatabase {
   MergedDescriptorDatabase(DescriptorDatabase* source1,
                            DescriptorDatabase* source2);
   // Merge more than two databases.  The sources remain property of the caller.
-  // The vector may be deleted after the constructor returns but the
+  // The fun::vector may be deleted after the constructor returns but the
   // DescriptorDatabases need to stick around.
-  MergedDescriptorDatabase(const vector<DescriptorDatabase*>& sources);
+  MergedDescriptorDatabase(const fun::vector<DescriptorDatabase*>& sources);
   ~MergedDescriptorDatabase();
 
   // implements DescriptorDatabase -----------------------------------
-  bool FindFileByName(const string& filename,
+  bool FindFileByName(const fun::string& filename,
                       FileDescriptorProto* output);
-  bool FindFileContainingSymbol(const string& symbol_name,
+  bool FindFileContainingSymbol(const fun::string& symbol_name,
                                 FileDescriptorProto* output);
-  bool FindFileContainingExtension(const string& containing_type,
+  bool FindFileContainingExtension(const fun::string& containing_type,
                                    int field_number,
                                    FileDescriptorProto* output);
   // Merges the results of calling all databases. Returns true iff any
   // of the databases returned true.
-  bool FindAllExtensionNumbers(const string& extendee_type,
-                               vector<int>* output);
+  bool FindAllExtensionNumbers(const fun::string& extendee_type,
+                               fun::vector<int>* output);
 
 
  private:
-  vector<DescriptorDatabase*> sources_;
+  fun::vector<DescriptorDatabase*> sources_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MergedDescriptorDatabase);
 };
 

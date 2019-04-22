@@ -23,8 +23,8 @@ class FUNAPI_API FunapiRpcOption : public std::enable_shared_from_this<FunapiRpc
 
   static std::shared_ptr<FunapiRpcOption> Create();
 
-  void AddInitializer(const std::string &hostname_or_ip, const int port);
-  std::vector<std::tuple<std::string, int>>& GetInitializers();
+  void AddInitializer(const fun::string &hostname_or_ip, const int port);
+  fun::vector<std::tuple<fun::string, int>>& GetInitializers();
 
   void SetDisableNagle(const bool disable_nagle);
   bool GetDisableNagle();
@@ -32,8 +32,8 @@ class FUNAPI_API FunapiRpcOption : public std::enable_shared_from_this<FunapiRpc
   void SetConnectTimeout(const int seconds);
   int GetConnectTimeout();
 
-  void SetTag(const std::string &tag);
-  std::string GetTag();
+  void SetTag(const fun::string &tag);
+  fun::string GetTag();
 
  private:
   std::shared_ptr<FunapiRpcOptionImpl> impl_;
@@ -52,13 +52,13 @@ class FUNAPI_API FunapiRpc : public std::enable_shared_from_this<FunapiRpc> {
   };
 
   typedef std::function<void(const EventType type,
-                             const std::string &hostname_or_ip,
+                             const fun::string &hostname_or_ip,
                              const int port,
-                             const std::string &peer_id)> EventHandler;
+                             const fun::string &peer_id)> EventHandler;
 
   typedef std::function<void(const FunDedicatedServerRpcMessage &response_message)> ResponseHandler;
 
-  typedef std::function<void(const std::string &type,
+  typedef std::function<void(const fun::string &type,
                              const FunDedicatedServerRpcMessage &request_message,
                              const ResponseHandler &response_handler)> RpcHandler;
 
@@ -69,7 +69,7 @@ class FUNAPI_API FunapiRpc : public std::enable_shared_from_this<FunapiRpc> {
 
   void Start(std::shared_ptr<FunapiRpcOption> option);
   void SetPeerEventHandler(const EventHandler &handler);
-  void SetHandler(const std::string &type, const RpcHandler &handler);
+  void SetHandler(const fun::string &type, const RpcHandler &handler);
   void Update();
 
   // debug function // don't use

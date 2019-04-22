@@ -72,12 +72,12 @@ const TestMessageWithCustomOptions_AnEnum TestMessageWithCustomOptions_AnEnum_An
 const int TestMessageWithCustomOptions_AnEnum_AnEnum_ARRAYSIZE = TestMessageWithCustomOptions_AnEnum_AnEnum_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* TestMessageWithCustomOptions_AnEnum_descriptor();
-inline const ::std::string& TestMessageWithCustomOptions_AnEnum_Name(TestMessageWithCustomOptions_AnEnum value) {
+inline const ::fun::string& TestMessageWithCustomOptions_AnEnum_Name(TestMessageWithCustomOptions_AnEnum value) {
   return ::google::protobuf::internal::NameOfEnum(
     TestMessageWithCustomOptions_AnEnum_descriptor(), value);
 }
 inline bool TestMessageWithCustomOptions_AnEnum_Parse(
-    const ::std::string& name, TestMessageWithCustomOptions_AnEnum* value) {
+    const ::fun::string& name, TestMessageWithCustomOptions_AnEnum* value) {
   return ::google::protobuf::internal::ParseNamedEnum<TestMessageWithCustomOptions_AnEnum>(
     TestMessageWithCustomOptions_AnEnum_descriptor(), name, value);
 }
@@ -91,12 +91,12 @@ const DummyMessageContainingEnum_TestEnumType DummyMessageContainingEnum_TestEnu
 const int DummyMessageContainingEnum_TestEnumType_TestEnumType_ARRAYSIZE = DummyMessageContainingEnum_TestEnumType_TestEnumType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* DummyMessageContainingEnum_TestEnumType_descriptor();
-inline const ::std::string& DummyMessageContainingEnum_TestEnumType_Name(DummyMessageContainingEnum_TestEnumType value) {
+inline const ::fun::string& DummyMessageContainingEnum_TestEnumType_Name(DummyMessageContainingEnum_TestEnumType value) {
   return ::google::protobuf::internal::NameOfEnum(
     DummyMessageContainingEnum_TestEnumType_descriptor(), value);
 }
 inline bool DummyMessageContainingEnum_TestEnumType_Parse(
-    const ::std::string& name, DummyMessageContainingEnum_TestEnumType* value) {
+    const ::fun::string& name, DummyMessageContainingEnum_TestEnumType* value) {
   return ::google::protobuf::internal::ParseNamedEnum<DummyMessageContainingEnum_TestEnumType>(
     DummyMessageContainingEnum_TestEnumType_descriptor(), name, value);
 }
@@ -109,12 +109,12 @@ const NestedOptionType_NestedEnum NestedOptionType_NestedEnum_NestedEnum_MAX = N
 const int NestedOptionType_NestedEnum_NestedEnum_ARRAYSIZE = NestedOptionType_NestedEnum_NestedEnum_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* NestedOptionType_NestedEnum_descriptor();
-inline const ::std::string& NestedOptionType_NestedEnum_Name(NestedOptionType_NestedEnum value) {
+inline const ::fun::string& NestedOptionType_NestedEnum_Name(NestedOptionType_NestedEnum value) {
   return ::google::protobuf::internal::NameOfEnum(
     NestedOptionType_NestedEnum_descriptor(), value);
 }
 inline bool NestedOptionType_NestedEnum_Parse(
-    const ::std::string& name, NestedOptionType_NestedEnum* value) {
+    const ::fun::string& name, NestedOptionType_NestedEnum* value) {
   return ::google::protobuf::internal::ParseNamedEnum<NestedOptionType_NestedEnum>(
     NestedOptionType_NestedEnum_descriptor(), name, value);
 }
@@ -128,12 +128,12 @@ const MethodOpt1 MethodOpt1_MAX = METHODOPT1_VAL2;
 const int MethodOpt1_ARRAYSIZE = MethodOpt1_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* MethodOpt1_descriptor();
-inline const ::std::string& MethodOpt1_Name(MethodOpt1 value) {
+inline const ::fun::string& MethodOpt1_Name(MethodOpt1 value) {
   return ::google::protobuf::internal::NameOfEnum(
     MethodOpt1_descriptor(), value);
 }
 inline bool MethodOpt1_Parse(
-    const ::std::string& name, MethodOpt1* value) {
+    const ::fun::string& name, MethodOpt1* value) {
   return ::google::protobuf::internal::ParseNamedEnum<MethodOpt1>(
     MethodOpt1_descriptor(), name, value);
 }
@@ -146,12 +146,12 @@ const AggregateEnum AggregateEnum_MAX = VALUE;
 const int AggregateEnum_ARRAYSIZE = AggregateEnum_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* AggregateEnum_descriptor();
-inline const ::std::string& AggregateEnum_Name(AggregateEnum value) {
+inline const ::fun::string& AggregateEnum_Name(AggregateEnum value) {
   return ::google::protobuf::internal::NameOfEnum(
     AggregateEnum_descriptor(), value);
 }
 inline bool AggregateEnum_Parse(
-    const ::std::string& name, AggregateEnum* value) {
+    const ::fun::string& name, AggregateEnum* value) {
   return ::google::protobuf::internal::ParseNamedEnum<AggregateEnum>(
     AggregateEnum_descriptor(), name, value);
 }
@@ -224,29 +224,29 @@ class TestMessageWithCustomOptions : public ::google::protobuf::Message {
   AnEnum_descriptor() {
     return TestMessageWithCustomOptions_AnEnum_descriptor();
   }
-  static inline const ::std::string& AnEnum_Name(AnEnum value) {
+  static inline const ::fun::string& AnEnum_Name(AnEnum value) {
     return TestMessageWithCustomOptions_AnEnum_Name(value);
   }
-  static inline bool AnEnum_Parse(const ::std::string& name,
+  static inline bool AnEnum_Parse(const ::fun::string& name,
       AnEnum* value) {
     return TestMessageWithCustomOptions_AnEnum_Parse(name, value);
   }
 
   // accessors -------------------------------------------------------
 
-  // optional string field1 = 1 [ctype = CORD];
+  // optional fun::string field1 = 1 [ctype = CORD];
   inline bool has_field1() const;
   inline void clear_field1();
   static const int kField1FieldNumber = 1;
  private:
   // Hidden due to unknown ctype option.
-  inline const ::std::string& field1() const;
-  inline void set_field1(const ::std::string& value);
+  inline const ::fun::string& field1() const;
+  inline void set_field1(const ::fun::string& value);
   inline void set_field1(const char* value);
   inline void set_field1(const char* value, size_t size);
-  inline ::std::string* mutable_field1();
-  inline ::std::string* release_field1();
-  inline void set_allocated_field1(::std::string* field1);
+  inline ::fun::string* mutable_field1();
+  inline ::fun::string* release_field1();
+  inline void set_allocated_field1(::fun::string* field1);
  public:
 
   // @@protoc_insertion_point(class_scope:protobuf_unittest.TestMessageWithCustomOptions)
@@ -258,7 +258,7 @@ class TestMessageWithCustomOptions : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::std::string* field1_;
+  ::fun::string* field1_;
   friend void  protobuf_AddDesc_google_2fprotobuf_2funittest_5fcustom_5foptions_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2funittest_5fcustom_5foptions_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2funittest_5fcustom_5foptions_2eproto();
@@ -611,10 +611,10 @@ class DummyMessageContainingEnum : public ::google::protobuf::Message {
   TestEnumType_descriptor() {
     return DummyMessageContainingEnum_TestEnumType_descriptor();
   }
-  static inline const ::std::string& TestEnumType_Name(TestEnumType value) {
+  static inline const ::fun::string& TestEnumType_Name(TestEnumType value) {
     return DummyMessageContainingEnum_TestEnumType_Name(value);
   }
-  static inline bool TestEnumType_Parse(const ::std::string& name,
+  static inline bool TestEnumType_Parse(const ::fun::string& name,
       TestEnumType* value) {
     return DummyMessageContainingEnum_TestEnumType_Parse(name, value);
   }
@@ -1815,17 +1815,17 @@ class AggregateMessageSetElement : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional string s = 1;
+  // optional fun::string s = 1;
   inline bool has_s() const;
   inline void clear_s();
   static const int kSFieldNumber = 1;
-  inline const ::std::string& s() const;
-  inline void set_s(const ::std::string& value);
+  inline const ::fun::string& s() const;
+  inline void set_s(const ::fun::string& value);
   inline void set_s(const char* value);
   inline void set_s(const char* value, size_t size);
-  inline ::std::string* mutable_s();
-  inline ::std::string* release_s();
-  inline void set_allocated_s(::std::string* s);
+  inline ::fun::string* mutable_s();
+  inline ::fun::string* release_s();
+  inline void set_allocated_s(::fun::string* s);
 
   static const int kMessageSetExtensionFieldNumber = 15447542;
   static ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::AggregateMessageSet,
@@ -1840,7 +1840,7 @@ class AggregateMessageSetElement : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::std::string* s_;
+  ::fun::string* s_;
   friend void  protobuf_AddDesc_google_2fprotobuf_2funittest_5fcustom_5foptions_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2funittest_5fcustom_5foptions_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2funittest_5fcustom_5foptions_2eproto();
@@ -1910,17 +1910,17 @@ class Aggregate : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 i() const;
   inline void set_i(::google::protobuf::int32 value);
 
-  // optional string s = 2;
+  // optional fun::string s = 2;
   inline bool has_s() const;
   inline void clear_s();
   static const int kSFieldNumber = 2;
-  inline const ::std::string& s() const;
-  inline void set_s(const ::std::string& value);
+  inline const ::fun::string& s() const;
+  inline void set_s(const ::fun::string& value);
   inline void set_s(const char* value);
   inline void set_s(const char* value, size_t size);
-  inline ::std::string* mutable_s();
-  inline ::std::string* release_s();
-  inline void set_allocated_s(::std::string* s);
+  inline ::fun::string* mutable_s();
+  inline ::fun::string* release_s();
+  inline void set_allocated_s(::fun::string* s);
 
   // optional .protobuf_unittest.Aggregate sub = 3;
   inline bool has_sub() const;
@@ -1970,7 +1970,7 @@ class Aggregate : public ::google::protobuf::Message {
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
-  ::std::string* s_;
+  ::fun::string* s_;
   ::protobuf_unittest::Aggregate* sub_;
   ::google::protobuf::FileOptions* file_;
   ::protobuf_unittest::AggregateMessageSet* mset_;
@@ -2210,10 +2210,10 @@ class NestedOptionType : public ::google::protobuf::Message {
   NestedEnum_descriptor() {
     return NestedOptionType_NestedEnum_descriptor();
   }
-  static inline const ::std::string& NestedEnum_Name(NestedEnum value) {
+  static inline const ::fun::string& NestedEnum_Name(NestedEnum value) {
     return NestedOptionType_NestedEnum_Name(value);
   }
-  static inline bool NestedEnum_Parse(const ::std::string& name,
+  static inline bool NestedEnum_Parse(const ::fun::string& name,
       NestedEnum* value) {
     return NestedOptionType_NestedEnum_Parse(name, value);
   }
@@ -2523,7 +2523,7 @@ extern ::google::protobuf::internal::ExtensionIdentifier< ::google::protobuf::Me
 
 // TestMessageWithCustomOptions
 
-// optional string field1 = 1 [ctype = CORD];
+// optional fun::string field1 = 1 [ctype = CORD];
 inline bool TestMessageWithCustomOptions::has_field1() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -2539,14 +2539,14 @@ inline void TestMessageWithCustomOptions::clear_field1() {
   }
   clear_has_field1();
 }
-inline const ::std::string& TestMessageWithCustomOptions::field1() const {
+inline const ::fun::string& TestMessageWithCustomOptions::field1() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.TestMessageWithCustomOptions.field1)
   return *field1_;
 }
-inline void TestMessageWithCustomOptions::set_field1(const ::std::string& value) {
+inline void TestMessageWithCustomOptions::set_field1(const ::fun::string& value) {
   set_has_field1();
   if (field1_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    field1_ = new ::std::string;
+    field1_ = new ::fun::string;
   }
   field1_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.TestMessageWithCustomOptions.field1)
@@ -2554,7 +2554,7 @@ inline void TestMessageWithCustomOptions::set_field1(const ::std::string& value)
 inline void TestMessageWithCustomOptions::set_field1(const char* value) {
   set_has_field1();
   if (field1_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    field1_ = new ::std::string;
+    field1_ = new ::fun::string;
   }
   field1_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.TestMessageWithCustomOptions.field1)
@@ -2562,30 +2562,30 @@ inline void TestMessageWithCustomOptions::set_field1(const char* value) {
 inline void TestMessageWithCustomOptions::set_field1(const char* value, size_t size) {
   set_has_field1();
   if (field1_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    field1_ = new ::std::string;
+    field1_ = new ::fun::string;
   }
   field1_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.TestMessageWithCustomOptions.field1)
 }
-inline ::std::string* TestMessageWithCustomOptions::mutable_field1() {
+inline ::fun::string* TestMessageWithCustomOptions::mutable_field1() {
   set_has_field1();
   if (field1_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    field1_ = new ::std::string;
+    field1_ = new ::fun::string;
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.TestMessageWithCustomOptions.field1)
   return field1_;
 }
-inline ::std::string* TestMessageWithCustomOptions::release_field1() {
+inline ::fun::string* TestMessageWithCustomOptions::release_field1() {
   clear_has_field1();
   if (field1_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::std::string* temp = field1_;
-    field1_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::fun::string* temp = field1_;
+    field1_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void TestMessageWithCustomOptions::set_allocated_field1(::std::string* field1) {
+inline void TestMessageWithCustomOptions::set_allocated_field1(::fun::string* field1) {
   if (field1_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete field1_;
   }
@@ -2594,7 +2594,7 @@ inline void TestMessageWithCustomOptions::set_allocated_field1(::std::string* fi
     field1_ = field1;
   } else {
     clear_has_field1();
-    field1_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    field1_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.TestMessageWithCustomOptions.field1)
 }
@@ -3054,7 +3054,7 @@ inline void ComplexOpt6::set_xyzzy(::google::protobuf::int32 value) {
 
 // AggregateMessageSetElement
 
-// optional string s = 1;
+// optional fun::string s = 1;
 inline bool AggregateMessageSetElement::has_s() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -3070,14 +3070,14 @@ inline void AggregateMessageSetElement::clear_s() {
   }
   clear_has_s();
 }
-inline const ::std::string& AggregateMessageSetElement::s() const {
+inline const ::fun::string& AggregateMessageSetElement::s() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.AggregateMessageSetElement.s)
   return *s_;
 }
-inline void AggregateMessageSetElement::set_s(const ::std::string& value) {
+inline void AggregateMessageSetElement::set_s(const ::fun::string& value) {
   set_has_s();
   if (s_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    s_ = new ::std::string;
+    s_ = new ::fun::string;
   }
   s_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.AggregateMessageSetElement.s)
@@ -3085,7 +3085,7 @@ inline void AggregateMessageSetElement::set_s(const ::std::string& value) {
 inline void AggregateMessageSetElement::set_s(const char* value) {
   set_has_s();
   if (s_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    s_ = new ::std::string;
+    s_ = new ::fun::string;
   }
   s_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.AggregateMessageSetElement.s)
@@ -3093,30 +3093,30 @@ inline void AggregateMessageSetElement::set_s(const char* value) {
 inline void AggregateMessageSetElement::set_s(const char* value, size_t size) {
   set_has_s();
   if (s_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    s_ = new ::std::string;
+    s_ = new ::fun::string;
   }
   s_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.AggregateMessageSetElement.s)
 }
-inline ::std::string* AggregateMessageSetElement::mutable_s() {
+inline ::fun::string* AggregateMessageSetElement::mutable_s() {
   set_has_s();
   if (s_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    s_ = new ::std::string;
+    s_ = new ::fun::string;
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.AggregateMessageSetElement.s)
   return s_;
 }
-inline ::std::string* AggregateMessageSetElement::release_s() {
+inline ::fun::string* AggregateMessageSetElement::release_s() {
   clear_has_s();
   if (s_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::std::string* temp = s_;
-    s_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::fun::string* temp = s_;
+    s_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void AggregateMessageSetElement::set_allocated_s(::std::string* s) {
+inline void AggregateMessageSetElement::set_allocated_s(::fun::string* s) {
   if (s_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete s_;
   }
@@ -3125,7 +3125,7 @@ inline void AggregateMessageSetElement::set_allocated_s(::std::string* s) {
     s_ = s;
   } else {
     clear_has_s();
-    s_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    s_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.AggregateMessageSetElement.s)
 }
@@ -3158,7 +3158,7 @@ inline void Aggregate::set_i(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:protobuf_unittest.Aggregate.i)
 }
 
-// optional string s = 2;
+// optional fun::string s = 2;
 inline bool Aggregate::has_s() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -3174,14 +3174,14 @@ inline void Aggregate::clear_s() {
   }
   clear_has_s();
 }
-inline const ::std::string& Aggregate::s() const {
+inline const ::fun::string& Aggregate::s() const {
   // @@protoc_insertion_point(field_get:protobuf_unittest.Aggregate.s)
   return *s_;
 }
-inline void Aggregate::set_s(const ::std::string& value) {
+inline void Aggregate::set_s(const ::fun::string& value) {
   set_has_s();
   if (s_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    s_ = new ::std::string;
+    s_ = new ::fun::string;
   }
   s_->assign(value);
   // @@protoc_insertion_point(field_set:protobuf_unittest.Aggregate.s)
@@ -3189,7 +3189,7 @@ inline void Aggregate::set_s(const ::std::string& value) {
 inline void Aggregate::set_s(const char* value) {
   set_has_s();
   if (s_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    s_ = new ::std::string;
+    s_ = new ::fun::string;
   }
   s_->assign(value);
   // @@protoc_insertion_point(field_set_char:protobuf_unittest.Aggregate.s)
@@ -3197,30 +3197,30 @@ inline void Aggregate::set_s(const char* value) {
 inline void Aggregate::set_s(const char* value, size_t size) {
   set_has_s();
   if (s_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    s_ = new ::std::string;
+    s_ = new ::fun::string;
   }
   s_->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:protobuf_unittest.Aggregate.s)
 }
-inline ::std::string* Aggregate::mutable_s() {
+inline ::fun::string* Aggregate::mutable_s() {
   set_has_s();
   if (s_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    s_ = new ::std::string;
+    s_ = new ::fun::string;
   }
   // @@protoc_insertion_point(field_mutable:protobuf_unittest.Aggregate.s)
   return s_;
 }
-inline ::std::string* Aggregate::release_s() {
+inline ::fun::string* Aggregate::release_s() {
   clear_has_s();
   if (s_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     return NULL;
   } else {
-    ::std::string* temp = s_;
-    s_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    ::fun::string* temp = s_;
+    s_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     return temp;
   }
 }
-inline void Aggregate::set_allocated_s(::std::string* s) {
+inline void Aggregate::set_allocated_s(::fun::string* s) {
   if (s_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete s_;
   }
@@ -3229,7 +3229,7 @@ inline void Aggregate::set_allocated_s(::std::string* s) {
     s_ = s;
   } else {
     clear_has_s();
-    s_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    s_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:protobuf_unittest.Aggregate.s)
 }

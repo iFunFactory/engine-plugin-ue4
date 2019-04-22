@@ -101,7 +101,7 @@ int UnknownFieldSet::SpaceUsed() const {
 }
 
 void UnknownFieldSet::AddVarint(int number, uint64 value) {
-  if (fields_ == NULL) fields_ = new vector<UnknownField>;
+  if (fields_ == NULL) fields_ = new fun::vector<UnknownField>;
   UnknownField field;
   field.number_ = number;
   field.SetType(UnknownField::TYPE_VARINT);
@@ -110,7 +110,7 @@ void UnknownFieldSet::AddVarint(int number, uint64 value) {
 }
 
 void UnknownFieldSet::AddFixed32(int number, uint32 value) {
-  if (fields_ == NULL) fields_ = new vector<UnknownField>;
+  if (fields_ == NULL) fields_ = new fun::vector<UnknownField>;
   UnknownField field;
   field.number_ = number;
   field.SetType(UnknownField::TYPE_FIXED32);
@@ -119,7 +119,7 @@ void UnknownFieldSet::AddFixed32(int number, uint32 value) {
 }
 
 void UnknownFieldSet::AddFixed64(int number, uint64 value) {
-  if (fields_ == NULL) fields_ = new vector<UnknownField>;
+  if (fields_ == NULL) fields_ = new fun::vector<UnknownField>;
   UnknownField field;
   field.number_ = number;
   field.SetType(UnknownField::TYPE_FIXED64);
@@ -127,19 +127,19 @@ void UnknownFieldSet::AddFixed64(int number, uint64 value) {
   fields_->push_back(field);
 }
 
-string* UnknownFieldSet::AddLengthDelimited(int number) {
-  if (fields_ == NULL) fields_ = new vector<UnknownField>;
+fun::string* UnknownFieldSet::AddLengthDelimited(int number) {
+  if (fields_ == NULL) fields_ = new fun::vector<UnknownField>;
   UnknownField field;
   field.number_ = number;
   field.SetType(UnknownField::TYPE_LENGTH_DELIMITED);
-  field.length_delimited_.string_value_ = new string;
+  field.length_delimited_.string_value_ = new fun::string;
   fields_->push_back(field);
   return field.length_delimited_.string_value_;
 }
 
 
 UnknownFieldSet* UnknownFieldSet::AddGroup(int number) {
-  if (fields_ == NULL) fields_ = new vector<UnknownField>;
+  if (fields_ == NULL) fields_ = new fun::vector<UnknownField>;
   UnknownField field;
   field.number_ = number;
   field.SetType(UnknownField::TYPE_GROUP);
@@ -149,7 +149,7 @@ UnknownFieldSet* UnknownFieldSet::AddGroup(int number) {
 }
 
 void UnknownFieldSet::AddField(const UnknownField& field) {
-  if (fields_ == NULL) fields_ = new vector<UnknownField>;
+  if (fields_ == NULL) fields_ = new fun::vector<UnknownField>;
   fields_->push_back(field);
   fields_->back().DeepCopy();
 }
@@ -230,7 +230,7 @@ void UnknownField::Delete() {
 void UnknownField::DeepCopy() {
   switch (type()) {
     case UnknownField::TYPE_LENGTH_DELIMITED:
-      length_delimited_.string_value_ = new string(
+      length_delimited_.string_value_ = new fun::string(
           *length_delimited_.string_value_);
       break;
     case UnknownField::TYPE_GROUP: {
@@ -248,14 +248,14 @@ void UnknownField::DeepCopy() {
 void UnknownField::SerializeLengthDelimitedNoTag(
     io::CodedOutputStream* output) const {
   GOOGLE_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
-  const string& data = *length_delimited_.string_value_;
+  const fun::string& data = *length_delimited_.string_value_;
   output->WriteVarint32(data.size());
   output->WriteRawMaybeAliased(data.data(), data.size());
 }
 
 uint8* UnknownField::SerializeLengthDelimitedNoTagToArray(uint8* target) const {
   GOOGLE_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
-  const string& data = *length_delimited_.string_value_;
+  const fun::string& data = *length_delimited_.string_value_;
   target = io::CodedOutputStream::WriteVarint32ToArray(data.size(), target);
   target = io::CodedOutputStream::WriteStringToArray(data, target);
   return target;

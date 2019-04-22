@@ -515,7 +515,7 @@ void TestUtil::ExpectClear(const unittest::TestAllTypes& message) {
   EXPECT_FALSE(message.has_optional_string_piece());
   EXPECT_FALSE(message.has_optional_cord());
 
-  // Optional fields without defaults are set to zero or something like it.
+  // Optional fields without defaults are fun::set to zero or something like it.
   EXPECT_EQ(0    , message.optional_int32   ());
   EXPECT_EQ(0    , message.optional_int64   ());
   EXPECT_EQ(0    , message.optional_uint32  ());
@@ -547,7 +547,7 @@ void TestUtil::ExpectClear(const unittest::TestAllTypes& message) {
   EXPECT_EQ(0, message.optional_public_import_message().e());
   EXPECT_EQ(0, message.optional_lazy_message         ().bb());
 
-  // Enums without defaults are set to the first value in the enum.
+  // Enums without defaults are fun::set to the first value in the enum.
   EXPECT_EQ(unittest::TestAllTypes::FOO, message.optional_nested_enum ());
   EXPECT_EQ(unittest::FOREIGN_FOO      , message.optional_foreign_enum());
   EXPECT_EQ(unittest_import::IMPORT_FOO, message.optional_import_enum ());
@@ -1386,7 +1386,7 @@ void TestUtil::ExpectAllExtensionsSet(
 
 void TestUtil::ExpectExtensionsClear(
     const unittest::TestAllExtensions& message) {
-  string serialized;
+  fun::string serialized;
   ASSERT_TRUE(message.SerializeToString(&serialized));
   EXPECT_EQ("", serialized);
   EXPECT_EQ(0, message.ByteSize());
@@ -1422,7 +1422,7 @@ void TestUtil::ExpectExtensionsClear(
   EXPECT_FALSE(message.HasExtension(unittest::optional_string_piece_extension));
   EXPECT_FALSE(message.HasExtension(unittest::optional_cord_extension));
 
-  // Optional fields without defaults are set to zero or something like it.
+  // Optional fields without defaults are fun::set to zero or something like it.
   EXPECT_EQ(0    , message.GetExtension(unittest::optional_int32_extension   ));
   EXPECT_EQ(0    , message.GetExtension(unittest::optional_int64_extension   ));
   EXPECT_EQ(0    , message.GetExtension(unittest::optional_uint32_extension  ));
@@ -1454,7 +1454,7 @@ void TestUtil::ExpectExtensionsClear(
   EXPECT_EQ(0, message.GetExtension(unittest::optional_public_import_message_extension).e());
   EXPECT_EQ(0, message.GetExtension(unittest::optional_lazy_message_extension         ).bb());
 
-  // Enums without defaults are set to the first value in the enum.
+  // Enums without defaults are fun::set to the first value in the enum.
   EXPECT_EQ(unittest::TestAllTypes::FOO, message.GetExtension(unittest::optional_nested_enum_extension ));
   EXPECT_EQ(unittest::FOREIGN_FOO      , message.GetExtension(unittest::optional_foreign_enum_extension));
   EXPECT_EQ(unittest_import::IMPORT_FOO, message.GetExtension(unittest::optional_import_enum_extension ));
@@ -1870,10 +1870,10 @@ void TestUtil::ExpectUnpackedExtensionsSet(
 
 // -------------------------------------------------------------------
 
-void TestUtil::ExpectAllFieldsAndExtensionsInOrder(const string& serialized) {
-  // We set each field individually, serialize separately, and concatenate all
+void TestUtil::ExpectAllFieldsAndExtensionsInOrder(const fun::string& serialized) {
+  // We fun::set each field individually, serialize separately, and concatenate all
   // the strings in canonical order to determine the expected serialization.
-  string expected;
+  fun::string expected;
   unittest::TestFieldOrderings message;
   message.set_my_int(1);  // Field 1.
   message.AppendToString(&expected);
@@ -2375,7 +2375,7 @@ TestUtil::ReflectionTester::ReflectionTester(
 }
 
 // Shorthand to get a FieldDescriptor for a field of unittest::TestAllTypes.
-const FieldDescriptor* TestUtil::ReflectionTester::F(const string& name) {
+const FieldDescriptor* TestUtil::ReflectionTester::F(const fun::string& name) {
   const FieldDescriptor* result = NULL;
   if (base_descriptor_->name() == "TestAllExtensions" ||
       base_descriptor_->name() == "TestPackedExtensions") {
@@ -2560,7 +2560,7 @@ void TestUtil::ReflectionTester::ExpectOneofSetViaReflection(
     const Message& message) {
   const Descriptor* descriptor = message.GetDescriptor();
   const Reflection* reflection = message.GetReflection();
-  string scratch;
+  fun::string scratch;
   EXPECT_TRUE(reflection->HasField(
       message, descriptor->FindFieldByName("foo_lazy_message")));
   EXPECT_TRUE(reflection->HasField(
@@ -2639,7 +2639,7 @@ void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection(
 void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection1(
     const Message& message) {
   const Reflection* reflection = message.GetReflection();
-  string scratch;
+  fun::string scratch;
   const Message* sub_message;
 
   EXPECT_TRUE(reflection->HasField(message, F("optional_int32"   )));
@@ -2746,7 +2746,7 @@ void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection1(
 void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection2(
     const Message& message) {
   const Reflection* reflection = message.GetReflection();
-  string scratch;
+  fun::string scratch;
   const Message* sub_message;
 
   // -----------------------------------------------------------------
@@ -2869,7 +2869,7 @@ void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection2(
 void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection3(
     const Message& message) {
   const Reflection* reflection = message.GetReflection();
-  string scratch;
+  fun::string scratch;
 
   // -----------------------------------------------------------------
 
@@ -2984,7 +2984,7 @@ void TestUtil::ReflectionTester::ExpectPackedFieldsSetViaReflection(
 void TestUtil::ReflectionTester::ExpectClearViaReflection(
     const Message& message) {
   const Reflection* reflection = message.GetReflection();
-  string scratch;
+  fun::string scratch;
   const Message* sub_message;
 
   // has_blah() should initially be false for all optional fields.
@@ -3018,7 +3018,7 @@ void TestUtil::ReflectionTester::ExpectClearViaReflection(
   EXPECT_FALSE(reflection->HasField(message, F("optional_string_piece")));
   EXPECT_FALSE(reflection->HasField(message, F("optional_cord")));
 
-  // Optional fields without defaults are set to zero or something like it.
+  // Optional fields without defaults are fun::set to zero or something like it.
   EXPECT_EQ(0    , reflection->GetInt32 (message, F("optional_int32"   )));
   EXPECT_EQ(0    , reflection->GetInt64 (message, F("optional_int64"   )));
   EXPECT_EQ(0    , reflection->GetUInt32(message, F("optional_uint32"  )));
@@ -3058,7 +3058,7 @@ void TestUtil::ReflectionTester::ExpectClearViaReflection(
   EXPECT_FALSE(sub_message->GetReflection()->HasField(*sub_message, nested_b_));
   EXPECT_EQ(0, sub_message->GetReflection()->GetInt32(*sub_message, nested_b_));
 
-  // Enums without defaults are set to the first value in the enum.
+  // Enums without defaults are fun::set to the first value in the enum.
   EXPECT_EQ( nested_foo_, reflection->GetEnum(message, F("optional_nested_enum" )));
   EXPECT_EQ(foreign_foo_, reflection->GetEnum(message, F("optional_foreign_enum")));
   EXPECT_EQ( import_foo_, reflection->GetEnum(message, F("optional_import_enum" )));
@@ -3238,7 +3238,7 @@ void TestUtil::ReflectionTester::RemoveLastRepeatedsViaReflection(
     Message* message) {
   const Reflection* reflection = message->GetReflection();
 
-  vector<const FieldDescriptor*> output;
+  fun::vector<const FieldDescriptor*> output;
   reflection->ListFields(*message, &output);
   for (int i=0; i<(int)output.size(); ++i) {
     const FieldDescriptor* field = output[i];
@@ -3252,7 +3252,7 @@ void TestUtil::ReflectionTester::ReleaseLastRepeatedsViaReflection(
     Message* message, bool expect_extensions_notnull) {
   const Reflection* reflection = message->GetReflection();
 
-  vector<const FieldDescriptor*> output;
+  fun::vector<const FieldDescriptor*> output;
   reflection->ListFields(*message, &output);
   for (int i=0; i<(int)output.size(); ++i) {
     const FieldDescriptor* field = output[i];
@@ -3271,7 +3271,7 @@ void TestUtil::ReflectionTester::ReleaseLastRepeatedsViaReflection(
 void TestUtil::ReflectionTester::SwapRepeatedsViaReflection(Message* message) {
   const Reflection* reflection = message->GetReflection();
 
-  vector<const FieldDescriptor*> output;
+  fun::vector<const FieldDescriptor*> output;
   reflection->ListFields(*message, &output);
   for (int i=0; i<(int)output.size(); ++i) {
     const FieldDescriptor* field = output[i];
@@ -3286,7 +3286,7 @@ SetAllocatedOptionalMessageFieldsToNullViaReflection(
     Message* message) {
   const Reflection* reflection = message->GetReflection();
 
-  vector<const FieldDescriptor*> fields;
+  fun::vector<const FieldDescriptor*> fields;
   reflection->ListFields(*message, &fields);
 
   for (int i = 0; i < (int)fields.size(); ++i) {
@@ -3306,7 +3306,7 @@ SetAllocatedOptionalMessageFieldsToMessageViaReflection(
   const Reflection* from_reflection = from_message->GetReflection();
   const Reflection* to_reflection = to_message->GetReflection();
 
-  vector<const FieldDescriptor*> fields;
+  fun::vector<const FieldDescriptor*> fields;
   from_reflection->ListFields(*from_message, &fields);
 
   for (int i = 0; i < (int)fields.size(); ++i) {

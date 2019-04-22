@@ -40,7 +40,7 @@ namespace internal {
 // This struct is not part of the public API of this module; clients may not
 // use it.
 // Features of this x86.  Values may not be correct before main() is run,
-// but are set conservatively.
+// but are fun::set conservatively.
 struct AtomicOps_x86CPUFeatureStruct {
   bool has_amd_lock_mb_bug;  // Processor has AMD memory-barrier bug; do lfence
                              // after acquire compare-and-swap.

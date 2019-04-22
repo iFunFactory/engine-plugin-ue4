@@ -56,7 +56,7 @@ Printer::~Printer() {
   }
 }
 
-void Printer::Print(const map<string, string>& variables, const char* text) {
+void Printer::Print(const fun::map<fun::string, fun::string>& variables, const char* text) {
   int size = strlen(text);
   int pos = 0;  // The number of bytes we've written so far.
 
@@ -86,13 +86,13 @@ void Printer::Print(const map<string, string>& variables, const char* text) {
       }
       int endpos = end - text;
 
-      string varname(text + pos, endpos - pos);
+      fun::string varname(text + pos, endpos - pos);
       if (varname.empty()) {
         // Two delimiters in a row reduce to a literal delimiter character.
         WriteRaw(&variable_delimiter_, 1);
       } else {
         // Replace with the variable's value.
-        map<string, string>::const_iterator iter = variables.find(varname);
+        fun::map<fun::string, fun::string>::const_iterator iter = variables.find(varname);
         if (iter == variables.end()) {
           GOOGLE_LOG(DFATAL) << " Undefined variable: " << varname;
         } else {
@@ -111,31 +111,31 @@ void Printer::Print(const map<string, string>& variables, const char* text) {
 }
 
 void Printer::Print(const char* text) {
-  static map<string, string> empty;
+  static fun::map<fun::string, fun::string> empty;
   Print(empty, text);
 }
 
 void Printer::Print(const char* text,
-                    const char* variable, const string& value) {
-  map<string, string> vars;
+                    const char* variable, const fun::string& value) {
+  fun::map<fun::string, fun::string> vars;
   vars[variable] = value;
   Print(vars, text);
 }
 
 void Printer::Print(const char* text,
-                    const char* variable1, const string& value1,
-                    const char* variable2, const string& value2) {
-  map<string, string> vars;
+                    const char* variable1, const fun::string& value1,
+                    const char* variable2, const fun::string& value2) {
+  fun::map<fun::string, fun::string> vars;
   vars[variable1] = value1;
   vars[variable2] = value2;
   Print(vars, text);
 }
 
 void Printer::Print(const char* text,
-                    const char* variable1, const string& value1,
-                    const char* variable2, const string& value2,
-                    const char* variable3, const string& value3) {
-  map<string, string> vars;
+                    const char* variable1, const fun::string& value1,
+                    const char* variable2, const fun::string& value2,
+                    const char* variable3, const fun::string& value3) {
+  fun::map<fun::string, fun::string> vars;
   vars[variable1] = value1;
   vars[variable2] = value2;
   vars[variable3] = value3;
@@ -155,7 +155,7 @@ void Printer::Outdent() {
   indent_.resize(indent_.size() - 2);
 }
 
-void Printer::PrintRaw(const string& data) {
+void Printer::PrintRaw(const fun::string& data) {
   WriteRaw(data.data(), data.size());
 }
 

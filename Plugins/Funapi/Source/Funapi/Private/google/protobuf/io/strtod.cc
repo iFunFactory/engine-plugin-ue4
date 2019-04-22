@@ -47,10 +47,10 @@ namespace io {
 
 namespace {
 
-// Returns a string identical to *input except that the character pointed to
+// Returns a fun::string identical to *input except that the character pointed to
 // by radix_pos (which should be '.') is replaced with the locale-specific
 // radix character.
-string LocalizeRadix(const char* input, const char* radix_pos) {
+fun::string LocalizeRadix(const char* input, const char* radix_pos) {
   // Determine the locale-specific radix character by calling sprintf() to
   // print the number 1.5, then stripping off the digits.  As far as I can
   // tell, this is the only portable, thread-safe way to get the C library
@@ -63,7 +63,7 @@ string LocalizeRadix(const char* input, const char* radix_pos) {
   GOOGLE_CHECK_LE(size, 6);
 
   // Now replace the '.' in the input with it.
-  string result;
+  fun::string result;
   result.reserve(strlen(input) + size - 3);
   result.append(input, radix_pos);
   result.append(temp + 1, size - 2);
@@ -74,7 +74,7 @@ string LocalizeRadix(const char* input, const char* radix_pos) {
 }  // namespace
 
 double NoLocaleStrtod(const char* text, char** original_endptr) {
-  // We cannot simply set the locale to "C" temporarily with setlocale()
+  // We cannot simply fun::set the locale to "C" temporarily with setlocale()
   // as this is not thread-safe.  Instead, we try to parse in the current
   // locale first.  If parsing stops at a '.' character, then this is a
   // pretty good hint that we're actually in some other locale in which
@@ -88,7 +88,7 @@ double NoLocaleStrtod(const char* text, char** original_endptr) {
   // Parsing halted on a '.'.  Perhaps we're in a different locale?  Let's
   // try to replace the '.' with a locale-specific radix character and
   // try again.
-  string localized = LocalizeRadix(text, temp_endptr);
+  fun::string localized = LocalizeRadix(text, temp_endptr);
   const char* localized_cstr = localized.c_str();
   char* localized_endptr;
   result = strtod(localized_cstr, &localized_endptr);

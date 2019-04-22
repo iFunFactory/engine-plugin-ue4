@@ -28,24 +28,24 @@ class FunapiErrorImpl : public std::enable_shared_from_this<FunapiErrorImpl> {
   FunapiErrorImpl() = delete;
   FunapiErrorImpl(const ErrorType type,
                   const int code,
-                  const std::string& error_string);
+                  const fun::string& error_string);
   virtual ~FunapiErrorImpl() = default;
 
   ErrorType GetErrorType();
   int GetErrorCode();
-  std::string GetErrorString();
+  fun::string GetErrorString();
 
-  std::string GetErrorTypeString();
-  std::string DebugString();
+  fun::string GetErrorTypeString();
+  fun::string DebugString();
 
  private:
   ErrorType error_type_;
   int error_code_;
-  std::string error_string_;
+  fun::string error_string_;
 };
 
 
-FunapiErrorImpl::FunapiErrorImpl (const ErrorType type, const int code, const std::string& error_string)
+FunapiErrorImpl::FunapiErrorImpl (const ErrorType type, const int code, const fun::string& error_string)
 : error_type_(type), error_code_(code), error_string_(error_string) {
 }
 
@@ -60,13 +60,13 @@ int FunapiErrorImpl::GetErrorCode() {
 }
 
 
-std::string FunapiErrorImpl::GetErrorString() {
+fun::string FunapiErrorImpl::GetErrorString() {
   return error_string_;
 }
 
 
-std::string FunapiErrorImpl::GetErrorTypeString() {
-  std::string ret;
+fun::string FunapiErrorImpl::GetErrorTypeString() {
+  fun::string ret;
 
   switch (error_type_) {
     case ErrorType::kDefault:
@@ -105,8 +105,8 @@ std::string FunapiErrorImpl::GetErrorTypeString() {
 }
 
 
-std::string FunapiErrorImpl::DebugString() {
-  std::stringstream ss;
+fun::string FunapiErrorImpl::DebugString() {
+  fun::stringstream ss;
 
   ss << "ErrorType=" << GetErrorTypeString();
   ss << ":";
@@ -126,18 +126,18 @@ std::string FunapiErrorImpl::DebugString() {
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiError implementation.
 
-FunapiError::FunapiError (const ErrorType type, const int code, const std::string& error_string)
+FunapiError::FunapiError (const ErrorType type, const int code, const fun::string& error_string)
 : impl_(std::make_shared<FunapiErrorImpl>(type, code, error_string)) {
 }
 
 
-std::shared_ptr<FunapiError> FunapiError::Create(const ErrorType type, const int code, const std::string& error_string) {
+std::shared_ptr<FunapiError> FunapiError::Create(const ErrorType type, const int code, const fun::string& error_string) {
   return std::make_shared<FunapiError>(type, code, error_string);
 }
 
 
 std::shared_ptr<FunapiError> FunapiError::Create(const ErrorType type, const ErrorCode code) {
-  return std::make_shared<FunapiError>(type, static_cast<int>(code), std::string());
+  return std::make_shared<FunapiError>(type, static_cast<int>(code), fun::string());
 }
 
 
@@ -151,17 +151,17 @@ int FunapiError::GetErrorCode() {
 }
 
 
-std::string FunapiError::GetErrorString() {
+fun::string FunapiError::GetErrorString() {
   return impl_->GetErrorString();
 }
 
 
-std::string FunapiError::GetErrorTypeString() {
+fun::string FunapiError::GetErrorTypeString() {
   return impl_->GetErrorTypeString();
 }
 
 
-std::string FunapiError::DebugString() {
+fun::string FunapiError::DebugString() {
   return impl_->DebugString();
 }
 
@@ -175,14 +175,14 @@ class FunapiTransportOptionImpl : public std::enable_shared_from_this<FunapiTran
   virtual ~FunapiTransportOptionImpl() = default;
 
   void SetCompressionType(const CompressionType type);
-  std::vector<CompressionType> GetCompressionTypes();
+  fun::vector<CompressionType> GetCompressionTypes();
 
-  void SetZstdDictBase64String(const std::string &zstd_dict_base64string);
-  std::string GetZstdDictBase64String();
+  void SetZstdDictBase64String(const fun::string &zstd_dict_base64string);
+  fun::string GetZstdDictBase64String();
 
  private:
-  std::vector<CompressionType> compression_types_;
-  std::string zstd_dict_base64string_;
+  fun::vector<CompressionType> compression_types_;
+  fun::string zstd_dict_base64string_;
 };
 
 
@@ -191,17 +191,17 @@ void FunapiTransportOptionImpl::SetCompressionType(const CompressionType type) {
 }
 
 
-std::vector<CompressionType> FunapiTransportOptionImpl::GetCompressionTypes() {
+fun::vector<CompressionType> FunapiTransportOptionImpl::GetCompressionTypes() {
   return compression_types_;
 }
 
 
-void FunapiTransportOptionImpl::SetZstdDictBase64String(const std::string &zstd_dict_base64string) {
+void FunapiTransportOptionImpl::SetZstdDictBase64String(const fun::string &zstd_dict_base64string) {
   zstd_dict_base64string_ = zstd_dict_base64string;
 }
 
 
-std::string FunapiTransportOptionImpl::GetZstdDictBase64String() {
+fun::string FunapiTransportOptionImpl::GetZstdDictBase64String() {
   return zstd_dict_base64string_;
 }
 
@@ -231,15 +231,15 @@ class FunapiTcpTransportOptionImpl : public FunapiTransportOptionImpl {
 
   void SetEncryptionType(const EncryptionType type);
   void SetEncryptionType(const EncryptionType type,
-                         const std::string &public_key);
-  std::vector<EncryptionType> GetEncryptionTypes();
-  std::string GetPublicKey(const EncryptionType type);
+                         const fun::string &public_key);
+  fun::vector<EncryptionType> GetEncryptionTypes();
+  fun::string GetPublicKey(const EncryptionType type);
 
   void SetUseTLS(const bool use_tls);
   bool GetUseTLS();
 
-  void SetCACertFilePath(const std::string &path);
-  const std::string& GetCACertFilePath();
+  void SetCACertFilePath(const fun::string &path);
+  const fun::string& GetCACertFilePath();
 
  private:
   bool disable_nagle_ = true;
@@ -247,10 +247,10 @@ class FunapiTcpTransportOptionImpl : public FunapiTransportOptionImpl {
   bool enable_ping_ = false;
   bool sequence_number_validation_ = false;
   int timeout_seconds_ = 10;
-  std::vector<EncryptionType> encryption_types_;
-  std::unordered_map<int32_t, std::string> pubilc_keys_;
+  fun::vector<EncryptionType> encryption_types_;
+  fun::unordered_map<int32_t, fun::string> pubilc_keys_;
   bool use_tls_ = false;
-  std::string cert_file_path_;
+  fun::string cert_file_path_;
 };
 
 
@@ -310,18 +310,18 @@ void FunapiTcpTransportOptionImpl::SetEncryptionType(const EncryptionType type) 
 
 
 void FunapiTcpTransportOptionImpl::SetEncryptionType(const EncryptionType type,
-                                                     const std::string &public_key) {
+                                                     const fun::string &public_key) {
   SetEncryptionType(type);
   pubilc_keys_[static_cast<int32_t>(type)] = public_key;
 }
 
 
-std::vector<EncryptionType> FunapiTcpTransportOptionImpl::GetEncryptionTypes() {
+fun::vector<EncryptionType> FunapiTcpTransportOptionImpl::GetEncryptionTypes() {
   return encryption_types_;
 }
 
 
-std::string FunapiTcpTransportOptionImpl::GetPublicKey(const EncryptionType type) {
+fun::string FunapiTcpTransportOptionImpl::GetPublicKey(const EncryptionType type) {
   if (pubilc_keys_.find(static_cast<int32_t>(type)) != pubilc_keys_.end()) {
     return pubilc_keys_[static_cast<int32_t>(type)];
   }
@@ -340,12 +340,12 @@ bool FunapiTcpTransportOptionImpl::GetUseTLS() {
 }
 
 
-void FunapiTcpTransportOptionImpl::SetCACertFilePath(const std::string &path) {
+void FunapiTcpTransportOptionImpl::SetCACertFilePath(const fun::string &path) {
   cert_file_path_ = path;
 }
 
 
-const std::string& FunapiTcpTransportOptionImpl::GetCACertFilePath() {
+const fun::string& FunapiTcpTransportOptionImpl::GetCACertFilePath() {
   return cert_file_path_;
 }
 
@@ -395,14 +395,14 @@ class FunapiHttpTransportOptionImpl : public FunapiTransportOptionImpl {
   void SetEncryptionType(const EncryptionType type);
   EncryptionType GetEncryptionType();
 
-  void SetCACertFilePath(const std::string &path);
-  const std::string& GetCACertFilePath();
+  void SetCACertFilePath(const fun::string &path);
+  const fun::string& GetCACertFilePath();
 
  private:
   bool sequence_number_validation_ = false;
   bool use_https_ = false;
   EncryptionType encryption_type_ = EncryptionType::kNoneEncryption;
-  std::string cert_file_path_;
+  fun::string cert_file_path_;
   time_t timeout_seconds_ = 5;
 };
 
@@ -447,12 +447,12 @@ EncryptionType FunapiHttpTransportOptionImpl::GetEncryptionType() {
 }
 
 
-void FunapiHttpTransportOptionImpl::SetCACertFilePath(const std::string &path) {
+void FunapiHttpTransportOptionImpl::SetCACertFilePath(const fun::string &path) {
   cert_file_path_ = path;
 }
 
 
-const std::string& FunapiHttpTransportOptionImpl::GetCACertFilePath() {
+const fun::string& FunapiHttpTransportOptionImpl::GetCACertFilePath() {
   return cert_file_path_;
 }
 
@@ -552,18 +552,18 @@ void FunapiTcpTransportOption::SetEncryptionType(const EncryptionType type) {
 }
 
 
-std::vector<EncryptionType> FunapiTcpTransportOption::GetEncryptionTypes() {
+fun::vector<EncryptionType> FunapiTcpTransportOption::GetEncryptionTypes() {
   return impl_->GetEncryptionTypes();
 }
 
 
 void FunapiTcpTransportOption::SetEncryptionType(const EncryptionType type,
-                                                 const std::string &public_key) {
+                                                 const fun::string &public_key) {
   impl_->SetEncryptionType(type, public_key);
 }
 
 
-std::string FunapiTcpTransportOption::GetPublicKey(const EncryptionType type) {
+fun::string FunapiTcpTransportOption::GetPublicKey(const EncryptionType type) {
   return impl_->GetPublicKey(type);
 }
 
@@ -581,17 +581,17 @@ bool FunapiTcpTransportOption::GetUseTLS() {
 
 
 #ifdef FUNAPI_UE4_PLATFORM_PS4
-void FunapiTcpTransportOption::SetCACert(const std::string &cert) {
+void FunapiTcpTransportOption::SetCACert(const fun::string &cert) {
   impl_->SetCACertFilePath(cert);
 }
 #else
-void FunapiTcpTransportOption::SetCACertFilePath(const std::string &path) {
+void FunapiTcpTransportOption::SetCACertFilePath(const fun::string &path) {
   impl_->SetCACertFilePath(path);
 }
 #endif
 
 
-const std::string& FunapiTcpTransportOption::GetCACertFilePath() {
+const fun::string& FunapiTcpTransportOption::GetCACertFilePath() {
   return impl_->GetCACertFilePath();
 }
 
@@ -601,18 +601,18 @@ void FunapiTcpTransportOption::SetCompressionType(const CompressionType type) {
 }
 
 
-std::vector<CompressionType> FunapiTcpTransportOption::GetCompressionTypes() {
+fun::vector<CompressionType> FunapiTcpTransportOption::GetCompressionTypes() {
   return impl_->GetCompressionTypes();
 }
 
 
 #if FUNAPI_HAVE_ZSTD
-//void FunapiTcpTransportOption::SetZstdDictBase64String(const std::string &zstd_dict_base64string) {
+//void FunapiTcpTransportOption::SetZstdDictBase64String(const fun::string &zstd_dict_base64string) {
 //  impl_->SetZstdDictBase64String(zstd_dict_base64string);
 //}
 
 
-std::string FunapiTcpTransportOption::GetZstdDictBase64String() {
+fun::string FunapiTcpTransportOption::GetZstdDictBase64String() {
   return impl_->GetZstdDictBase64String();
 }
 #endif
@@ -646,18 +646,18 @@ void FunapiUdpTransportOption::SetCompressionType(const CompressionType type) {
 }
 
 
-std::vector<CompressionType> FunapiUdpTransportOption::GetCompressionTypes() {
+fun::vector<CompressionType> FunapiUdpTransportOption::GetCompressionTypes() {
   return impl_->GetCompressionTypes();
 }
 
 
 #if FUNAPI_HAVE_ZSTD
-//void FunapiUdpTransportOption::SetZstdDictBase64String(const std::string &zstd_dict_base64string) {
+//void FunapiUdpTransportOption::SetZstdDictBase64String(const fun::string &zstd_dict_base64string) {
 //  impl_->SetZstdDictBase64String(zstd_dict_base64string);
 //}
 
 
-std::string FunapiUdpTransportOption::GetZstdDictBase64String() {
+fun::string FunapiUdpTransportOption::GetZstdDictBase64String() {
   return impl_->GetZstdDictBase64String();
 }
 #endif
@@ -707,17 +707,17 @@ EncryptionType FunapiHttpTransportOption::GetEncryptionType() {
 
 
 #ifdef FUNAPI_UE4_PLATFORM_PS4
-void FunapiHttpTransportOption::SetCACert(const std::string &cert) {
+void FunapiHttpTransportOption::SetCACert(const fun::string &cert) {
   impl_->SetCACertFilePath(cert);
 }
 #else
-void FunapiHttpTransportOption::SetCACertFilePath(const std::string &path) {
+void FunapiHttpTransportOption::SetCACertFilePath(const fun::string &path) {
   impl_->SetCACertFilePath(path);
 }
 #endif
 
 
-const std::string& FunapiHttpTransportOption::GetCACertFilePath() {
+const fun::string& FunapiHttpTransportOption::GetCACertFilePath() {
   return impl_->GetCACertFilePath();
 }
 
@@ -737,18 +737,18 @@ void FunapiHttpTransportOption::SetCompressionType(const CompressionType type) {
 }
 
 
-std::vector<CompressionType> FunapiHttpTransportOption::GetCompressionTypes() {
+fun::vector<CompressionType> FunapiHttpTransportOption::GetCompressionTypes() {
   return impl_->GetCompressionTypes();
 }
 
 
 #if FUNAPI_HAVE_ZSTD
-//void FunapiHttpTransportOption::SetZstdDictBase64String(const std::string &zstd_dict_base64string) {
+//void FunapiHttpTransportOption::SetZstdDictBase64String(const fun::string &zstd_dict_base64string) {
 //  impl_->SetZstdDictBase64String(zstd_dict_base64string);
 //}
 
 
-std::string FunapiHttpTransportOption::GetZstdDictBase64String() {
+fun::string FunapiHttpTransportOption::GetZstdDictBase64String() {
   return impl_->GetZstdDictBase64String();
 }
 #endif
@@ -784,18 +784,18 @@ void FunapiWebsocketTransportOption::SetCompressionType(const CompressionType ty
 }
 
 
-std::vector<CompressionType> FunapiWebsocketTransportOption::GetCompressionTypes() {
+fun::vector<CompressionType> FunapiWebsocketTransportOption::GetCompressionTypes() {
   return impl_->GetCompressionTypes();
 }
 
 
 #if FUNAPI_HAVE_ZSTD
-//void FunapiWebsocketTransportOption::SetZstdDictBase64String(const std::string &zstd_dict_base64string) {
+//void FunapiWebsocketTransportOption::SetZstdDictBase64String(const fun::string &zstd_dict_base64string) {
 //  impl_->SetZstdDictBase64String(zstd_dict_base64string);
 //}
 
 
-std::string FunapiWebsocketTransportOption::GetZstdDictBase64String() {
+fun::string FunapiWebsocketTransportOption::GetZstdDictBase64String() {
   return impl_->GetZstdDictBase64String();
 }
 #endif

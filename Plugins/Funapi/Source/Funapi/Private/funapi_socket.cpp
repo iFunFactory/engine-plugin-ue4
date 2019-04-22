@@ -75,7 +75,7 @@ class FunapiAddrInfoImpl : public std::enable_shared_from_this<FunapiAddrInfoImp
    FunapiAddrInfoImpl();
   virtual ~FunapiAddrInfoImpl();
 
-  std::string GetString();
+  fun::string GetString();
 
   struct addrinfo* GetAddrInfo();
   void SetAddrInfo(struct addrinfo* info);
@@ -103,7 +103,7 @@ struct addrinfo* FunapiAddrInfoImpl::GetAddrInfo() {
 }
 
 
-std::string FunapiAddrInfoImpl::GetString() {
+fun::string FunapiAddrInfoImpl::GetString() {
   auto info = addrinfo_res_;
 
   if (info) {
@@ -119,7 +119,7 @@ std::string FunapiAddrInfoImpl::GetString() {
       inet_ntop(info->ai_family, (void*)&sin->sin6_addr, addrStr, sizeof(addrStr));
     }
 
-    return std::string(addrStr);
+    return fun::string(addrStr);
   }
 
   return "NULL";
@@ -134,13 +134,13 @@ class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
   FunapiSocketImpl();
   virtual ~FunapiSocketImpl();
 
-  static std::string GetStringFromAddrInfo(struct addrinfo *info);
+  static fun::string GetStringFromAddrInfo(struct addrinfo *info);
 
-  static std::vector<std::weak_ptr<FunapiSocketImpl>> vec_sockets_;
+  static fun::vector<std::weak_ptr<FunapiSocketImpl>> vec_sockets_;
   static std::mutex vec_sockets_mutex_;
 
   static void Add(std::shared_ptr<FunapiSocketImpl> s);
-  static std::vector<std::shared_ptr<FunapiSocketImpl>> GetSocketImpls();
+  static fun::vector<std::shared_ptr<FunapiSocketImpl>> GetSocketImpls();
   static bool Select();
 
   static const int kBufferSize = 65536;
@@ -156,12 +156,12 @@ class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
                     const char* hostname_or_ip,
                     const int port,
                     int &error_code,
-                    std::string &error_string);
+                    fun::string &error_string);
   void FreeAddrInfo();
 
   bool InitSocket(struct addrinfo *info,
                   int &error_code,
-                  std::string &error_string);
+                  fun::string &error_string);
   void CloseSocket();
 
   void SocketSelect(fd_set rset,
@@ -177,7 +177,7 @@ class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
 };
 
 
-std::string FunapiSocketImpl::GetStringFromAddrInfo(struct addrinfo *info) {
+fun::string FunapiSocketImpl::GetStringFromAddrInfo(struct addrinfo *info) {
   if (info) {
     char addrStr[INET6_ADDRSTRLEN];
     if (info->ai_family == AF_INET)
@@ -191,14 +191,14 @@ std::string FunapiSocketImpl::GetStringFromAddrInfo(struct addrinfo *info) {
       inet_ntop(info->ai_family, (void*)&sin->sin6_addr, addrStr, sizeof(addrStr));
     }
 
-    return std::string(addrStr);
+    return fun::string(addrStr);
   }
 
   return "NULL";
 }
 
 
-std::vector<std::weak_ptr<FunapiSocketImpl>> FunapiSocketImpl::vec_sockets_;
+fun::vector<std::weak_ptr<FunapiSocketImpl>> FunapiSocketImpl::vec_sockets_;
 std::mutex FunapiSocketImpl::vec_sockets_mutex_;
 
 
@@ -208,9 +208,9 @@ void FunapiSocketImpl::Add(std::shared_ptr<FunapiSocketImpl> s) {
 }
 
 
-std::vector<std::shared_ptr<FunapiSocketImpl>> FunapiSocketImpl::GetSocketImpls() {
-  std::vector<std::shared_ptr<FunapiSocketImpl>> v_sockets;
-  std::vector<std::weak_ptr<FunapiSocketImpl>> v_weak_sockets;
+fun::vector<std::shared_ptr<FunapiSocketImpl>> FunapiSocketImpl::GetSocketImpls() {
+  fun::vector<std::shared_ptr<FunapiSocketImpl>> v_sockets;
+  fun::vector<std::weak_ptr<FunapiSocketImpl>> v_weak_sockets;
   {
     std::unique_lock<std::mutex> lock(vec_sockets_mutex_);
     if (!vec_sockets_.empty()) {
@@ -243,7 +243,7 @@ bool FunapiSocketImpl::Select() {
     FD_ZERO(&wset);
     FD_ZERO(&eset);
 
-    std::vector<std::shared_ptr<FunapiSocketImpl>> v_select_sockets;
+    fun::vector<std::shared_ptr<FunapiSocketImpl>> v_select_sockets;
     for (auto s : v_sockets)
     {
       if (s->IsReadySelect())
@@ -311,7 +311,7 @@ bool FunapiSocketImpl::InitAddrInfo(int socktype,
                                     const char* hostname_or_ip,
                                     const int port,
                                     int &error_code,
-                                    std::string &error_string) {
+                                    fun::string &error_string) {
 #ifdef FUNAPI_COCOS2D_PLATFORM_WINDOWS
   static auto wsa_init = FunapiInit::Create([](){
     WSADATA wsaData;
@@ -323,7 +323,7 @@ bool FunapiSocketImpl::InitAddrInfo(int socktype,
 
   struct addrinfo hints;
 
-  std::stringstream ss_port;
+  fun::stringstream ss_port;
   ss_port << static_cast<int>(port);
 
   memset(&hints, 0, sizeof(hints));
@@ -357,7 +357,7 @@ void FunapiSocketImpl::CloseSocket() {
 
 bool FunapiSocketImpl::InitSocket(struct addrinfo *info,
                                   int &error_code,
-                                  std::string &error_string) {
+                                  fun::string &error_string) {
   if (!info) {
     return false;
   }
@@ -445,7 +445,7 @@ class FunapiTcpImpl : public FunapiSocketImpl {
                const time_t connect_timeout_seconds,
                const bool disable_nagle,
                const bool use_tls,
-               const std::string &cert_file_path,
+               const fun::string &cert_file_path,
                const ConnectCompletionHandler &connect_completion_handler,
                const SendHandler &send_handler,
                const RecvHandler &recv_handler);
@@ -455,14 +455,14 @@ class FunapiTcpImpl : public FunapiSocketImpl {
 
   void Connect(struct addrinfo *addrinfo_res);
 
-  bool Send(const std::vector<uint8_t> &body, const SendCompletionHandler &send_handler);
+  bool Send(const fun::vector<uint8_t> &body, const SendCompletionHandler &send_handler);
 
   bool IsReadySelect();
 
  protected:
   bool InitTcpSocketOption(bool disable_nagle,
                            int &error_code,
-                           std::string &error_string);
+                           fun::string &error_string);
 
   void SocketSelect(fd_set rset,
                     fd_set wset,
@@ -471,7 +471,7 @@ class FunapiTcpImpl : public FunapiSocketImpl {
   void OnConnectCompletion(const bool is_failed,
                            const bool is_timed_out,
                            const int error_code,
-                           const std::string &error_string);
+                           const fun::string &error_string);
 
   void OnConnectCompletion(const bool is_failed,
                            const bool is_timed_out);
@@ -488,7 +488,7 @@ class FunapiTcpImpl : public FunapiSocketImpl {
   };
   SocketSelectState socket_select_state_ = SocketSelectState::kNone;
 
-  std::vector<std::function<void(const fd_set rset,
+  fun::vector<std::function<void(const fd_set rset,
                                  const fd_set wset,
                                  const fd_set eset)>> on_socket_select_;
 
@@ -498,13 +498,13 @@ class FunapiTcpImpl : public FunapiSocketImpl {
   RecvHandler recv_handler_;
   SendCompletionHandler send_completion_handler_;
 
-  std::vector<uint8_t> body_;
+  fun::vector<uint8_t> body_;
   int offset_ = 0;
   time_t connect_timeout_seconds_ = 5;
 
   // https://curl.haxx.se/docs/caextract.html
   // https://curl.haxx.se/ca/cacert.pem
-  std::string cert_file_path_;
+  fun::string cert_file_path_;
   bool use_tls_ = false;
 
   SSL_CTX *ctx_ = nullptr;
@@ -669,7 +669,7 @@ void FunapiTcpImpl::Connect(const char* hostname_or_ip,
                             const time_t connect_timeout_seconds,
                             const bool disable_nagle,
                             const bool use_tls,
-                            const std::string &cert_file_path,
+                            const fun::string &cert_file_path,
                             const ConnectCompletionHandler &connect_completion_handler,
                             const SendHandler &send_handler,
                             const RecvHandler &recv_handler) {
@@ -688,7 +688,7 @@ void FunapiTcpImpl::Connect(const char* hostname_or_ip,
   connect_timeout_seconds_ = connect_timeout_seconds;
 
   int error_code = 0;
-  std::string error_string;
+  fun::string error_string;
 
   if (!InitAddrInfo(SOCK_STREAM, hostname_or_ip, port, error_code, error_string)) {
     OnConnectCompletion(true, false, error_code, error_string);
@@ -709,7 +709,7 @@ void FunapiTcpImpl::Connect(const char* hostname_or_ip,
 
   // log
   {
-    std::string hostname = FunapiSocketImpl::GetStringFromAddrInfo(addrinfo_res_);
+    fun::string hostname = FunapiSocketImpl::GetStringFromAddrInfo(addrinfo_res_);
     DebugUtils::Log("Address Info: %s -> %s", hostname_or_ip, hostname.c_str());
   }
   // //
@@ -718,7 +718,7 @@ void FunapiTcpImpl::Connect(const char* hostname_or_ip,
 }
 
 
-bool FunapiTcpImpl::InitTcpSocketOption(bool disable_nagle, int &error_code, std::string &error_string) {
+bool FunapiTcpImpl::InitTcpSocketOption(bool disable_nagle, int &error_code, fun::string &error_string) {
   // non-blocking.
 #ifdef FUNAPI_PLATFORM_WINDOWS
   u_long argp = 0;
@@ -850,7 +850,7 @@ bool FunapiTcpImpl::ConnectTLS() {
 void FunapiTcpImpl::OnConnectCompletion(const bool is_failed,
                                         const bool is_timed_out) {
   int error_code = FunapiUtil::GetSocketErrorCode();
-  std::string error_string = FunapiUtil::GetSocketErrorString(error_code);
+  fun::string error_string = FunapiUtil::GetSocketErrorString(error_code);
 
   OnConnectCompletion(is_failed, is_timed_out, error_code, error_string);
 }
@@ -859,7 +859,7 @@ void FunapiTcpImpl::OnConnectCompletion(const bool is_failed,
 void FunapiTcpImpl::OnConnectCompletion(const bool is_failed,
                                         const bool is_timed_out,
                                         const int error_code,
-                                        const std::string &error_string) {
+                                        const fun::string &error_string) {
   if (false == is_failed && use_tls_) {
     if (false == ConnectTLS()) {
       return;
@@ -910,7 +910,7 @@ void FunapiTcpImpl::OnSend() {
 
     if (nSent <= 0) {
       int error_code = FunapiUtil::GetSocketErrorCode();
-      std::string error_string = FunapiUtil::GetSocketErrorString(error_code);
+      fun::string error_string = FunapiUtil::GetSocketErrorString(error_code);
       send_completion_handler_(true, error_code, error_string, nSent);
       CloseSocket();
     }
@@ -929,7 +929,7 @@ void FunapiTcpImpl::OnSend() {
 
 
 void FunapiTcpImpl::OnRecv() {
-  std::vector<uint8_t> buffer(kBufferSize);
+  fun::vector<uint8_t> buffer(kBufferSize);
 
   int nRead = 0;
 
@@ -948,7 +948,7 @@ void FunapiTcpImpl::OnRecv() {
 
   if (nRead <= 0) {
     int error_code = FunapiUtil::GetSocketErrorCode();
-    std::string error_string = FunapiUtil::GetSocketErrorString(error_code);
+    fun::string error_string = FunapiUtil::GetSocketErrorString(error_code);
     recv_handler_(true, error_code, error_string, nRead, buffer);
     CloseSocket();
   }
@@ -958,14 +958,14 @@ void FunapiTcpImpl::OnRecv() {
 }
 
 
-bool FunapiTcpImpl::Send(const std::vector<uint8_t> &body, const SendCompletionHandler &send_completion_handler) {
+bool FunapiTcpImpl::Send(const fun::vector<uint8_t> &body, const SendCompletionHandler &send_completion_handler) {
   send_completion_handler_ = send_completion_handler;
 
   body_.insert(body_.end(), body.cbegin(), body.cend());
 
 //  // log
 //  {
-//    std::string temp_string(body.cbegin(), body.cend());
+//    fun::string temp_string(body.cbegin(), body.cend());
 //    printf("\"%s\"\n", temp_string.c_str());
 //  }
 //  //
@@ -993,7 +993,7 @@ class FunapiUdpImpl : public FunapiSocketImpl {
   virtual ~FunapiUdpImpl();
 
   void OnSelect(const fd_set rset, const fd_set wset, const fd_set eset);
-  bool Send(const std::vector<uint8_t> &body, const SendCompletionHandler &send_handler);
+  bool Send(const fun::vector<uint8_t> &body, const SendCompletionHandler &send_handler);
 
  private:
   void Finalize();
@@ -1012,7 +1012,7 @@ FunapiUdpImpl::FunapiUdpImpl(const char* hostname_or_ip,
                              const RecvHandler &recv_handler)
 : send_handler_(send_handler), recv_handler_(recv_handler) {
   int error_code = 0;
-  std::string error_string;
+  fun::string error_string;
 
   if (!InitAddrInfo(SOCK_DGRAM, hostname_or_ip, port, error_code, error_string)) {
     init_handler(true, error_code, error_string);
@@ -1045,7 +1045,7 @@ void FunapiUdpImpl::OnSend() {
 
 
 void FunapiUdpImpl::OnRecv() {
-  std::vector<uint8_t> receiving_vector(kBufferSize);
+  fun::vector<uint8_t> receiving_vector(kBufferSize);
 
 #ifdef FUNAPI_PLATFORM_WINDOWS
   int nRead = static_cast<int>(recvfrom(socket_,
@@ -1067,7 +1067,7 @@ void FunapiUdpImpl::OnRecv() {
 
   if (nRead <= 0) {
     int error_code = FunapiUtil::GetSocketErrorCode();
-    std::string error_string = FunapiUtil::GetSocketErrorString(error_code);
+    fun::string error_string = FunapiUtil::GetSocketErrorString(error_code);
     recv_handler_(true, error_code, error_string, nRead, receiving_vector);
     CloseSocket();
   }
@@ -1077,7 +1077,7 @@ void FunapiUdpImpl::OnRecv() {
 }
 
 
-bool FunapiUdpImpl::Send(const std::vector<uint8_t> &body, const SendCompletionHandler &send_completion_handler) {
+bool FunapiUdpImpl::Send(const fun::vector<uint8_t> &body, const SendCompletionHandler &send_completion_handler) {
   uint8_t *buf = const_cast<uint8_t*>(body.data());
 
   int nSent = static_cast<int>(sendto(socket_, reinterpret_cast<char*>(buf), body.size(), 0, addrinfo_res_->ai_addr, addrinfo_res_->ai_addrlen));
@@ -1090,7 +1090,7 @@ bool FunapiUdpImpl::Send(const std::vector<uint8_t> &body, const SendCompletionH
 
   if (nSent <= 0) {
     int error_code = FunapiUtil::GetSocketErrorCode();
-    std::string error_string = FunapiUtil::GetSocketErrorString(error_code);
+    fun::string error_string = FunapiUtil::GetSocketErrorString(error_code);
     send_completion_handler(true, error_code, error_string, nSent);
     CloseSocket();
   }
@@ -1128,7 +1128,7 @@ std::shared_ptr<FunapiAddrInfo> FunapiAddrInfo::Create() {
 }
 
 
-std::string FunapiAddrInfo::GetString() {
+fun::string FunapiAddrInfo::GetString() {
   return impl_->GetString();
 }
 
@@ -1179,7 +1179,7 @@ void FunapiTcp::Connect(const char* hostname_or_ip,
                         const time_t connect_timeout_seconds,
                         const bool disable_nagle,
                         const bool use_tls,
-                        const std::string &cert_file_path,
+                        const fun::string &cert_file_path,
                         const ConnectCompletionHandler &connect_completion_handler,
                         const SendHandler &send_handler,
                         const RecvHandler &recv_handler) {
@@ -1204,7 +1204,7 @@ void FunapiTcp::Connect(std::shared_ptr<FunapiAddrInfo> info,
 }
 
 
-bool FunapiTcp::Send(const std::vector<uint8_t> &body, const SendCompletionHandler &send_handler) {
+bool FunapiTcp::Send(const fun::vector<uint8_t> &body, const SendCompletionHandler &send_handler) {
   return impl_->Send(body, send_handler);
 }
 
@@ -1252,7 +1252,7 @@ std::shared_ptr<FunapiUdp> FunapiUdp::Create(const char* hostname_or_ip,
 }
 
 
-bool FunapiUdp::Send(const std::vector<uint8_t> &body, const SendCompletionHandler &send_handler) {
+bool FunapiUdp::Send(const fun::vector<uint8_t> &body, const SendCompletionHandler &send_handler) {
   return impl_->Send(body, send_handler);
 }
 

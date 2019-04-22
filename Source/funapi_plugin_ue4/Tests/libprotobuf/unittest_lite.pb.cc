@@ -50,13 +50,13 @@ void protobuf_AddDesc_google_2fprotobuf_2funittest_5flite_2eproto() {
 
   ::protobuf_unittest_import::protobuf_AddDesc_google_2fprotobuf_2funittest_5fimport_5flite_2eproto();
   TestAllTypesLite::_default_default_string_ =
-      new ::std::string("hello", 5);
+      new ::fun::string("hello", 5);
   TestAllTypesLite::_default_default_bytes_ =
-      new ::std::string("world", 5);
+      new ::fun::string("world", 5);
   TestAllTypesLite::_default_default_string_piece_ =
-      new ::std::string("abc", 3);
+      new ::fun::string("abc", 3);
   TestAllTypesLite::_default_default_cord_ =
-      new ::std::string("123", 3);
+      new ::fun::string("123", 3);
   TestAllTypesLite::default_instance_ = new TestAllTypesLite();
   TestAllTypesLite_NestedMessage::default_instance_ = new TestAllTypesLite_NestedMessage();
   TestAllTypesLite_OptionalGroup::default_instance_ = new TestAllTypesLite_OptionalGroup();
@@ -615,7 +615,7 @@ void TestAllTypesLite_NestedMessage::Swap(TestAllTypesLite_NestedMessage* other)
   }
 }
 
-::std::string TestAllTypesLite_NestedMessage::GetTypeName() const {
+::fun::string TestAllTypesLite_NestedMessage::GetTypeName() const {
   return "protobuf_unittest.TestAllTypesLite.NestedMessage";
 }
 
@@ -798,7 +798,7 @@ void TestAllTypesLite_OptionalGroup::Swap(TestAllTypesLite_OptionalGroup* other)
   }
 }
 
-::std::string TestAllTypesLite_OptionalGroup::GetTypeName() const {
+::fun::string TestAllTypesLite_OptionalGroup::GetTypeName() const {
   return "protobuf_unittest.TestAllTypesLite.OptionalGroup";
 }
 
@@ -981,17 +981,17 @@ void TestAllTypesLite_RepeatedGroup::Swap(TestAllTypesLite_RepeatedGroup* other)
   }
 }
 
-::std::string TestAllTypesLite_RepeatedGroup::GetTypeName() const {
+::fun::string TestAllTypesLite_RepeatedGroup::GetTypeName() const {
   return "protobuf_unittest.TestAllTypesLite.RepeatedGroup";
 }
 
 
 // -------------------------------------------------------------------
 
-::std::string* TestAllTypesLite::_default_default_string_ = NULL;
-::std::string* TestAllTypesLite::_default_default_bytes_ = NULL;
-::std::string* TestAllTypesLite::_default_default_string_piece_ = NULL;
-::std::string* TestAllTypesLite::_default_default_cord_ = NULL;
+::fun::string* TestAllTypesLite::_default_default_string_ = NULL;
+::fun::string* TestAllTypesLite::_default_default_bytes_ = NULL;
+::fun::string* TestAllTypesLite::_default_default_string_piece_ = NULL;
+::fun::string* TestAllTypesLite::_default_default_cord_ = NULL;
 #ifndef _MSC_VER
 const int TestAllTypesLite::kOptionalInt32FieldNumber;
 const int TestAllTypesLite::kOptionalInt64FieldNumber;
@@ -1108,8 +1108,8 @@ void TestAllTypesLite::SharedCtor() {
   optional_float_ = 0;
   optional_double_ = 0;
   optional_bool_ = false;
-  optional_string_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  optional_bytes_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  optional_string_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  optional_bytes_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   optionalgroup_ = NULL;
   optional_nested_message_ = NULL;
   optional_foreign_message_ = NULL;
@@ -1117,8 +1117,8 @@ void TestAllTypesLite::SharedCtor() {
   optional_nested_enum_ = 1;
   optional_foreign_enum_ = 4;
   optional_import_enum_ = 7;
-  optional_string_piece_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  optional_cord_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  optional_string_piece_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  optional_cord_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   optional_public_import_message_ = NULL;
   optional_lazy_message_ = NULL;
   default_int32_ = 41;
@@ -1134,13 +1134,13 @@ void TestAllTypesLite::SharedCtor() {
   default_float_ = 51.5f;
   default_double_ = 52000;
   default_bool_ = true;
-  default_string_ = const_cast< ::std::string*>(_default_default_string_);
-  default_bytes_ = const_cast< ::std::string*>(_default_default_bytes_);
+  default_string_ = const_cast< ::fun::string*>(_default_default_string_);
+  default_bytes_ = const_cast< ::fun::string*>(_default_default_bytes_);
   default_nested_enum_ = 2;
   default_foreign_enum_ = 5;
   default_import_enum_ = 8;
-  default_string_piece_ = const_cast< ::std::string*>(_default_default_string_piece_);
-  default_cord_ = const_cast< ::std::string*>(_default_default_cord_);
+  default_string_piece_ = const_cast< ::fun::string*>(_default_default_string_piece_);
+  default_cord_ = const_cast< ::fun::string*>(_default_default_cord_);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   clear_has_oneof_field();
 }
@@ -1577,7 +1577,7 @@ bool TestAllTypesLite::MergePartialFromCodedStream(
         break;
       }
 
-      // optional string optional_string = 14;
+      // optional fun::string optional_string = 14;
       case 14: {
         if (tag == 114) {
          parse_optional_string:
@@ -1718,7 +1718,7 @@ bool TestAllTypesLite::MergePartialFromCodedStream(
         break;
       }
 
-      // optional string optional_string_piece = 24 [ctype = STRING_PIECE];
+      // optional fun::string optional_string_piece = 24 [ctype = STRING_PIECE];
       case 24: {
         if (tag == 194) {
          parse_optional_string_piece:
@@ -1731,7 +1731,7 @@ bool TestAllTypesLite::MergePartialFromCodedStream(
         break;
       }
 
-      // optional string optional_cord = 25 [ctype = CORD];
+      // optional fun::string optional_cord = 25 [ctype = CORD];
       case 25: {
         if (tag == 202) {
          parse_optional_cord:
@@ -2017,7 +2017,7 @@ bool TestAllTypesLite::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated string repeated_string = 44;
+      // repeated fun::string repeated_string = 44;
       case 44: {
         if (tag == 354) {
          parse_repeated_string:
@@ -2182,7 +2182,7 @@ bool TestAllTypesLite::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated string repeated_string_piece = 54 [ctype = STRING_PIECE];
+      // repeated fun::string repeated_string_piece = 54 [ctype = STRING_PIECE];
       case 54: {
         if (tag == 434) {
          parse_repeated_string_piece:
@@ -2196,7 +2196,7 @@ bool TestAllTypesLite::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated string repeated_cord = 55 [ctype = CORD];
+      // repeated fun::string repeated_cord = 55 [ctype = CORD];
       case 55: {
         if (tag == 442) {
          parse_repeated_cord:
@@ -2419,7 +2419,7 @@ bool TestAllTypesLite::MergePartialFromCodedStream(
         break;
       }
 
-      // optional string default_string = 74 [default = "hello"];
+      // optional fun::string default_string = 74 [default = "hello"];
       case 74: {
         if (tag == 594) {
          parse_default_string:
@@ -2508,7 +2508,7 @@ bool TestAllTypesLite::MergePartialFromCodedStream(
         break;
       }
 
-      // optional string default_string_piece = 84 [default = "abc", ctype = STRING_PIECE];
+      // optional fun::string default_string_piece = 84 [default = "abc", ctype = STRING_PIECE];
       case 84: {
         if (tag == 674) {
          parse_default_string_piece:
@@ -2521,7 +2521,7 @@ bool TestAllTypesLite::MergePartialFromCodedStream(
         break;
       }
 
-      // optional string default_cord = 85 [default = "123", ctype = CORD];
+      // optional fun::string default_cord = 85 [default = "123", ctype = CORD];
       case 85: {
         if (tag == 682) {
          parse_default_cord:
@@ -2563,7 +2563,7 @@ bool TestAllTypesLite::MergePartialFromCodedStream(
         break;
       }
 
-      // optional string oneof_string = 113;
+      // optional fun::string oneof_string = 113;
       case 113: {
         if (tag == 906) {
          parse_oneof_string:
@@ -2679,7 +2679,7 @@ void TestAllTypesLite::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(13, this->optional_bool(), output);
   }
 
-  // optional string optional_string = 14;
+  // optional fun::string optional_string = 14;
   if (has_optional_string()) {
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       14, this->optional_string(), output);
@@ -2733,13 +2733,13 @@ void TestAllTypesLite::SerializeWithCachedSizes(
       23, this->optional_import_enum(), output);
   }
 
-  // optional string optional_string_piece = 24 [ctype = STRING_PIECE];
+  // optional fun::string optional_string_piece = 24 [ctype = STRING_PIECE];
   if (has_optional_string_piece()) {
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       24, this->optional_string_piece(), output);
   }
 
-  // optional string optional_cord = 25 [ctype = CORD];
+  // optional fun::string optional_cord = 25 [ctype = CORD];
   if (has_optional_cord()) {
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       25, this->optional_cord(), output);
@@ -2835,7 +2835,7 @@ void TestAllTypesLite::SerializeWithCachedSizes(
       43, this->repeated_bool(i), output);
   }
 
-  // repeated string repeated_string = 44;
+  // repeated fun::string repeated_string = 44;
   for (int i = 0; i < this->repeated_string_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteString(
       44, this->repeated_string(i), output);
@@ -2889,13 +2889,13 @@ void TestAllTypesLite::SerializeWithCachedSizes(
       53, this->repeated_import_enum(i), output);
   }
 
-  // repeated string repeated_string_piece = 54 [ctype = STRING_PIECE];
+  // repeated fun::string repeated_string_piece = 54 [ctype = STRING_PIECE];
   for (int i = 0; i < this->repeated_string_piece_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteString(
       54, this->repeated_string_piece(i), output);
   }
 
-  // repeated string repeated_cord = 55 [ctype = CORD];
+  // repeated fun::string repeated_cord = 55 [ctype = CORD];
   for (int i = 0; i < this->repeated_cord_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteString(
       55, this->repeated_cord(i), output);
@@ -2972,7 +2972,7 @@ void TestAllTypesLite::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(73, this->default_bool(), output);
   }
 
-  // optional string default_string = 74 [default = "hello"];
+  // optional fun::string default_string = 74 [default = "hello"];
   if (has_default_string()) {
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       74, this->default_string(), output);
@@ -3002,13 +3002,13 @@ void TestAllTypesLite::SerializeWithCachedSizes(
       83, this->default_import_enum(), output);
   }
 
-  // optional string default_string_piece = 84 [default = "abc", ctype = STRING_PIECE];
+  // optional fun::string default_string_piece = 84 [default = "abc", ctype = STRING_PIECE];
   if (has_default_string_piece()) {
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       84, this->default_string_piece(), output);
   }
 
-  // optional string default_cord = 85 [default = "123", ctype = CORD];
+  // optional fun::string default_cord = 85 [default = "123", ctype = CORD];
   if (has_default_cord()) {
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       85, this->default_cord(), output);
@@ -3025,7 +3025,7 @@ void TestAllTypesLite::SerializeWithCachedSizes(
       112, this->oneof_nested_message(), output);
   }
 
-  // optional string oneof_string = 113;
+  // optional fun::string oneof_string = 113;
   if (has_oneof_string()) {
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       113, this->oneof_string(), output);
@@ -3125,7 +3125,7 @@ int TestAllTypesLite::ByteSize() const {
       total_size += 1 + 1;
     }
 
-    // optional string optional_string = 14;
+    // optional fun::string optional_string = 14;
     if (has_optional_string()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -3187,14 +3187,14 @@ int TestAllTypesLite::ByteSize() const {
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->optional_import_enum());
     }
 
-    // optional string optional_string_piece = 24 [ctype = STRING_PIECE];
+    // optional fun::string optional_string_piece = 24 [ctype = STRING_PIECE];
     if (has_optional_string_piece()) {
       total_size += 2 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->optional_string_piece());
     }
 
-    // optional string optional_cord = 25 [ctype = CORD];
+    // optional fun::string optional_cord = 25 [ctype = CORD];
     if (has_optional_cord()) {
       total_size += 2 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -3300,7 +3300,7 @@ int TestAllTypesLite::ByteSize() const {
 
   }
   if (_has_bits_[64 / 32] & (0xffu << (64 % 32))) {
-    // optional string default_string = 74 [default = "hello"];
+    // optional fun::string default_string = 74 [default = "hello"];
     if (has_default_string()) {
       total_size += 2 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -3332,14 +3332,14 @@ int TestAllTypesLite::ByteSize() const {
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->default_import_enum());
     }
 
-    // optional string default_string_piece = 84 [default = "abc", ctype = STRING_PIECE];
+    // optional fun::string default_string_piece = 84 [default = "abc", ctype = STRING_PIECE];
     if (has_default_string_piece()) {
       total_size += 2 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->default_string_piece());
     }
 
-    // optional string default_cord = 85 [default = "123", ctype = CORD];
+    // optional fun::string default_cord = 85 [default = "123", ctype = CORD];
     if (has_default_cord()) {
       total_size += 2 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -3456,7 +3456,7 @@ int TestAllTypesLite::ByteSize() const {
     total_size += 2 * this->repeated_bool_size() + data_size;
   }
 
-  // repeated string repeated_string = 44;
+  // repeated fun::string repeated_string = 44;
   total_size += 2 * this->repeated_string_size();
   for (int i = 0; i < this->repeated_string_size(); i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -3532,14 +3532,14 @@ int TestAllTypesLite::ByteSize() const {
     total_size += 2 * this->repeated_import_enum_size() + data_size;
   }
 
-  // repeated string repeated_string_piece = 54 [ctype = STRING_PIECE];
+  // repeated fun::string repeated_string_piece = 54 [ctype = STRING_PIECE];
   total_size += 2 * this->repeated_string_piece_size();
   for (int i = 0; i < this->repeated_string_piece_size(); i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
       this->repeated_string_piece(i));
   }
 
-  // repeated string repeated_cord = 55 [ctype = CORD];
+  // repeated fun::string repeated_cord = 55 [ctype = CORD];
   total_size += 2 * this->repeated_cord_size();
   for (int i = 0; i < this->repeated_cord_size(); i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -3569,7 +3569,7 @@ int TestAllTypesLite::ByteSize() const {
           this->oneof_nested_message());
       break;
     }
-    // optional string oneof_string = 113;
+    // optional fun::string oneof_string = 113;
     case kOneofString: {
       total_size += 2 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -3897,7 +3897,7 @@ void TestAllTypesLite::Swap(TestAllTypesLite* other) {
   }
 }
 
-::std::string TestAllTypesLite::GetTypeName() const {
+::fun::string TestAllTypesLite::GetTypeName() const {
   return "protobuf_unittest.TestAllTypesLite";
 }
 
@@ -4080,7 +4080,7 @@ void ForeignMessageLite::Swap(ForeignMessageLite* other) {
   }
 }
 
-::std::string ForeignMessageLite::GetTypeName() const {
+::fun::string ForeignMessageLite::GetTypeName() const {
   return "protobuf_unittest.ForeignMessageLite";
 }
 
@@ -4910,7 +4910,7 @@ void TestPackedTypesLite::Swap(TestPackedTypesLite* other) {
   }
 }
 
-::std::string TestPackedTypesLite::GetTypeName() const {
+::fun::string TestPackedTypesLite::GetTypeName() const {
   return "protobuf_unittest.TestPackedTypesLite";
 }
 
@@ -5065,7 +5065,7 @@ void TestAllExtensionsLite::Swap(TestAllExtensionsLite* other) {
   }
 }
 
-::std::string TestAllExtensionsLite::GetTypeName() const {
+::fun::string TestAllExtensionsLite::GetTypeName() const {
   return "protobuf_unittest.TestAllExtensionsLite";
 }
 
@@ -5248,7 +5248,7 @@ void OptionalGroup_extension_lite::Swap(OptionalGroup_extension_lite* other) {
   }
 }
 
-::std::string OptionalGroup_extension_lite::GetTypeName() const {
+::fun::string OptionalGroup_extension_lite::GetTypeName() const {
   return "protobuf_unittest.OptionalGroup_extension_lite";
 }
 
@@ -5431,7 +5431,7 @@ void RepeatedGroup_extension_lite::Swap(RepeatedGroup_extension_lite* other) {
   }
 }
 
-::std::string RepeatedGroup_extension_lite::GetTypeName() const {
+::fun::string RepeatedGroup_extension_lite::GetTypeName() const {
   return "protobuf_unittest.RepeatedGroup_extension_lite";
 }
 
@@ -5586,7 +5586,7 @@ void TestPackedExtensionsLite::Swap(TestPackedExtensionsLite* other) {
   }
 }
 
-::std::string TestPackedExtensionsLite::GetTypeName() const {
+::fun::string TestPackedExtensionsLite::GetTypeName() const {
   return "protobuf_unittest.TestPackedExtensionsLite";
 }
 
@@ -5732,7 +5732,7 @@ void TestNestedExtensionLite::Swap(TestNestedExtensionLite* other) {
   }
 }
 
-::std::string TestNestedExtensionLite::GetTypeName() const {
+::fun::string TestNestedExtensionLite::GetTypeName() const {
   return "protobuf_unittest.TestNestedExtensionLite";
 }
 
@@ -5915,7 +5915,7 @@ void TestDeprecatedLite::Swap(TestDeprecatedLite* other) {
   }
 }
 
-::std::string TestDeprecatedLite::GetTypeName() const {
+::fun::string TestDeprecatedLite::GetTypeName() const {
   return "protobuf_unittest.TestDeprecatedLite";
 }
 
@@ -6101,7 +6101,7 @@ void TestParsingMergeLite_RepeatedFieldsGenerator_Group1::Swap(TestParsingMergeL
   }
 }
 
-::std::string TestParsingMergeLite_RepeatedFieldsGenerator_Group1::GetTypeName() const {
+::fun::string TestParsingMergeLite_RepeatedFieldsGenerator_Group1::GetTypeName() const {
   return "protobuf_unittest.TestParsingMergeLite.RepeatedFieldsGenerator.Group1";
 }
 
@@ -6287,7 +6287,7 @@ void TestParsingMergeLite_RepeatedFieldsGenerator_Group2::Swap(TestParsingMergeL
   }
 }
 
-::std::string TestParsingMergeLite_RepeatedFieldsGenerator_Group2::GetTypeName() const {
+::fun::string TestParsingMergeLite_RepeatedFieldsGenerator_Group2::GetTypeName() const {
   return "protobuf_unittest.TestParsingMergeLite.RepeatedFieldsGenerator.Group2";
 }
 
@@ -6657,7 +6657,7 @@ void TestParsingMergeLite_RepeatedFieldsGenerator::Swap(TestParsingMergeLite_Rep
   }
 }
 
-::std::string TestParsingMergeLite_RepeatedFieldsGenerator::GetTypeName() const {
+::fun::string TestParsingMergeLite_RepeatedFieldsGenerator::GetTypeName() const {
   return "protobuf_unittest.TestParsingMergeLite.RepeatedFieldsGenerator";
 }
 
@@ -6843,7 +6843,7 @@ void TestParsingMergeLite_OptionalGroup::Swap(TestParsingMergeLite_OptionalGroup
   }
 }
 
-::std::string TestParsingMergeLite_OptionalGroup::GetTypeName() const {
+::fun::string TestParsingMergeLite_OptionalGroup::GetTypeName() const {
   return "protobuf_unittest.TestParsingMergeLite.OptionalGroup";
 }
 
@@ -7029,7 +7029,7 @@ void TestParsingMergeLite_RepeatedGroup::Swap(TestParsingMergeLite_RepeatedGroup
   }
 }
 
-::std::string TestParsingMergeLite_RepeatedGroup::GetTypeName() const {
+::fun::string TestParsingMergeLite_RepeatedGroup::GetTypeName() const {
   return "protobuf_unittest.TestParsingMergeLite.RepeatedGroup";
 }
 
@@ -7383,7 +7383,7 @@ void TestParsingMergeLite::Swap(TestParsingMergeLite* other) {
   }
 }
 
-::std::string TestParsingMergeLite::GetTypeName() const {
+::fun::string TestParsingMergeLite::GetTypeName() const {
   return "protobuf_unittest.TestParsingMergeLite";
 }
 
@@ -7523,7 +7523,7 @@ void TestEmptyMessageLite::Swap(TestEmptyMessageLite* other) {
   }
 }
 
-::std::string TestEmptyMessageLite::GetTypeName() const {
+::fun::string TestEmptyMessageLite::GetTypeName() const {
   return "protobuf_unittest.TestEmptyMessageLite";
 }
 
@@ -7678,7 +7678,7 @@ void TestEmptyMessageWithExtensionsLite::Swap(TestEmptyMessageWithExtensionsLite
   }
 }
 
-::std::string TestEmptyMessageWithExtensionsLite::GetTypeName() const {
+::fun::string TestEmptyMessageWithExtensionsLite::GetTypeName() const {
   return "protobuf_unittest.TestEmptyMessageWithExtensionsLite";
 }
 
@@ -7721,11 +7721,11 @@ void TestEmptyMessageWithExtensionsLite::Swap(TestEmptyMessageWithExtensionsLite
 ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestAllExtensionsLite,
     ::google::protobuf::internal::PrimitiveTypeTraits< bool >, 8, false >
   optional_bool_extension_lite(kOptionalBoolExtensionLiteFieldNumber, false);
-const ::std::string optional_string_extension_lite_default("");
+const ::fun::string optional_string_extension_lite_default("");
 ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestAllExtensionsLite,
     ::google::protobuf::internal::StringTypeTraits, 9, false >
   optional_string_extension_lite(kOptionalStringExtensionLiteFieldNumber, optional_string_extension_lite_default);
-const ::std::string optional_bytes_extension_lite_default("");
+const ::fun::string optional_bytes_extension_lite_default("");
 ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestAllExtensionsLite,
     ::google::protobuf::internal::StringTypeTraits, 12, false >
   optional_bytes_extension_lite(kOptionalBytesExtensionLiteFieldNumber, optional_bytes_extension_lite_default);
@@ -7750,11 +7750,11 @@ const ::std::string optional_bytes_extension_lite_default("");
 ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestAllExtensionsLite,
     ::google::protobuf::internal::EnumTypeTraits< ::protobuf_unittest_import::ImportEnumLite, ::protobuf_unittest_import::ImportEnumLite_IsValid>, 14, false >
   optional_import_enum_extension_lite(kOptionalImportEnumExtensionLiteFieldNumber, static_cast< ::protobuf_unittest_import::ImportEnumLite >(7));
-const ::std::string optional_string_piece_extension_lite_default("");
+const ::fun::string optional_string_piece_extension_lite_default("");
 ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestAllExtensionsLite,
     ::google::protobuf::internal::StringTypeTraits, 9, false >
   optional_string_piece_extension_lite(kOptionalStringPieceExtensionLiteFieldNumber, optional_string_piece_extension_lite_default);
-const ::std::string optional_cord_extension_lite_default("");
+const ::fun::string optional_cord_extension_lite_default("");
 ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestAllExtensionsLite,
     ::google::protobuf::internal::StringTypeTraits, 9, false >
   optional_cord_extension_lite(kOptionalCordExtensionLiteFieldNumber, optional_cord_extension_lite_default);
@@ -7803,11 +7803,11 @@ const ::std::string optional_cord_extension_lite_default("");
 ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestAllExtensionsLite,
     ::google::protobuf::internal::RepeatedPrimitiveTypeTraits< bool >, 8, false >
   repeated_bool_extension_lite(kRepeatedBoolExtensionLiteFieldNumber, false);
-const ::std::string repeated_string_extension_lite_default("");
+const ::fun::string repeated_string_extension_lite_default("");
 ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestAllExtensionsLite,
     ::google::protobuf::internal::RepeatedStringTypeTraits, 9, false >
   repeated_string_extension_lite(kRepeatedStringExtensionLiteFieldNumber, repeated_string_extension_lite_default);
-const ::std::string repeated_bytes_extension_lite_default("");
+const ::fun::string repeated_bytes_extension_lite_default("");
 ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestAllExtensionsLite,
     ::google::protobuf::internal::RepeatedStringTypeTraits, 12, false >
   repeated_bytes_extension_lite(kRepeatedBytesExtensionLiteFieldNumber, repeated_bytes_extension_lite_default);
@@ -7832,11 +7832,11 @@ const ::std::string repeated_bytes_extension_lite_default("");
 ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestAllExtensionsLite,
     ::google::protobuf::internal::RepeatedEnumTypeTraits< ::protobuf_unittest_import::ImportEnumLite, ::protobuf_unittest_import::ImportEnumLite_IsValid>, 14, false >
   repeated_import_enum_extension_lite(kRepeatedImportEnumExtensionLiteFieldNumber, static_cast< ::protobuf_unittest_import::ImportEnumLite >(7));
-const ::std::string repeated_string_piece_extension_lite_default("");
+const ::fun::string repeated_string_piece_extension_lite_default("");
 ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestAllExtensionsLite,
     ::google::protobuf::internal::RepeatedStringTypeTraits, 9, false >
   repeated_string_piece_extension_lite(kRepeatedStringPieceExtensionLiteFieldNumber, repeated_string_piece_extension_lite_default);
-const ::std::string repeated_cord_extension_lite_default("");
+const ::fun::string repeated_cord_extension_lite_default("");
 ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestAllExtensionsLite,
     ::google::protobuf::internal::RepeatedStringTypeTraits, 9, false >
   repeated_cord_extension_lite(kRepeatedCordExtensionLiteFieldNumber, repeated_cord_extension_lite_default);
@@ -7882,11 +7882,11 @@ const ::std::string repeated_cord_extension_lite_default("");
 ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestAllExtensionsLite,
     ::google::protobuf::internal::PrimitiveTypeTraits< bool >, 8, false >
   default_bool_extension_lite(kDefaultBoolExtensionLiteFieldNumber, true);
-const ::std::string default_string_extension_lite_default("hello");
+const ::fun::string default_string_extension_lite_default("hello");
 ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestAllExtensionsLite,
     ::google::protobuf::internal::StringTypeTraits, 9, false >
   default_string_extension_lite(kDefaultStringExtensionLiteFieldNumber, default_string_extension_lite_default);
-const ::std::string default_bytes_extension_lite_default("world");
+const ::fun::string default_bytes_extension_lite_default("world");
 ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestAllExtensionsLite,
     ::google::protobuf::internal::StringTypeTraits, 12, false >
   default_bytes_extension_lite(kDefaultBytesExtensionLiteFieldNumber, default_bytes_extension_lite_default);
@@ -7899,11 +7899,11 @@ const ::std::string default_bytes_extension_lite_default("world");
 ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestAllExtensionsLite,
     ::google::protobuf::internal::EnumTypeTraits< ::protobuf_unittest_import::ImportEnumLite, ::protobuf_unittest_import::ImportEnumLite_IsValid>, 14, false >
   default_import_enum_extension_lite(kDefaultImportEnumExtensionLiteFieldNumber, static_cast< ::protobuf_unittest_import::ImportEnumLite >(8));
-const ::std::string default_string_piece_extension_lite_default("abc");
+const ::fun::string default_string_piece_extension_lite_default("abc");
 ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestAllExtensionsLite,
     ::google::protobuf::internal::StringTypeTraits, 9, false >
   default_string_piece_extension_lite(kDefaultStringPieceExtensionLiteFieldNumber, default_string_piece_extension_lite_default);
-const ::std::string default_cord_extension_lite_default("123");
+const ::fun::string default_cord_extension_lite_default("123");
 ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestAllExtensionsLite,
     ::google::protobuf::internal::StringTypeTraits, 9, false >
   default_cord_extension_lite(kDefaultCordExtensionLiteFieldNumber, default_cord_extension_lite_default);
@@ -7913,11 +7913,11 @@ const ::std::string default_cord_extension_lite_default("123");
 ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestAllExtensionsLite,
     ::google::protobuf::internal::MessageTypeTraits< ::protobuf_unittest::TestAllTypesLite_NestedMessage >, 11, false >
   oneof_nested_message_extension_lite(kOneofNestedMessageExtensionLiteFieldNumber, ::protobuf_unittest::TestAllTypesLite_NestedMessage::default_instance());
-const ::std::string oneof_string_extension_lite_default("");
+const ::fun::string oneof_string_extension_lite_default("");
 ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestAllExtensionsLite,
     ::google::protobuf::internal::StringTypeTraits, 9, false >
   oneof_string_extension_lite(kOneofStringExtensionLiteFieldNumber, oneof_string_extension_lite_default);
-const ::std::string oneof_bytes_extension_lite_default("");
+const ::fun::string oneof_bytes_extension_lite_default("");
 ::google::protobuf::internal::ExtensionIdentifier< ::protobuf_unittest::TestAllExtensionsLite,
     ::google::protobuf::internal::StringTypeTraits, 12, false >
   oneof_bytes_extension_lite(kOneofBytesExtensionLiteFieldNumber, oneof_bytes_extension_lite_default);

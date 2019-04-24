@@ -16,13 +16,13 @@
 	<resourceCopies>
 	    <isArch arch="armeabi-v7a">
 		    <!-- src : set relate path from fun_APL.xml to .so file -->
-	        <copyFile src="$S(PluginDir)/ARMv7/openssl_wrapper.so"
-	                  dst="$S(BuildDir)/libs/armeabi-v7a/openssl_wrapper.so"/>
+	        <copyFile src="$S(PluginDir)/ARMv7/libopenssl_wrapper.so"
+	                  dst="$S(BuildDir)/libs/armeabi-v7a/libopenssl_wrapper.so"/>
 		</isArch>
 		 <isArch arch="arm64-v8a">
 		     <!-- src : set relate path from fun_APL.xml to .so file -->
-		     <copyFile src="$S(PluginDir)/ARM64/openssl_wrapper.so"
-	                  dst="$S(BuildDir)/libs/arm64-v8a/openssl_wrapper.so"/>
+		     <copyFile src="$S(PluginDir)/ARM64/libopenssl_wrapper.so"
+	                  dst="$S(BuildDir)/libs/arm64-v8a/libopenssl_wrapper.so"/>
 		 </isArch>
 	</resourceCopies>
 
@@ -30,7 +30,7 @@
 	<soLoadLibrary>
 	    <if condition="bSupported">
 	        <true>
-		    <loadLibrary name="myso" failmsg="Failed to load myso library"/>
+		    <loadLibrary name="openssl_wrapper" failmsg="Failed to load openssl_wrapper library"/>
 		</true>
 	    </if>
 	</soLoadLibrary>

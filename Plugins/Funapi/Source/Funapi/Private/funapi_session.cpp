@@ -2447,54 +2447,70 @@ bool FunapiTcpTransport::SendHandShakeMessages() {
 }
 
 
-void FunapiTcpTransport::Send(bool send_all) {
+void FunapiTcpTransport::Send(bool send_all)
+{
   send_buffer_.resize(0);
   std::shared_ptr<FunapiMessage> msg;
 
-  if (!send_handshake_queue_->Empty()) {
-    while (!send_handshake_queue_->Empty()) {
+  if (!send_handshake_queue_->Empty())
+  {
+    while (!send_handshake_queue_->Empty())
+    {
       msg = send_handshake_queue_->Front();
-      if (!FunapiTransport::EncodeThenSendMessage(msg)) {
+      if (!FunapiTransport::EncodeThenSendMessage(msg))
+      {
         return;
       }
-      else {
+      else
+      {
         send_handshake_queue_->PopFront();
       }
     }
   }
-  else if (!send_priority_queue_->Empty()) {
-    if (false == encrytion_->IsHandShakeCompleted()) {
+  else if (!send_priority_queue_->Empty())
+  {
+    if (false == encrytion_->IsHandShakeCompleted())
+    {
       return;
     }
-
-    msg = send_priority_queue_->Front();
-    if (!FunapiTransport::EncodeThenSendMessage(msg)) {
-      return;
-    }
-    else {
-      send_priority_queue_->PopFront();
+    while (!send_priority_queue_->Empty())
+    {
+      msg = send_priority_queue_->Front();
+      if (!FunapiTransport::EncodeThenSendMessage(msg))
+      {
+        return;
+      }
+      else
+      {
+        send_priority_queue_->PopFront();
+      }
     }
   }
-  else {
+  else
+  {
     if (!GetSessionId().empty() &&
         !reconnect_first_ack_receiving_ &&
-        encrytion_->IsHandShakeCompleted()) {
+        encrytion_->IsHandShakeCompleted())
+    {
       size_t send_count = 0;
 
       while (true) {
-        if (send_queue_->Empty()) {
+        if (send_queue_->Empty())
+        {
           break;
         }
         else {
           msg = send_queue_->Front();
         }
 
-        if (FunapiTransport::EncodeThenSendMessage(msg)) {
+        if (FunapiTransport::EncodeThenSendMessage(msg))
+        {
           send_queue_->PopFront();
           if (msg->UseSentQueue()) {
             sent_queue_->PushBack(msg);
           }
-        } else {
+        } else
+        {
           break;
         }
 
@@ -2503,11 +2519,14 @@ void FunapiTcpTransport::Send(bool send_all) {
           break;
       }
 
-      if (IsDelayedAckSendTime() || GetState() == TransportState::kDisconnecting) {
-        if (has_ack_send_) {
+      if (IsDelayedAckSendTime() || GetState() == TransportState::kDisconnecting)
+      {
+        if (has_ack_send_)
+        {
           std::shared_ptr<FunapiMessage> message;
 
-          if (GetEncoding() == FunEncoding::kJson) {
+          if (GetEncoding() == FunEncoding::kJson)
+          {
             rapidjson::Document msg_json;
             msg_json.SetObject();
             rapidjson::Value key(kAckNumAttributeName, msg_json.GetAllocator());
@@ -2517,7 +2536,8 @@ void FunapiTcpTransport::Send(bool send_all) {
 
             message = FunapiMessage::Create(msg_json, EncryptionType::kDefaultEncryption);
           }
-          else if (GetEncoding() == FunEncoding::kProtobuf) {
+          else if (GetEncoding() == FunEncoding::kProtobuf)
+          {
             FunMessage msg_protobuf;
             msg_protobuf.set_ack(ack_send_);
 
@@ -2527,7 +2547,8 @@ void FunapiTcpTransport::Send(bool send_all) {
           message->SetUseSentQueue(false);
           message->SetUseSeq(false);
 
-          if (FunapiTransport::EncodeThenSendMessage(message)) {
+          if (FunapiTransport::EncodeThenSendMessage(message))
+          {
             has_ack_send_ = false;
           }
         }
@@ -2535,7 +2556,8 @@ void FunapiTcpTransport::Send(bool send_all) {
     }
   }
 
-  if (!send_buffer_.empty()) {
+  if (!send_buffer_.empty())
+  {
     std::weak_ptr<FunapiTransport> weak = shared_from_this();
     tcp_->Send(send_buffer_,
                [weak, this](const bool is_failed,
@@ -2543,24 +2565,29 @@ void FunapiTcpTransport::Send(bool send_all) {
                             const fun::string &error_string,
                             const int sent_length)
     {
-      if (auto t = weak.lock()) {
-        if (is_failed) {
+      if (auto t = weak.lock())
+      {
+        if (is_failed)
+        {
           /*
           if (error_code != 0) {
             DebugUtils::Log("Tcp send error: (%d) %s", error_code, error_string.c_str());
           }
           */
           auto error = FunapiError::Create(FunapiError::ErrorType::kSocket, error_code, error_string);
-          if (!auto_reconnect_) {
+          if (!auto_reconnect_)
+          {
             OnTransportDisconnected(TransportProtocol::kTcp, error);
           }
           Stop(true, error);
         }
-        else {
+        else
+        {
           // DebugUtils::Log("Sent %d bytes", sent_length);
         }
 
-        if (GetState() == TransportState::kDisconnecting && send_queue_->Empty()) {
+        if (GetState() == TransportState::kDisconnecting && send_queue_->Empty())
+        {
           OnDisconnecting();
         }
       }

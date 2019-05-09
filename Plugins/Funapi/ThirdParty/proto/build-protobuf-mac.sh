@@ -8,6 +8,10 @@ set -e
 
 
 echo "Start build .proto files"
+
+# Setting proto library path
+export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:${PWD}/lib
+
 # Setting user project name
 PROJECT_NAME=funapi_plugin_ue4
 PROJECT_SOURCE_DIR=../../../../Source
@@ -172,7 +176,9 @@ FILE_LIST=(`find ${USER_PROTO_FILE_INPUT_PATH} -maxdepth 1 -name "*.proto"`)
 find ${USER_PROTO_FILE_INPUT_PATH} -maxdepth 1 -name "*.proto" -exec cp {} . \;
 
 # Build proto files to user directory
-find ./ -maxdepth 1 -name "*.proto" -exec ./protoc --cpp_out=${USER_PROTO_FILE_OUT_PATH} {} \;
+find ./ -maxdepth 1 -name "*.proto" -exec bash -c \
+  export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:${PWD}/lib \
+  ./protoc --cpp_out=${USER_PROTO_FILE_OUT_PATH} {} . >/dev/null \;
 
 # Remove proto files
 for value in "${FILE_LIST[@]}"; do

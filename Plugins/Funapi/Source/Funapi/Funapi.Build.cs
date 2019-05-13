@@ -9,8 +9,7 @@ using UnrealBuildTool;
 
 public class Funapi : ModuleRules
 {
-  // public Funapi(TargetInfo Target) // <= 4.15
-  public Funapi(ReadOnlyTargetRules Target) : base(Target) // >= 4.16
+  public Funapi(ReadOnlyTargetRules Target) : base(Target)
   {
     PrivatePCHHeaderFile = "Private/FunapiPrivatePCH.h"; // >= 4.21
 

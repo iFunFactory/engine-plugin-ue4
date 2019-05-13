@@ -743,6 +743,7 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   typedef FunapiSession::JsonRecvHandler JsonRecvHandler;
   typedef FunapiSession::RecvTimeoutHandler RecvTimeoutHandler;
   typedef FunapiSession::RecvTimeoutIntHandler RecvTimeoutIntHandler;
+  typedef FunapiSession::SessionOptionHandler SessionOptionHandler;
   typedef FunapiSession::TransportOptionHandler TransportOptionHandler;
   typedef FunapiSession::RedirectQueueHandler RedirectQueueHandler;
 
@@ -777,6 +778,7 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   void AddRecvTimeoutCallback(const RecvTimeoutHandler &handler);
   void AddRecvTimeoutCallback(const RecvTimeoutIntHandler &handler);
 
+  void SetSessionOptionCallback(const SessionOptionHandler &handler);
   void SetTransportOptionCallback(const TransportOptionHandler &handler);
   void SetRedirectQueueCallback(const RedirectQueueHandler &handler);
 
@@ -786,6 +788,7 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   void RemoveJsonRecvCallback();
   void RemoveRecvTimeoutCallback();
   void RemoveRecvTimeoutIntCallback();
+  void RemoveSessionOptionCallback();
   void RemoveTransportOptionCallback();
   void RemoveRedirectQueueCallback();
 
@@ -956,6 +959,7 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   std::shared_ptr<FunapiHttpTransportOption> http_option_ = nullptr;
   std::shared_ptr<FunapiWebsocketTransportOption> websocket_option_ = nullptr;
 
+  SessionOptionHandler session_option_handler_ = nullptr;
   TransportOptionHandler transport_option_handler_ = nullptr;
   RedirectQueueHandler redirect_queue_handler_ = nullptr;
   std::mutex redirect_queue_handler_mutex_;
@@ -4255,6 +4259,14 @@ void FunapiSessionImpl::OnRedirect()
     // transports, send_queues, tasks, session_id_를 제거 하고 재생성 합니다.
     ResetSession();
 
+    if (session_option_handler_) {
+      auto new_session_option = session_option_handler_(flavor);
+      // 옵션의 재설정이 필요없다면 nullptr 이다.
+      if (new_session_option) {
+        session_option_ = new_session_option;
+      }
+    }
+
     fun::vector<std::shared_ptr<FunapiTransportOption>> v_option(FunRedirectMessage_Protocol_Protocol_MAX + 1);
     v_option[FunRedirectMessage_Protocol_PROTO_TCP] = tcp_option_;
     v_option[FunRedirectMessage_Protocol_PROTO_UDP] = udp_option_;
@@ -4567,6 +4579,12 @@ void FunapiSessionImpl::AddRecvTimeoutCallback(const RecvTimeoutIntHandler &hand
 }
 
 
+void FunapiSessionImpl::SetSessionOptionCallback(const SessionOptionHandler &handler)
+{
+  session_option_handler_ = handler;
+}
+
+
 void FunapiSessionImpl::SetTransportOptionCallback(const TransportOptionHandler &handler)
 {
   transport_option_handler_ = handler;
@@ -4616,6 +4634,12 @@ void FunapiSessionImpl::RemoveRecvTimeoutIntCallback()
 }
 
 
+void FunapiSessionImpl::RemoveSessionOptionCallback()
+{
+  session_option_handler_ = nullptr;
+}
+
+
 void FunapiSessionImpl::RemoveTransportOptionCallback()
 {
   transport_option_handler_ = nullptr;
@@ -4637,6 +4661,7 @@ void FunapiSessionImpl::RemoveAllCallbacks()
   RemoveJsonRecvCallback();
   RemoveRecvTimeoutCallback();
   RemoveRecvTimeoutIntCallback();
+  RemoveSessionOptionCallback();
   RemoveTransportOptionCallback();
   RemoveRedirectQueueCallback();
 }
@@ -5308,6 +5333,12 @@ void FunapiSession::AddJsonRecvCallback(const JsonRecvHandler &handler)
 }
 
 
+void FunapiSession::SetSessionOptionCallback(const SessionOptionHandler &handler)
+{
+  impl_->SetSessionOptionCallback(handler);
+}
+
+
 void FunapiSession::SetTransportOptionCallback(const TransportOptionHandler &handler)
 {
   impl_->SetTransportOptionCallback(handler);
@@ -5353,6 +5384,12 @@ void FunapiSession::RemoveRecvTimeoutCallback()
 void FunapiSession::RemoveRecvTimeoutIntCallback()
 {
   impl_->RemoveRecvTimeoutIntCallback();
+}
+
+
+void FunapiSession::RemoveSessionOptionCallback()
+{
+  impl_->RemoveSessionOptionCallback();
 }
 
 

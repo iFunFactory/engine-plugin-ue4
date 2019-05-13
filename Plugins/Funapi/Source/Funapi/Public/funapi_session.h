@@ -109,6 +109,8 @@ public:
     typedef std::function<std::shared_ptr<FunapiTransportOption>(const TransportProtocol,
                                                                  const fun::string&)> TransportOptionHandler;
 
+    typedef std::function<std::shared_ptr<FunapiSessionOption>(const fun::string&)> SessionOptionHandler;
+
     typedef std::function<void(const TransportProtocol,
                                const fun::vector<fun::string>&, const fun::vector<fun::string>&,
                                const fun::deque<std::shared_ptr<FunapiUnsentMessage>>&)> RedirectQueueHandler;
@@ -160,6 +162,7 @@ public:
     void AddRecvTimeoutCallback(const RecvTimeoutHandler &handler);
     void AddRecvTimeoutCallback(const RecvTimeoutIntHandler &handler);
 
+    void SetSessionOptionCallback(const SessionOptionHandler &handler);
     void SetTransportOptionCallback(const TransportOptionHandler &handler);
     void SetRedirectQueueCallback(const RedirectQueueHandler &handler);
 
@@ -169,6 +172,7 @@ public:
     void RemoveJsonRecvCallback();
     void RemoveRecvTimeoutCallback();
     void RemoveRecvTimeoutIntCallback();
+    void RemoveSessionOptionCallback();
     void RemoveTransportOptionCallback();
     void RemoveRedirectQueueCallback();
 

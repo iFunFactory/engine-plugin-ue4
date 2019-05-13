@@ -11,6 +11,8 @@ public class funapi_plugin_ue4 : ModuleRules
 {
     public funapi_plugin_ue4(ReadOnlyTargetRules Target) : base(Target)
     {
+        PrivatePCHHeaderFile = "funapi_plugin_ue4.h";  // >= 4.21
+
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
         PublicDependencyModuleNames.AddRange(new string[] { "Json", "UMG" });
         PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "Funapi" });

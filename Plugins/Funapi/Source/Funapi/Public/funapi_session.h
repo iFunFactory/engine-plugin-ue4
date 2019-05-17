@@ -151,6 +151,8 @@ public:
     void SetDefaultProtocol(const TransportProtocol protocol);
     TransportProtocol GetDefaultProtocol() const;
 
+    int64 GetPingTime();
+
     void AddSessionEventCallback(const SessionEventHandler &handler);
     void AddTransportEventCallback(const TransportEventHandler &handler);
     void AddProtobufRecvCallback(const ProtobufRecvHandler &handler);

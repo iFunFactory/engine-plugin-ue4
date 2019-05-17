@@ -802,6 +802,7 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   void SetDefaultProtocol(const TransportProtocol protocol);
 
   FunEncoding GetEncoding(const TransportProtocol protocol) const;
+  int64_t GetPingTime();
 
   void SetRecvTimeout(const fun::string &msg_type, const int seconds);
   void SetRecvTimeout(const int32_t msg_type, const int seconds);
@@ -908,6 +909,7 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   bool SendHandShakeMessages(const TransportProtocol protocol);
 
   bool started_;
+  int64_t ping_time_ms = 0;
 
   fun::vector<std::shared_ptr<FunapiTransport>> transports_;
   mutable std::mutex transports_mutex_;
@@ -4071,7 +4073,7 @@ void FunapiSessionImpl::OnClientPingMessage(const TransportProtocol protocol,
     timestamp_ms = ping_message.timestamp();
   }
 
-  // int64_t ping_time_ms = (std::chrono::system_clock::now().time_since_epoch().count() - timestamp_ms) / 1000;
+  ping_time_ms = (std::chrono::system_clock::now().time_since_epoch().count() - timestamp_ms) / 1000;
 
   // DebugUtils::Log("Receive %s ping - timestamp:%lld time=%lld ms", "Tcp", timestamp_ms, ping_time_ms);
 }
@@ -4805,6 +4807,11 @@ TransportProtocol FunapiSessionImpl::GetDefaultProtocol() const {
 }
 
 
+int64_t FunapiSessionImpl::GetPingTime()
+{
+  return ping_time_ms;
+}
+
 void FunapiSessionImpl::SendEmptyMessage(const TransportProtocol protocol,
                                          const EncryptionType encryption_type) {
   std::shared_ptr<FunapiTransport> transport = GetTransport(protocol);
@@ -5384,6 +5391,10 @@ bool FunapiSession::IsReliableSession() const {
 
 FunEncoding FunapiSession::GetEncoding(const TransportProtocol protocol) const {
   return impl_->GetEncoding(protocol);
+}
+
+int64_t FunapiSession::GetPingTime() {
+  return impl_->GetPingTime();
 }
 
 

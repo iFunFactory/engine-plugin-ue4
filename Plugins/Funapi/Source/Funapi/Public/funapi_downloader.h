@@ -49,6 +49,7 @@ class FUNAPI_API FunapiHttpDownloader : public std::enable_shared_from_this<Funa
 
 
   void Start();
+  void Start(const fun::string &inclusive_path);
   void Update();
   static void UpdateAll();
 

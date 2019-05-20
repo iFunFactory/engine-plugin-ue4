@@ -24,6 +24,22 @@
 
 namespace fun
 {
+
+namespace
+{
+
+std::string ReplaceAll(std::string str, const std::string& from, const std::string& to) {
+  size_t start_pos = 0;
+  while ((start_pos = str.find(from, start_pos)) != std::string::npos)
+  {
+    str.replace(start_pos, from.length(), to);
+    start_pos += to.length();
+  }
+  return str;
+}
+
+} // unnamed space
+
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiDownloadFileInfoImpl implementation.
 
@@ -173,6 +189,7 @@ class FunapiHttpDownloaderImpl : public std::enable_shared_from_this<FunapiHttpD
   void SetCACertFilePath(const fun::string &path);
 
   void Start(std::weak_ptr<FunapiHttpDownloader> d);
+  void Start(std::weak_ptr<FunapiHttpDownloader> d, const fun::string &inclusive_path);
   void Update();
 
   static std::shared_ptr<FunapiTasks> GetFunapiTasks();
@@ -182,6 +199,9 @@ class FunapiHttpDownloaderImpl : public std::enable_shared_from_this<FunapiHttpD
   void OnDownloadInfoList(const fun::string &json_string);
   void DownloadFiles();
   bool DownloadFile(int index, std::shared_ptr<FunapiDownloadFileInfo> &info);
+  bool IsInclusivePath(fun::string inclusive_path);
+  bool IsParticalDownload();
+  void ClearParticalOption();
 
   FunapiEvent<ReadyHandler> on_ready_;
   FunapiEvent<ProgressHandler> on_progress_;
@@ -205,6 +225,8 @@ class FunapiHttpDownloaderImpl : public std::enable_shared_from_this<FunapiHttpD
   fun::string path_;
   fun::string cert_file_path_;
 
+  fun::string inclusive_path_;
+
   std::shared_ptr<FunapiThread> thread_;
 
   int max_index_;
@@ -223,7 +245,8 @@ FunapiHttpDownloaderImpl::~FunapiHttpDownloaderImpl() {
 }
 
 
-void FunapiHttpDownloaderImpl::Start(std::weak_ptr<FunapiHttpDownloader> d) {
+void FunapiHttpDownloaderImpl::Start(std::weak_ptr<FunapiHttpDownloader> d)
+{
   downloader_ = d;
 
   std::weak_ptr<FunapiHttpDownloaderImpl> weak = shared_from_this();
@@ -234,6 +257,13 @@ void FunapiHttpDownloaderImpl::Start(std::weak_ptr<FunapiHttpDownloader> d) {
 
     return true;
   });
+}
+
+
+void FunapiHttpDownloaderImpl::Start(std::weak_ptr<FunapiHttpDownloader> d, const fun::string &inclusive_path)
+{
+  inclusive_path_ = inclusive_path;
+  Start(d);
 }
 
 
@@ -278,6 +308,37 @@ bool FunapiHttpDownloaderImpl::CheckDirectory(const fun::string& file_path)
     }
 
     return true;
+}
+
+
+bool FunapiHttpDownloaderImpl::IsParticalDownload()
+{
+  return !inclusive_path_.empty();
+}
+
+
+void FunapiHttpDownloaderImpl::ClearParticalOption()
+{
+  inclusive_path_.clear();
+}
+
+
+bool FunapiHttpDownloaderImpl::IsInclusivePath(fun::string target_inclusive_path)
+{
+  if (inclusive_path_.empty() || target_inclusive_path.empty())
+  {
+    return false;
+  }
+
+  // 아래 조건은 다음과 같다.
+  // inclusive 경로가 target inclusive 경로에 포함이 되지 않거나.
+  // 일치하는 문자가 문자열의 첫 위치에 존재 하지 않는다.
+  if (target_inclusive_path.find(inclusive_path_) != 0)
+  {
+    return false;
+  }
+
+  return true;
 }
 
 
@@ -362,8 +423,23 @@ void FunapiHttpDownloaderImpl::OnDownloadInfoList(const fun::string &json_string
         uint64_t size = 0;
 
         if (v.HasMember("path")) {
+
+          // 서버의 리소스 매니저에서 역슬래쉬를 사용하지 않지만 추가 플랫폼에 따른 대응.
+          fun::string receive_path = ReplaceAll(v["path"].GetString(), "\\", "/");
+          if (receive_path.at(0) == '/')
+          {
+            receive_path.erase(0,1);
+          }
+
+          DebugUtils::Log(receive_path.c_str());
+          if (IsParticalDownload()) {
+            if (!IsInclusivePath(receive_path.c_str())) {
+              continue;
+            }
+          }
+
           url = url_ + "/" + v["path"].GetString();
-          path = path_ + v["path"].GetString();
+          path = path_ + receive_path;
         }
 
         if (v.HasMember("md5")) {
@@ -378,8 +454,7 @@ void FunapiHttpDownloaderImpl::OnDownloadInfoList(const fun::string &json_string
           size = v["size"].GetUint64();
         }
 
-//        fun::DebugUtils::Log("index=%d path=%s size=%llu md5=%s md5_front=%s", i, path.c_str(), size, md5.c_str(), md5_front.c_str());
-
+        //fun::DebugUtils::Log("index=%d path=%s size=%llu md5=%s md5_front=%s", i, path.c_str(), size, md5.c_str(), md5_front.c_str());
         info_list_.push_back(std::make_shared<FunapiDownloadFileInfo>(url, path, size, md5, md5_front));
       }
 
@@ -402,6 +477,9 @@ void FunapiHttpDownloaderImpl::GetDownloadList(const fun::string &download_url, 
         [this](const fun::vector<fun::string> &v_header, const fun::vector<uint8_t> &v_body)
         {
             OnDownloadInfoList(fun::string(v_body.begin(), v_body.end()));
+
+            // 다운로드 목록을 받은 후 부분 다운로드 옵션을 초기화 합니다.
+            ClearParticalOption();
         }
     );
 }
@@ -569,6 +647,11 @@ void FunapiHttpDownloader::SetCACertFilePath(const fun::string &path)
 
 void FunapiHttpDownloader::Start() {
   return impl_->Start(shared_from_this());
+}
+
+void FunapiHttpDownloader::Start(const fun::string &inclusive_path)
+{
+  return impl_->Start(shared_from_this(), inclusive_path);
 }
 
 

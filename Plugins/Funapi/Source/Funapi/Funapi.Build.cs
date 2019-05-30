@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2018 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2019 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -20,6 +20,21 @@ public class Funapi : ModuleRules
     PublicDefinitions.Add("FUNAPI_HAVE_DELAYED_ACK=1");
     PublicDefinitions.Add("FUNAPI_HAVE_TCP_TLS=1");
     PublicDefinitions.Add("FUNAPI_HAVE_WEBSOCKET=1");
+
+    if (Target.Type == TargetType.Editor)
+    {
+      PublicDependencyModuleNames.AddRange(
+        new string[]
+        {
+          "SlateCore",
+          "Slate",
+          "InputCore",
+          "UnrealEd",
+        }
+      );
+    }
+
+
 
     if (Target.Platform == UnrealTargetPlatform.PS4) {
       PublicDefinitions.Add("FUNAPI_HAVE_RPC=0");
@@ -81,7 +96,7 @@ public class Funapi : ModuleRules
       {
         "Core",
         "Engine",
-        "zlib",
+        "zlib"
         // ... add other public dependencies that you statically link with here ...
       }
     );

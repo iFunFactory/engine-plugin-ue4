@@ -45,6 +45,8 @@ class FUNAPI_API FunapiHttpDownloader : public std::enable_shared_from_this<Funa
   void AddProgressCallback(const ProgressHandler &handler);
   void AddCompletionCallback(const CompletionHandler &handler);
   void SetTimeoutPerFile(long timeout_in_seconds);
+  void SetCACertFilePath(const fun::string &path);
+
 
   void Start();
   void Update();

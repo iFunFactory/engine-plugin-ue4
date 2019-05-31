@@ -170,6 +170,7 @@ class FunapiHttpDownloaderImpl : public std::enable_shared_from_this<FunapiHttpD
   void AddCompletionCallback(const CompletionHandler &handler);
 
   void SetTimeoutPerFile(long timeout_in_seconds);
+  void SetCACertFilePath(const fun::string &path);
 
   void Start(std::weak_ptr<FunapiHttpDownloader> d);
   void Update();
@@ -202,6 +203,7 @@ class FunapiHttpDownloaderImpl : public std::enable_shared_from_this<FunapiHttpD
 
   fun::string url_;
   fun::string path_;
+  fun::string cert_file_path_;
 
   std::shared_ptr<FunapiThread> thread_;
 
@@ -288,7 +290,7 @@ bool FunapiHttpDownloaderImpl::DownloadFile(int index, std::shared_ptr<FunapiDow
     }
 
     bool is_ok = true;
-    std::shared_ptr<FunapiHttp> http = FunapiHttp::Create();
+    std::shared_ptr<FunapiHttp> http = FunapiHttp::Create(cert_file_path_);
     http->SetTimeout(timeout_seconds_);
     http->DownloadRequest(info->GetUrl(), info->GetPath(), FunapiHttp::HeaderFields(),
         [&is_ok,&info](const int error_code, const fun::string error_string)
@@ -389,7 +391,7 @@ void FunapiHttpDownloaderImpl::OnDownloadInfoList(const fun::string &json_string
 
 void FunapiHttpDownloaderImpl::GetDownloadList(const fun::string &download_url, const fun::string &target_path)
 {
-    std::shared_ptr<FunapiHttp> http = FunapiHttp::Create();
+    std::shared_ptr<FunapiHttp> http = FunapiHttp::Create(cert_file_path_);
     http->SetTimeout(timeout_seconds_);
     http->PostRequest(download_url, FunapiHttp::HeaderFields(), fun::vector<uint8_t>(),
         [this](int code, const fun::string error_string)
@@ -459,6 +461,12 @@ void FunapiHttpDownloaderImpl::AddCompletionCallback(const CompletionHandler &ha
 void FunapiHttpDownloaderImpl::SetTimeoutPerFile(long timeout_in_seconds)
 {
     timeout_seconds_ = timeout_in_seconds;
+}
+
+
+void FunapiHttpDownloaderImpl::SetCACertFilePath(const fun::string &path)
+{
+  cert_file_path_ = path;
 }
 
 
@@ -553,6 +561,11 @@ void FunapiHttpDownloader::SetTimeoutPerFile(long timeout_in_seconds)
     impl_->SetTimeoutPerFile(timeout_in_seconds);
 }
 
+
+void FunapiHttpDownloader::SetCACertFilePath(const fun::string &path)
+{
+  impl_->SetCACertFilePath(path);
+}
 
 void FunapiHttpDownloader::Start() {
   return impl_->Start(shared_from_this());

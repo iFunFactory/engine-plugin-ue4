@@ -156,10 +156,11 @@ public class Funapi : ModuleRules
 
       PublicDefinitions.Add("CURL_STATICLIB=1");
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl_a.lib"));
-      PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libeay32.lib"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.lib"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "websockets_static.lib"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libzstd_static.lib"));
+      PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcrypto.lib"));
+      PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libssl.lib"));
     }
     else if (Target.Platform == UnrealTargetPlatform.Win64)
     {
@@ -173,6 +174,8 @@ public class Funapi : ModuleRules
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.lib"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "websockets_static.lib"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libzstd_static.lib"));
+      PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcrypto.lib"));
+      PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libssl.lib"));
     }
     else if (Target.Platform == UnrealTargetPlatform.Android)
     {

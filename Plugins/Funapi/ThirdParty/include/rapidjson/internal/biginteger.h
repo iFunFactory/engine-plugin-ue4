@@ -1,5 +1,5 @@
 // Tencent is pleased to support the open source community by making RapidJSON available.
-// 
+//
 // Copyright (C) 2015 THL A29 Limited, a Tencent company, and Milo Yip. All rights reserved.
 //
 // Licensed under the MIT License (the "License"); you may not use this file except
@@ -7,9 +7,9 @@
 //
 // http://opensource.org/licenses/MIT
 //
-// Unless required by applicable law or agreed to in writing, software distributed 
-// under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR 
-// CONDITIONS OF ANY KIND, either express or implied. See the License for the 
+// Unless required by applicable law or agreed to in writing, software distributed
+// under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
 #ifndef RAPIDJSON_BIGINTEGER_H_
@@ -19,6 +19,12 @@
 
 #if defined(_MSC_VER) && defined(_M_AMD64)
 #include <intrin.h> // for _umul128
+#endif
+
+// NOTE(Sungjin): Window 32 bit 환경에서 에러를 방지한다.
+#if defined(_MSC_VER) && !defined(_M_AMD64)
+#pragma warning( push )
+#pragma warning( disable : 4668 )
 #endif
 
 RAPIDJSON_NAMESPACE_BEGIN
@@ -52,7 +58,7 @@ public:
     }
 
     BigInteger& operator=(uint64_t u) {
-        digits_[0] = u;            
+        digits_[0] = u;
         count_ = 1;
         return *this;
     }
@@ -85,7 +91,7 @@ public:
             digits_[i] = MulAdd64(digits_[i], u, k, &hi);
             k = hi;
         }
-        
+
         if (k > 0)
             PushBack(k);
 
@@ -108,7 +114,7 @@ public:
             digits_[i] = (p0 & 0xFFFFFFFF) | (p1 << 32);
             k = p1 >> 32;
         }
-        
+
         if (k > 0)
             PushBack(k);
 
@@ -276,5 +282,10 @@ private:
 
 } // namespace internal
 RAPIDJSON_NAMESPACE_END
+
+// NOTE(Sungjin): Window 32 bit 환경에서 에러를 방지한다.
+#if defined(_MSC_VER) && !defined(_M_AMD64)
+#pragma warning( pop )
+#endif
 
 #endif // RAPIDJSON_BIGINTEGER_H_

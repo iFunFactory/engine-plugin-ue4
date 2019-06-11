@@ -1,5 +1,5 @@
 // Tencent is pleased to support the open source community by making RapidJSON available.
-// 
+//
 // Copyright (C) 2015 THL A29 Limited, a Tencent company, and Milo Yip. All rights reserved.
 //
 // Licensed under the MIT License (the "License"); you may not use this file except
@@ -7,9 +7,9 @@
 //
 // http://opensource.org/licenses/MIT
 //
-// Unless required by applicable law or agreed to in writing, software distributed 
-// under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR 
-// CONDITIONS OF ANY KIND, either express or implied. See the License for the 
+// Unless required by applicable law or agreed to in writing, software distributed
+// under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
 // This is a C++ header-only implementation of Grisu2 algorithm from the publication:
@@ -24,6 +24,12 @@
 #if defined(_MSC_VER) && defined(_M_AMD64)
 #include <intrin.h>
 #pragma intrinsic(_BitScanReverse64)
+#endif
+
+// NOTE(Sungjin): Window 32 bit 환경에서 에러를 방지한다.
+#if defined(_MSC_VER) && !defined(_M_AMD64)
+#pragma warning( push )
+#pragma warning( disable : 4668 )
 #endif
 
 RAPIDJSON_NAMESPACE_BEGIN
@@ -50,7 +56,7 @@ struct DiyFp {
         if (biased_e != 0) {
             f = significand + kDpHiddenBit;
             e = biased_e - kDpExponentBias;
-        } 
+        }
         else {
             f = significand;
             e = kDpMinExponent + 1;
@@ -135,7 +141,7 @@ struct DiyFp {
             double d;
             uint64_t u64;
         }u;
-        const uint64_t be = (e == kDpDenormalExponent && (f & kDpHiddenBit) == 0) ? 0 : 
+        const uint64_t be = (e == kDpDenormalExponent && (f & kDpHiddenBit) == 0) ? 0 :
             static_cast<uint64_t>(e + kDpExponentBias);
         u.u64 = (f & kDpSignificandMask) | (be << kDpSignificandSize);
         return u.d;
@@ -216,7 +222,7 @@ inline DiyFp GetCachedPowerByIndex(size_t index) {
     };
     return DiyFp(kCachedPowers_F[index], kCachedPowers_E[index]);
 }
-    
+
 inline DiyFp GetCachedPower(int e, int* K) {
 
     //int k = static_cast<int>(ceil((-61 - e) * 0.30102999566398114)) + 374;
@@ -243,5 +249,10 @@ RAPIDJSON_DIAG_POP
 
 } // namespace internal
 RAPIDJSON_NAMESPACE_END
+
+// NOTE(Sungjin): Window 32 bit 환경에서 에러를 방지한다.
+#if defined(_MSC_VER) && !defined(_M_AMD64)
+#pragma warning( pop )
+#endif
 
 #endif // RAPIDJSON_DIYFP_H_

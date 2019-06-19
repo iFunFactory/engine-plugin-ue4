@@ -678,8 +678,32 @@ namespace fun
       {
         auth_map_.Empty();
 
-        TSharedPtr<FJsonObject> data = response_data->GetObjectField(FString("data"));
-        AddData(data);
+        // 서버와 호환 작업으로 인해 응답 메세지는 다음과 같은 두가지의 형태를 가진다.
+
+        // 1.
+        //
+        // "data": {
+        //   "UserList": [...],
+        //   ...
+        // }
+
+
+        // 2.
+        //
+        // {
+        //   "UserList": [...],
+        //    ...
+        // }
+
+        if (response_data->HasField("data"))
+        {
+          TSharedPtr<FJsonObject> data = response_data->GetObjectField(FString("data"));
+          AddData(data);
+        }
+        else
+        {
+          AddData(response_data);
+        }
       };
 
       Get("", "", response_handler, data_handler);

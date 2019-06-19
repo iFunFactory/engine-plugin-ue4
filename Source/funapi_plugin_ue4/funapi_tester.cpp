@@ -356,7 +356,7 @@ bool Afunapi_tester::CreateMulticast()
         const fun::string &sender_string,
         const fun::string &json_string)
     {
-      UE_LOG(LogFunapiExample, Log, TEXT("channel_id = %s, sender = %s, body = %s"), *FString(channel_id.c_str()), *FString(sender_string.c_str()), *FString(json_string.c_str()));
+      UE_LOG(LogFunapiExample, Log, TEXT("Arrived the chatting message. channel_id = %s, sender = %s, body = %s"), *FString(channel_id.c_str()), *FString(sender_string.c_str()), *FString(json_string.c_str()));
     });
 
     multicast_->AddProtobufChannelMessageCallback(kMulticastTestChannel,
@@ -366,11 +366,15 @@ bool Afunapi_tester::CreateMulticast()
         const fun::string &sender_string,
         const FunMessage& message)
     {
-      FunMulticastMessage mcast_msg = message.GetExtension(multicast);
-      FunChatMessage chat_msg = mcast_msg.GetExtension(chat);
-      fun::string text = chat_msg.text();
-
-      UE_LOG(LogFunapiExample, Log, TEXT("channel_id = %s, sender = %s, message = %s"), *FString(channel_id.c_str()), *FString(sender_string.c_str()), *FString(text.c_str()));
+      if (message.HasExtension(multicast))
+      {
+        FunMulticastMessage mcast_msg = message.GetExtension(multicast);
+        if (mcast_msg.HasExtension(chat)) {
+          FunChatMessage chat_msg = mcast_msg.GetExtension(chat);
+          fun::string text = chat_msg.text();
+          UE_LOG(LogFunapiExample, Log, TEXT("Arrived the chatting message. channel_id = %s, sender = %s, message = %s"), *FString(channel_id.c_str()), *FString(sender_string.c_str()), *FString(text.c_str()));
+        }
+      }
     });
 
     multicast_->Connect();
@@ -691,7 +695,7 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
                                      const fun::string &json_string) {
       if (msg_type.compare("echo") == 0) {
         UE_LOG(LogFunapiExample, Log, TEXT("msg '%s' arrived."), *FString(msg_type.c_str()));
-        UE_LOG(LogFunapiExample, Log, TEXT("json: %s"), *FString(json_string.c_str()));
+        UE_LOG(LogFunapiExample, Log, TEXT("json string: %s"), *FString(json_string.c_str()));
       }
 
       if (msg_type.compare("_maintenance") == 0) {
@@ -701,26 +705,39 @@ void Afunapi_tester::Connect(const fun::TransportProtocol protocol)
 
     session_->AddProtobufRecvCallback([](const std::shared_ptr<fun::FunapiSession> &session,
                                          const fun::TransportProtocol transport_protocol,
-                                         const FunMessage &fun_message) {
-      if (fun_message.msgtype().compare("pbuf_echo") == 0) {
+                                         const FunMessage &fun_message)
+    {
+      if (fun_message.msgtype().compare("pbuf_echo") == 0)
+      {
         UE_LOG(LogFunapiExample, Log, TEXT("msg '%s' arrived."), *FString(fun_message.msgtype().c_str()));
 
-        PbufEchoMessage echo = fun_message.GetExtension(pbuf_echo);
-        UE_LOG(LogFunapiExample, Log, TEXT("proto: %s"), *FString(echo.msg().c_str()));
+        if (fun_message.HasExtension(pbuf_echo))
+        {
+          PbufEchoMessage echo = fun_message.GetExtension(pbuf_echo);
+          UE_LOG(LogFunapiExample, Log, TEXT("proto echo message: %s"), *FString(echo.msg().c_str()));
+        }
       }
 
-      if (fun_message.msgtype().compare("_maintenance") == 0) {
+      if (fun_message.msgtype().compare("_maintenance") == 0)
+      {
         UE_LOG(LogFunapiExample, Log, TEXT("msg '%s' arrived."), *FString(fun_message.msgtype().c_str()));
 
-        PbufEchoMessage echo = fun_message.GetExtension(pbuf_echo);
-        UE_LOG(LogFunapiExample, Log, TEXT("proto: %s"), *FString(echo.msg().c_str()));
+        if (fun_message.HasExtension(pbuf_echo))
+        {
+          PbufEchoMessage echo = fun_message.GetExtension(pbuf_echo);
+          UE_LOG(LogFunapiExample, Log, TEXT("proto echo message: %s"), *FString(echo.msg().c_str()));
 
-        MaintenanceMessage maintenance = fun_message.GetExtension(pbuf_maintenance);
-        fun::string date_start = maintenance.date_start();
-        fun::string date_end = maintenance.date_end();
-        fun::string message_text = maintenance.messages();
+          if (fun_message.HasExtension(pbuf_maintenance))
+          {
 
-        UE_LOG(LogFunapiExample, Log, TEXT("Maintenance message:\nstart: %s\nend: %s\nmessage: %s"), *FString(date_start.c_str()), *FString(date_end.c_str()), *FString(message_text.c_str()));
+            MaintenanceMessage maintenance = fun_message.GetExtension(pbuf_maintenance);
+            fun::string date_start = maintenance.date_start();
+            fun::string date_end = maintenance.date_end();
+            fun::string message_text = maintenance.messages();
+
+            UE_LOG(LogFunapiExample, Log, TEXT("Maintenance message:\nstart: %s\nend: %s\nmessage: %s"), *FString(date_start.c_str()), *FString(date_end.c_str()), *FString(message_text.c_str()));
+          }
+        }
       }
     });
 

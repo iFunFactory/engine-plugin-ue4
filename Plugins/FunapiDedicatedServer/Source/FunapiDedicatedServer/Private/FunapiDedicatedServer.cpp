@@ -282,33 +282,27 @@ namespace fun
       (new FAutoDeleteAsyncTask<FAsyncPendingUsersTask>)->StartBackgroundTask();
     }
 
-    void SendVersion();
     bool ParseConsoleCommand(const TCHAR* cmd, const FString &match_id_field, const FString &manager_server_field, const FString &heartbeat_field, const FString &version_field)
     {
-      UE_LOG(LogFunapiDedicatedServer, Log, TEXT("version_field is '%s'"), *version_field);
-
-      bool ret = false;
-
-      if (ParseConsoleCommand(cmd, match_id_field, manager_server_field, heartbeat_field))
-      {
-        ret = true;
-      }
+      // 호스 매니저로 받은 명령줄 실행인자 값을 출력합니다.
+      UE_LOG(LogFunapiDedicatedServer, Log, TEXT("%s"), cmd);
 
       if (FParse::Param(cmd, *version_field))
       {
         use_send_version_and_exit_ = true;
-        UE_LOG(LogFunapiDedicatedServer, Log, TEXT("version_field is true"));
+        UE_LOG(LogFunapiDedicatedServer, Log, TEXT("Need to send version imformation"));
       }
       else {
         use_send_version_and_exit_ = false;
-        UE_LOG(LogFunapiDedicatedServer, Log, TEXT("version_field is false"));
       }
 
-      if (use_send_version_and_exit_ && ret) {
-        SendVersion();
+
+      if (ParseConsoleCommand(cmd, match_id_field, manager_server_field, heartbeat_field))
+      {
+        return true;
       }
 
-      return ret;
+      return false;
     }
 
     bool ParseConsoleCommand(const TCHAR* cmd, const FString &match_id_field, const FString &manager_server_field, const FString &heartbeat_field)

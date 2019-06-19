@@ -653,7 +653,6 @@ namespace fun
                 if (response_data_handler) {
                   response_data_handler(json_object->GetObjectField(FString("data")));
                 }
-                response_handler(processed_response);
               }
               else {
                 UE_LOG(LogFunapiDedicatedServer, Error, TEXT("The message format is invalied. Please check host manager. Requset : %s, %s"), *verb, *path);

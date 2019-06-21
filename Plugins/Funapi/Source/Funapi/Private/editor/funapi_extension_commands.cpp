@@ -4,6 +4,7 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
+#if FUNAPI_UE4
 #if WITH_EDITOR
 
 #include "funapi_plugin.h"
@@ -159,3 +160,4 @@ void Ffunapi_excute_actions::DownloadRootCertificate()
 #undef LOCTEXT_NAMESPACE
 
 #endif // WITH_EDITOR
+#endif //FUNAPI_UE4

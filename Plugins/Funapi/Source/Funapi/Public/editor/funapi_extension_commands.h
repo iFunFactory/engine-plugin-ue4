@@ -6,6 +6,7 @@
 
 #pragma once
 
+#if FUNAPI_UE4
 #if WITH_EDITOR
 
 #include "CoreMinimal.h"
@@ -55,3 +56,4 @@ class Ffunapi_excute_actions
 
 
 #endif // WITH_EDITOR
+#endif // FUNAPI_UE4

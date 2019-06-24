@@ -140,6 +140,18 @@ class FUNAPI_API FunMessage : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 msgtype2() const;
   inline void set_msgtype2(::google::protobuf::int32 value);
 
+  // optional bytes udp_handshake_id = 7;
+  inline bool has_udp_handshake_id() const;
+  inline void clear_udp_handshake_id();
+  static const int kUdpHandshakeIdFieldNumber = 7;
+  inline const ::fun::string& udp_handshake_id() const;
+  inline void set_udp_handshake_id(const ::fun::string& value);
+  inline void set_udp_handshake_id(const char* value);
+  inline void set_udp_handshake_id(const void* value, size_t size);
+  inline ::fun::string* mutable_udp_handshake_id();
+  inline ::fun::string* release_udp_handshake_id();
+  inline void set_allocated_udp_handshake_id(::fun::string* udp_handshake_id);
+
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(FunMessage)
   // @@protoc_insertion_point(class_scope:FunMessage)
  private:
@@ -155,6 +167,8 @@ class FUNAPI_API FunMessage : public ::google::protobuf::Message {
   inline void clear_has_urgent();
   inline void set_has_msgtype2();
   inline void clear_has_msgtype2();
+  inline void set_has_udp_handshake_id();
+  inline void clear_has_udp_handshake_id();
 
   ::google::protobuf::internal::ExtensionSet _extensions_;
 
@@ -168,6 +182,7 @@ class FUNAPI_API FunMessage : public ::google::protobuf::Message {
   ::google::protobuf::uint32 ack_;
   bool urgent_;
   ::google::protobuf::int32 msgtype2_;
+  ::fun::string* udp_handshake_id_;
   friend void FUNAPI_API protobuf_AddDesc_funapi_2fnetwork_2ffun_5fmessage_2eproto();
   friend void protobuf_AssignDesc_funapi_2fnetwork_2ffun_5fmessage_2eproto();
   friend void protobuf_ShutdownFile_funapi_2fnetwork_2ffun_5fmessage_2eproto();
@@ -428,6 +443,82 @@ inline void FunMessage::set_msgtype2(::google::protobuf::int32 value) {
   set_has_msgtype2();
   msgtype2_ = value;
   // @@protoc_insertion_point(field_set:FunMessage.msgtype2)
+}
+
+// optional bytes udp_handshake_id = 7;
+inline bool FunMessage::has_udp_handshake_id() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void FunMessage::set_has_udp_handshake_id() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void FunMessage::clear_has_udp_handshake_id() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void FunMessage::clear_udp_handshake_id() {
+  if (udp_handshake_id_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    udp_handshake_id_->clear();
+  }
+  clear_has_udp_handshake_id();
+}
+inline const ::fun::string& FunMessage::udp_handshake_id() const {
+  // @@protoc_insertion_point(field_get:FunMessage.udp_handshake_id)
+  return *udp_handshake_id_;
+}
+inline void FunMessage::set_udp_handshake_id(const ::fun::string& value) {
+  set_has_udp_handshake_id();
+  if (udp_handshake_id_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    udp_handshake_id_ = new ::fun::string;
+  }
+  udp_handshake_id_->assign(value);
+  // @@protoc_insertion_point(field_set:FunMessage.udp_handshake_id)
+}
+inline void FunMessage::set_udp_handshake_id(const char* value) {
+  set_has_udp_handshake_id();
+  if (udp_handshake_id_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    udp_handshake_id_ = new ::fun::string;
+  }
+  udp_handshake_id_->assign(value);
+  // @@protoc_insertion_point(field_set_char:FunMessage.udp_handshake_id)
+}
+inline void FunMessage::set_udp_handshake_id(const void* value, size_t size) {
+  set_has_udp_handshake_id();
+  if (udp_handshake_id_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    udp_handshake_id_ = new ::fun::string;
+  }
+  udp_handshake_id_->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:FunMessage.udp_handshake_id)
+}
+inline ::fun::string* FunMessage::mutable_udp_handshake_id() {
+  set_has_udp_handshake_id();
+  if (udp_handshake_id_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    udp_handshake_id_ = new ::fun::string;
+  }
+  // @@protoc_insertion_point(field_mutable:FunMessage.udp_handshake_id)
+  return udp_handshake_id_;
+}
+inline ::fun::string* FunMessage::release_udp_handshake_id() {
+  clear_has_udp_handshake_id();
+  if (udp_handshake_id_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    return NULL;
+  } else {
+    ::fun::string* temp = udp_handshake_id_;
+    udp_handshake_id_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    return temp;
+  }
+}
+inline void FunMessage::set_allocated_udp_handshake_id(::fun::string* udp_handshake_id) {
+  if (udp_handshake_id_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    delete udp_handshake_id_;
+  }
+  if (udp_handshake_id) {
+    set_has_udp_handshake_id();
+    udp_handshake_id_ = udp_handshake_id;
+  } else {
+    clear_has_udp_handshake_id();
+    udp_handshake_id_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  // @@protoc_insertion_point(field_set_allocated:FunMessage.udp_handshake_id)
 }
 
 

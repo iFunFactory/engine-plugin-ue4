@@ -31,6 +31,7 @@
 #define kSessionIdAttributeName "_sid"
 #define kSeqNumAttributeName "_seq"
 #define kAckNumAttributeName "_ack"
+#define kUdpHandshakeIdAttributeName "_udp_handshake_id"
 
 #define kSessionOpenedMessageType "_session_opened"
 #define kSessionClosedMessageType "_session_closed"
@@ -39,6 +40,8 @@
 #define kClientPingMessageType "_ping_c"
 #define kRedirectMessageType "_sc_redirect"
 #define kRedirectConnectMessageType "_cs_redirect_connect"
+#define kUdpAttachedType "_udp_attached"
+
 #define kPingTimestampField "timestamp"
 
 // http header
@@ -863,6 +866,7 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   bool UseSodium(const TransportProtocol protocol);
   void SendEmptyMessage(const TransportProtocol protocol,
                         const EncryptionType encryption_type = EncryptionType::kDefaultEncryption);
+  void SendUdpHandshakeMessage();
   bool SendClientPingMessage(const TransportProtocol protocol,
                              const EncryptionType encryption_type = EncryptionType::kDefaultEncryption);
 
@@ -1051,6 +1055,7 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
   void SetConnectTimeout(const time_t timeout);
 
   virtual void ResetClientPingTimeout();
+  virtual void OnReceivedUDPHandshakeMessage(const fun::string &uuid);
 
   void SetEncryptionType(EncryptionType type);
   void SetEncryptionType(EncryptionType type, const fun::string &public_key);
@@ -1983,6 +1988,14 @@ void FunapiTransport::OnReceived(const TransportProtocol protocol,
     if (hasSeq) {
       seq = (*json)[kSeqNumAttributeName].GetUint();
     }
+
+    if (json->HasMember(kUdpHandshakeIdAttributeName))
+    {
+      const rapidjson::Value &udp_handshake_id = (*json)[kUdpHandshakeIdAttributeName];
+      assert(udp_handshake_id.IsString());
+      OnReceivedUDPHandshakeMessage(udp_handshake_id.GetString());
+    }
+
   } else if (encoding == FunEncoding::kProtobuf) {
     auto proto = message->GetProtobufMessage();
     if (!proto)
@@ -1998,6 +2011,11 @@ void FunapiTransport::OnReceived(const TransportProtocol protocol,
 
     hasSeq = proto->has_seq();
     seq = proto->seq();
+
+    if (proto->has_udp_handshake_id())
+    {
+      OnReceivedUDPHandshakeMessage(proto->udp_handshake_id());
+    }
   }
 
   if (IsReliableSession()) {
@@ -2033,6 +2051,13 @@ void FunapiTransport::OnDisconnecting(std::shared_ptr<FunapiError> error,
 
 
 void FunapiTransport::ResetClientPingTimeout() {
+}
+
+
+void FunapiTransport::OnReceivedUDPHandshakeMessage(const fun::string &uuid)
+{
+  // assert when not udp transport called this function
+  FunapiUtil::Assert(false);
 }
 
 
@@ -2727,7 +2752,12 @@ class FunapiUdpTransport : public FunapiTransport {
   TransportProtocol GetProtocol();
 
   void Start();
+  void Update();
   void Send(bool send_all = false);
+  void Handshake();
+  void SendHandshakeMessage();
+
+  void OnReceivedUDPHandshakeMessage(const fun::string &uuid);
 
  protected:
   bool EncodeThenSendMessage(std::shared_ptr<FunapiMessage> message,
@@ -2737,7 +2767,27 @@ class FunapiUdpTransport : public FunapiTransport {
                        bool use_did = false);
 
  private:
+  enum class RepetitiveBehavior : int {
+    kNone = 0,
+    kHandshake,
+  };
+  RepetitiveBehavior repetitive_behavior_ = RepetitiveBehavior::kNone;
+  std::mutex update_state_mutex_;
+
+  void SetRepetitiveBehavior(RepetitiveBehavior behavior);
+  void ResetHandshakeTimer();
+
   std::shared_ptr<FunapiUdp> udp_;
+
+  // UDP session connected guarantee
+#ifdef FUNAPI_UE4
+  FGuid handshake_guid_;
+#endif
+  fun::string handshake_uuid_str_;
+
+  time_t handshake_retry_interval_ = 1;
+  FunapiTimer handshake_abort_timer_;
+  FunapiTimer handshake_retry_timer_;
 };
 
 
@@ -2772,9 +2822,25 @@ TransportProtocol FunapiUdpTransport::GetProtocol() {
 }
 
 
-void FunapiUdpTransport::Start() {
+void FunapiUdpTransport::Start()
+{
   if (GetState() != TransportState::kDisconnected)
     return;
+
+#if FUNAPI_UE4
+  handshake_guid_ = FGuid::NewGuid();
+  handshake_uuid_str_ =
+      TCHAR_TO_UTF8(*handshake_guid_.ToString(EGuidFormats::DigitsWithHyphens));
+
+  FunEncoding encoding = GetEncoding();
+  if (encoding == FunEncoding::kProtobuf)
+  {
+    handshake_uuid_str_ = FunapiUtil::BytesFromString(handshake_uuid_str_);
+  }
+
+#elif FUNAPI_COCOS2D
+  // To be supported later.
+#endif
 
   SetState(TransportState::kConnecting);
 
@@ -2797,8 +2863,14 @@ void FunapiUdpTransport::Start() {
              Stop(true, FunapiError::Create(FunapiError::ErrorType::kSocket, error_code, error_string));
            }
            else {
+#ifdef FUNAPI_UE4
+             ResetHandshakeTimer();
+             SetRepetitiveBehavior(RepetitiveBehavior::kHandshake);
+             SendHandshakeMessage();
+#else // cocos
              SetState(TransportState::kConnected);
              OnTransportStarted(TransportProtocol::kUdp);
+#endif
            }
          }
        }, [weak, this]()
@@ -2836,6 +2908,7 @@ void FunapiUdpTransport::OnDisconnecting(std::shared_ptr<FunapiError> error,
                                          bool user_did)
 {
   udp_ = nullptr;
+  SetRepetitiveBehavior(RepetitiveBehavior::kNone);
 
   FunapiTransport::OnDisconnecting(error, user_did);
 }
@@ -2871,6 +2944,137 @@ bool FunapiUdpTransport::EncodeThenSendMessage(std::shared_ptr<FunapiMessage> me
   });
 
   return bRet;
+}
+
+
+void FunapiUdpTransport::ResetHandshakeTimer()
+{
+  handshake_retry_interval_ = 1;
+  handshake_abort_timer_.SetTimer(connect_timeout_seconds_);
+  handshake_retry_timer_.SetTimer(handshake_retry_interval_);
+}
+
+
+void FunapiUdpTransport::SetRepetitiveBehavior(RepetitiveBehavior behavior)
+{
+  std::unique_lock<std::mutex> lock(update_state_mutex_);
+  repetitive_behavior_ = behavior;
+}
+
+
+void FunapiUdpTransport::Update()
+{
+  if (repetitive_behavior_ == RepetitiveBehavior::kNone)
+  {
+    return;
+  }
+
+  if (repetitive_behavior_ == RepetitiveBehavior::kHandshake)
+  {
+    Handshake();
+  }
+}
+
+
+void FunapiUdpTransport::Handshake()
+{
+  if (handshake_abort_timer_.IsExpired())
+  {
+    SetRepetitiveBehavior(RepetitiveBehavior::kNone);
+    Stop(true,
+        FunapiError::Create(FunapiError::ErrorType::kHandshake, 0,
+                            "Failed to connect UDP"));
+    return;
+  }
+
+
+  if (handshake_retry_timer_.IsExpired())
+  {
+    SendHandshakeMessage();
+    if (handshake_retry_interval_ < 8)
+    {
+      handshake_retry_interval_ *= 2;
+    }
+    handshake_retry_timer_.SetTimer(handshake_retry_interval_);
+  }
+}
+
+
+void FunapiUdpTransport::SendHandshakeMessage()
+{
+  FunEncoding encoding = GetEncoding();
+
+  assert(encoding != FunEncoding::kNone);
+  assert(!handshake_uid_str_.empty());
+
+  std::shared_ptr<FunapiMessage> message;
+
+  if (encoding == FunEncoding::kJson)
+  {
+    rapidjson::Document msg;
+    msg.SetObject();
+
+    rapidjson::Value key(kUdpHandshakeIdAttributeName, msg.GetAllocator());
+    rapidjson::Value value(
+        rapidjson::StringRef(handshake_uuid_str_.c_str()), msg.GetAllocator());
+    msg.AddMember(key, value,msg.GetAllocator());
+
+    message = FunapiMessage::Create(msg, EncryptionType::kDefaultEncryption);
+  }
+  else if (encoding == FunEncoding::kProtobuf)
+  {
+    FunMessage msg;
+    msg.set_udp_handshake_id(handshake_uuid_str_);
+    message = FunapiMessage::Create(msg, EncryptionType::kDefaultEncryption);
+  }
+
+  message->SetUseSentQueue(false);
+  message->SetUseSeq(false);
+
+  SendMessage(message, false, true);
+  FunapiSendFlagManager::Get().WakeUp();
+}
+
+
+void FunapiUdpTransport::OnReceivedUDPHandshakeMessage(const fun::string &uuid)
+{
+#ifdef FUNAPI_UE4
+  if (GetState() == TransportState::kConnected)
+  {
+    return;
+  }
+
+  fun::string uuid_str = uuid;
+  if (GetEncoding() == FunEncoding::kProtobuf)
+  {
+    uuid_str = FunapiUtil::StringFromBytes(uuid_str);
+  }
+
+  FGuid recv_guid;
+  bool ret = FGuid::Parse(UTF8_TO_TCHAR(uuid_str.c_str()), recv_guid);
+  if (!ret || recv_guid != handshake_guid_)
+  {
+    fun::stringstream ss;
+    ss << "UDP handshake failed. ";
+    ss << "sent UDP handshake uuid : " << handshake_uuid_str_;
+    ss << " Received UDP handshake uuid : " << uuid_str;
+    DebugUtils::Log("%s", ss.str().c_str());
+    SetState(TransportState::kDisconnected);
+    SetRepetitiveBehavior(RepetitiveBehavior::kNone);
+    OnTransportDisconnected(
+      TransportProtocol::kUdp,
+      FunapiError::Create(FunapiError::ErrorType::kHandshake, 0,
+                          ss.str().c_str()));
+    return;
+  }
+
+  SetState(TransportState::kConnected);
+  SetRepetitiveBehavior(RepetitiveBehavior::kNone);
+  OnTransportStarted(TransportProtocol::kUdp);
+
+#else // cocos
+  // To be supported later.
+#endif
 }
 
 
@@ -3698,6 +3902,17 @@ void FunapiSessionImpl::Initialize()
            const std::shared_ptr<FunapiMessage> m)
     {
         OnRedirectConnectMessage(p, s, v, m);
+    };
+
+    // udp attached message
+    message_handlers_[kUdpAttachedType] =
+      [this](const TransportProtocol &p,
+        const fun::string &s,
+        const fun::vector<uint8_t> &v,
+        const std::shared_ptr<FunapiMessage> m)
+    {
+      // The message has been processed in transport,
+      // does nothing to do
     };
 
     tasks_ = FunapiTasks::Create();
@@ -5062,11 +5277,31 @@ void FunapiSessionImpl::OnTransportReconnecting(const TransportProtocol protocol
 }
 
 
-void FunapiSessionImpl::OnTransportStarted(const TransportProtocol protocol, std::shared_ptr<FunapiError> error) {
+void FunapiSessionImpl::OnTransportStarted(const TransportProtocol protocol, std::shared_ptr<FunapiError> error)
+{
+
+#ifdef FUNAPI_UE4
   if (GetSessionId(FunEncoding::kJson).empty() &&
-      protocol != TransportProtocol::kTcp) {
+    GetSessionId(FunEncoding::kProtobuf).empty())
+  {
+    if (protocol == TransportProtocol::kTcp ||
+        protocol == TransportProtocol::kUdp)
+    {
+      // To do nothing
+    }
+    else
+    {
+      SendEmptyMessage(protocol);
+    }
+  }
+#else // cocos
+  if (GetSessionId(FunEncoding::kJson).empty() &&
+      GetSessionId(FunEncoding::kProtobuf).empty() &&
+      protocol != TransportProtocol::kTcp)
+  {
     SendEmptyMessage(protocol);
   }
+#endif
 
   OnTransportEvent(protocol, GetEncoding(protocol), TransportEventType::kStarted, error);
 }
@@ -5153,6 +5388,16 @@ void FunapiSessionImpl::SendEmptyMessage(const TransportProtocol protocol,
   message->SetUseSeq(false);
 
   SendMessage(message, protocol, false, true);
+}
+
+
+void FunapiSessionImpl::SendUdpHandshakeMessage()
+{
+  FunapiUtil::Assert(HasTransport(TransportProtocol::kUdp));
+
+  auto udp_transport = std::static_pointer_cast<FunapiUdpTransport>(
+      GetTransport(TransportProtocol::kUdp));
+  udp_transport->SendHandshakeMessage();
 }
 
 

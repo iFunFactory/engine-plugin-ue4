@@ -32,13 +32,14 @@ void protobuf_AssignDesc_funapi_2fnetwork_2ffun_5fmessage_2eproto() {
       "funapi/network/fun_message.proto");
   GOOGLE_CHECK(file != NULL);
   FunMessage_descriptor_ = file->message_type(0);
-  static const int FunMessage_offsets_[6] = {
+  static const int FunMessage_offsets_[7] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMessage, sid_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMessage, msgtype_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMessage, seq_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMessage, ack_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMessage, urgent_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMessage, msgtype2_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FunMessage, udp_handshake_id_),
   };
   FunMessage_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -81,10 +82,11 @@ void protobuf_AddDesc_funapi_2fnetwork_2ffun_5fmessage_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n funapi/network/fun_message.proto\"p\n\nFu"
-    "nMessage\022\013\n\003sid\030\001 \001(\014\022\017\n\007msgtype\030\002 \001(\t\022\013"
-    "\n\003seq\030\003 \001(\r\022\013\n\003ack\030\004 \001(\r\022\016\n\006urgent\030\005 \001(\010"
-    "\022\020\n\010msgtype2\030\006 \001(\005*\010\010\010\020\200\200\200\200\002", 148);
+    "\n funapi/network/fun_message.proto\"\212\001\n\nF"
+    "unMessage\022\013\n\003sid\030\001 \001(\014\022\017\n\007msgtype\030\002 \001(\t\022"
+    "\013\n\003seq\030\003 \001(\r\022\013\n\003ack\030\004 \001(\r\022\016\n\006urgent\030\005 \001("
+    "\010\022\020\n\010msgtype2\030\006 \001(\005\022\030\n\020udp_handshake_id\030"
+    "\007 \001(\014*\010\010\010\020\200\200\200\200\002", 175);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "funapi/network/fun_message.proto", &protobuf_RegisterTypes);
   FunMessage::default_instance_ = new FunMessage();
@@ -108,6 +110,7 @@ const int FunMessage::kSeqFieldNumber;
 const int FunMessage::kAckFieldNumber;
 const int FunMessage::kUrgentFieldNumber;
 const int FunMessage::kMsgtype2FieldNumber;
+const int FunMessage::kUdpHandshakeIdFieldNumber;
 #endif  // !_MSC_VER
 
 FunMessage::FunMessage()
@@ -135,6 +138,7 @@ void FunMessage::SharedCtor() {
   ack_ = 0u;
   urgent_ = false;
   msgtype2_ = 0;
+  udp_handshake_id_ = const_cast< ::fun::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -149,6 +153,9 @@ void FunMessage::SharedDtor() {
   }
   if (msgtype_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete msgtype_;
+  }
+  if (udp_handshake_id_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    delete udp_handshake_id_;
   }
   if (this != default_instance_) {
   }
@@ -187,7 +194,7 @@ void FunMessage::Clear() {
     ::memset(&first, 0, n);                                \
   } while (0)
 
-  if (_has_bits_[0 / 32] & 63) {
+  if (_has_bits_[0 / 32] & 127) {
     ZR_(seq_, msgtype2_);
     if (has_sid()) {
       if (sid_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
@@ -197,6 +204,11 @@ void FunMessage::Clear() {
     if (has_msgtype()) {
       if (msgtype_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
         msgtype_->clear();
+      }
+    }
+    if (has_udp_handshake_id()) {
+      if (udp_handshake_id_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+        udp_handshake_id_->clear();
       }
     }
   }
@@ -303,6 +315,19 @@ bool FunMessage::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(58)) goto parse_udp_handshake_id;
+        break;
+      }
+
+      // optional bytes udp_handshake_id = 7;
+      case 7: {
+        if (tag == 58) {
+         parse_udp_handshake_id:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_udp_handshake_id()));
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -373,6 +398,12 @@ void FunMessage::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(6, this->msgtype2(), output);
   }
 
+  // optional bytes udp_handshake_id = 7;
+  if (has_udp_handshake_id()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      7, this->udp_handshake_id(), output);
+  }
+
   // Extension range [8, 536870912)
   _extensions_.SerializeWithCachedSizes(
       8, 536870912, output);
@@ -423,6 +454,13 @@ void FunMessage::SerializeWithCachedSizes(
   // optional int32 msgtype2 = 6;
   if (has_msgtype2()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(6, this->msgtype2(), target);
+  }
+
+  // optional bytes udp_handshake_id = 7;
+  if (has_udp_handshake_id()) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        7, this->udp_handshake_id(), target);
   }
 
   // Extension range [8, 536870912)
@@ -481,6 +519,13 @@ int FunMessage::ByteSize() const {
           this->msgtype2());
     }
 
+    // optional bytes udp_handshake_id = 7;
+    if (has_udp_handshake_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->udp_handshake_id());
+    }
+
   }
   total_size += _extensions_.ByteSize();
 
@@ -528,6 +573,9 @@ void FunMessage::MergeFrom(const FunMessage& from) {
     if (from.has_msgtype2()) {
       set_msgtype2(from.msgtype2());
     }
+    if (from.has_udp_handshake_id()) {
+      set_udp_handshake_id(from.udp_handshake_id());
+    }
   }
   _extensions_.MergeFrom(from._extensions_);
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -559,6 +607,7 @@ void FunMessage::Swap(FunMessage* other) {
     std::swap(ack_, other->ack_);
     std::swap(urgent_, other->urgent_);
     std::swap(msgtype2_, other->msgtype2_);
+    std::swap(udp_handshake_id_, other->udp_handshake_id_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

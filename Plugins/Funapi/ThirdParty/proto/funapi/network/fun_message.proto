@@ -22,6 +22,7 @@ message FunMessage {
   optional uint32 ack = 4;
   optional bool urgent = 5;
   optional int32 msgtype2 = 6;
+  optional bytes udp_handshake_id = 7;
 
   ////////////////////////////////////////////////////////////////////
   // CAUTION: EXTENSIONS FROM 8 THROUGH 15 ARE RESERVED BY THE ENGINE.

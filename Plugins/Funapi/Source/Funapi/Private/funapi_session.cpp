@@ -472,8 +472,24 @@ FunapiMessage::FunapiMessage(const FunEncoding encoding, const fun::vector<uint8
     }
     else if (encoding_ == FunEncoding::kProtobuf)
     {
-        protobuf_message_ = std::make_shared<FunMessage>();
-        protobuf_message_->ParseFromArray(body.data(), static_cast<int>(body.size()));
+        std::shared_ptr<FunMessage> protobuf_message = std::make_shared<FunMessage>();
+
+        int body_size = static_cast<int>(body.size());
+        if (body.back() == '\0')
+        {
+          // Json deserialize 의 조건 null-terminate string 을 만족하는 동시에
+          // protobuf deserialize 에 영향을 주지 않기 위해 다음과 같이 구현됨.
+          //
+          // body(메세지 버퍼) 는 null-terminate 캐릭터가 추가되고
+          // protobuf 는 null-terminate 캐릭터를 제외한 데이터를 이용해 deserialize
+
+          body_size -= 1;
+        }
+
+        if (protobuf_message->ParseFromArray(body.data(), body_size))
+        {
+          protobuf_message_ = protobuf_message;
+        }
     }
     else
     {
@@ -1918,6 +1934,11 @@ void FunapiTransport::OnReceived(const TransportProtocol protocol,
     }
   } else if (encoding == FunEncoding::kProtobuf) {
     auto proto = message->GetProtobufMessage();
+    if (!proto)
+    {
+      DebugUtils::Log("Protobuf ParseError");
+      return;
+    }
 
     msg_type = proto->msgtype();
 

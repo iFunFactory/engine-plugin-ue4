@@ -24,7 +24,8 @@
 #include "test_messages.pb.h"
 #include "funapi/service/multicast_message.pb.h"
 
-const fun::string g_server_ip = "127.0.0.1";
+const fun::string g_server_ip = "plugin-docker.ifunfactory.com";
+
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEchoJson, "Funapi.Echo.E_Json", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
@@ -103,7 +104,7 @@ bool FFunapiSessionTestEchoJson::RunTest(const FString& Parameters)
     is_working = false;
   });
 
-  session->Connect(fun::TransportProtocol::kTcp, 8012, fun::FunEncoding::kJson);
+  session->Connect(fun::TransportProtocol::kTcp, 10201, fun::FunEncoding::kJson);
 
   while (is_working) {
     session->Update();
@@ -114,6 +115,7 @@ bool FFunapiSessionTestEchoJson::RunTest(const FString& Parameters)
 
   return is_ok;
 }
+
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestReconnectJson,
                                  "Funapi.Reconnect.R_Json",
@@ -198,7 +200,7 @@ bool FFunapiSessionTestReconnectJson::RunTest(const FString& Parameters) {
     }
   });
 
-  session->Connect(fun::TransportProtocol::kTcp, 8012, fun::FunEncoding::kJson);
+  session->Connect(fun::TransportProtocol::kTcp, 10201, fun::FunEncoding::kJson);
 
   while (is_working) {
     session->Update();
@@ -242,6 +244,7 @@ bool FFunapiSessionTestReconnectJson::RunTest(const FString& Parameters) {
 
   return is_ok;
 }
+
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEchoProtobuf, "Funapi.Echo.E_Protobuf", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
@@ -314,7 +317,7 @@ bool FFunapiSessionTestEchoProtobuf::RunTest(const FString& Parameters)
     is_working = false;
   });
 
-  session->Connect(fun::TransportProtocol::kTcp, 8022, fun::FunEncoding::kProtobuf);
+  session->Connect(fun::TransportProtocol::kTcp, 10204, fun::FunEncoding::kProtobuf);
 
   while (is_working) {
     session->Update();
@@ -326,6 +329,7 @@ bool FFunapiSessionTestEchoProtobuf::RunTest(const FString& Parameters)
   return is_ok;
 }
 
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiMulticastTestJson, "Funapi.Multicast.MC_Json", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
 bool FFunapiMulticastTestJson::RunTest(const FString& Parameters)
@@ -334,7 +338,7 @@ bool FFunapiMulticastTestJson::RunTest(const FString& Parameters)
   int send_count = 20;
   fun::string server_ip = g_server_ip;
   fun::FunEncoding encoding = fun::FunEncoding::kJson;
-  uint16_t port = 8112;
+  uint16_t port = 10401;
   bool with_session_reliability = false;
   fun::string multicast_test_channel = "multicast";
 
@@ -496,6 +500,7 @@ bool FFunapiMulticastTestJson::RunTest(const FString& Parameters)
   return is_ok;
 }
 
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiMulticastTestProtobuf, "Funapi.Multicast.MC_Protobuf", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
 bool FFunapiMulticastTestProtobuf::RunTest(const FString& Parameters)
@@ -504,7 +509,7 @@ bool FFunapiMulticastTestProtobuf::RunTest(const FString& Parameters)
   int send_count = 20;
   fun::string server_ip = g_server_ip;
   fun::FunEncoding encoding = fun::FunEncoding::kProtobuf;
-  uint16_t port = 8122;
+  uint16_t port = 10404;
   bool with_session_reliability = false;
   fun::string multicast_test_channel = "multicast";
 
@@ -654,6 +659,7 @@ bool FFunapiMulticastTestProtobuf::RunTest(const FString& Parameters)
   return is_ok;
 }
 
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestRecvTimeout, "Funapi.RecvTimeout", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
 bool FFunapiSessionTestRecvTimeout::RunTest(const FString& Parameters)
@@ -707,7 +713,7 @@ bool FFunapiSessionTestRecvTimeout::RunTest(const FString& Parameters)
     is_working = false;
   });
 
-  session->Connect(fun::TransportProtocol::kTcp, 8012, fun::FunEncoding::kJson);
+  session->Connect(fun::TransportProtocol::kTcp, 10201, fun::FunEncoding::kJson);
 
   while (is_working) {
     session->Update();
@@ -719,6 +725,7 @@ bool FFunapiSessionTestRecvTimeout::RunTest(const FString& Parameters)
   return is_ok;
 }
 
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestReliabilityJson, "Funapi.SessionReliability.SR_Json", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
 bool FFunapiSessionTestReliabilityJson::RunTest(const FString& Parameters)
@@ -726,7 +733,7 @@ bool FFunapiSessionTestReliabilityJson::RunTest(const FString& Parameters)
   int send_count = 100;
   fun::string server_ip = g_server_ip;
   fun::FunEncoding encoding = fun::FunEncoding::kJson;
-  uint16_t port = 8212;
+  uint16_t port = 10231;
   bool with_session_reliability = true;
 
   auto send_function =[](
@@ -826,6 +833,7 @@ bool FFunapiSessionTestReliabilityJson::RunTest(const FString& Parameters)
   return is_ok;
 }
 
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestReliabilityProtobuf, "Funapi.SessionReliability.SR_Protobuf", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
 bool FFunapiSessionTestReliabilityProtobuf::RunTest(const FString& Parameters)
@@ -833,7 +841,7 @@ bool FFunapiSessionTestReliabilityProtobuf::RunTest(const FString& Parameters)
   int send_count = 100;
   fun::string server_ip = g_server_ip;
   fun::FunEncoding encoding = fun::FunEncoding::kProtobuf;
-  uint16_t port = 8222;
+  uint16_t port = 10234;
   bool with_session_reliability = true;
 
   auto send_function = [](
@@ -925,6 +933,7 @@ bool FFunapiSessionTestReliabilityProtobuf::RunTest(const FString& Parameters)
   return is_ok;
 }
 
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMulticastReliabilityJson, "Funapi.Multicast.MC_SR_Json", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
 bool FFunapiSessionTestMulticastReliabilityJson::RunTest(const FString& Parameters) {
@@ -932,7 +941,7 @@ bool FFunapiSessionTestMulticastReliabilityJson::RunTest(const FString& Paramete
   int send_count = 100;
   fun::string server_ip = g_server_ip;
   fun::FunEncoding encoding = fun::FunEncoding::kJson;
-  uint16_t port = 8312;
+  uint16_t port = 10431;
   bool with_session_reliability = true;
   fun::string multicast_test_channel = "MulticastReliability";
 
@@ -1092,6 +1101,7 @@ bool FFunapiSessionTestMulticastReliabilityJson::RunTest(const FString& Paramete
   return is_ok;
 }
 
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMulticastReliabilityProtobuf, "Funapi.Multicast.MC_SR_Protobuf", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
 bool FFunapiSessionTestMulticastReliabilityProtobuf::RunTest(const FString& Parameters) {
@@ -1099,7 +1109,7 @@ bool FFunapiSessionTestMulticastReliabilityProtobuf::RunTest(const FString& Para
   int send_count = 100;
   fun::string server_ip = g_server_ip;
   fun::FunEncoding encoding = fun::FunEncoding::kProtobuf;
-  uint16_t port = 8322;
+  uint16_t port = 10434;
   bool with_session_reliability = true;
   fun::string multicast_test_channel = "MulticastReliability";
 
@@ -1248,6 +1258,7 @@ bool FFunapiSessionTestMulticastReliabilityProtobuf::RunTest(const FString& Para
   return is_ok;
 }
 
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMsgtypeIntegerEchoProtobuf, "Funapi.MsgtypeInteger.I_E_Pbuf", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
 bool FFunapiSessionTestMsgtypeIntegerEchoProtobuf::RunTest(const FString& Parameters)
@@ -1319,7 +1330,7 @@ bool FFunapiSessionTestMsgtypeIntegerEchoProtobuf::RunTest(const FString& Parame
     is_working = false;
   });
 
-  session->Connect(fun::TransportProtocol::kTcp, 8422, fun::FunEncoding::kProtobuf);
+  session->Connect(fun::TransportProtocol::kTcp, 10204, fun::FunEncoding::kProtobuf);
 
   while (is_working) {
     session->Update();
@@ -1331,6 +1342,7 @@ bool FFunapiSessionTestMsgtypeIntegerEchoProtobuf::RunTest(const FString& Parame
   return is_ok;
 }
 
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMsgtypeIntegerEchoProtobuf2, "Funapi.MsgtypeInteger.I_E_Pbuf_2", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
 bool FFunapiSessionTestMsgtypeIntegerEchoProtobuf2::RunTest(const FString& Parameters)
@@ -1338,7 +1350,7 @@ bool FFunapiSessionTestMsgtypeIntegerEchoProtobuf2::RunTest(const FString& Param
   int send_count = 100;
   fun::string server_ip = g_server_ip;
   fun::FunEncoding encoding = fun::FunEncoding::kProtobuf;
-  uint16_t port = 8422;
+  uint16_t port = 10204;
   bool with_session_reliability = true;
 
   auto send_function = [](
@@ -1430,6 +1442,7 @@ bool FFunapiSessionTestMsgtypeIntegerEchoProtobuf2::RunTest(const FString& Param
   return is_ok;
 }
 
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestQueueJson,
                                  "Funapi.Queue.Q_Json",
                                  EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
@@ -1496,7 +1509,7 @@ bool FFunapiSessionTestQueueJson::RunTest(const FString& Parameters)
     }
   });
 
-  session->Connect(fun::TransportProtocol::kTcp, 8012, fun::FunEncoding::kJson);
+  session->Connect(fun::TransportProtocol::kTcp, 10201, fun::FunEncoding::kJson);
 
   // send
   {
@@ -1523,6 +1536,7 @@ bool FFunapiSessionTestQueueJson::RunTest(const FString& Parameters)
 
   return is_ok;
 }
+
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestQueueJson10Times,
                                  "Funapi.Queue.Q_Json_10",
@@ -1590,7 +1604,7 @@ bool FFunapiSessionTestQueueJson10Times::RunTest(const FString& Parameters)
     }
   });
 
-  session->Connect(fun::TransportProtocol::kTcp, 8012, fun::FunEncoding::kJson);
+  session->Connect(fun::TransportProtocol::kTcp, 10201, fun::FunEncoding::kJson);
 
   // send
   {
@@ -1639,6 +1653,7 @@ bool FFunapiSessionTestQueueJson10Times::RunTest(const FString& Parameters)
 
   return is_ok;
 }
+
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestQueueJsonMultitransport,
                                  "Funapi.Queue.Q_Json_Multitransport",
@@ -1706,9 +1721,9 @@ bool FFunapiSessionTestQueueJsonMultitransport::RunTest(const FString& Parameter
     }
   });
 
-  session->Connect(fun::TransportProtocol::kTcp, 8012, fun::FunEncoding::kJson);
-  session->Connect(fun::TransportProtocol::kUdp, 8013, fun::FunEncoding::kJson);
-  session->Connect(fun::TransportProtocol::kHttp, 8018, fun::FunEncoding::kJson);
+  session->Connect(fun::TransportProtocol::kTcp, 10201, fun::FunEncoding::kJson);
+  session->Connect(fun::TransportProtocol::kUdp, 11202, fun::FunEncoding::kJson);
+  session->Connect(fun::TransportProtocol::kHttp, 10202, fun::FunEncoding::kJson);
 
   // send
   {
@@ -1729,9 +1744,10 @@ bool FFunapiSessionTestQueueJsonMultitransport::RunTest(const FString& Parameter
       msg.Accept(writer);
       fun::string json_string = buffer.GetString();
 
-      session->SendMessage("echo", json_string, fun::TransportProtocol::kHttp);
+      session->SendMessage("echo", json_string, fun::TransportProtocol::kTcp);
     }
   }
+
   {
     rapidjson::Document msg;
     msg.SetObject();
@@ -1758,11 +1774,12 @@ bool FFunapiSessionTestQueueJsonMultitransport::RunTest(const FString& Parameter
   return is_ok;
 }
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEncJsonSodium,
-                                 "Funapi.Enc.Json.J_Sodium",
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEncJson,
+                                 "Funapi.Enc.Json",
                                  EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
-bool FFunapiSessionTestEncJsonSodium::RunTest(const FString& Parameters)
+bool FFunapiSessionTestEncJson::RunTest(const FString& Parameters)
 {
   fun::string send_string = "Json Echo Message";
   fun::string server_ip = g_server_ip;
@@ -1770,6 +1787,7 @@ bool FFunapiSessionTestEncJsonSodium::RunTest(const FString& Parameters)
   auto session = fun::FunapiSession::Create(server_ip.c_str(), true);
   bool is_ok = true;
   bool is_working = true;
+  int recv_message_count = 0;
 
   session->AddSessionEventCallback
   ([&send_string]
@@ -1802,22 +1820,16 @@ bool FFunapiSessionTestEncJsonSodium::RunTest(const FString& Parameters)
   });
 
   session->AddJsonRecvCallback
-  ([&is_working, &is_ok, &send_string]
+  ([&is_working, &is_ok, &send_string, &recv_message_count]
    (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
     const fun::string &msg_type, const fun::string &json_string)
   {
     if (msg_type.compare("echo") == 0) {
-      is_ok = false;
+      ++recv_message_count;
 
-      rapidjson::Document msg_recv;
-      msg_recv.Parse<0>(json_string.c_str());
-
-      verify(msg_recv.HasMember("message"));
-
-      fun::string recv_string = msg_recv["message"].GetString();
-
-      if (send_string.compare(recv_string) == 0) {
+      // 5개의 암호화 목록을 테스트 한다.
+      if (recv_message_count > 4) {
         is_ok = true;
         is_working = false;
       }
@@ -1826,33 +1838,12 @@ bool FFunapiSessionTestEncJsonSodium::RunTest(const FString& Parameters)
 
   auto option = fun::FunapiTcpTransportOption::Create();
   option->SetEncryptionType(fun::EncryptionType::kAes128Encryption,
-                            "0b8504a9c1108584f4f0a631ead8dd548c0101287b91736566e13ead3f008f5d");
+                            "3ad8edc23e6e6b7544a64e54afbb383b06caa7dd7b0aaccaa678ead0e0aa6831");
   option->SetEncryptionType(fun::EncryptionType::kChacha20Encryption,
-                            "0b8504a9c1108584f4f0a631ead8dd548c0101287b91736566e13ead3f008f5d");
-  session->Connect(fun::TransportProtocol::kTcp, 9012, fun::FunEncoding::kJson, option);
+                            "3ad8edc23e6e6b7544a64e54afbb383b06caa7dd7b0aaccaa678ead0e0aa6831");
+  session->Connect(fun::TransportProtocol::kTcp, 10241, fun::FunEncoding::kJson, option);
 
   // send
-  {
-    for (int i = 0; i < 10; ++i) {
-      // std::to_string is not supported on android, using fun::stringstream instead.
-      fun::stringstream ss_temp;
-      ss_temp <<  "hello world - " << static_cast<int>(i);
-      fun::string temp_string = ss_temp.str();
-
-      rapidjson::Document msg;
-      msg.SetObject();
-      rapidjson::Value message_node(temp_string.c_str(), msg.GetAllocator());
-      msg.AddMember("message", message_node, msg.GetAllocator());
-
-      // Convert JSON document to fun::string
-      rapidjson::StringBuffer buffer;
-      rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-      msg.Accept(writer);
-      fun::string json_string = buffer.GetString();
-
-      session->SendMessage("echo", json_string);
-    }
-  }
   {
     rapidjson::Document msg;
     msg.SetObject();
@@ -1865,7 +1856,11 @@ bool FFunapiSessionTestEncJsonSodium::RunTest(const FString& Parameters)
     msg.Accept(writer);
     fun::string json_string = buffer.GetString();
 
-    session->SendMessage("echo", json_string);
+    session->SendMessage("echo", json_string, fun::TransportProtocol::kTcp, fun::EncryptionType::kIFunEngine1Encryption);
+    session->SendMessage("echo", json_string, fun::TransportProtocol::kTcp, fun::EncryptionType::kIFunEngine2Encryption);
+    session->SendMessage("echo", json_string, fun::TransportProtocol::kTcp, fun::EncryptionType::kChacha20Encryption);
+    session->SendMessage("echo", json_string, fun::TransportProtocol::kTcp, fun::EncryptionType::kAes128Encryption);
+    session->SendMessage("echo", json_string, fun::TransportProtocol::kTcp, fun::EncryptionType::kDummyEncryption);
   }
 
   while (is_working) {
@@ -1878,129 +1873,12 @@ bool FFunapiSessionTestEncJsonSodium::RunTest(const FString& Parameters)
   return is_ok;
 }
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEncJsonChacha20,
-                                 "Funapi.Enc.Json.J_Chacha20",
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEncProtobuf,
+                                 "Funapi.Enc.Protobuf",
                                  EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
-bool FFunapiSessionTestEncJsonChacha20::RunTest(const FString& Parameters)
-{
-  fun::string send_string = "Json Echo Message";
-  fun::string server_ip = g_server_ip;
-
-  auto session = fun::FunapiSession::Create(server_ip.c_str(), true);
-  bool is_ok = true;
-  bool is_working = true;
-
-  session->AddSessionEventCallback
-  ([&send_string]
-   (const std::shared_ptr<fun::FunapiSession> &s,
-    const fun::TransportProtocol protocol,
-    const fun::SessionEventType type,
-    const fun::string &session_id,
-    const std::shared_ptr<fun::FunapiError> &error)
-  {
-  });
-
-  session->AddTransportEventCallback
-  ([&is_ok, &is_working]
-   (const std::shared_ptr<fun::FunapiSession> &s,
-    const fun::TransportProtocol protocol,
-    const fun::TransportEventType type,
-    const std::shared_ptr<fun::FunapiError> &error)
-  {
-    if (type == fun::TransportEventType::kConnectionFailed) {
-      is_ok = false;
-      is_working = false;
-    }
-    else if (type == fun::TransportEventType::kConnectionTimedOut) {
-      is_ok = false;
-      is_working = false;
-    }
-
-    verify(type != fun::TransportEventType::kConnectionFailed);
-    verify(type != fun::TransportEventType::kConnectionTimedOut);
-  });
-
-  session->AddJsonRecvCallback
-  ([&is_working, &is_ok, &send_string]
-   (const std::shared_ptr<fun::FunapiSession> &s,
-    const fun::TransportProtocol protocol,
-    const fun::string &msg_type, const fun::string &json_string)
-  {
-    if (msg_type.compare("echo") == 0) {
-      is_ok = false;
-
-      rapidjson::Document msg_recv;
-      msg_recv.Parse<0>(json_string.c_str());
-
-      verify(msg_recv.HasMember("message"));
-
-      fun::string recv_string = msg_recv["message"].GetString();
-
-      if (send_string.compare(recv_string) == 0) {
-        is_ok = true;
-        is_working = false;
-      }
-    }
-  });
-
-  auto option = fun::FunapiTcpTransportOption::Create();
-  option->SetEncryptionType(fun::EncryptionType::kChacha20Encryption,
-                            "0b8504a9c1108584f4f0a631ead8dd548c0101287b91736566e13ead3f008f5d");
-  session->Connect(fun::TransportProtocol::kTcp, 8712, fun::FunEncoding::kJson, option);
-
-  // send
-  {
-    for (int i = 0; i < 10; ++i) {
-      // std::to_string is not supported on android, using fun::stringstream instead.
-      fun::stringstream ss_temp;
-      ss_temp <<  "hello world - " << static_cast<int>(i);
-      fun::string temp_string = ss_temp.str();
-
-      rapidjson::Document msg;
-      msg.SetObject();
-      rapidjson::Value message_node(temp_string.c_str(), msg.GetAllocator());
-      msg.AddMember("message", message_node, msg.GetAllocator());
-
-      // Convert JSON document to fun::string
-      rapidjson::StringBuffer buffer;
-      rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-      msg.Accept(writer);
-      fun::string json_string = buffer.GetString();
-
-      session->SendMessage("echo", json_string);
-    }
-  }
-  {
-    rapidjson::Document msg;
-    msg.SetObject();
-    rapidjson::Value message_node(send_string.c_str(), msg.GetAllocator());
-    msg.AddMember("message", message_node, msg.GetAllocator());
-
-    // Convert JSON document to fun::string
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    msg.Accept(writer);
-    fun::string json_string = buffer.GetString();
-
-    session->SendMessage("echo", json_string);
-  }
-
-  while (is_working) {
-    session->Update();
-    std::this_thread::sleep_for(std::chrono::milliseconds(16)); // 60fps
-  }
-
-  session->Close();
-
-  return is_ok;
-}
-
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEncProtobufChacha20,
-                                 "Funapi.Enc.Protobuf.P_Chacha20",
-                                 EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
-
-bool FFunapiSessionTestEncProtobufChacha20::RunTest(const FString& Parameters)
+bool FFunapiSessionTestEncProtobuf::RunTest(const FString& Parameters)
 {
   fun::string send_string = "Protobuf Echo Message";
   fun::string server_ip = g_server_ip;
@@ -2008,6 +1886,7 @@ bool FFunapiSessionTestEncProtobufChacha20::RunTest(const FString& Parameters)
   auto session = fun::FunapiSession::Create(server_ip.c_str(), true);
   bool is_ok = true;
   bool is_working = true;
+  int recv_message_count = 0;
 
   session->AddSessionEventCallback
   ([&send_string]
@@ -2040,53 +1919,42 @@ bool FFunapiSessionTestEncProtobufChacha20::RunTest(const FString& Parameters)
   });
 
   session->AddProtobufRecvCallback
-  ([&is_working, &is_ok, &send_string]
+  ([&is_working, &is_ok, &send_string, &recv_message_count]
    (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol transport_protocol,
     const FunMessage &fun_message)
   {
     if (fun_message.msgtype().compare("pbuf_echo") == 0) {
       PbufEchoMessage echo = fun_message.GetExtension(pbuf_echo);
+      ++recv_message_count;
 
-      if (send_string.compare(echo.msg()) == 0) {
+      // 5개의 암호화 목록을 테스트 한다.
+      if (recv_message_count > 4) {
         is_ok = true;
         is_working = false;
       }
     }
-    else {
-      is_ok = false;
-      is_working = false;
-      verify(is_ok);
-    }
   });
 
   auto option = fun::FunapiTcpTransportOption::Create();
+  option->SetEncryptionType(fun::EncryptionType::kAes128Encryption,
+    "a1f38ae4910dd67ff915e719a86529dce8a2e4efe3d9a42e5af9395422691c0e");
   option->SetEncryptionType(fun::EncryptionType::kChacha20Encryption,
-                            "0b8504a9c1108584f4f0a631ead8dd548c0101287b91736566e13ead3f008f5d");
-  session->Connect(fun::TransportProtocol::kTcp, 8722, fun::FunEncoding::kProtobuf, option);
+    "a1f38ae4910dd67ff915e719a86529dce8a2e4efe3d9a42e5af9395422691c0e");
+  session->Connect(fun::TransportProtocol::kTcp, 10304, fun::FunEncoding::kProtobuf, option);
 
   // send
-  {
-    for (int i = 0; i < 10; ++i) {
-      // std::to_string is not supported on android, using fun::stringstream instead.
-      fun::stringstream ss_temp;
-      ss_temp << "hello proto - " << static_cast<int>(i);
-      fun::string temp_string = ss_temp.str();
-
-      FunMessage msg;
-      msg.set_msgtype("pbuf_echo");
-      PbufEchoMessage *echo = msg.MutableExtension(pbuf_echo);
-      echo->set_msg(temp_string.c_str());
-
-      session->SendMessage(msg);
-    }
-  }
   {
     FunMessage msg;
     msg.set_msgtype("pbuf_echo");
     PbufEchoMessage *echo = msg.MutableExtension(pbuf_echo);
     echo->set_msg(send_string.c_str());
-    session->SendMessage(msg);
+
+    session->SendMessage(msg, fun::TransportProtocol::kTcp, fun::EncryptionType::kIFunEngine1Encryption);
+    session->SendMessage(msg, fun::TransportProtocol::kTcp, fun::EncryptionType::kIFunEngine2Encryption);
+    session->SendMessage(msg, fun::TransportProtocol::kTcp, fun::EncryptionType::kChacha20Encryption);
+    session->SendMessage(msg, fun::TransportProtocol::kTcp, fun::EncryptionType::kAes128Encryption);
+    session->SendMessage(msg, fun::TransportProtocol::kTcp, fun::EncryptionType::kDummyEncryption);
   }
 
   while (is_working) {
@@ -2099,226 +1967,6 @@ bool FFunapiSessionTestEncProtobufChacha20::RunTest(const FString& Parameters)
   return is_ok;
 }
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEncJsonAes128,
-                                 "Funapi.Enc.Json.J_Aes128",
-                                 EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
-
-bool FFunapiSessionTestEncJsonAes128::RunTest(const FString& Parameters)
-{
-  fun::string send_string = "Json Echo Message";
-  fun::string server_ip = g_server_ip;
-
-  auto session = fun::FunapiSession::Create(server_ip.c_str(), true);
-  bool is_ok = true;
-  bool is_working = true;
-
-  session->AddSessionEventCallback
-  ([&send_string]
-   (const std::shared_ptr<fun::FunapiSession> &s,
-    const fun::TransportProtocol protocol,
-    const fun::SessionEventType type,
-    const fun::string &session_id,
-    const std::shared_ptr<fun::FunapiError> &error)
-  {
-  });
-
-  session->AddTransportEventCallback
-  ([&is_ok, &is_working]
-   (const std::shared_ptr<fun::FunapiSession> &s,
-    const fun::TransportProtocol protocol,
-    const fun::TransportEventType type,
-    const std::shared_ptr<fun::FunapiError> &error)
-  {
-    if (type == fun::TransportEventType::kConnectionFailed) {
-      is_ok = false;
-      is_working = false;
-    }
-    else if (type == fun::TransportEventType::kConnectionTimedOut) {
-      is_ok = false;
-      is_working = false;
-    }
-
-    verify(type != fun::TransportEventType::kConnectionFailed);
-    verify(type != fun::TransportEventType::kConnectionTimedOut);
-  });
-
-  session->AddJsonRecvCallback
-  ([&is_working, &is_ok, &send_string]
-   (const std::shared_ptr<fun::FunapiSession> &s,
-    const fun::TransportProtocol protocol,
-    const fun::string &msg_type, const fun::string &json_string)
-  {
-    if (msg_type.compare("echo") == 0) {
-      is_ok = false;
-
-      rapidjson::Document msg_recv;
-      msg_recv.Parse<0>(json_string.c_str());
-
-      verify(msg_recv.HasMember("message"));
-
-      fun::string recv_string = msg_recv["message"].GetString();
-
-      if (send_string.compare(recv_string) == 0) {
-        is_ok = true;
-        is_working = false;
-      }
-    }
-  });
-
-  auto option = fun::FunapiTcpTransportOption::Create();
-  option->SetEncryptionType(fun::EncryptionType::kAes128Encryption,
-                            "0b8504a9c1108584f4f0a631ead8dd548c0101287b91736566e13ead3f008f5d");
-  session->Connect(fun::TransportProtocol::kTcp, 8812, fun::FunEncoding::kJson, option);
-
-  // send
-  {
-    for (int i = 0; i < 10; ++i) {
-      // std::to_string is not supported on android, using fun::stringstream instead.
-      fun::stringstream ss_temp;
-      ss_temp <<  "hello world - " << static_cast<int>(i);
-      fun::string temp_string = ss_temp.str();
-
-      rapidjson::Document msg;
-      msg.SetObject();
-      rapidjson::Value message_node(temp_string.c_str(), msg.GetAllocator());
-      msg.AddMember("message", message_node, msg.GetAllocator());
-
-      // Convert JSON document to fun::string
-      rapidjson::StringBuffer buffer;
-      rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-      msg.Accept(writer);
-      fun::string json_string = buffer.GetString();
-
-      session->SendMessage("echo", json_string);
-    }
-  }
-  {
-    rapidjson::Document msg;
-    msg.SetObject();
-    rapidjson::Value message_node(send_string.c_str(), msg.GetAllocator());
-    msg.AddMember("message", message_node, msg.GetAllocator());
-
-    // Convert JSON document to fun::string
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    msg.Accept(writer);
-    fun::string json_string = buffer.GetString();
-
-    session->SendMessage("echo", json_string);
-  }
-
-  while (is_working) {
-    session->Update();
-    std::this_thread::sleep_for(std::chrono::milliseconds(16)); // 60fps
-  }
-
-  session->Close();
-
-  return is_ok;
-}
-
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEncProtobufAes128,
-                                 "Funapi.Enc.Protobuf.P_Aes128",
-                                 EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
-
-bool FFunapiSessionTestEncProtobufAes128::RunTest(const FString& Parameters)
-{
-  fun::string send_string = "Protobuf Echo Message";
-  fun::string server_ip = g_server_ip;
-
-  auto session = fun::FunapiSession::Create(server_ip.c_str(), true);
-  bool is_ok = true;
-  bool is_working = true;
-
-  session->AddSessionEventCallback
-  ([&send_string]
-   (const std::shared_ptr<fun::FunapiSession> &s,
-    const fun::TransportProtocol protocol,
-    const fun::SessionEventType type,
-    const fun::string &session_id,
-    const std::shared_ptr<fun::FunapiError> &error)
-  {
-  });
-
-  session->AddTransportEventCallback
-  ([&is_ok, &is_working]
-   (const std::shared_ptr<fun::FunapiSession> &s,
-    const fun::TransportProtocol protocol,
-    const fun::TransportEventType type,
-    const std::shared_ptr<fun::FunapiError> &error)
-  {
-    if (type == fun::TransportEventType::kConnectionFailed) {
-      is_ok = false;
-      is_working = false;
-    }
-    else if (type == fun::TransportEventType::kConnectionTimedOut) {
-      is_ok = false;
-      is_working = false;
-    }
-
-    verify(type != fun::TransportEventType::kConnectionFailed);
-    verify(type != fun::TransportEventType::kConnectionTimedOut);
-  });
-
-  session->AddProtobufRecvCallback
-  ([&is_working, &is_ok, &send_string]
-   (const std::shared_ptr<fun::FunapiSession> &s,
-    const fun::TransportProtocol transport_protocol,
-    const FunMessage &fun_message)
-  {
-    if (fun_message.msgtype().compare("pbuf_echo") == 0) {
-      PbufEchoMessage echo = fun_message.GetExtension(pbuf_echo);
-
-      if (send_string.compare(echo.msg()) == 0) {
-        is_ok = true;
-        is_working = false;
-      }
-    }
-    else {
-      is_ok = false;
-      is_working = false;
-      verify(is_ok);
-    }
-  });
-
-  auto option = fun::FunapiTcpTransportOption::Create();
-  option->SetEncryptionType(fun::EncryptionType::kAes128Encryption,
-                            "0b8504a9c1108584f4f0a631ead8dd548c0101287b91736566e13ead3f008f5d");
-  session->Connect(fun::TransportProtocol::kTcp, 8822, fun::FunEncoding::kProtobuf, option);
-
-  // send
-  {
-    for (int i = 0; i < 10; ++i) {
-      // std::to_string is not supported on android, using fun::stringstream instead.
-      fun::stringstream ss_temp;
-      ss_temp << "hello proto - " << static_cast<int>(i);
-      fun::string temp_string = ss_temp.str();
-
-      FunMessage msg;
-      msg.set_msgtype("pbuf_echo");
-      PbufEchoMessage *echo = msg.MutableExtension(pbuf_echo);
-      echo->set_msg(temp_string.c_str());
-
-      session->SendMessage(msg);
-    }
-  }
-  {
-    FunMessage msg;
-    msg.set_msgtype("pbuf_echo");
-    PbufEchoMessage *echo = msg.MutableExtension(pbuf_echo);
-    echo->set_msg(send_string.c_str());
-    session->SendMessage(msg);
-  }
-
-  while (is_working) {
-    session->Update();
-    std::this_thread::sleep_for(std::chrono::milliseconds(16)); // 60fps
-  }
-
-  session->Close();
-
-  return is_ok;
-}
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMultithread,
   "Funapi.Multithread.MT_Session",
@@ -2488,7 +2136,7 @@ bool FFunapiSessionTestMultithread::RunTest(const FString& Parameters) {
     fun::TransportProtocol protocol = fun::TransportProtocol::kTcp;
     fun::FunEncoding encoding = fun::FunEncoding::kProtobuf;
     fun::string server_ip = g_server_ip;
-    int server_port = 8022;
+    int server_port = 10204;
     bool with_session_reliability = false;
 
     v_completed[i] = false;
@@ -2529,6 +2177,7 @@ bool FFunapiSessionTestMultithread::RunTest(const FString& Parameters) {
 
   return true;
 }
+
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMultithreadUpdateAll, "Funapi.Multithread.MT_UpdateAll", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
@@ -2695,7 +2344,7 @@ bool FFunapiSessionTestMultithreadUpdateAll::RunTest(const FString& Parameters) 
     fun::TransportProtocol protocol = fun::TransportProtocol::kTcp;
     fun::FunEncoding encoding = fun::FunEncoding::kProtobuf;
     fun::string server_ip = g_server_ip;
-    int server_port = 8022;
+    int server_port = 10204;
     bool with_session_reliability = false;
 
     v_completed[i] = false;
@@ -2738,6 +2387,7 @@ bool FFunapiSessionTestMultithreadUpdateAll::RunTest(const FString& Parameters) 
 
   return true;
 }
+
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestReconnectTcpSend10Times, "Funapi.Reconnect.TcpSend10Times", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
@@ -2831,7 +2481,7 @@ bool FFunapiSessionTestReconnectTcpSend10Times::RunTest(const FString& Parameter
     }
   });
 
-  session->Connect(fun::TransportProtocol::kTcp, 8012, fun::FunEncoding::kJson);
+  session->Connect(fun::TransportProtocol::kTcp, 10201, fun::FunEncoding::kJson);
 
   for (int i = 0; i<10; ++i) send_function(session, i);
 
@@ -2872,6 +2522,7 @@ bool FFunapiSessionTestReconnectTcpSend10Times::RunTest(const FString& Parameter
 
   return is_ok;
 }
+
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestReconnectHttpSend10Times, "Funapi.Reconnect.HttpSend10Times", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
@@ -2969,7 +2620,7 @@ bool FFunapiSessionTestReconnectHttpSend10Times::RunTest(const FString& Paramete
     }
   });
 
-  session->Connect(fun::TransportProtocol::kHttp, 8018, fun::FunEncoding::kJson);
+  session->Connect(fun::TransportProtocol::kHttp, 10202, fun::FunEncoding::kJson);
 
   for (int i = 0; i<10; ++i) send_function(session, i);
 
@@ -3011,6 +2662,7 @@ bool FFunapiSessionTestReconnectHttpSend10Times::RunTest(const FString& Paramete
   return is_ok;
 }
 
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiCompressionTestDict, "Funapi.Experimental.CompressionDict", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
 bool FFunapiCompressionTestDict::RunTest(const FString& Parameters) {
@@ -3051,7 +2703,8 @@ bool FFunapiCompressionTestDict::RunTest(const FString& Parameters) {
 #endif
 }
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiTestTLSJson, "Funapi.Experimental.TLS_Json", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiTestTLSJson, "Funapi.TLS.Json", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
 bool FFunapiTestTLSJson::RunTest(const FString& Parameters) {
 #if FUNAPI_HAVE_TCP_TLS
@@ -3117,7 +2770,7 @@ bool FFunapiTestTLSJson::RunTest(const FString& Parameters) {
 
   auto option = fun::FunapiTcpTransportOption::Create();
   option->SetUseTLS(true);
-  session->Connect(fun::TransportProtocol::kTcp, 28012, fun::FunEncoding::kJson, option);
+  session->Connect(fun::TransportProtocol::kTcp, 10801, fun::FunEncoding::kJson, option);
 
   // send
   {

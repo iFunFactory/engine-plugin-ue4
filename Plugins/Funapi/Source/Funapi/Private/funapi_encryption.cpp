@@ -100,6 +100,7 @@ public:
 
 
 Encryptor0::Encryptor0() {
+  handshake_completed_ = true;
 }
 
 

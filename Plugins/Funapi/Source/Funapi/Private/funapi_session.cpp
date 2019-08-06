@@ -9,6 +9,7 @@
 #endif
 
 #include "funapi_session.h"
+#include "funapi_send_flag_manager.h"
 #include "funapi_utils.h"
 #include "funapi_tasks.h"
 #include "funapi_http.h"
@@ -775,7 +776,6 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   void Update();
   void UpdateTasks();
   void UpdateTrasnports();
-  void UpdateSocketSelect();
   static void UpdateAll();
 
   void SendMessage(const fun::string &msg_type,
@@ -997,6 +997,8 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   fun::vector<std::shared_ptr<FunapiUnsentQueue>> redirect_queues_;
   fun::vector<fun::string> redirect_cur_tags_;
   fun::vector<fun::string> redirect_target_tags_;
+
+  std::shared_ptr<FunapiSendFlagManager> send_flag_manager_ = nullptr;
 
   void OnRedirect();
 
@@ -2481,6 +2483,12 @@ void FunapiTcpTransport::Send(bool send_all)
 
   if (!send_handshake_queue_->Empty())
   {
+    // 이후 메시지를 처리하기 위해서 다시 Send 플레그를 올려준다.
+    std::shared_ptr<FunapiSendFlagManager> send_flag_manager =
+      FunapiSendFlagManager::Get();
+
+    send_flag_manager->WakeUp();
+
     while (!send_handshake_queue_->Empty())
     {
       msg = send_handshake_queue_->Front();
@@ -2496,6 +2504,12 @@ void FunapiTcpTransport::Send(bool send_all)
   }
   else if (!send_priority_queue_->Empty())
   {
+    // 이후 메시지를 처리하기 위해서 다시 Send 플레그를 올려준다.
+    std::shared_ptr<FunapiSendFlagManager> send_flag_manager =
+      FunapiSendFlagManager::Get();
+
+    send_flag_manager->WakeUp();
+
     if (false == encrytion_->IsHandShakeCompleted())
     {
       return;
@@ -2790,8 +2804,13 @@ void FunapiUdpTransport::Send(bool send_all) {
 
   while (!send_handshake_queue_->Empty())
   {
-    msg = send_handshake_queue_->Front();
+    // 이후 메시지를 처리하기 위해서 다시 Send 플레그를 올려준다.
+    std::shared_ptr<FunapiSendFlagManager> send_flag_manager =
+        FunapiSendFlagManager::Get();
 
+    send_flag_manager->WakeUp();
+
+    msg = send_handshake_queue_->Front();
     if (FunapiTransport::EncodeThenSendMessage(msg)) {
       send_handshake_queue_->PopFront();
     }
@@ -3502,6 +3521,10 @@ void FunapiSessionImpl::Initialize()
     session_id_ = FunapiSessionId::Create();
 
     network_thread_ = FunapiThread::Get("_network");
+
+    // FunapiSession : FunapiSendFlagManager  -> N : 1 의 구조를 가진다.
+    // 모든 FunapiSession 이 제거 되었을 때 FunapiSendFlagManager 도 제거된다.
+    send_flag_manager_ = FunapiSendFlagManager::Get();
 }
 
 
@@ -3782,6 +3805,7 @@ void FunapiSessionImpl::SendMessage(std::shared_ptr<FunapiMessage> &message, con
         if (transport)
         {
             transport->SendMessage(message, priority, handshake);
+            send_flag_manager_->WakeUp();
         }
         else
         {
@@ -3805,6 +3829,7 @@ void FunapiSessionImpl::SendMessage(std::shared_ptr<FunapiMessage> &message, con
         PushTaskQueue([this, protocol_for_send, message]()->bool
         {
             send_queues_[static_cast<int>(protocol_for_send)]->PushBack(message);
+            send_flag_manager_->WakeUp();
             return true;
         });
     }
@@ -4471,24 +4496,11 @@ void FunapiSessionImpl::UpdateTrasnports() {
 }
 
 
-void FunapiSessionImpl::UpdateSocketSelect() {
-  if (network_thread_) {
-    if (network_thread_->Size() == 0) {
-      network_thread_->Push([]()->bool {
-        FunapiSocket::Select();
-        return true;
-      });
-    }
-  }
-}
-
-
 void FunapiSessionImpl::Update() {
   auto self = shared_from_this();
 
   UpdateTasks();
   UpdateTrasnports();
-  UpdateSocketSelect();
 }
 
 
@@ -4743,6 +4755,8 @@ void FunapiSessionImpl::OnSessionEvent(const TransportProtocol protocol,
     PushTaskQueue([this, protocol, type, session_id, error]()->bool {
       if (auto s = session_.lock()) {
         on_session_event_(s, protocol, type, session_id, error);
+        // send buffer 에 있는 메세지를 모두 전송 시도 한다.
+        send_flag_manager_->WakeUp();
       }
       return true;
     });
@@ -5124,15 +5138,6 @@ void FunapiSessionImpl::UpdateAll() {
       s->UpdateTrasnports();
     }
   }
-
-  if (auto nt = FunapiThread::Get("_network")) {
-    if (nt->Size() == 0) {
-      nt->Push([]()->bool {
-        FunapiSocket::Select();
-        return true;
-      });
-    }
-  }
 }
 
 
@@ -5226,6 +5231,7 @@ void FunapiSessionImpl::SendUnsentQueueMessages()
                 PushTaskQueue([this, protocol, message]()->bool
                 {
                     send_queues_[static_cast<int>(protocol)]->PushBack(message->GetMessage());
+                    send_flag_manager_->WakeUp();
                     return true;
                 });
 

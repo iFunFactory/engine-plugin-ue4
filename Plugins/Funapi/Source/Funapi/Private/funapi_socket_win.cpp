@@ -1,11 +1,10 @@
-// Copyright (C) 2013-2019 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2019 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
-#ifndef FUNAPI_UE4_PLATFORM_PS4
-#ifndef FUNAPI_PLATFORM_WINDOWS
+#ifdef FUNAPI_PLATFORM_WINDOWS
 
 #ifdef FUNAPI_UE4
 #include "FunapiPrivatePCH.h"
@@ -1268,4 +1267,3 @@ void FunapiUdp::OnSelect(const fd_set rset, const fd_set wset, const fd_set eset
 }  // namespace fun
 
 #endif // FUNAPI_PLATFORM_WINDOWS
-#endif // FUNAPI_UE4_PLATFORM_PS4

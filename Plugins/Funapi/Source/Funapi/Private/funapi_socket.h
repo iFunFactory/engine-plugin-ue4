@@ -85,7 +85,12 @@ class FunapiTcp : public std::enable_shared_from_this<FunapiTcp> {
             const SendCompletionHandler &send_completion_handler);
 
   int GetSocket();
+
+#ifdef FUNAPI_PLATFORM_WINDOWS
+  void OnSelect(HANDLE handle);
+#else
   void OnSelect(const fd_set rset, const fd_set wset, const fd_set eset);
+#endif
 
  private:
   std::shared_ptr<FunapiTcpImpl> impl_;
@@ -129,7 +134,11 @@ class FunapiUdp : public std::enable_shared_from_this<FunapiUdp> {
   bool Send(const fun::vector<uint8_t> &body, const SendCompletionHandler &send_completion_handler);
 
   int GetSocket();
+#ifdef FUNAPI_PLATFORM_WINDOWS
+  void OnSelect(HANDLE handle);
+#else
   void OnSelect(const fd_set rset, const fd_set wset, const fd_set eset);
+#endif
 
  private:
   std::shared_ptr<FunapiUdpImpl> impl_;

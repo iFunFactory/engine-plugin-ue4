@@ -11,14 +11,11 @@
 #include "FunapiPrivatePCH.h"
 #endif
 
+#include "funapi_send_flag_manager.h"
 #include "funapi_socket.h"
 #include "funapi_utils.h"
 
 #ifdef FUNAPI_UE4
-#if PLATFORM_WINDOWS
-#include "WindowsHWrapper.h"
-#include "AllowWindowsPlatformTypes.h"
-#endif
 // Work around a conflict between a UI namespace defined by engine code and a typedef in OpenSSL
 #define UI UI_ST
 THIRD_PARTY_INCLUDES_START
@@ -55,9 +52,6 @@ THIRD_PARTY_INCLUDES_START
 THIRD_PARTY_INCLUDES_END
 #ifdef UI
 #undef UI
-#endif
-#if PLATFORM_WINDOWS
-#include "HideWindowsPlatformTypes.h"
 #endif
 #else // FUNAPI_UE4
 #include "openssl/ssl.h"
@@ -228,10 +222,12 @@ fun::vector<std::shared_ptr<FunapiSocketImpl>> FunapiSocketImpl::GetSocketImpls(
 }
 
 
-bool FunapiSocketImpl::Select() {
+bool FunapiSocketImpl::Select()
+{
   auto v_sockets = FunapiSocketImpl::GetSocketImpls();
 
-  if (!v_sockets.empty()) {
+  if (!v_sockets.empty())
+  {
     int max_fd = -1;
 
     fd_set rset;
@@ -242,17 +238,37 @@ bool FunapiSocketImpl::Select() {
     FD_ZERO(&wset);
     FD_ZERO(&eset);
 
+    // Add send fd event
+    std::shared_ptr<FunapiSendFlagManager> send_flag_manager =
+      FunapiSendFlagManager::Get();
+    bool initialized_send_event = send_flag_manager->IsInitialized();
+    if (initialized_send_event)
+    {
+      int* pipe_fds = send_flag_manager->GetPipFds();
+
+      // pipe_fds 는 int[2] 크기를 가진다.
+      for (int i = 0; i < 2; ++i)
+      {
+        int fd = pipe_fds[i];
+        if (fd > max_fd)
+          max_fd = fd;
+
+        FD_SET(fd, &rset);
+        FD_SET(fd, &eset);
+      }
+    }
+
     fun::vector<std::shared_ptr<FunapiSocketImpl>> v_select_sockets;
     for (auto s : v_sockets)
     {
       if (s->IsReadySelect())
       {
         int fd = s->GetSocket();
-        if (fd > 0) {
+        if (fd > 0)
+        {
           if (fd > max_fd) max_fd = fd;
 
           FD_SET(fd, &rset);
-          FD_SET(fd, &wset);
           FD_SET(fd, &eset);
 
           v_select_sockets.push_back(s);
@@ -262,12 +278,35 @@ bool FunapiSocketImpl::Select() {
 
     if (!v_select_sockets.empty())
     {
-      struct timeval timeout = { 0, 0 };
-      if (select(max_fd + 1, &rset, &wset, &eset, &timeout) > 0)
+      struct timeval timeout { 0, 500 };
+      int result = select(max_fd + 1, &rset, NULL, &eset, &timeout);
+
+      // ERROR
+      if (result == -1)
       {
-        for (auto s : v_select_sockets) {
-          s->OnSelect(rset, wset, eset);
+        DebugUtils::Log("Wait for events failed");
+        return false;
+      }
+
+      // SEND
+      if (initialized_send_event)
+      {
+        int* pipe_fds = send_flag_manager->GetPipFds();
+        if (FD_ISSET(pipe_fds[0], &rset))
+        {
+          send_flag_manager->ResetWakeUp();
+
+          for (auto s : v_select_sockets)
+          {
+            s->OnSend();
+          }
+          return true;
         }
+      }
+
+      // RECV
+      for (auto s : v_select_sockets) {
+        s->OnSelect(rset, wset, eset);
       }
 
       return true;
@@ -401,16 +440,13 @@ bool FunapiSocketImpl::InitSocket(struct addrinfo *info,
 
 void FunapiSocketImpl::SocketSelect(fd_set rset,
                                     fd_set wset,
-                                    fd_set eset) {
-  if (socket_ > 0) {
-    if (FD_ISSET(socket_, &rset)) {
+                                    fd_set eset)
+{
+  if (socket_ > 0)
+  {
+    if (FD_ISSET(socket_, &rset))
+    {
       OnRecv();
-    }
-  }
-
-  if (socket_ > 0) {
-    if (FD_ISSET(socket_, &wset)) {
-      OnSend();
     }
   }
 }

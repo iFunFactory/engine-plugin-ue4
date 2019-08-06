@@ -10,54 +10,23 @@
 #include "FunapiPrivatePCH.h"
 #endif
 
+#include "funapi_send_flag_manager.h"
 #include "funapi_socket.h"
 #include "funapi_utils.h"
 
 #ifdef FUNAPI_UE4
-#if PLATFORM_WINDOWS
 #include "WindowsHWrapper.h"
 #include "AllowWindowsPlatformTypes.h"
-#endif
 // Work around a conflict between a UI namespace defined by engine code and a typedef in OpenSSL
 #define UI UI_ST
 THIRD_PARTY_INCLUDES_START
-#if FUNAPI_UE4_PLATFORM_ANDROID == 0
 #include "openssl/ssl.h"
 #include "openssl/err.h"
-#else // FUNAPI_UE4_PLATFORM_ANDROID
-// 안드로이드 환경일떄 랩핑된 openssl 을 사용한다.
-#include "openssl/openssl_wrapper.h"
-
-#define SSL_CTX_new Fun_SSL_CTX_new
-#define SSL_new Fun_SSL_new
-#define SSL_set_fd Fun_SSL_set_fd
-#define SSL_library_init Fun_SSL_library_init
-#define SSL_shutdown Fun_SSL_shutdown
-#define SSL_free Fun_SSL_free
-#define SSL_CTX_free Fun_SSL_CTX_free
-#define SSL_connect Fun_SSL_connect
-#define SSL_write Fun_SSL_write
-#define SSL_read Fun_SSL_read
-#define SSLv23_client_method Fun_SSLv23_client_method
-#define SSL_get_current_cipher Fun_SSL_get_current_cipher
-#define SSL_CIPHER_get_name Fun_SSL_CIPHER_get_name
-#define SSL_CTX_load_verify_locations Fun_SSL_CTX_load_verify_locations
-#define SSL_CTX_set_verify Fun_SSL_CTX_set_verify
-#define SSL_CTX_set_verify_depth Fun_SSL_CTX_set_verify_depth
-#define SSL_get_verify_result Fun_SSL_get_verify_result
-#define SSL_get_peer_certificate Fun_SSL_get_peer_certificate
-#define SSL_get_error Fun_SSL_get_error
-#define ERR_error_string Fun_ERR_error_string
-#define SSL_load_error_strings Fun_SSL_load_error_strings
-#define ERR_get_error Fun_ERR_get_error
-#endif // FUNAPI_UE4_PLATFORM_ANDROID
 THIRD_PARTY_INCLUDES_END
 #ifdef UI
 #undef UI
 #endif
-#if PLATFORM_WINDOWS
 #include "HideWindowsPlatformTypes.h"
-#endif
 #else // FUNAPI_UE4
 #include "openssl/ssl.h"
 #include "openssl/err.h"
@@ -145,9 +114,9 @@ class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
 
   int GetSocket();
   virtual bool IsReadySelect();
-  virtual void OnSelect(const fd_set rset,
-                        const fd_set wset,
-                        const fd_set eset) = 0;
+  virtual void OnSelect(HANDLE handle) = 0;
+
+  HANDLE GetEventHandle();
 
  protected:
   bool InitAddrInfo(int socktype,
@@ -162,9 +131,7 @@ class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
                   fun::string &error_string);
   void CloseSocket();
 
-  void SocketSelect(fd_set rset,
-                    fd_set wset,
-                    fd_set eset);
+  void SocketSelect(HANDLE handle);
 
   virtual void OnSend() = 0;
   virtual void OnRecv() = 0;
@@ -172,6 +139,7 @@ class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
   int socket_ = -1;
   struct addrinfo *addrinfo_ = nullptr;
   struct addrinfo *addrinfo_res_ = nullptr;
+  HANDLE event_handle_ = nullptr;
 };
 
 
@@ -227,46 +195,73 @@ fun::vector<std::shared_ptr<FunapiSocketImpl>> FunapiSocketImpl::GetSocketImpls(
 }
 
 
-bool FunapiSocketImpl::Select() {
+bool FunapiSocketImpl::Select()
+{
   auto v_sockets = FunapiSocketImpl::GetSocketImpls();
 
-  if (!v_sockets.empty()) {
-    int max_fd = -1;
-
-    fd_set rset;
-    fd_set wset;
-    fd_set eset;
-
-    FD_ZERO(&rset);
-    FD_ZERO(&wset);
-    FD_ZERO(&eset);
-
+  if (!v_sockets.empty())
+  {
     fun::vector<std::shared_ptr<FunapiSocketImpl>> v_select_sockets;
     for (auto s : v_sockets)
     {
       if (s->IsReadySelect())
       {
-        int fd = s->GetSocket();
-        if (fd > 0) {
-          if (fd > max_fd) max_fd = fd;
-
-          FD_SET(fd, &rset);
-          FD_SET(fd, &wset);
-          FD_SET(fd, &eset);
-
-          v_select_sockets.push_back(s);
-        }
+        v_select_sockets.push_back(s);
       }
     }
 
     if (!v_select_sockets.empty())
     {
-      struct timeval timeout = { 0, 0 };
-      if (select(max_fd + 1, &rset, &wset, &eset, &timeout) > 0)
+      int socket_count = v_select_sockets.size();
+
+      std::shared_ptr<FunapiSendFlagManager> send_flag_manager
+        = FunapiSendFlagManager::Get();
+
+      bool initialized_send_event = send_flag_manager->IsInitialized();
+      int event_count = initialized_send_event ? socket_count + 1 : socket_count;
+      HANDLE* events = new HANDLE[event_count];
+      for (int i = 0; i < socket_count; ++i)
       {
-        for (auto s : v_select_sockets) {
-          s->OnSelect(rset, wset, eset);
+        events[i] = v_select_sockets[i]->GetEventHandle();
+      }
+
+      if (initialized_send_event)
+      {
+        events[socket_count /* last idx */] = send_flag_manager->GetEvent();
+      }
+
+      DWORD wait_result =
+        WSAWaitForMultipleEvents(socket_count + 1 /* send event */,
+          &events[0],
+          NULL,
+          500,
+          NULL);
+
+      // ERROR
+      if (wait_result == WSA_WAIT_FAILED)
+      {
+        DebugUtils::Log("Wait for events failed");
+        return false;
+      }
+
+
+      // SEND
+      DWORD event_index = wait_result - WSA_WAIT_EVENT_0;
+      bool send_event = (event_index == socket_count);
+      if (send_event)
+      {
+        send_flag_manager->ResetWakeUp();
+        for (auto s : v_select_sockets)
+        {
+          s->OnSend();
         }
+        return true;
+      }
+
+      // RECV
+      for (auto s : v_select_sockets)
+      {
+        s->OnSelect(events[event_index]);
       }
 
       return true;
@@ -337,18 +332,22 @@ bool FunapiSocketImpl::InitAddrInfo(int socktype,
 }
 
 
-void FunapiSocketImpl::CloseSocket() {
+void FunapiSocketImpl::CloseSocket()
+{
   // DebugUtils::Log("%s", __FUNCTION__);
 
-  if (socket_ >= 0) {
+  if (socket_ >= 0)
+  {
     // DebugUtils::Log("Socket [%d] closed.", socket_);
 
 #ifdef FUNAPI_PLATFORM_WINDOWS
     closesocket(socket_);
+    WSACloseEvent(event_handle_);
 #else
     close(socket_);
 #endif
     socket_ = -1;
+    event_handle_ = nullptr;
   }
 }
 
@@ -398,20 +397,31 @@ bool FunapiSocketImpl::InitSocket(struct addrinfo *info,
 }
 
 
-void FunapiSocketImpl::SocketSelect(fd_set rset,
-                                    fd_set wset,
-                                    fd_set eset) {
-  if (socket_ > 0) {
-    if (FD_ISSET(socket_, &rset)) {
-      OnRecv();
-    }
-  }
+void FunapiSocketImpl::SocketSelect(HANDLE event)
+{
+  if (socket_ > 0)
+  {
+    WSANETWORKEVENTS networkEvents;
+    networkEvents.lNetworkEvents = 0;
+    if (WSAEnumNetworkEvents(socket_, event, &networkEvents) == 0)
+    {
+      if (networkEvents.lNetworkEvents == FD_READ)
+      {
+        OnRecv();
+      }
 
-  if (socket_ > 0) {
-    if (FD_ISSET(socket_, &wset)) {
-      OnSend();
+      // udp 환경에서 첫 메세지 전송시 FD_ACCEPT_BIT 이벤트 발생
+      if (networkEvents.lNetworkEvents == FD_ACCEPT_BIT)
+      {
+        OnRecv();
+      }
     }
   }
+}
+
+
+HANDLE FunapiSocketImpl::GetEventHandle() {
+  return event_handle_;
 }
 
 
@@ -428,7 +438,7 @@ class FunapiTcpImpl : public FunapiSocketImpl {
   FunapiTcpImpl();
   virtual ~FunapiTcpImpl();
 
-  void OnSelect(const fd_set rset, const fd_set wset, const fd_set eset);
+  void OnSelect(HANDLE handle);
 
   void Connect(const char* hostname_or_ip,
                const int port,
@@ -462,9 +472,7 @@ class FunapiTcpImpl : public FunapiSocketImpl {
                            int &error_code,
                            fun::string &error_string);
 
-  void SocketSelect(fd_set rset,
-                    fd_set wset,
-                    fd_set eset);
+  void SocketSelect(HANDLE handle);
 
   void OnConnectCompletion(const bool is_failed,
                            const bool is_timed_out,
@@ -486,9 +494,7 @@ class FunapiTcpImpl : public FunapiSocketImpl {
   };
   SocketSelectState socket_select_state_ = SocketSelectState::kNone;
 
-  fun::vector<std::function<void(const fd_set rset,
-                                 const fd_set wset,
-                                 const fd_set eset)>> on_socket_select_;
+  fun::vector<std::function<void(HANDLE handle)>> on_socket_select_;
 
   ConnectCompletionHandler completion_handler_ = nullptr;
 
@@ -536,11 +542,9 @@ void FunapiTcpImpl::CleanupSSL() {
 }
 
 
-void FunapiTcpImpl::OnSelect(const fd_set rset,
-                             const fd_set wset,
-                             const fd_set eset) {
+void FunapiTcpImpl::OnSelect(HANDLE handle) {
   if (socket_select_state_ == SocketSelectState::kSelect) {
-    FunapiSocketImpl::SocketSelect(rset, wset, eset);
+    FunapiSocketImpl::SocketSelect(handle);
   }
 }
 
@@ -603,6 +607,14 @@ void FunapiTcpImpl::Connect(struct addrinfo *addrinfo_res) {
     if (FD_ISSET(socket_, &eset)) {
       OnConnectCompletion(true, false, 0, "");
       return;
+    }
+
+    event_handle_ = WSACreateEvent();
+    if (WSAEventSelect(socket_,
+      event_handle_,
+      FD_READ | FD_WRITE ) != 0)
+    {
+      DebugUtils::Log("Socket imple WSA event select failed");
     }
 
     OnConnectCompletion(false, false, 0, "");
@@ -990,7 +1002,7 @@ class FunapiUdpImpl : public FunapiSocketImpl {
                 const RecvHandler &recv_handler);
   virtual ~FunapiUdpImpl();
 
-  void OnSelect(const fd_set rset, const fd_set wset, const fd_set eset);
+  void OnSelect(HANDLE handle);
   bool Send(const fun::vector<uint8_t> &body, const SendCompletionHandler &send_handler);
 
  private:
@@ -1024,6 +1036,14 @@ FunapiUdpImpl::FunapiUdpImpl(const char* hostname_or_ip,
     return;
   }
 
+  event_handle_ = WSACreateEvent();
+  if (WSAEventSelect(socket_,
+    event_handle_,
+    FD_READ | FD_WRITE) != 0)
+  {
+    DebugUtils::Log("Socket imple WSA event select failed");
+  }
+
   init_handler(false, 0, "");
 }
 
@@ -1032,8 +1052,9 @@ FunapiUdpImpl::~FunapiUdpImpl() {
 }
 
 
-void FunapiUdpImpl::OnSelect(const fd_set rset, const fd_set wset, const fd_set eset) {
-  FunapiSocketImpl::SocketSelect(rset, wset, eset);
+void FunapiUdpImpl::OnSelect(HANDLE handle)
+{
+  FunapiSocketImpl::SocketSelect(handle);
 }
 
 
@@ -1212,8 +1233,8 @@ int FunapiTcp::GetSocket() {
 }
 
 
-void FunapiTcp::OnSelect(const fd_set rset, const fd_set wset, const fd_set eset) {
-  impl_->OnSelect(rset, wset, eset);
+void FunapiTcp::OnSelect(HANDLE handle) {
+  impl_->OnSelect(handle);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1260,8 +1281,8 @@ int FunapiUdp::GetSocket() {
 }
 
 
-void FunapiUdp::OnSelect(const fd_set rset, const fd_set wset, const fd_set eset) {
-  impl_->OnSelect(rset, wset, eset);
+void FunapiUdp::OnSelect(HANDLE handle) {
+  impl_->OnSelect(handle);
 }
 
 }  // namespace fun

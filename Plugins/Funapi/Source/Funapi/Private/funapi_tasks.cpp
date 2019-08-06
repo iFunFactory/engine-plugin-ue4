@@ -11,6 +11,7 @@
 #include "funapi_tasks.h"
 #include "funapi_utils.h"
 #include "funapi_session.h"
+#include "funapi_socket.h"
 #include "funapi_announcement.h"
 #include "funapi_downloader.h"
 
@@ -194,7 +195,19 @@ void FunapiThreadImpl::JoinThread() {
 
 
 void FunapiThreadImpl::Thread() {
-  while (run_) {
+  bool is_network = false;
+  if (thread_id_.compare("_network") == 0)
+  {
+    is_network = true;
+  }
+
+  while (run_)
+  {
+    if (is_network)
+    {
+      FunapiSocket::Select();
+    }
+    else
     {
       std::unique_lock<std::mutex> lock(mutex_);
       if (queue_.empty()) {

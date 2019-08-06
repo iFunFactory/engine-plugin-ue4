@@ -98,6 +98,8 @@ fun::string FunapiAddrInfoImpl::GetString() {
 
 class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
  public:
+  typedef FunapiTcp::PingHandler PingHandler;
+
   FunapiSocketImpl();
   virtual ~FunapiSocketImpl();
 
@@ -117,6 +119,9 @@ class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
   virtual void OnSelect(HANDLE handle) = 0;
 
   HANDLE GetEventHandle();
+
+  void SetPingHandler(const PingHandler &ping_handler);
+  void PingUpdate();
 
  protected:
   bool InitAddrInfo(int socktype,
@@ -140,6 +145,8 @@ class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
   struct addrinfo *addrinfo_ = nullptr;
   struct addrinfo *addrinfo_res_ = nullptr;
   HANDLE event_handle_ = nullptr;
+
+  PingHandler ping_handler_;
 };
 
 
@@ -244,6 +251,16 @@ bool FunapiSocketImpl::Select()
         return false;
       }
 
+      // PING
+      if (wait_result == WSA_WAIT_TIMEOUT)
+      {
+        for (auto s : v_select_sockets)
+        {
+          s->PingUpdate();
+        }
+
+        return true;
+      }
 
       // SEND
       DWORD event_index = wait_result - WSA_WAIT_EVENT_0;
@@ -425,6 +442,21 @@ HANDLE FunapiSocketImpl::GetEventHandle() {
 }
 
 
+void FunapiSocketImpl::SetPingHandler(const PingHandler &ping_handler)
+{
+  ping_handler_ = ping_handler;
+}
+
+
+void FunapiSocketImpl::PingUpdate()
+{
+  if (ping_handler_)
+  {
+    ping_handler_();
+  }
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiTcpImpl implementation.
 
@@ -434,6 +466,7 @@ class FunapiTcpImpl : public FunapiSocketImpl {
   typedef FunapiTcp::RecvHandler RecvHandler;
   typedef FunapiTcp::SendHandler SendHandler;
   typedef FunapiTcp::SendCompletionHandler SendCompletionHandler;
+  typedef FunapiTcp::PingHandler PingHandler;
 
   FunapiTcpImpl();
   virtual ~FunapiTcpImpl();
@@ -1236,6 +1269,13 @@ int FunapiTcp::GetSocket() {
 void FunapiTcp::OnSelect(HANDLE handle) {
   impl_->OnSelect(handle);
 }
+
+
+void FunapiTcp::SetPingHandler(const PingHandler &ping_handler)
+{
+  impl_->SetPingHandler(ping_handler);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiUdp implementation.

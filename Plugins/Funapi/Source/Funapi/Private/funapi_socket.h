@@ -55,6 +55,8 @@ class FunapiTcp : public std::enable_shared_from_this<FunapiTcp> {
                              const fun::string &error_string,
                              const int sent_length)> SendCompletionHandler;
 
+  typedef std::function<void()> PingHandler;
+
   FunapiTcp();
   virtual ~FunapiTcp();
 
@@ -85,6 +87,8 @@ class FunapiTcp : public std::enable_shared_from_this<FunapiTcp> {
             const SendCompletionHandler &send_completion_handler);
 
   int GetSocket();
+
+  void SetPingHandler(const PingHandler &ping_handler);
 
 #ifdef FUNAPI_PLATFORM_WINDOWS
   void OnSelect(HANDLE handle);

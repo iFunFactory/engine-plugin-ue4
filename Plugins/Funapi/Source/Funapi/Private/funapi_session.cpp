@@ -3842,12 +3842,12 @@ void FunapiSessionImpl::SendMessage(std::shared_ptr<FunapiMessage> &message, con
             }
         }
 
-        PushTaskQueue([this, protocol_for_send, message]()->bool
+        std::shared_ptr<FunapiTransport> transport = GetTransport(protocol_for_send);
+        if (transport)
         {
-            send_queues_[static_cast<int>(protocol_for_send)]->PushBack(message);
-            send_flag_manager_->WakeUp();
-            return true;
-        });
+          transport->SendMessage(message, priority, handshake);
+          send_flag_manager_->WakeUp();
+        }
     }
 }
 

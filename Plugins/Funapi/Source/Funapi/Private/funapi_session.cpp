@@ -2361,22 +2361,6 @@ void FunapiTcpTransport::Connect() {
 
   tcp_ = FunapiTcp::Create();
   std::weak_ptr<FunapiTransport> weak = shared_from_this();
-
-  // Sesison 의 Update 가 리소스 등의 이유로 인해 Ping 을 보내지 못하는 상황에서
-  // _network thread 에서 Ping 을 전송할 수 있게 handler 를 등록한다.
-  tcp_->SetPingHandler([this, weak]()->bool
-  {
-    if (auto t = weak.lock())
-    {
-      auto state = GetUpdateState();
-      if (state == UpdateState::kPing)
-      {
-        Ping();
-      }
-    }
-    return true;
-  });
-
   tcp_->Connect(hostname_or_ip_.c_str(),
                 port_,
                 connect_timeout_seconds_,
@@ -5265,6 +5249,25 @@ void FunapiSessionImpl::SendUnsentQueueMessages()
             queue->Clear();
         }
     }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// extern function. Used by funapi_socket.cpp, funapi_socket_win.cpp
+
+void OnSessionTicked()
+{
+  fun::vector<std::shared_ptr<FunapiSessionImpl>> impls =
+      FunapiSessionImpl::GetSessionImpls();
+  for (std::shared_ptr<FunapiSessionImpl> impl : impls)
+  {
+    std::shared_ptr<FunapiTransport> tcp_transport =
+        impl->GetTransport(TransportProtocol::kTcp);
+    if (tcp_transport != nullptr)
+    {
+      tcp_transport->Update();
+    }
+  }
 }
 
 

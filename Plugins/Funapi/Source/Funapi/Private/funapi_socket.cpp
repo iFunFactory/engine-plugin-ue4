@@ -124,8 +124,6 @@ fun::string FunapiAddrInfoImpl::GetString() {
 
 class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
  public:
-   typedef FunapiTcp::PingHandler PingHandler;
-
   FunapiSocketImpl();
   virtual ~FunapiSocketImpl();
 
@@ -145,9 +143,6 @@ class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
   virtual void OnSelect(const fd_set rset,
                         const fd_set wset,
                         const fd_set eset) = 0;
-
-  void SetPingHandler(const PingHandler &ping_handler);
-  void PingUpdate();
 
  protected:
   bool InitAddrInfo(int socktype,
@@ -172,8 +167,6 @@ class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
   int socket_ = -1;
   struct addrinfo *addrinfo_ = nullptr;
   struct addrinfo *addrinfo_res_ = nullptr;
-
-  PingHandler ping_handler_;
 };
 
 
@@ -229,8 +222,12 @@ fun::vector<std::shared_ptr<FunapiSocketImpl>> FunapiSocketImpl::GetSocketImpls(
 }
 
 
+// extern function in funapi_session.cpp
+void OnSessionTicked();
 bool FunapiSocketImpl::Select()
 {
+  static FunapiTimer session_tick_timer;
+
   auto v_sockets = FunapiSocketImpl::GetSocketImpls();
 
   if (!v_sockets.empty())
@@ -296,14 +293,12 @@ bool FunapiSocketImpl::Select()
       }
 
       // PING
-      if (result == 0)
+      if (session_tick_timer.IsExpired())
       {
-        for (auto s : v_select_sockets)
-        {
-          s->PingUpdate();
-        }
-
-        return true;
+        // Update 는 1초 간격을 유지.
+        // Ping TimeOut 은 OnSessionTicked 함수 안에서 확인.
+        OnSessionTicked();
+        session_tick_timer.SetTimer(1);
       }
 
       // SEND
@@ -470,21 +465,6 @@ void FunapiSocketImpl::SocketSelect(fd_set rset,
 }
 
 
-void FunapiSocketImpl::SetPingHandler(const PingHandler &ping_handler)
-{
-  ping_handler_ = ping_handler;
-}
-
-
-void FunapiSocketImpl::PingUpdate()
-{
-  if (ping_handler_)
-  {
-    ping_handler_();
-  }
-}
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiTcpImpl implementation.
 
@@ -494,7 +474,6 @@ class FunapiTcpImpl : public FunapiSocketImpl {
   typedef FunapiTcp::RecvHandler RecvHandler;
   typedef FunapiTcp::SendHandler SendHandler;
   typedef FunapiTcp::SendCompletionHandler SendCompletionHandler;
-  typedef FunapiTcp::PingHandler PingHandler;
 
   FunapiTcpImpl();
   virtual ~FunapiTcpImpl();
@@ -1285,11 +1264,6 @@ int FunapiTcp::GetSocket() {
 
 void FunapiTcp::OnSelect(const fd_set rset, const fd_set wset, const fd_set eset) {
   impl_->OnSelect(rset, wset, eset);
-}
-
-
-void FunapiTcp::SetPingHandler(const PingHandler &ping_handler) {
-  impl_->SetPingHandler(ping_handler);
 }
 
 

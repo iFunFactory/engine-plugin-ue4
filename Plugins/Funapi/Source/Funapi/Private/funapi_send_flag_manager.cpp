@@ -32,8 +32,10 @@ void FunapiSendFlagManager::Initialize()
 {
  if (pipe(pipe_fds) == -1)
  {
-    DebugUtils::Log("Failed send flag manger");
-  }
+    DebugUtils::Log("Failed to initilize send flag manger");
+    the_initialized = false;
+    return;
+ }
 
   the_initialized = true;
 }

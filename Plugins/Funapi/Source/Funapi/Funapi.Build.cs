@@ -193,9 +193,6 @@ public class Funapi : ModuleRules
       PublicAdditionalLibraries.Add("websockets");
       PublicAdditionalLibraries.Add("zstd");
 
-      PublicAdditionalLibraries.Add(LibPath + "/lib/Android/ARMv7/libopenssl_wrapper.so");
-      PublicAdditionalLibraries.Add(LibPath + "/lib/Android/ARM64/libopenssl_wrapper.so");
-      AdditionalPropertiesForReceipt.Add("AndroidPlugin", Path.Combine(LibPath, "lib", "Android", "fun_APL.xml"));
     }
     else if (Target.Platform == UnrealTargetPlatform.IOS)
     {

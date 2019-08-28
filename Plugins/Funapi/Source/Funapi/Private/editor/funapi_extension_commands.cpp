@@ -7,10 +7,10 @@
 #if FUNAPI_UE4
 #if WITH_EDITOR
 
+#include "FunapiPrivatePCH.h"
 #include "funapi_plugin.h"
 
 #include "curl/curl.h"
-
 
 #include "Commands/InputChord.h"
 #include "HAL/PlatformFilemanager.h"

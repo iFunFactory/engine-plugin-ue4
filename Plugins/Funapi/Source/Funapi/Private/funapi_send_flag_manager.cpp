@@ -4,6 +4,10 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
+#ifdef FUNAPI_UE4
+#include "FunapiPrivatePCH.h"
+#endif
+
 #include "funapi_send_flag_manager.h"
 #include "funapi_utils.h"
 

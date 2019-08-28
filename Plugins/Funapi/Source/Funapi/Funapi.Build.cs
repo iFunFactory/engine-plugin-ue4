@@ -11,7 +11,9 @@ public class Funapi : ModuleRules
 {
   public Funapi(ReadOnlyTargetRules Target) : base(Target)
   {
+#if UE_4_21_OR_LATER
     PrivatePCHHeaderFile = "Private/FunapiPrivatePCH.h"; // >= 4.21
+#endif
 
     PublicDefinitions.Add("WITH_FUNAPI=1");
     PublicDefinitions.Add("FUNAPI_UE4=1");

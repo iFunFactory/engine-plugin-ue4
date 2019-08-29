@@ -1,4 +1,4 @@
-Funapi plugin unreal engine 4
+﻿Funapi plugin unreal engine 4
 ========================
 
 이 플러그인은 iFun Engine 게임 서버를 사용하는 Unreal Engine 4 사용자를 위한 클라이언트 플러그인입니다.
@@ -9,6 +9,21 @@ Funapi plugin unreal engine 4
 * JSON, Protobuf-net 형식의 메시지 타입 지원
 * ChaCha20, AES-128을 포함한 4종류의 암호화 타입 지원
 * 멀티캐스트, 채팅, 게임내 리소스 다운로드 등 다양한 기능 지원
+
+# 언리언 엔진 지원 버전에 대해서
+
+Funapi plugin 은 다음 버전의 Unreal engine 4 를 지원합니다.
+
+| Unreal engine 4 버전 | Windows |  macOS  | Android |   iOS  |
+|:--------------------|:-------:|:-------:|:-------:|--------:|
+| 4.19   | o | o |o | o |
+| 4.20   | o | o |o | o |
+| 4.21   | o | o |o | o |
+| 4.22   | ▲ | o |o | o |
+
+* Windows 4.22 환경에서 패키징이 안 되는 문제가 있어 확인중에 있습니다.
+
+**지원 엔진 버전 이외의 플러그인 동작은 컴파일 및 패키징 단계에서 오류가 발생할수 있습니다.**
 
 # 다운로드
 

@@ -1518,19 +1518,54 @@ bool FunapiTransport::TryToDecodeHeader(fun::vector<uint8_t> &receiving,
 bool FunapiTransport::TryToDecodeBody(fun::vector<uint8_t> &receiving,
                                       int &next_decoding_offset,
                                       bool &header_decoded,
-                                      HeaderFields &header_fields) {
+                                      HeaderFields &header_fields)
+{
   int received_size = static_cast<int>(receiving.size());
-  // Version header
-  HeaderFields::const_iterator it = header_fields.find(kVersionHeaderField);
-  assert(it != header_fields.end());
-  int version = atoi(it->second.c_str());
-  assert(version == static_cast<int>(FunapiVersion::kProtocolVersion));
+  HeaderFields::const_iterator version_field_itr = header_fields.find(kVersionHeaderField);
+  if (version_field_itr == header_fields.end())
+  {
+    header_decoded_ = false;
+    header_fields.clear();
+    Stop(true, FunapiError::Create(FunapiError::ErrorType::kDeserialize, 0, "Message version header field not found. Stopping the transport."));
+    return true;
+  }
 
-  // Length header
-  it = header_fields.find(kLengthHeaderField);
-  int body_length = atoi(it->second.c_str());
+  long int version = strtol(version_field_itr->second.c_str(), NULL, 10);
+  if (version != static_cast<int>(FunapiVersion::kProtocolVersion))
+  {
+    header_decoded_ = false;
+    header_fields.clear();
+    fun::stringstream ss;
+    ss << "Protocol version was worng" << "(server protocol version: " << version << "). Stopping the transport.";
+    Stop(true, FunapiError::Create(FunapiError::ErrorType::kDeserialize, 0, ss.str()));
+    return true;
+  }
+
+  HeaderFields::const_iterator length_field_itr = header_fields.find(kLengthHeaderField);
+  if (length_field_itr == header_fields.end())
+  {
+    header_decoded_ = false;
+    header_fields.clear();
+    Stop(true, FunapiError::Create(FunapiError::ErrorType::kDeserialize, 0, "Message length header field not found. Stopping the transport."));
+    return true;
+  }
+
+  long int body_length = strtol(length_field_itr->second.c_str(), NULL, 10);
+  if (body_length == 0)
+  {
+    /*
+      문자열이 변환이 유효 했는지 확인.
+    */
+    if (length_field_itr->second.size() != 1 || length_field_itr->second.at(0) != '0')
+    {
+      header_decoded_ = false;
+      header_fields.clear();
+      Stop(true, FunapiError::Create(FunapiError::ErrorType::kDeserialize, 0, "Message header field was invalid. Stopping the transport."));
+      return true;
+    }
+  }
+
   // DebugUtils::Log("We need %d bytes for a message body.", body_length);
-
   if (received_size - next_decoding_offset < body_length)
   {
     // Need more bytes.

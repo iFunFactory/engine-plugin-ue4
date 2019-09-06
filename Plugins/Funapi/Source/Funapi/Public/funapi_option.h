@@ -176,6 +176,7 @@ class FUNAPI_API FunapiError : public std::enable_shared_from_this<FunapiError> 
  public:
   enum class ErrorType : int {
     kDefault,
+    kDeserialize,
     kRedirect,
     kSocket,
     kCurl,

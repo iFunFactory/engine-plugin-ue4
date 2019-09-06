@@ -38,6 +38,7 @@
 #include <array>
 #include <map>
 #include <string>
+#include <cstdlib>
 #include <vector>
 #include <list>
 #include <sstream>

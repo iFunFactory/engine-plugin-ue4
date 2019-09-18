@@ -18,9 +18,9 @@ DEFINE_LOG_CATEGORY(LogFunapi);
 
 class FFunapi : public IFunapi
 {
-	/** IModuleInterface implementation */
-	virtual void StartupModule() override;
-	virtual void ShutdownModule() override;
+  /** IModuleInterface implementation */
+  virtual void StartupModule() override;
+  virtual void ShutdownModule() override;
 
 #if WITH_EDITOR
   Ffunapi_Menubar funapi_menubar_;
@@ -32,12 +32,15 @@ IMPLEMENT_MODULE( FFunapi, Funapi )
 
 void FFunapi::StartupModule()
 {
-	// This code will execute after your module is loaded into memory (but after global variables are initialized, of course.)
+  // This code will execute after your module is loaded into memory (but after global variables are initialized, of course.)
   FPlatformMisc::LowLevelOutputDebugStringf(TEXT("Funapi module startup\n"));
   google::protobuf::RunProtobufRegistration();
 
 #if WITH_EDITOR
-  funapi_menubar_.MakeAndRegistFunapiMenubar();
+  if (!IsRunningGame() && !IsRunningDedicatedServer())
+  {
+    funapi_menubar_.MakeAndRegistFunapiMenubar();
+  }
 #endif // WITH_EDITOR
 }
 
@@ -45,11 +48,14 @@ void FFunapi::StartupModule()
 void FFunapi::ShutdownModule()
 {
 #if WITH_EDITOR
-  funapi_menubar_.UnregistFunapiMenubar();
+  if (!IsRunningGame() && !IsRunningDedicatedServer())
+  {
+    funapi_menubar_.UnregistFunapiMenubar();
+  }
 #endif // WITH_EDITOR
 
-	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
-	// we call this function before unloading the module.
+  // This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
+  // we call this function before unloading the module.
   google::protobuf::ShutdownProtobufLibrary();
   FPlatformMisc::LowLevelOutputDebugStringf(TEXT("Funapi module shutdown \n"));
 }

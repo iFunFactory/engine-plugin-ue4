@@ -46,25 +46,35 @@ FunapiTasksImpl::~FunapiTasksImpl() {
 }
 
 
-void FunapiTasksImpl::Update() {
+void FunapiTasksImpl::Update()
+{
   std::shared_ptr<std::function<bool()>> task = nullptr;
+  fun::queue<std::shared_ptr<std::function<bool()>>> update_queue;
+  {
+    std::unique_lock<std::mutex> lock(mutex_);
+    queue_.swap(update_queue);
+  }
 
-  while (true) {
+  while (true)
+  {
     {
-      std::unique_lock<std::mutex> lock(mutex_);
-      if (queue_.empty()) {
+      if (update_queue.empty())
+      {
         break;
       }
-      else {
-        task = queue_.front();
-        queue_.pop();
+      else
+      {
+        task = update_queue.front();
+        update_queue.pop();
       }
     }
 
-    if (task) {
+    if (task)
+    {
       if ((*task)() == false) break;
     }
-    else {
+    else
+    {
       break;
     }
   }

@@ -2424,13 +2424,17 @@ bool FFunapiSessionTestReconnectTcpSend10Times::RunTest(const FString& Parameter
   };
 
   session->AddSessionEventCallback
-  ([&send_string]
+  ([&is_ok, &is_working]
   (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
     const fun::SessionEventType type,
     const fun::string &session_id,
     const std::shared_ptr<fun::FunapiError> &error)
   {
+    if (type == fun::SessionEventType::kOpened) {
+      is_ok = false;
+      is_working = false;
+    }
   });
 
   session->AddTransportEventCallback
@@ -2483,10 +2487,18 @@ bool FFunapiSessionTestReconnectTcpSend10Times::RunTest(const FString& Parameter
 
   session->Connect(fun::TransportProtocol::kTcp, 10201, fun::FunEncoding::kJson);
 
+  // 세션이 연결될때까지 기다립니다.
+  while (is_working)
+  {
+    session->Update();
+    std::this_thread::sleep_for(std::chrono::milliseconds(16));
+  }
+
   for (int i = 0; i<10; ++i) send_function(session, i);
 
   session->Close();
 
+  is_working = true;
   while (is_working) {
     session->Update();
     std::this_thread::sleep_for(std::chrono::milliseconds(16)); // 60fps
@@ -2558,7 +2570,7 @@ bool FFunapiSessionTestReconnectHttpSend10Times::RunTest(const FString& Paramete
   };
 
   session->AddSessionEventCallback
-  ([&send_string]
+  ([&is_ok, &is_working]
   (const std::shared_ptr<fun::FunapiSession> &s,
     const fun::TransportProtocol protocol,
     const fun::SessionEventType type,
@@ -2626,6 +2638,7 @@ bool FFunapiSessionTestReconnectHttpSend10Times::RunTest(const FString& Paramete
 
   session->Close();
 
+  is_working = true;
   while (is_working) {
     session->Update();
     std::this_thread::sleep_for(std::chrono::milliseconds(16)); // 60fps

@@ -4395,6 +4395,8 @@ void FunapiSessionImpl::OnRedirect()
           continue;
         }
 
+        // Redirection 이전 세션에서 사용한 옵션 또는 등록된 option_handler 를 통해 Transport 옵션을 설정.
+        // 만약 옵션이 사용되지 않았거나 option_handler 가 등록되지 않은 경우 option 은 nullptr 이다.
         std::shared_ptr<FunapiTransportOption> option = nullptr;
         if (transport_option_handler_)
         {
@@ -4404,7 +4406,6 @@ void FunapiSessionImpl::OnRedirect()
         {
           option = o;
         }
-        assert(option);
 
         redirect_encodings_[connect_protocol] = connect_encoding;
 

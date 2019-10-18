@@ -4158,7 +4158,12 @@ void FunapiSessionImpl::OnClientPingMessage(const TransportProtocol protocol,
     timestamp_ms = ping_message.timestamp();
   }
 
-  ping_time_ms = (std::chrono::system_clock::now().time_since_epoch().count() - timestamp_ms) / 1000;
+  auto now =
+      std::chrono::duration_cast<std::chrono::milliseconds>(
+          std::chrono::system_clock::now().time_since_epoch()
+      ).count();
+
+  ping_time_ms = now - timestamp_ms;
 
   // DebugUtils::Log("Receive %s ping - timestamp:%lld time=%lld ms", "Tcp", timestamp_ms, ping_time_ms);
 }
@@ -4944,7 +4949,10 @@ bool FunapiSessionImpl::SendClientPingMessage(const TransportProtocol protocol,
   FunEncoding encoding = GetEncoding(protocol);
   assert(encoding!=FunEncoding::kNone);
 
-  int64_t timestamp = std::chrono::system_clock::now().time_since_epoch().count();
+  int64_t timestamp =
+      std::chrono::duration_cast<std::chrono::milliseconds>(
+          std::chrono::system_clock::now().time_since_epoch()
+      ).count();
   // DebugUtils::Log("Send Tcp ping - timestamp: %lld", timestamp);
 
   std::shared_ptr<FunapiMessage> message;

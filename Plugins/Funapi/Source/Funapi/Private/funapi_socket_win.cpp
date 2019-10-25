@@ -222,25 +222,20 @@ bool FunapiSocketImpl::Select()
       std::shared_ptr<FunapiSendFlagManager> send_flag_manager
         = FunapiSendFlagManager::Get();
 
-      bool initialized_send_event = send_flag_manager->IsInitialized();
-      int event_count = initialized_send_event ? socket_count + 1 : socket_count;
+      int event_count = socket_count + 1;
       HANDLE* events = new HANDLE[event_count];
       for (int i = 0; i < socket_count; ++i)
       {
-        events[i] = v_select_sockets[i]->GetEventHandle();
+        events[i+1] = v_select_sockets[i]->GetEventHandle();
       }
-
-      if (initialized_send_event)
-      {
-        events[socket_count /* last idx */] = send_flag_manager->GetEvent();
-      }
+      events[0] = send_flag_manager->GetEvent();
 
       DWORD wait_result =
         WSAWaitForMultipleEvents(socket_count + 1 /* send event */,
-          &events[0],
-          NULL,
-          500,
-          NULL);
+            &events[0],
+            NULL,
+            500,
+            NULL);
 
       // ERROR
       if (wait_result == WSA_WAIT_FAILED)
@@ -258,23 +253,22 @@ bool FunapiSocketImpl::Select()
         session_tick_timer.SetTimer(1);
       }
 
-      // SEND
-      DWORD event_index = wait_result - WSA_WAIT_EVENT_0;
-      bool send_event = (event_index == socket_count);
-      if (send_event)
+      int event_index = wait_result - WSA_WAIT_EVENT_0;
+      if (event_index == 0)
       {
+        // SEND
         send_flag_manager->ResetWakeUp();
         for (auto s : v_select_sockets)
         {
           s->OnSend();
         }
-        return true;
+
+        // Send Event 는 아래 RECV 이벤트 확인부분에서 제외.
+        event_index += 1;
       }
 
-      // RECV
-      for (auto s : v_select_sockets)
-      {
-        s->OnSelect(events[event_index]);
+      for (event_index; event_index <= socket_count ; ++event_index) {
+        v_select_sockets[event_index - 1]->OnSelect(events[event_index]);
       }
 
       return true;

@@ -134,35 +134,29 @@ bool FunapiUtil::DecodeBase64(const fun::string &in, fun::vector<uint8_t> &out) 
 
 
 int FunapiUtil::GetSocketErrorCode() {
-#ifdef FUNAPI_UE4_PLATFORM_WINDOWS
+#ifdef FUNAPI_PLATFORM_WINDOWS
   return ::WSAGetLastError();
 #else
   return errno;
 #endif
-
-  return 0;
 }
 
 
 fun::string FunapiUtil::GetSocketErrorString(const int code) {
-#ifdef FUNAPI_UE4_PLATFORM_WINDOWS
-  {
-    LPSTR temp_error_string = NULL;
+#ifdef FUNAPI_PLATFORM_WINDOWS
+  LPSTR temp_error_string = NULL;
 
-    int size = ::FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-      0, code, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), (LPSTR)&temp_error_string, 0, 0);
+  int size = ::FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+    0, code, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), (LPSTR)&temp_error_string, 0, 0);
 
-    fun::string ret = temp_error_string;
+  fun::string ret = temp_error_string;
 
-    LocalFree(temp_error_string);
+  LocalFree(temp_error_string);
 
-    return ret;
-  }
+  return ret;
 #else
   return strerror(code);
 #endif
-
-  return "";
 }
 
 

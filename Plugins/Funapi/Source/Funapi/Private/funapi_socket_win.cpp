@@ -231,16 +231,21 @@ bool FunapiSocketImpl::Select()
       events[0] = send_flag_manager->GetEvent();
 
       DWORD wait_result =
-        WSAWaitForMultipleEvents(socket_count + 1 /* send event */,
-            &events[0],
-            NULL,
-            500,
-            NULL);
+          WSAWaitForMultipleEvents(event_count,
+                                   &events[0],
+                                   NULL,
+                                   500,
+                                   NULL);
 
       // ERROR
       if (wait_result == WSA_WAIT_FAILED)
       {
-        DebugUtils::Log("Wait for events failed");
+        int error_cd = FunapiUtil::GetSocketErrorCode();
+        auto error_str = FunapiUtil::GetSocketErrorString(error_cd);
+        DebugUtils::Log(
+            "WSAWaitForMultipleEvents wait failed, error_code : %d error : %s",
+            error_cd,
+            error_str.c_str());
         return false;
       }
 
@@ -267,7 +272,8 @@ bool FunapiSocketImpl::Select()
         event_index += 1;
       }
 
-      for (event_index; event_index <= socket_count ; ++event_index) {
+      for (event_index; event_index < event_count; ++event_index)
+      {
         v_select_sockets[event_index - 1]->OnSelect(events[event_index]);
       }
 

@@ -277,6 +277,12 @@ bool FunapiSocketImpl::Select()
         session_tick_timer.SetTimer(1);
       }
 
+      // TIME OUT
+      if (result == 0)
+      {
+        return true;
+      }
+
       // SEND
       if (initialized_send_event)
       {

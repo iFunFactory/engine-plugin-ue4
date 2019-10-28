@@ -999,8 +999,6 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   fun::vector<fun::string> redirect_cur_tags_;
   fun::vector<fun::string> redirect_target_tags_;
 
-  std::shared_ptr<FunapiSendFlagManager> send_flag_manager_ = nullptr;
-
   void OnRedirect();
 
   void AddMessageToRedirectQueue(const TransportProtocol protocol,
@@ -2532,11 +2530,7 @@ void FunapiTcpTransport::Send(bool send_all)
   if (!send_handshake_queue_->Empty())
   {
     // 이후 메시지를 처리하기 위해서 다시 Send 플레그를 올려준다.
-    std::shared_ptr<FunapiSendFlagManager> send_flag_manager =
-      FunapiSendFlagManager::Get();
-
-    send_flag_manager->WakeUp();
-
+    FunapiSendFlagManager::Get().WakeUp();
     while (!send_handshake_queue_->Empty())
     {
       msg = send_handshake_queue_->Front();
@@ -2553,11 +2547,7 @@ void FunapiTcpTransport::Send(bool send_all)
   else if (!send_priority_queue_->Empty())
   {
     // 이후 메시지를 처리하기 위해서 다시 Send 플레그를 올려준다.
-    std::shared_ptr<FunapiSendFlagManager> send_flag_manager =
-      FunapiSendFlagManager::Get();
-
-    send_flag_manager->WakeUp();
-
+    FunapiSendFlagManager::Get().WakeUp();
     if (false == encrytion_->IsHandShakeCompleted())
     {
       return;
@@ -2856,11 +2846,7 @@ void FunapiUdpTransport::Send(bool send_all) {
   while (!send_handshake_queue_->Empty())
   {
     // 이후 메시지를 처리하기 위해서 다시 Send 플레그를 올려준다.
-    std::shared_ptr<FunapiSendFlagManager> send_flag_manager =
-        FunapiSendFlagManager::Get();
-
-    send_flag_manager->WakeUp();
-
+    FunapiSendFlagManager::Get().WakeUp();
     msg = send_handshake_queue_->Front();
     if (FunapiTransport::EncodeThenSendMessage(msg)) {
       send_handshake_queue_->PopFront();
@@ -3578,10 +3564,6 @@ void FunapiSessionImpl::Initialize()
     session_id_ = FunapiSessionId::Create();
 
     network_thread_ = FunapiThread::Get("_network");
-
-    // FunapiSession : FunapiSendFlagManager  -> N : 1 의 구조를 가진다.
-    // 모든 FunapiSession 이 제거 되었을 때 FunapiSendFlagManager 도 제거된다.
-    send_flag_manager_ = FunapiSendFlagManager::Get();
 }
 
 
@@ -3868,7 +3850,7 @@ void FunapiSessionImpl::SendMessage(std::shared_ptr<FunapiMessage> &message, con
         if (transport)
         {
             transport->SendMessage(message, priority, handshake);
-            send_flag_manager_->WakeUp();
+            FunapiSendFlagManager::Get().WakeUp();
         }
         else
         {
@@ -3893,7 +3875,7 @@ void FunapiSessionImpl::SendMessage(std::shared_ptr<FunapiMessage> &message, con
         if (transport)
         {
           transport->SendMessage(message, priority, handshake);
-          send_flag_manager_->WakeUp();
+          FunapiSendFlagManager::Get().WakeUp();
         }
     }
 }
@@ -4828,7 +4810,7 @@ void FunapiSessionImpl::OnSessionEvent(const TransportProtocol protocol,
           return true;
         }
         // send buffer 에 있는 메세지를 모두 전송 시도 한다.
-        send_flag_manager_->WakeUp();
+        FunapiSendFlagManager::Get().WakeUp();
       }
       return true;
     });
@@ -5306,7 +5288,7 @@ void FunapiSessionImpl::SendUnsentQueueMessages()
                 PushTaskQueue([this, protocol, message]()->bool
                 {
                     send_queues_[static_cast<int>(protocol)]->PushBack(message->GetMessage());
-                    send_flag_manager_->WakeUp();
+                    FunapiSendFlagManager::Get().WakeUp();
                     return true;
                 });
 

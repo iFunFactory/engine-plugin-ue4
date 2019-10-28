@@ -12,8 +12,8 @@ namespace fun {
 enum class FunapiVersion : int
 {
   kProtocolVersion = 1,
-  // hotfix_thinkfun 185
-  kPluginVersion = 185,
+  // thinkfun_hotfix 186
+  kPluginVersion = 186,
 };
 
 }

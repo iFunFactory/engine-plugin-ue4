@@ -213,28 +213,22 @@ bool FunapiSocketImpl::Select()
     FD_ZERO(&wset);
     FD_ZERO(&eset);
 
-    // Add send fd event
-    std::shared_ptr<FunapiSendFlagManager> send_flag_manager =
-      FunapiSendFlagManager::Get();
-    bool initialized_send_event = send_flag_manager->IsInitialized();
-    if (initialized_send_event)
+    int* pipe_fds = FunapiSendFlagManager::Get().GetPipeFds();
+    // pipe_fds 는 int[2] 크기를 가진다.
+    for (int i = 0; i < 2; ++i)
     {
-      int* pipe_fds = send_flag_manager->GetPipFds();
-
-      // pipe_fds 는 int[2] 크기를 가진다.
-      for (int i = 0; i < 2; ++i)
+      int fd = pipe_fds[i];
+      if (fd > max_fd)
       {
-        int fd = pipe_fds[i];
-        if (fd > max_fd)
-          max_fd = fd;
-
-        FD_SET(fd, &rset);
-        FD_SET(fd, &eset);
+        max_fd = fd;
       }
+
+      FD_SET(fd, &rset);
+      FD_SET(fd, &eset);
     }
 
     fun::vector<std::shared_ptr<FunapiSocketImpl>> v_select_sockets;
-    for (auto s : v_sockets)
+    for (auto& s : v_sockets)
     {
       if (s->IsReadySelect())
       {
@@ -242,10 +236,8 @@ bool FunapiSocketImpl::Select()
         if (fd > 0)
         {
           if (fd > max_fd) max_fd = fd;
-
           FD_SET(fd, &rset);
           FD_SET(fd, &eset);
-
           v_select_sockets.push_back(s);
         }
       }
@@ -284,23 +276,18 @@ bool FunapiSocketImpl::Select()
       }
 
       // SEND
-      if (initialized_send_event)
+      if (FD_ISSET(pipe_fds[0], &rset))
       {
-        int* pipe_fds = send_flag_manager->GetPipFds();
-        if (FD_ISSET(pipe_fds[0], &rset))
+        FunapiSendFlagManager::Get().ResetWakeUp();
+        for (auto& s : v_select_sockets)
         {
-          send_flag_manager->ResetWakeUp();
-
-          for (auto s : v_select_sockets)
-          {
-            s->OnSend();
-          }
-          return true;
+          s->OnSend();
         }
+        return true;
       }
 
       // RECV
-      for (auto s : v_select_sockets) {
+      for (auto& s : v_select_sockets) {
         s->OnSelect(rset, wset, eset);
       }
 

@@ -259,7 +259,12 @@ bool FunapiSocketImpl::Select()
       // ERROR
       if (result == -1)
       {
-        DebugUtils::Log("Wait for events failed");
+        int error_cd = FunapiUtil::GetSocketErrorCode();
+        auto error_str = FunapiUtil::GetSocketErrorString(error_cd);
+        DebugUtils::Log(
+          "Socket select failed, error_code : %d error : %s",
+          error_cd,
+          error_str.c_str());
         return false;
       }
 

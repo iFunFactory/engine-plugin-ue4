@@ -258,6 +258,12 @@ bool FunapiSocketImpl::Select()
         session_tick_timer.SetTimer(1);
       }
 
+      // TIME OUT
+      if (wait_result == WSA_WAIT_TIMEOUT)
+      {
+        return true;
+      }
+
       int event_index = wait_result - WSA_WAIT_EVENT_0;
       if (event_index == 0)
       {

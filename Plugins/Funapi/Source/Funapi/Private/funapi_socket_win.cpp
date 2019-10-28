@@ -207,7 +207,7 @@ bool FunapiSocketImpl::Select()
   if (!v_sockets.empty())
   {
     fun::vector<std::shared_ptr<FunapiSocketImpl>> v_select_sockets;
-    for (auto s : v_sockets)
+    for (auto& s : v_sockets)
     {
       if (s->IsReadySelect())
       {
@@ -218,17 +218,13 @@ bool FunapiSocketImpl::Select()
     if (!v_select_sockets.empty())
     {
       int socket_count = v_select_sockets.size();
-
-      std::shared_ptr<FunapiSendFlagManager> send_flag_manager
-        = FunapiSendFlagManager::Get();
-
       int event_count = socket_count + 1;
       fun::vector<HANDLE> events(event_count);
       for (int i = 0; i < socket_count; ++i)
       {
         events[i+1] = v_select_sockets[i]->GetEventHandle();
       }
-      events[0] = send_flag_manager->GetEvent();
+      events[0] = FunapiSendFlagManager::Get().GetEvent();
 
       DWORD wait_result =
           WSAWaitForMultipleEvents(event_count,
@@ -268,8 +264,8 @@ bool FunapiSocketImpl::Select()
       if (event_index == 0)
       {
         // SEND
-        send_flag_manager->ResetWakeUp();
-        for (auto s : v_select_sockets)
+        FunapiSendFlagManager::Get().ResetWakeUp();
+        for (auto& s : v_select_sockets)
         {
           s->OnSend();
         }

@@ -15,18 +15,17 @@ class FUNAPI_API FunapiSendFlagManager :
     public std::enable_shared_from_this<FunapiSendFlagManager>
 {
  public:
-  static std::shared_ptr<FunapiSendFlagManager> Get();
-
-  FunapiSendFlagManager();
-  virtual ~FunapiSendFlagManager();
-
-  bool IsInitialized();
+  static void Init();
+  static FunapiSendFlagManager& Get();
 
   void WakeUp();
   void ResetWakeUp();
 
+  virtual ~FunapiSendFlagManager();
+
  private:
-  void Initialize();
+  FunapiSendFlagManager();
+
 
 #ifdef FUNAPI_PLATFORM_WINDOWS
 
@@ -39,10 +38,10 @@ class FUNAPI_API FunapiSendFlagManager :
 #else
 
  public:
-  int* GetPipFds();
+  int* GetPipeFds();
 
  private:
-  int pipe_fds[2];
+  int pipe_fds_[2];
 
 #endif
 

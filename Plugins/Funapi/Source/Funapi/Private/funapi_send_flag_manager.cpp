@@ -16,59 +16,50 @@
 namespace fun
 {
 
+static FunapiSendFlagManager* the_manager = nullptr;
+
 #ifndef FUNAPI_PLATFORM_WINDOWS
 
-bool the_initialized = false;
 FunapiSendFlagManager::FunapiSendFlagManager()
 {
-  Initialize();
+  if (pipe(pipe_fds_) < 0)
+  {
+    fun::stringstream ss;
+    ss << "Failed to initilize FunapiSendFlagManager,";
+    ss << " error code : " << errno << " error : " << strerror(errno);
+
+    FunapiUtil::Assert(false, ss.str());
+  }
 }
 
 
 FunapiSendFlagManager::~FunapiSendFlagManager()
 {
-  the_initialized = false;
-  close(pipe_fds[0]);
-  close(pipe_fds[1]);
-}
-
-
-void FunapiSendFlagManager::Initialize()
-{
- if (pipe(pipe_fds) == -1)
- {
-    DebugUtils::Log("Failed to initilize send flag manger");
-    the_initialized = false;
-    return;
- }
-
-  the_initialized = true;
-}
-
-
-bool FunapiSendFlagManager::IsInitialized()
-{
-  return the_initialized;
-}
-
-
-int* FunapiSendFlagManager::GetPipFds()
-{
-  if (!the_initialized)
+  if (pipe_fds_[0] >= 0)
   {
-    return nullptr;
+    close(pipe_fds_[0]);
   }
+  if (pipe_fds_[1] >= 0)
+  {
+    close(pipe_fds_[1]);
+  }
+}
 
-  return pipe_fds;
+
+int* FunapiSendFlagManager::GetPipeFds()
+{
+  return pipe_fds_;
 }
 
 
 void FunapiSendFlagManager::WakeUp()
 {
   const int64_t kDummyValue = 1;
-  if (not write(pipe_fds[1], &kDummyValue, sizeof(int64_t)))
+  if (not write(pipe_fds_[1], &kDummyValue, sizeof(int64_t)))
   {
-    DebugUtils::Log("Failed to wakeup funapi send flag");
+    DebugUtils::Log("Failed to wakeup funapi send flag, error code: %d error : %s",
+                    errno,
+                    strerror(errno));
   }
 }
 
@@ -76,9 +67,11 @@ void FunapiSendFlagManager::WakeUp()
 void FunapiSendFlagManager::ResetWakeUp()
 {
   int64_t value = 0;
-  if (not read(pipe_fds[0], &value, sizeof(int64_t)))
+  if (not read(pipe_fds_[0], &value, sizeof(int64_t)))
   {
-    DebugUtils::Log("Failed to reset wakeup funapi send flag");
+    DebugUtils::Log("Failed to reset funapi send flag, error code: %d error : %s",
+                    errno,
+                    strerror(errno));
   }
 }
 
@@ -88,71 +81,56 @@ void FunapiSendFlagManager::ResetWakeUp()
 
 FunapiSendFlagManager::FunapiSendFlagManager()
 {
-  Initialize();
+  event_ = WSACreateEvent();
+  if (event_ == WSA_INVALID_EVENT)
+  {
+    int error_cd = FunapiUtil::GetSocketErrorCode();
+    fun::string error_str = FunapiUtil::GetSocketErrorString(error_cd);
+    fun::stringstream ss;
+    ss << "Failed to initilize FunapiSendFlagManager,";
+    ss << " error code : " << error_cd << " error : " << error_str.c_str();
+
+    FunapiUtil::Assert(false, ss.str());
+  }
 }
 
 
 FunapiSendFlagManager::~FunapiSendFlagManager()
 {
-  if (IsInitialized())
+  if (event_ != WSA_INVALID_EVENT)
   {
     WSACloseEvent(event_);
-    event_ = nullptr;
   }
-}
-
-
-void FunapiSendFlagManager::Initialize()
-{
-  event_ = WSACreateEvent();
-  if (event_ == WSA_INVALID_EVENT)
-  {
-    DebugUtils::Log("Failed to initilize send flag manager");
-    event_ = nullptr;
-  }
-}
-
-
-bool FunapiSendFlagManager::IsInitialized()
-{
-  if (event_)
-  {
-    return true;
-  }
-
-  return false;
+  event_ = WSA_INVALID_EVENT;
 }
 
 
 HANDLE FunapiSendFlagManager::GetEvent()
 {
-  if (event_ == nullptr)
-  {
-    DebugUtils::Log("Failed to event to send flag manager, Retry Initialize");
-    Initialize();
-    return nullptr;
-  }
-
   return event_;
 }
 
 
 void FunapiSendFlagManager::WakeUp()
 {
-  const int64_t kDummyValue = 1;
   if (SetEvent(event_) == 0)
   {
-    DebugUtils::Log("Failed to wakeup funapi send flag : %d", WSAGetLastError());
+    int error_cd = FunapiUtil::GetSocketErrorCode();
+    DebugUtils::Log("Failed to wakeup funapi send flag, error code: %d error : %s",
+                    error_cd,
+                    FunapiUtil::GetSocketErrorString(error_cd).c_str());
   }
 }
 
 
 void FunapiSendFlagManager::ResetWakeUp()
 {
-  int64_t value = 0;
   if (ResetEvent(event_) == 0)
   {
-    DebugUtils::Log("Failed to reset wakeup funapi send flag : %d", WSAGetLastError());
+    int error_cd = FunapiUtil::GetSocketErrorCode();
+    DebugUtils::Log("Failed to reset funapi send flag, error code: %d error : %s",
+                    error_cd,
+                    FunapiUtil::GetSocketErrorString(error_cd).c_str());
   }
 }
 
@@ -161,21 +139,19 @@ void FunapiSendFlagManager::ResetWakeUp()
 /////////////////////////////////////////////////////////////////////
 // Not depend on platform
 
-std::shared_ptr<FunapiSendFlagManager> FunapiSendFlagManager::Get()
+
+void FunapiSendFlagManager::Init()
 {
-  static std::weak_ptr<FunapiSendFlagManager> manager;
-  static std::mutex send_flag_manager_mutex;
-
-  std::unique_lock<std::mutex> lock(send_flag_manager_mutex);
-  if(!manager.expired())
+  // Invoke when plugin module is started.
+  if (the_manager == nullptr)
   {
-    return manager.lock();
+    the_manager = new FunapiSendFlagManager();
   }
+}
 
-  std::shared_ptr<FunapiSendFlagManager> instance =
-      std::make_shared<FunapiSendFlagManager>();
-  manager = instance;
-  return instance;
+FunapiSendFlagManager& FunapiSendFlagManager::Get()
+{
+  return *the_manager;
 }
 
 } // namespace fun

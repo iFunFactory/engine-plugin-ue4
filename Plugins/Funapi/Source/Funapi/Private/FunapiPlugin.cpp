@@ -10,6 +10,8 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/common.h>
 
+#include "funapi_send_flag_manager.h"
+
 #if WITH_EDITOR
 #include "editor/funapi_extension_commands.h"
 #endif // WITH_EDITOR
@@ -35,6 +37,8 @@ void FFunapi::StartupModule()
   // This code will execute after your module is loaded into memory (but after global variables are initialized, of course.)
   FPlatformMisc::LowLevelOutputDebugStringf(TEXT("Funapi module startup\n"));
   google::protobuf::RunProtobufRegistration();
+
+  fun::FunapiSendFlagManager::Init();
 
 #if WITH_EDITOR
   if (!IsRunningGame() && !IsRunningDedicatedServer())

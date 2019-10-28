@@ -1665,7 +1665,7 @@ bool FFunapiSessionTestQueueJsonMultitransport::RunTest(const FString& Parameter
   fun::string server_ip = g_server_ip;
 
   auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
-  bool is_ok = true;
+  bool is_ok = false;
   bool is_working = true;
 
   session->AddSessionEventCallback
@@ -1686,11 +1686,9 @@ bool FFunapiSessionTestQueueJsonMultitransport::RunTest(const FString& Parameter
     const std::shared_ptr<fun::FunapiError> &error)
   {
     if (type == fun::TransportEventType::kConnectionFailed) {
-      is_ok = false;
       is_working = false;
     }
     else if (type == fun::TransportEventType::kConnectionTimedOut) {
-      is_ok = false;
       is_working = false;
     }
 
@@ -1705,7 +1703,6 @@ bool FFunapiSessionTestQueueJsonMultitransport::RunTest(const FString& Parameter
     const fun::string &msg_type, const fun::string &json_string)
   {
     if (msg_type.compare("echo") == 0) {
-      is_ok = false;
 
       rapidjson::Document msg_recv;
       msg_recv.Parse<0>(json_string.c_str());

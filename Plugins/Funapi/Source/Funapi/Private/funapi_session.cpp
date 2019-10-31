@@ -4104,10 +4104,10 @@ void FunapiSessionImpl::OnSessionClose(const TransportProtocol protocol,
       return;
     }
 
-    ResetSession();
-
     auto encoding = GetEncoding(protocol);
     fun::string temp_session_id = GetSessionId(FunEncoding::kJson);
+
+    ResetSession();
 
     OnSessionEvent(protocol,
                    encoding,

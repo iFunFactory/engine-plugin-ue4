@@ -105,28 +105,11 @@ https://www.ifunfactory.com/engine/documents/reference/ko/client-plugin.html#iph
 그 외에 플러그인에 대한 문의 사항이나 버그 신고는 <funapi-support@ifunfactory.com> 으로 메일을
 보내주세요.
 
-# 버전별 주요 이슈
+# 지원 예정인 기능들
 
-아래 설명의 버전보다 낮은 버전의 플러그인을 사용하고 있다면 아래 내용을 참고해 주세요.
-괄호안은 지원하는 서버 버전입니다.
+아래 기능들은 서버에서 지원하지만 아직 플러그인에서는 지원하지 않는 기능들입니다.
+이후 플러그인 업데이트로 지원될 예정이며 업데이트에 대한 내용은
+[릴리즈 노트](https://github.com/iFunFactory/engine-plugin-ue4/releases)를 참고해 주세요.
 
-### v98 experimental (2626 experimental)
-압축 기능 추가
-
-### v90 experimental (2544 experimental)
-Delayed Ack
-
-### v85 experimental (2497 experimental)
-TCP TLS
-
-### v93 experimental (2497 experimental)
-Websocket Transport
-
-### v73 experimental (2368 experimental)
-Dedicated Server Rpc
-
-### v62 (2118 experimental, 2214 stable)
-멀티캐스트 채널에 token 을 지정할 수 있는 기능 추가
-
-### v61 (2109 experimental, 2214 stable)
-Protobuf 의 Message Type 을 String 대신 Integer 를 쓸 수 있는 기능 추가
+### 멀티캐스트에서 WebSocket 프로토콜을 지원
+아이펀 엔진 1.0.0-4392 Stable 버전에서 추가된 기능으로 플러그인은 TCP 프로토콜만 지원하지만 추후 업데이트로 WebSocket 프로토콜을 지원.

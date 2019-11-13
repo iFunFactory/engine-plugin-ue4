@@ -77,6 +77,8 @@ class FunapiUtil
   static bool SeqLess(const uint32_t x, const uint32_t y);
   static bool IsFileExists(const fun::string &file_name);
   static long GetFileSize(const fun::string &file_name);
+  static bool IsDirectoryExists(const fun::string &dir_name);
+  static bool CreateDirectory(const fun::string &dir_name);
 
   static fun::string MD5String(const fun::string &file_name, bool use_front);
 

@@ -278,9 +278,9 @@ bool FunapiHttpDownloaderImpl::CheckDirectory(const fun::string& file_path)
     }
 
     fun::string dir_path = file_path.substr(0, pos);
-    IPlatformFile& platform_file = FPlatformFileManager::Get().GetPlatformFile();
-    if (platform_file.DirectoryExists(UTF8_TO_TCHAR(dir_path.c_str()))) {
-        return true;
+    if (FunapiUtil::IsDirectoryExists(dir_path))
+    {
+      return true;
     }
 
     // Gets folders name.
@@ -295,18 +295,20 @@ bool FunapiHttpDownloaderImpl::CheckDirectory(const fun::string& file_path)
     fun::string dirname;
     while (std::getline(iss, dirname, '/'))
     {
-        ss << dirname << "/";
-        const fun::string& path = ss.str();
-        if (!platform_file.DirectoryExists(UTF8_TO_TCHAR(path.c_str())))
+      ss << dirname << "/";
+      const fun::string& path = ss.str();
+      if (!FunapiUtil::IsDirectoryExists(path))
+      {
+        if (!FunapiUtil::CreateDirectory(path))
         {
-            if (!platform_file.CreateDirectory(UTF8_TO_TCHAR(path.c_str())))
-            {
-                DebugUtils::Log("Error: Failed to create directory. path: %s", path.c_str());
-                return false;
-            }
+          fun::stringstream error;
+          error << "Error: Failed to create directory. ";
+          error << "Please check directory permissions or the corret download path " << path.c_str();
+          DebugUtils::Log("%s", error.str().c_str());
+          return false;
         }
+      }
     }
-
     return true;
 }
 

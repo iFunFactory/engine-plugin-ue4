@@ -227,30 +227,69 @@ bool FunapiUtil::SeqLess(const uint32_t x, const uint32_t y) {
   return (int32_t)(y - x) > 0;
 }
 
-bool FunapiUtil::IsFileExists(const fun::string &file_name) {
+
+
+bool FunapiUtil::IsFileExists(const fun::string &file_name)
+{
 #ifdef FUNAPI_COCOS2D
   return cocos2d::FileUtils::getInstance()->isFileExist(file_name.c_str());
-#endif
-
-#ifdef FUNAPI_UE4
+#elif FUNAPI_UE4
   return FPlatformFileManager::Get().GetPlatformFile().FileExists(ANSI_TO_TCHAR(file_name.c_str()));
+#else
+  // If you are supporting a new game engine, please fill out the function
+  // using the function provided by the game engine you want to add.
+#  error FunapiUtil::IsFileExists function supports only Cocos2d, UE4 game engines.
+  return false;
 #endif
 
-  return false;
-};
+}
 
 
-long FunapiUtil::GetFileSize(const fun::string &file_name) {
+long FunapiUtil::GetFileSize(const fun::string &file_name)
+{
 #ifdef FUNAPI_COCOS2D
   return cocos2d::FileUtils::getInstance()->getFileSize(file_name.c_str());
-#endif
-
-#ifdef FUNAPI_UE4
+#elif FUNAPI_UE4
   return FPlatformFileManager::Get().GetPlatformFile().FileSize(ANSI_TO_TCHAR(file_name.c_str()));
+#else
+  // If you are supporting a new game engine, please fill out the function
+  // using the function provided by the game engine you want to add.
+#  error FunapiUtil::GetFileSize function supports only Cocos2d, UE4 game engines.
+  return false;
 #endif
-
-  return 0;
 };
+
+
+
+bool FunapiUtil::IsDirectoryExists(const fun::string &dir_name)
+{
+#ifdef FUNAPI_COCOS2D
+  return cocos2d::FileUtils::getInstance()->isDirectoryExist(dir_name);
+#elif FUNAPI_UE4
+  return FPlatformFileManager::Get().GetPlatformFile().DirectoryExists(ANSI_TO_TCHAR(dir_name.c_str()));
+#else
+  // If you are supporting a new game engine, please fill out the function
+  // using the function provided by the game engine you want to add.
+#  error FunapiUtil::IsDirectoryExists function supports only Cocos2d, UE4 game engines.
+  return false;
+#endif
+}
+
+
+
+bool FunapiUtil::CreateDirectory(const fun::string &dir_name)
+{
+#ifdef FUNAPI_COCOS2D
+  return cocos2d::FileUtils::getInstance()->createDirectory(dir_name);
+#elif FUNAPI_UE4
+  return FPlatformFileManager::Get().GetPlatformFile().CreateDirectory(UTF8_TO_TCHAR(dir_name.c_str()));
+#else
+  // If you are supporting a new game engine, please fill out the function
+  // using the function provided by the game engine you want to add.
+#  error FunapiUtil::CreateDirectory function supports only Cocos2d, UE4 game engines.
+  return false;
+#endif
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////

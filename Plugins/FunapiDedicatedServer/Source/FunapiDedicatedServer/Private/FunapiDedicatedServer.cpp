@@ -738,15 +738,17 @@ namespace fun
       GetGameInfo(handler);
     }
 
-    DEPRECATED(1.14 /* plugin version */, "This function is deprecated. Please use FunapiDedicatedServer::SendReady function")
-      void PostReady()
+
+    UE_DEPRECATED(1.14 /* plugin version */, "This function is deprecated. Please use FunapiDedicatedServer::SendReady function")
+    void PostReady()
     {
       UE_LOG(LogFunapiDedicatedServer, Warning, TEXT("This function is deprecated. Please use FunapiDedicatedServer::SendReady function"));
       Send("ready", "", [](HttpResponse http_response) {}, nullptr, true);
     }
 
-    DEPRECATED(1.14 /* plugin version */, "This function is deprecated. Please use FunapiDedicatedServer::SendResult function")
-      void PostResult(const FString &json_string, const bool use_exit)
+
+    UE_DEPRECATED(1.14 /* plugin version */, "This function is deprecated. Please use FunapiDedicatedServer::SendResult function")
+    void PostResult(const FString &json_string, const bool use_exit)
     {
       UE_LOG(LogFunapiDedicatedServer, Warning, TEXT("This function is deprecated. Please use FunapiDedicatedServer::SendResult function"));
       Send("result", json_string,
@@ -825,8 +827,9 @@ namespace fun
         true);
     }
 
-    DEPRECATED(1.14 /* plugin version */, "This function is deprecated. Please use FunapiDedicatedServer::SendGameState function")
-      void PostGameState(const FString &json_string)
+
+    UE_DEPRECATED(1.14 /* plugin version */, "This function is deprecated. Please use FunapiDedicatedServer::SendGameState function")
+    void PostGameState(const FString &json_string)
     {
       UE_LOG(LogFunapiDedicatedServer, Warning, TEXT("This function is deprecated. Please use FunapiDedicatedServer::SendGameState function"));
       Send("state", json_string, [](HttpResponse http_response) {}, nullptr, true);
@@ -872,15 +875,17 @@ namespace fun
       return ouput_fstring;
     }
 
-    DEPRECATED(1.14 /* plugin version */, "This function is deprecated. Please use FunapiDedicatedServer::SendJoined function")
-      void PostJoined(const FString &uid)
+
+    UE_DEPRECATED(1.14 /* plugin version */, "This function is deprecated. Please use FunapiDedicatedServer::SendJoined function")
+    void PostJoined(const FString &uid)
     {
       UE_LOG(LogFunapiDedicatedServer, Warning, TEXT("This function is deprecated. Please use FunapiDedicatedServer::SendJoined function"));
       Send("joined", JsonFStringWithUID(uid), [](HttpResponse http_response) {}, nullptr, true);
     }
 
-    DEPRECATED(1.14 /* plugin version */, "This function is deprecated. Please use FunapiDedicatedServer::SendLeft function")
-      void PostLeft(const FString &uid)
+
+    UE_DEPRECATED(1.14 /* plugin version */, "This function is deprecated. Please use FunapiDedicatedServer::SendLeft function")
+    void PostLeft(const FString &uid)
     {
       UE_LOG(LogFunapiDedicatedServer, Warning, TEXT("This function is deprecated. Please use FunapiDedicatedServer::SendLeft function"));
       Send("left", JsonFStringWithUID(uid), [](HttpResponse http_response) {}, nullptr, true);
@@ -928,14 +933,16 @@ namespace fun
       return ret;
     }
 
-    DEPRECATED(1.14 /* plugin version */, "This function is deprecated. Please use FunapiDedicatedServer::AuthUser(uid, token) function")
-      bool AuthUser(const FString& options, FString &error_message)
+
+    UE_DEPRECATED(1.14 /* plugin version */, "This function is deprecated. Please use FunapiDedicatedServer::AuthUser(uid, token) function")
+    bool AuthUser(const FString& options, FString &error_message)
     {
       return FunapiDedicatedServer::AuthUser(options, "FunapiUID", "FunapiToken", error_message);
     }
 
-    DEPRECATED(1.14 /* plugin version */, "This function is deprecated. Please use FunapiDedicatedServer::AuthUser(uid, token) function")
-      bool AuthUser(const FString& options, const FString& uid_field, const FString& token_field, FString &error_message)
+
+    UE_DEPRECATED(1.14 /* plugin version */, "This function is deprecated. Please use FunapiDedicatedServer::AuthUser(uid, token) function")
+    bool AuthUser(const FString& options, const FString& uid_field, const FString& token_field, FString &error_message)
     {
       UE_LOG(LogFunapiDedicatedServer, Warning, TEXT("This function is deprecated. Please use FunapiDedicatedServer::AuthUser(uid, token) function"));
 
@@ -984,8 +991,9 @@ namespace fun
       return ret;
     }
 
-    DEPRECATED(1.14 /* plugin version */, "This function is deprecated. Please use FunapiDedicatedServer::SendCustomCallback function")
-      void PostCustomCallback(const FString &json_string)
+
+    UE_DEPRECATED(1.14 /* plugin version */, "This function is deprecated. Please use FunapiDedicatedServer::SendCustomCallback function")
+    void PostCustomCallback(const FString &json_string)
     {
       UE_LOG(LogFunapiDedicatedServer, Warning, TEXT("This function is deprecated. Please use FunapiDedicatedServer::SendCustomCallback function"));
       Send("callback", json_string, [](HttpResponse http_response) {}, nullptr, true);

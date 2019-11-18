@@ -80,6 +80,14 @@ public:
                                                  const std::shared_ptr<FunapiSession> &session,
                                                  const TransportProtocol protocol = TransportProtocol::kTcp);
 
+  static std::shared_ptr<FunapiMulticast> Create(const char* sender,
+                                                 const char* hostname_or_ip,
+                                                 const uint16_t port,
+                                                 const FunEncoding encoding,
+                                                 const TransportProtocol protocl,
+                                                 const std::shared_ptr<FunapiTransportOption> &transport_opt,
+                                                 const std::shared_ptr<FunapiSessionOption> &session_opt);
+
   void AddJoinedCallback(const ChannelNotify &handler);
   void AddLeftCallback(const ChannelNotify &handler);
   void AddErrorCallback(const ErrorNotify &handler);

@@ -132,6 +132,7 @@ public:
 
     void Close(const TransportProtocol protocol);
     void Close();
+    void CloseRequest();
 
     void Stop(const TransportProtocol protocol);
     void Stop();

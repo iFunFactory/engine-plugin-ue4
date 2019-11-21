@@ -34,6 +34,7 @@
 
 #define kSessionOpenedMessageType "_session_opened"
 #define kSessionClosedMessageType "_session_closed"
+#define kCloseSessionType "_close_session"
 #define kServerPingMessageType "_ping_s"
 #define kClientPingMessageType "_ping_c"
 #define kRedirectMessageType "_sc_redirect"
@@ -773,6 +774,7 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
 
   void Connect(const std::weak_ptr<FunapiSession>& session, const TransportProtocol protocol, int port, FunEncoding encoding, std::shared_ptr<FunapiTransportOption> option = nullptr);
   void Connect(const TransportProtocol protocol);
+  void CloseRequest();
 
   void Stop();
   void Stop(const TransportProtocol protocol);
@@ -870,6 +872,8 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   void CheckRedirect();
 
  private:
+  void SendCloseRequestMessage();
+
   void Initialize();
   void ResetSession();
 
@@ -3959,6 +3963,22 @@ void FunapiSessionImpl::OnStop(const TransportProtocol protocol)
 }
 
 
+void FunapiSessionImpl::CloseRequest()
+{
+  if (!IsConnected() &&
+      !IsRedirecting())
+  {
+    fun::stringstream warnning_msg;
+    warnning_msg << "Session::CloseRequest() called but ignored, ";
+    warnning_msg << "Because session is not connected.";
+    DebugUtils::Log(warnning_msg.str().c_str());
+    return;
+  }
+
+  SendCloseRequestMessage();
+}
+
+
 void FunapiSessionImpl::Stop()
 {
   PushTaskQueue([this]()->bool
@@ -5189,6 +5209,55 @@ bool FunapiSessionImpl::SendClientPingMessage(const TransportProtocol protocol,
 }
 
 
+void FunapiSessionImpl::SendCloseRequestMessage()
+{
+  // Stability order
+  const static vector<TransportProtocol> kProtocols{
+    TransportProtocol::kTcp,
+    TransportProtocol::kHttp,
+    TransportProtocol::kWebsocket,
+    TransportProtocol::kUdp
+  };
+
+  TransportProtocol protocol = TransportProtocol::kDefault;
+  for (auto p : kProtocols)
+  {
+    if (HasTransport(p))
+    {
+      protocol = p;
+      break;
+    }
+  }
+
+  assert(protocol != TransportProtocol::kDefault);
+
+  FunEncoding encoding = GetEncoding(protocol);
+  assert(encoding != FunEncoding::kNone);
+
+  // Send close session message
+  std::shared_ptr<FunapiMessage> message;
+  if (encoding == FunEncoding::kProtobuf)
+  {
+    FunMessage msg;
+    msg.set_msgtype(kCloseSessionType);
+    message = FunapiMessage::Create(msg, EncryptionType::kDefaultEncryption);
+  }
+  else if (encoding == fun::FunEncoding::kJson)
+  {
+    rapidjson::Document msg;
+    msg.SetObject();
+
+    rapidjson::Value msg_type_node;
+    msg_type_node.SetString(rapidjson::StringRef(kCloseSessionType), msg.GetAllocator());
+
+    msg.AddMember(rapidjson::StringRef(kMessageTypeAttributeName), msg_type_node, msg.GetAllocator());
+    message = FunapiMessage::Create(msg, EncryptionType::kDefaultEncryption);
+  }
+
+  SendMessage(message, protocol);
+}
+
+
 void FunapiSessionImpl::SendAck(const TransportProtocol protocol,
                                 const uint32_t ack,
                                 const EncryptionType encryption_type) {
@@ -5564,6 +5633,12 @@ void FunapiSession::Close(const TransportProtocol protocol)
   warnning_msg << "FunapiSession::Stop(TransportProtocol) fucntion";
   DebugUtils::Log(warnning_msg.str().c_str());
   impl_->Stop(protocol);
+}
+
+
+void FunapiSession::CloseRequest()
+{
+  impl_->CloseRequest();
 }
 
 

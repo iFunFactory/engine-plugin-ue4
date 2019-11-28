@@ -92,15 +92,24 @@ public:
   void AddLeftCallback(const ChannelNotify &handler);
   void AddErrorCallback(const ErrorNotify &handler);
   void AddChannelListCallback(const ChannelListNotify &handler);
+
+  // Deprecated fucntion. Please Use FunapiMulticast::JoinChannel(chnnel_id, protobuf_channel_message_handler, token) function
   void AddProtobufChannelMessageCallback(const fun::string &channel_id, const ProtobufChannelMessageHandler &handler);
+
+  // Deprecated function. Please Use FunapiMulticast::JoinChannel(chnnel_id, json_channel_message_handler, token) function
   void AddJsonChannelMessageCallback(const fun::string &channel_id, const JsonChannelMessageHandler &handler);
+
   void AddSessionEventCallback(const FunapiMulticast::SessionEventHandler &handler);
   void AddTransportEventCallback(const FunapiMulticast::TransportEventHandler &handler);
 
   bool IsConnected() const;
   bool IsInChannel(const fun::string &channel_id) const;
 
+  // Deprecated function. Please Use FunapiMulticast::JoinChannel(chnnel_id, message_handler, token) function
   bool JoinChannel(const fun::string &channel_id, const fun::string &token = "");
+
+  bool JoinChannel(const fun::string &channel_id, const JsonChannelMessageHandler &handler, const fun::string &token = "");
+  bool JoinChannel(const fun::string &channel_id, const ProtobufChannelMessageHandler &handler, const fun::string &token = "");
 
   bool LeaveChannel(const fun::string &channel_id);
   bool LeaveAllChannels();

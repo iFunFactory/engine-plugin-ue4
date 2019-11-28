@@ -348,53 +348,77 @@ bool Afunapi_tester::CreateMulticast()
         multicast_ = nullptr;
       }
     });
-
-    multicast_->AddJsonChannelMessageCallback(kMulticastTestChannel,
-      [this](
-        const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
-        const fun::string &channel_id,
-        const fun::string &sender_string,
-        const fun::string &json_string)
-    {
-      UE_LOG(LogFunapiExample, Log, TEXT("Arrived the chatting message. channel_id = %s, sender = %s, body = %s"), *FString(channel_id.c_str()), *FString(sender_string.c_str()), *FString(json_string.c_str()));
-    });
-
-    multicast_->AddProtobufChannelMessageCallback(kMulticastTestChannel,
-      [this](
-        const std::shared_ptr<fun::FunapiMulticast> &funapi_multicast,
-        const fun::string &channel_id,
-        const fun::string &sender_string,
-        const FunMessage& message)
-    {
-      if (message.HasExtension(multicast))
-      {
-        FunMulticastMessage mcast_msg = message.GetExtension(multicast);
-        if (mcast_msg.HasExtension(chat)) {
-          FunChatMessage chat_msg = mcast_msg.GetExtension(chat);
-          fun::string text = chat_msg.text();
-          UE_LOG(LogFunapiExample, Log, TEXT("Arrived the chatting message. channel_id = %s, sender = %s, message = %s"), *FString(channel_id.c_str()), *FString(sender_string.c_str()), *FString(text.c_str()));
-        }
-      }
-    });
-
-    multicast_->Connect();
   }
-
+  multicast_->Connect();
   return true;
 }
+
 
 bool Afunapi_tester::JoinMulticastChannel()
 {
-  UE_LOG(LogFunapiExample, Log, TEXT("JoinMulticastChannel button clicked."));
+  auto json_msg_handler =
+    [this](const std::shared_ptr<fun::FunapiMulticast>& funapi_multicast,
+      const fun::string &channel_id,
+      const fun::string &sender_string,
+      const fun::string &json_string)
+  {
+    UE_LOG(LogFunapiExample, Log, TEXT("Arrived the chatting message. channel_id = %s, sender = %s, body = %s"),
+      *FString(channel_id.c_str()), *FString(sender_string.c_str()), *FString(json_string.c_str()));
+  };
 
-  if (multicast_) {
-    if (!multicast_->IsInChannel(kMulticastTestChannel)) {
-      multicast_->JoinChannel(kMulticastTestChannel);
+  auto protobuf_msg_handler =
+    [this](const std::shared_ptr<fun::FunapiMulticast> &funapi_multicast,
+      const fun::string &channel_id,
+      const fun::string &sender_string,
+      const FunMessage& message)
+  {
+    if (message.HasExtension(multicast))
+    {
+      FunMulticastMessage mcast_msg = message.GetExtension(multicast);
+      if (mcast_msg.HasExtension(chat)) {
+        FunChatMessage chat_msg = mcast_msg.GetExtension(chat);
+        fun::string text = chat_msg.text();
+        UE_LOG(LogFunapiExample, Log, TEXT("Arrived the chatting message. channel_id = %s, sender = %s, message = %s"), *FString(channel_id.c_str()), *FString(sender_string.c_str()), *FString(text.c_str()));
+      }
     }
+  };
+
+  UE_LOG(LogFunapiExample, Log, TEXT("JoinMulticastChannel button was clicked."));
+  if (multicast_ == nullptr)
+  {
+    UE_LOG(LogFunapiExample, Log, TEXT("Afunapi_tester::JoinMulticastChannel was called, but the FunapiMulticast instance is not created yet"));
+    return false;
   }
 
-  return true;
+  if (!multicast_->IsConnected())
+  {
+    UE_LOG(LogFunapiExample, Log, TEXT("Afunapi_tester::JoinMulticastChannel was called, but the FunapiMulticast instance is not connected yet"));
+    return false;
+  }
+
+  if (multicast_->IsInChannel(kMulticastTestChannel))
+  {
+    UE_LOG(LogFunapiExample, Log,
+      TEXT("Afunapi_tester::JoinMulticastChannel was called, but the FunapiMulticast instance was already joined %s channel"),
+      *FString(kMulticastTestChannel.c_str()));
+    return false;
+  }
+
+
+  bool result = false;
+  auto encoding = multicast_->GetEncoding();
+  if (encoding == fun::FunEncoding::kJson)
+  {
+    result = multicast_->JoinChannel(kMulticastTestChannel, json_msg_handler);
+  }
+  else if (encoding == fun::FunEncoding::kProtobuf)
+  {
+    result = multicast_->JoinChannel(kMulticastTestChannel, protobuf_msg_handler);
+  }
+
+  return result;
 }
+
 
 bool Afunapi_tester::SendMulticastMessage()
 {

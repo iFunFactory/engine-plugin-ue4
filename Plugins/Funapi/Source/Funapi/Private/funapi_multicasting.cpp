@@ -53,7 +53,13 @@ class FunapiMulticastImpl : public std::enable_shared_from_this<FunapiMulticastI
 
   bool IsConnected() const;
   bool IsInChannel(const fun::string &channel_id) const;
+
+  // Deprecated function. Use FunapiMulticast::JoinChannel(chnnel_id, message_handler, token) function
   bool JoinChannel(const fun::string &channel_id, const fun::string &token);
+
+  bool JoinChannel(const fun::string &channel_id, const JsonChannelMessageHandler &handler, const fun::string &token);
+  bool JoinChannel(const fun::string &channel_id, const ProtobufChannelMessageHandler &handler, const fun::string &token);
+
   bool LeaveChannel(const fun::string &channel_id);
   bool LeaveAllChannels();
 
@@ -65,7 +71,10 @@ class FunapiMulticastImpl : public std::enable_shared_from_this<FunapiMulticastI
   void AddErrorCallback(const ErrorNotify &handler);
   void AddChannelListCallback(const ChannelListNotify &handler);
 
+  // Deprecated fucntion. Use FunapiMulticast::JoinChannel(chnnel_id, protobuf_channel_message_handler, token) function
   void AddProtobufChannelMessageCallback(const fun::string &channel_id, const ProtobufChannelMessageHandler &handler);
+
+  // Deprecated function. Use FunapiMulticast::JoinChannel(chnnel_id, json_channel_message_handler, token) function
   void AddJsonChannelMessageCallback(const fun::string &channel_id, const JsonChannelMessageHandler &handler);
 
   bool RequestChannelList();
@@ -353,6 +362,109 @@ bool FunapiMulticastImpl::JoinChannel(const fun::string &channel_id, const fun::
 
   return true;
 }
+
+
+bool FunapiMulticastImpl::JoinChannel(const fun::string &channel_id, const JsonChannelMessageHandler &handler, const fun::string &token)
+{
+  if (!IsConnected())
+  {
+    DebugUtils::Log("Connect first before joining a multicast channel.");
+    return false;
+  }
+
+  // encoding 은 생성시점에 결졍되고 상태가 변경되지 않는다.
+  if (encoding_ != FunEncoding::kJson)
+  {
+    DebugUtils::Log("This multicast was created with json encoding. You should pass JsonChannelMessageHandler.");
+    return false;
+  }
+
+  if (IsInChannel(channel_id))
+  {
+    DebugUtils::Log("Already joined the channel: %s", channel_id.c_str());
+    return false;
+  }
+
+  {
+    std::unique_lock<std::mutex> lock(channels_mutex_);
+    channels_.insert(channel_id);
+    json_channel_handlers_[channel_id] += handler;
+  }
+
+  // Send Join message
+  rapidjson::Document msg;
+  msg.SetObject();
+
+  rapidjson::Value channel_id_node(channel_id.c_str(), msg.GetAllocator());
+  msg.AddMember(rapidjson::StringRef(kChannelId), channel_id_node, msg.GetAllocator());
+
+  rapidjson::Value sender_node(sender_.c_str(), msg.GetAllocator());
+  msg.AddMember(rapidjson::StringRef(kSender), sender_node, msg.GetAllocator());
+
+  rapidjson::Value join_node(true);
+  msg.AddMember(rapidjson::StringRef(kJoin), join_node, msg.GetAllocator());
+
+  if (token.length() > 0)
+  {
+    rapidjson::Value token_node(token.c_str(), msg.GetAllocator());
+    msg.AddMember(rapidjson::StringRef(kToken), token_node, msg.GetAllocator());
+  }
+
+  rapidjson::StringBuffer buffer;
+  rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+  msg.Accept(writer);
+  fun::string json_string = buffer.GetString();
+
+  session_->SendMessage(kMulticastMsgType, json_string, protocol_);
+  return true;
+}
+
+
+bool FunapiMulticastImpl::JoinChannel(const fun::string &channel_id, const ProtobufChannelMessageHandler &handler, const fun::string &token)
+{
+  if (!IsConnected())
+  {
+    DebugUtils::Log("Connect first before joining a multicast channel.");
+    return false;
+  }
+
+  // encoding 은 생성시점에 결졍되고 상태가 변경되지 않는다.
+  if (encoding_ != FunEncoding::kProtobuf)
+  {
+    DebugUtils::Log("This multicast was created with protobuf encoding. You should pass ProtobufChannelMessageHandler.");
+    return false;
+  }
+
+  if (IsInChannel(channel_id)) {
+    DebugUtils::Log("Already joined the channel: %s", channel_id.c_str());
+    return false;
+  }
+
+  {
+    std::unique_lock<std::mutex> lock(channels_mutex_);
+    channels_.insert(channel_id);
+    protobuf_channel_handlers_[channel_id] += handler;
+  }
+
+  // Send Join message
+  FunMessage msg;
+  msg.set_msgtype(kMulticastMsgType);
+
+  FunMulticastMessage *mcast_msg = msg.MutableExtension(multicast);
+  mcast_msg->set_channel(channel_id.c_str());
+  mcast_msg->set_join(true);
+  mcast_msg->set_sender(sender_.c_str());
+
+  if (token.length() > 0)
+  {
+    mcast_msg->set_token(token.c_str());
+  }
+
+  session_->SendMessage(msg, protocol_);
+  return true;
+}
+
+
 
 
 bool FunapiMulticastImpl::LeaveChannel(const fun::string &channel_id) {
@@ -889,19 +1001,37 @@ void FunapiMulticast::Close() {
 }
 
 
-bool FunapiMulticast::JoinChannel(const fun::string &channel_id, const fun::string &token) {
+bool FunapiMulticast::JoinChannel(const fun::string &channel_id, const fun::string &token)
+{
+  DebugUtils::Log("JoinChannel(channel_id, token) function was deprecated. Please Use FunapiMulticast::JoinChannel(chnnel_id, message_handler, token) function");
   return impl_->JoinChannel(channel_id, token);
 }
 
 
+bool FunapiMulticast::JoinChannel(const fun::string &channel_id, const JsonChannelMessageHandler &handler, const fun::string &token)
+{
+  return impl_->JoinChannel(channel_id, handler, token);
+}
+
+
+bool FunapiMulticast::JoinChannel(const fun::string &channel_id, const ProtobufChannelMessageHandler &handler, const fun::string &token)
+{
+  return impl_->JoinChannel(channel_id, handler, token);
+}
+
+
 void FunapiMulticast::AddProtobufChannelMessageCallback(const fun::string &channel_id,
-                                                        const ProtobufChannelMessageHandler &handler) {
+                                                        const ProtobufChannelMessageHandler &handler)
+{
+  DebugUtils::Log("FunapiMulticast::AddProtobufChannelMessageCallback function was deprecated. Please Use FunapiMulticast::JoinChannel(chnnel_id, message_handler, token) function");
   impl_->AddProtobufChannelMessageCallback(channel_id, handler);
 }
 
 
 void FunapiMulticast::AddJsonChannelMessageCallback(const fun::string &channel_id,
-                                                    const JsonChannelMessageHandler &handler) {
+                                                    const JsonChannelMessageHandler &handler)
+{
+  DebugUtils::Log("FunapiMulticast::AddJsonChannelMessageCallback function was deprecated. Please Use FunapiMulticast::JoinChannel(chnnel_id, message_handler, token) function");
   impl_->AddJsonChannelMessageCallback(channel_id, handler);
 }
 

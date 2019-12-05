@@ -201,6 +201,7 @@ class FUNAPI_API FunapiError : public std::enable_shared_from_this<FunapiError> 
     kSeq,
     kPing,
     kWebsocket,
+    kHandshake
   };
 
   // legacy

@@ -70,6 +70,7 @@ class FunapiMulticastImpl : public std::enable_shared_from_this<FunapiMulticastI
 
   void Connect(const std::weak_ptr<FunapiMulticast>& multicast);
   void Close();
+  void InitSessionCallback();
 
  private:
   void OnReceived(const fun::string &json_string);
@@ -103,7 +104,6 @@ class FunapiMulticastImpl : public std::enable_shared_from_this<FunapiMulticastI
   mutable std::mutex channels_mutex_;
 
   void SendLeaveMessage(const fun::string &channel_id);
-  void InitSessionCallback();
 };
 
 
@@ -114,7 +114,6 @@ FunapiMulticastImpl::FunapiMulticastImpl(const char* sender,
                                          const bool reliability)
 : encoding_(encoding), sender_(sender), port_(port) {
   session_ = FunapiSession::Create(hostname_or_ip, reliability);
-  InitSessionCallback();
 }
 
 
@@ -122,7 +121,6 @@ FunapiMulticastImpl::FunapiMulticastImpl(const char* sender,
                                          const std::shared_ptr<FunapiSession> &session)
 : session_(session), sender_(sender), port_(0) {
   encoding_ = session->GetEncoding(TransportProtocol::kTcp);
-  InitSessionCallback();
 }
 
 
@@ -131,24 +129,33 @@ FunapiMulticastImpl::~FunapiMulticastImpl() {
 
 
 void FunapiMulticastImpl::InitSessionCallback() {
+  std::weak_ptr<FunapiMulticastImpl> weak = shared_from_this();
   session_->
-  AddJsonRecvCallback([this](const std::shared_ptr<fun::FunapiSession> &session,
-                             const fun::TransportProtocol protocol,
-                             const fun::string &msg_type,
-                             const fun::string &json_string)
+  AddJsonRecvCallback([weak, this](const std::shared_ptr<fun::FunapiSession> &session,
+                                   const fun::TransportProtocol protocol,
+                                   const fun::string &msg_type,
+                                   const fun::string &json_string)
   {
-    if (msg_type.compare(kMulticastMsgType) == 0) {
-      OnReceived(json_string);
+    if (auto t = weak.lock())
+    {
+      if (msg_type.compare(kMulticastMsgType) == 0)
+      {
+        OnReceived(json_string);
+      }
     }
   });
 
   session_->
-  AddProtobufRecvCallback([this](const std::shared_ptr<fun::FunapiSession> &session,
-                                 const fun::TransportProtocol protocol,
-                                 const FunMessage &message)
+  AddProtobufRecvCallback([weak, this](const std::shared_ptr<fun::FunapiSession> &session,
+                                       const fun::TransportProtocol protocol,
+                                       const FunMessage &message)
   {
-    if (message.msgtype().compare(kMulticastMsgType) == 0) {
-      OnReceived(message);
+    if (auto t = weak.lock())
+    {
+      if (message.msgtype().compare(kMulticastMsgType) == 0)
+      {
+        OnReceived(message);
+      }
     }
   });
 }
@@ -605,35 +612,49 @@ FunEncoding FunapiMulticastImpl::GetEncoding() {
 }
 
 
-void FunapiMulticastImpl::AddSessionEventCallback(const FunapiMulticast::SessionEventHandler &handler) {
-  if (session_) {
+void FunapiMulticastImpl::AddSessionEventCallback(const FunapiMulticast::SessionEventHandler &handler)
+{
+  if (session_)
+  {
+    std::weak_ptr<FunapiMulticastImpl> weak = shared_from_this();
     session_->AddSessionEventCallback
-    ([this, handler]
+    ([weak ,this, handler]
      (const std::shared_ptr<fun::FunapiSession> &session,
       const fun::TransportProtocol protocol,
       const fun::SessionEventType type,
       const fun::string &session_id,
       const std::shared_ptr<FunapiError> &error)
     {
-      if (auto m = multicast_.lock()) {
-        handler(m, type, session_id, error);
+      if (auto t = weak.lock())
+      {
+        if (auto m = multicast_.lock())
+        {
+          handler(m, type, session_id, error);
+        }
       }
     });
   }
 }
 
 
-void FunapiMulticastImpl::AddTransportEventCallback(const FunapiMulticast::TransportEventHandler &handler) {
-  if (session_) {
+void FunapiMulticastImpl::AddTransportEventCallback(const FunapiMulticast::TransportEventHandler &handler)
+{
+  if (session_)
+  {
+    std::weak_ptr<FunapiMulticastImpl> weak = shared_from_this();
     session_->AddTransportEventCallback
-    ([this, handler]
+    ([weak, this, handler]
      (const std::shared_ptr<fun::FunapiSession> &session,
       const fun::TransportProtocol protocol,
       const fun::TransportEventType type,
       const std::shared_ptr<FunapiError> &error)
     {
-      if (auto m = multicast_.lock()) {
-        handler(m, type, error);
+      if (auto t = weak.lock())
+      {
+        if (auto m = multicast_.lock())
+        {
+          handler(m, type, error);
+        }
       }
     });
   }
@@ -673,11 +694,13 @@ void FunapiMulticastImpl::AddJsonChannelMessageCallback(const fun::string &chann
 
 FunapiMulticast::FunapiMulticast(const char* sender, const char* hostname_or_ip, const uint16_t port, const FunEncoding encoding, const bool reliability)
 : impl_(std::make_shared<FunapiMulticastImpl>(sender, hostname_or_ip, port, encoding, reliability)) {
+  impl_->InitSessionCallback();
 }
 
 
 FunapiMulticast::FunapiMulticast(const char* sender, const std::shared_ptr<FunapiSession> &session)
 : impl_(std::make_shared<FunapiMulticastImpl>(sender, session)) {
+  impl_->InitSessionCallback();
 }
 
 

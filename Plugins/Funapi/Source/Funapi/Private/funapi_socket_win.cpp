@@ -223,7 +223,7 @@ bool FunapiSocketImpl::Select()
         = FunapiSendFlagManager::Get();
 
       int event_count = socket_count + 1;
-      HANDLE* events = new HANDLE[event_count];
+      fun::vector<HANDLE> events(event_count);
       for (int i = 0; i < socket_count; ++i)
       {
         events[i+1] = v_select_sockets[i]->GetEventHandle();

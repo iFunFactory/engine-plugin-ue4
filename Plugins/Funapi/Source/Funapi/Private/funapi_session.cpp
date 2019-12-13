@@ -1030,7 +1030,9 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
 
   bool IsStarted();
   virtual void Start();
-  virtual void Stop(bool use_force = false, std::shared_ptr<FunapiError> error = nullptr);
+  virtual void Stop(bool use_force = false,
+                    std::shared_ptr<FunapiError> error = nullptr,
+                    bool user_did = false);
 
   void SendMessage(std::shared_ptr<FunapiMessage> message,
                    bool priority,
@@ -1159,7 +1161,8 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
   bool first_set_session_id_ = true;
   bool UseFirstSessionId();
 
-  virtual void OnDisconnecting(std::shared_ptr<FunapiError> error = nullptr);
+  virtual void OnDisconnecting(std::shared_ptr<FunapiError> error = nullptr,
+                               bool user_did = false);
 
   int next_decoding_offset_ = 0;
   bool header_decoded_ = false;
@@ -2005,7 +2008,9 @@ void FunapiTransport::OnReceived(const TransportProtocol protocol,
 }
 
 
-void FunapiTransport::OnDisconnecting(std::shared_ptr<FunapiError> error) {
+void FunapiTransport::OnDisconnecting(std::shared_ptr<FunapiError> error,
+                                      bool user_did)
+{
   SetState(TransportState::kDisconnected);
 
   OnTransportClosed(GetProtocol(), error);
@@ -2051,15 +2056,17 @@ void FunapiTransport::Start() {
 }
 
 
-void FunapiTransport::Stop(bool use_force, std::shared_ptr<FunapiError> error) {
+void FunapiTransport::Stop(bool use_force, std::shared_ptr<FunapiError> error, bool user_did) {
   if (GetState() == TransportState::kDisconnected)
     return;
 
   SetState(TransportState::kDisconnecting);
 
-  if (send_queue_->Empty() || use_force) {
-    PushNetworkThreadTask([this, error]()->bool {
-      OnDisconnecting(error);
+  if (send_queue_->Empty() || use_force)
+  {
+    PushNetworkThreadTask([this, error, user_did]()->bool
+    {
+      OnDisconnecting(error, user_did);
       return true;
     });
   }
@@ -2112,7 +2119,8 @@ class FunapiTcpTransport : public FunapiTransport {
                            const fun::string &error_string,
                            std::shared_ptr<FunapiAddrInfo> addrinfo_res);
 
-  void OnDisconnecting(std::shared_ptr<FunapiError> error = nullptr);
+  void OnDisconnecting(std::shared_ptr<FunapiError> error = nullptr,
+                       bool user_did = false);
 
  private:
   // Ping message-related constants.
@@ -2216,20 +2224,24 @@ void FunapiTcpTransport::Start() {
 }
 
 
-void FunapiTcpTransport::OnDisconnecting(std::shared_ptr<FunapiError> error) {
+void FunapiTcpTransport::OnDisconnecting(std::shared_ptr<FunapiError> error,
+                                         bool user_did)
+{
   tcp_ = nullptr;
 
-  if (ack_receiving_) {
+  if (ack_receiving_)
+  {
     reconnect_first_ack_receiving_ = true;
   }
 
-  if (auto_reconnect_ && !received_redirection_event_) {
+  if (!received_redirection_event_ && auto_reconnect_ && !user_did)
+  {
     SetState(TransportState::kDisconnected);
     StartReconnect();
     return;
   }
 
-  FunapiTransport::OnDisconnecting(error);
+  FunapiTransport::OnDisconnecting(error, user_did);
 }
 
 
@@ -2696,7 +2708,8 @@ class FunapiUdpTransport : public FunapiTransport {
   bool EncodeThenSendMessage(std::shared_ptr<FunapiMessage> message,
                              fun::vector<uint8_t> &body,
                              const EncryptionType encryption_type);
-  void OnDisconnecting(std::shared_ptr<FunapiError> error = nullptr);
+  void OnDisconnecting(std::shared_ptr<FunapiError> error = nullptr,
+                       bool use_did = false);
 
  private:
   std::shared_ptr<FunapiUdp> udp_;
@@ -2794,10 +2807,12 @@ void FunapiUdpTransport::Start() {
 }
 
 
-void FunapiUdpTransport::OnDisconnecting(std::shared_ptr<FunapiError> error) {
+void FunapiUdpTransport::OnDisconnecting(std::shared_ptr<FunapiError> error,
+                                         bool user_did)
+{
   udp_ = nullptr;
 
-  FunapiTransport::OnDisconnecting(error);
+  FunapiTransport::OnDisconnecting(error, user_did);
 }
 
 
@@ -2911,7 +2926,8 @@ class FunapiHttpTransport : public FunapiTransport {
   bool EncodeThenSendMessage(std::shared_ptr<FunapiMessage> message,
                              fun::vector<uint8_t> &body,
                              const EncryptionType encryption_type);
-  void OnDisconnecting(std::shared_ptr<FunapiError> error = nullptr);
+  void OnDisconnecting(std::shared_ptr<FunapiError> error = nullptr,
+                       bool user_did = false);
 
  private:
   void WebResponseHeaderCb(const void *data, int len, HeaderFields &header_fields);
@@ -2984,8 +3000,10 @@ void FunapiHttpTransport::Start() {
 }
 
 
-void FunapiHttpTransport::OnDisconnecting(std::shared_ptr<FunapiError> error) {
-  FunapiTransport::OnDisconnecting(error);
+void FunapiHttpTransport::OnDisconnecting(std::shared_ptr<FunapiError> error,
+                                          bool user_did)
+{
+  FunapiTransport::OnDisconnecting(error, user_did);
 }
 
 
@@ -3227,7 +3245,8 @@ class FunapiWebsocketTransport : public FunapiTransport {
   bool EncodeThenSendMessage(std::shared_ptr<FunapiMessage> message,
                              fun::vector<uint8_t> &body,
                              const EncryptionType encryption_type);
-  void OnDisconnecting(std::shared_ptr<FunapiError> error = nullptr);
+  void OnDisconnecting(std::shared_ptr<FunapiError> error = nullptr,
+                       bool user_did = false);
 
  private:
   fun::vector<uint8_t> receiving_vector_;
@@ -3342,8 +3361,10 @@ void FunapiWebsocketTransport::Start() {
 }
 
 
-void FunapiWebsocketTransport::OnDisconnecting(std::shared_ptr<FunapiError> error) {
-  FunapiTransport::OnDisconnecting(error);
+void FunapiWebsocketTransport::OnDisconnecting(std::shared_ptr<FunapiError> error,
+                                               bool user_did)
+{
+  FunapiTransport::OnDisconnecting(error, user_did);
 }
 
 
@@ -3800,13 +3821,19 @@ void FunapiSessionImpl::Close() {
 }
 
 
-void FunapiSessionImpl::OnClose(const TransportProtocol protocol) {
-  if (auto transport = GetTransport(protocol)) {
+void FunapiSessionImpl::OnClose(const TransportProtocol protocol)
+{
+  if (auto transport = GetTransport(protocol))
+  {
     auto state = transport->GetState();
-    if (state == TransportState::kConnected) {
-      transport->Stop();
+    if (state == TransportState::kConnected)
+    {
+      transport->Stop(false, /* force */
+                      nullptr, /* error */
+                      true); /* user did */
     }
-    else if (state == TransportState::kConnecting) {
+    else if (state == TransportState::kConnecting)
+    {
       Close(protocol);
     }
   }

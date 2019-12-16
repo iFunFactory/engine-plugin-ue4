@@ -4132,14 +4132,12 @@ void FunapiSessionImpl::OnSessionClose(const TransportProtocol protocol,
     }
 
     auto encoding = GetEncoding(protocol);
-    fun::string temp_session_id = GetSessionId(FunEncoding::kJson);
-
-    ResetSession();
+    fun::string current_session_id = GetSessionId(FunEncoding::kJson);
 
     OnSessionEvent(protocol,
                    encoding,
                    SessionEventType::kClosed,
-                   temp_session_id,
+                   current_session_id,
                    nullptr /*error*/);
 }
 
@@ -4823,6 +4821,11 @@ void FunapiSessionImpl::OnSessionEvent(const TransportProtocol protocol,
     PushTaskQueue([this, protocol, type, session_id, error]()->bool {
       if (auto s = session_.lock()) {
         on_session_event_(s, protocol, type, session_id, error);
+
+        if (type == SessionEventType::kClosed) {
+          ResetSession();
+          return true;
+        }
         // send buffer 에 있는 메세지를 모두 전송 시도 한다.
         send_flag_manager_->WakeUp();
       }

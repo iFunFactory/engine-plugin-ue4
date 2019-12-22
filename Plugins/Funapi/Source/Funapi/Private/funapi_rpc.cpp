@@ -14,6 +14,7 @@
 
 #include "funapi_utils.h"
 #include "funapi_tasks.h"
+#include "funapi_send_flag_manager.h"
 #include "funapi_socket.h"
 
 #define kRpcAddMessageType "_sys_ds_add_server"
@@ -554,12 +555,14 @@ bool FunapiRpcPeer::EmptySendQueue() {
 void FunapiRpcPeer::PushSendQueue(const FunDedicatedServerRpcMessage &message) {
   std::unique_lock<std::mutex> lock(send_queue_mutex_);
   send_queue_.push_back(std::make_shared<FunapiRpcMessage>(message));
+  FunapiSendFlagManager::Get().WakeUp();
 }
 
 
 void FunapiRpcPeer::PushSendQueue(std::shared_ptr<FunapiRpcMessage> message) {
   std::unique_lock<std::mutex> lock(send_queue_mutex_);
   send_queue_.push_back(message);
+  FunapiSendFlagManager::Get().WakeUp();
 }
 
 

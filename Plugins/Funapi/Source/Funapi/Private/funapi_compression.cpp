@@ -445,6 +445,7 @@ class FunapiCompressionImpl : public std::enable_shared_from_this<FunapiCompress
   virtual ~FunapiCompressionImpl();
 
   void SetCompressionType(const CompressionType type);
+  void SetThreshold(int threshold);
   void SetZstdDictBase64String(const fun::string &zstd_dict_base64string);
 
   bool Compress(HeaderFields &header_fields, fun::vector<uint8_t> &body);
@@ -461,6 +462,8 @@ class FunapiCompressionImpl : public std::enable_shared_from_this<FunapiCompress
 
   fun::map<CompressionType, std::shared_ptr<Compressor>> compressors_;
   std::shared_ptr<Compressor> default_compressor_ = nullptr;
+
+  int threshold_ = 128;
 };
 
 
@@ -520,7 +523,7 @@ bool FunapiCompressionImpl::Decompress(HeaderFields &header_fields,
 
 
 bool FunapiCompressionImpl::Compress(HeaderFields &header_fields, fun::vector<uint8_t> &body) {
-  if (default_compressor_ && !body.empty()) {
+  if (default_compressor_ && (body.size() >= threshold_)) {
     fun::vector<uint8_t> in(body.cbegin(), body.cend());
     if (default_compressor_->Compress(in, body)) {
       HeaderFields::iterator it = header_fields.find(kLengthHeaderField);
@@ -566,6 +569,11 @@ void FunapiCompressionImpl::SetCompressionType(const CompressionType type) {
   }
 }
 
+void FunapiCompressionImpl::SetThreshold(int threshold)
+{
+  threshold_ = threshold;
+}
+
 
 bool FunapiCompressionImpl::HasCompression(const CompressionType type) {
   if (GetCompressor(type)) {
@@ -607,6 +615,12 @@ FunapiCompression::~FunapiCompression() {
 
 void FunapiCompression::SetCompressionType(const CompressionType type) {
   return impl_->SetCompressionType(type);
+}
+
+
+void FunapiCompression::SetThreshold(int threshold)
+{
+  impl_->SetThreshold(threshold);
 }
 
 

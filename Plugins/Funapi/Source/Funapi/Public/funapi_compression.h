@@ -34,6 +34,7 @@ class FUNAPI_API FunapiCompression : public std::enable_shared_from_this<FunapiC
   virtual ~FunapiCompression();
 
   void SetCompressionType(const CompressionType type);
+  void SetThreshold(int threshold);
 #if FUNAPI_HAVE_ZSTD
   void SetZstdDictBase64String(const fun::string &zstd_dict_base64string);
 #endif

@@ -4,11 +4,11 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
+#include "funapi_rpc.h"
+
 #ifdef FUNAPI_UE4
 #include "FunapiPrivatePCH.h"
 #endif
-
-#include "funapi_rpc.h"
 
 #if FUNAPI_HAVE_RPC
 

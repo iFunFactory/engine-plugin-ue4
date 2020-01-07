@@ -34,8 +34,8 @@
 
 #ifndef FUNAPI_UE4_PLATFORM_PS4
 
-#include "funapi_plugin_ue4.h"
-#include "AutomationTest.h"
+#include "../../funapi_plugin_ue4.h"
+#include "Misc/AutomationTest.h"
 
 #include <math.h>
 #include <stdlib.h>

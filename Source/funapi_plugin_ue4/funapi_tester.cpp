@@ -4,12 +4,12 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
+#include "funapi_tester.h"
 #include "funapi_plugin_ue4.h"
 
 #include <sstream>
 #include <random>
 
-#include "funapi_tester.h"
 #include "test_messages.pb.h"
 #include "funapi_tasks.h"
 #include "funapi_rpc.h"

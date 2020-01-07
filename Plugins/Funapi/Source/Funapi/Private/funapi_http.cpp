@@ -6,11 +6,12 @@
 
 #ifndef FUNAPI_UE4_PLATFORM_PS4
 
+#include "funapi_http.h"
+
 #ifdef FUNAPI_UE4
 #include "FunapiPrivatePCH.h"
 #endif
 
-#include "funapi_http.h"
 #include "funapi_utils.h"
 #include "funapi_tasks.h"
 #include "curl/curl.h"

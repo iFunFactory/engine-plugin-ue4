@@ -4,8 +4,8 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
-#include "funapi_plugin_ue4.h"
-#include "AutomationTest.h"
+#include "../funapi_plugin_ue4.h"
+#include "Misc/AutomationTest.h"
 
 #include "funapi_session.h"
 #include "funapi_multicasting.h"
@@ -21,7 +21,7 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/document.h"
 
-#include "test_messages.pb.h"
+#include "../test_messages.pb.h"
 #include "funapi/service/multicast_message.pb.h"
 
 const fun::string g_server_ip = "plugin-docker.ifunfactory.com";

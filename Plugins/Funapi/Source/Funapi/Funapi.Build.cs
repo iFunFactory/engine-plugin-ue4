@@ -34,6 +34,14 @@ public class Funapi : ModuleRules
           "UnrealEd",
         }
       );
+
+      PublicIncludePaths.AddRange(
+        new string[]
+        {
+           Path.Combine(ModuleDirectory, "Public/editor")
+          //... add public include paths required here...
+        }
+      );
     }
 
     if (Target.Platform == UnrealTargetPlatform.PS4) {

@@ -39,11 +39,11 @@
 #include <sys/types.h>
 #ifdef _MSC_VER
 #define WIN32_LEAN_AND_MEAN  // yeah, right
-#include "AllowWindowsPlatformTypes.h"
+#include "Windows/AllowWindowsPlatformTypes.h"
 #include <windows.h>         // Find*File().  :(
 #include <io.h>
 #include <direct.h>
-#include "HideWindowsPlatformTypes.h"
+#include "Windows/HideWindowsPlatformTypes.h"
 #else
 #include <dirent.h>
 #include <unistd.h>

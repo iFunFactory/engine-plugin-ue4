@@ -10,10 +10,10 @@
 #if WITH_EDITOR
 
 #include "CoreMinimal.h"
-#include "Commands.h"
+#include "Framework/Commands/Commands.h"
 
 #include "LevelEditor.h"
-#include "Commands/UIAction.h"
+#include "Framework/Commands/UIAction.h"
 
 class Ffunapi_Menubar {
  public:

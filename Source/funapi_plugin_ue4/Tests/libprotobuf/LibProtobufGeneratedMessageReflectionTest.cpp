@@ -32,8 +32,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include "funapi_plugin_ue4.h"
-#include "AutomationTest.h"
+#include "../../funapi_plugin_ue4.h"
+#include "Misc/AutomationTest.h"
 
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/descriptor.h>

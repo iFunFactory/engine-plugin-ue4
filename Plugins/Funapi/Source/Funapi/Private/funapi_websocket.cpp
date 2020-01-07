@@ -4,17 +4,18 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
+#include "funapi_websocket.h"
+
 #ifdef FUNAPI_UE4
 #include "FunapiPrivatePCH.h"
 #endif
 
-#include "funapi_websocket.h"
 #include "funapi_utils.h"
 
 #if FUNAPI_HAVE_WEBSOCKET
 #ifdef FUNAPI_UE4
 #if PLATFORM_WINDOWS
-#include "AllowWindowsPlatformTypes.h"
+#include "Windows/AllowWindowsPlatformTypes.h"
 #endif
 // Work around a conflict between a UI namespace defined by engine code and a typedef in OpenSSL
 #define UI UI_ST
@@ -23,7 +24,7 @@ THIRD_PARTY_INCLUDES_START
 THIRD_PARTY_INCLUDES_END
 #undef UI
 #if PLATFORM_WINDOWS
-#include "HideWindowsPlatformTypes.h"
+#include "Windows/HideWindowsPlatformTypes.h"
 #endif
 #else // FUNAPI_UE4
 #include "libwebsockets.h"

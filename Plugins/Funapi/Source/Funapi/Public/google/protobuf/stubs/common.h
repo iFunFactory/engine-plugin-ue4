@@ -110,7 +110,7 @@ inline BOOL GetMessage(
 #pragma warning(disable : 4800)
 #pragma warning(disable : 4996)
 #pragma warning(disable : 4668)
-#include "Platform.h"
+#include "HAL/Platform.h"
 #else // defined(_WIN32)
 #ifndef DLLEXPORT
 #define DLLEXPORT

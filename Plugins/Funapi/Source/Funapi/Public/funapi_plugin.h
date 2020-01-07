@@ -13,7 +13,7 @@
 #endif
 
 #ifdef FUNAPI_UE4_PLATFORM_WINDOWS
-#include "AllowWindowsPlatformTypes.h"
+#include "Windows/AllowWindowsPlatformTypes.h"
 #endif
 
 #ifdef FUNAPI_PLATFORM_WINDOWS
@@ -73,7 +73,7 @@
 #endif
 
 #ifdef FUNAPI_UE4_PLATFORM_WINDOWS
-#include "HideWindowsPlatformTypes.h"
+#include "Windows/HideWindowsPlatformTypes.h"
 #endif
 
 #endif  // SRC_FUNAPI_PLUGIN_H_

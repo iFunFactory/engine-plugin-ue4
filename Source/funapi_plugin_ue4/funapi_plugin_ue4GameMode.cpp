@@ -4,9 +4,8 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
-#include "funapi_plugin_ue4.h"
 #include "funapi_plugin_ue4GameMode.h"
-
+#include "funapi_plugin_ue4.h"
 
 
 

@@ -7,17 +7,19 @@
 #if FUNAPI_UE4
 #if WITH_EDITOR
 
+#include "funapi_extension_commands.h"
 #include "FunapiPrivatePCH.h"
 #include "funapi_plugin.h"
 
 #include "curl/curl.h"
 
-#include "Commands/InputChord.h"
+#include "Modules/ModuleManager.h"
+#include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "Framework/Commands/InputChord.h"
 #include "HAL/PlatformFilemanager.h"
 #include "Misc/MessageDialog.h"
 
 #include "funapi_utils.h"
-#include "funapi_extension_commands.h"
 
 
 // Avoid name collisions with the rest of engine code and avoid typing namespace

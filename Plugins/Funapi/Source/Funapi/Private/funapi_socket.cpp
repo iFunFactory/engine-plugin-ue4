@@ -7,12 +7,13 @@
 #ifndef FUNAPI_UE4_PLATFORM_PS4
 #ifndef FUNAPI_PLATFORM_WINDOWS
 
+#include "funapi_socket.h"
+
 #ifdef FUNAPI_UE4
 #include "FunapiPrivatePCH.h"
 #endif
 
 #include "funapi_send_flag_manager.h"
-#include "funapi_socket.h"
 #include "funapi_utils.h"
 
 #ifdef FUNAPI_UE4

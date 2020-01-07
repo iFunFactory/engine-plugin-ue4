@@ -15,8 +15,8 @@
 #include "funapi_utils.h"
 
 #ifdef FUNAPI_UE4
-#include "WindowsHWrapper.h"
-#include "AllowWindowsPlatformTypes.h"
+#include "Windows/WindowsHWrapper.h"
+#include "Windows/AllowWindowsPlatformTypes.h"
 // Work around a conflict between a UI namespace defined by engine code and a typedef in OpenSSL
 #define UI UI_ST
 THIRD_PARTY_INCLUDES_START
@@ -26,7 +26,7 @@ THIRD_PARTY_INCLUDES_END
 #ifdef UI
 #undef UI
 #endif
-#include "HideWindowsPlatformTypes.h"
+#include "Windows/HideWindowsPlatformTypes.h"
 #else // FUNAPI_UE4
 #include "openssl/ssl.h"
 #include "openssl/err.h"

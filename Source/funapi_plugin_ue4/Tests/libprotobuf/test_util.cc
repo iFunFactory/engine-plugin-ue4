@@ -35,9 +35,9 @@
 #ifdef _WIN32
 // Verify that #including windows.h does not break anything (e.g. because
 // windows.h #defines GetMessage() as a macro).
-#include "AllowWindowsPlatformTypes.h"
+#include "Windows/AllowWindowsPlatformTypes.h"
 #include <windows.h>
-#include "HideWindowsPlatformTypes.h"
+#include "Windows/HideWindowsPlatformTypes.h"
 #endif
 
 #include "test_util.h"

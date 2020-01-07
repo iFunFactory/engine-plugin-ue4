@@ -4,11 +4,11 @@
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
+#include "funapi_utils.h"
+
 #ifdef FUNAPI_UE4
 #include "FunapiPrivatePCH.h"
 #endif
-
-#include "funapi_utils.h"
 
 #include <iomanip>
 
@@ -19,7 +19,7 @@
 
 #ifdef FUNAPI_UE4
 #include "Misc/AssertionMacros.h"
-#include "SecureHash.h"
+#include "Misc/SecureHash.h"
 #include "Misc/Base64.h"
 #endif
 

@@ -1941,7 +1941,7 @@ void FunapiTransport::OnReceived(const TransportProtocol protocol,
                                  const FunEncoding encoding,
                                  const HeaderFields &header,
                                  const fun::vector<uint8_t> &body) {
-  auto message = FunapiMessage::Create(encoding, body);
+  auto message = FunapiMessage::Create(encoding, body, EncryptionType::kDefaultEncryption);
 
   fun::string msg_type;
   uint32_t ack = 0;

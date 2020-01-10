@@ -208,15 +208,31 @@ public class Funapi : ModuleRules
     {
       // PublicDefinitions.Add("WITH_HOT_RELOAD=0"); // <= 4.20
       PublicDefinitions.Add("FUNAPI_UE4_PLATFORM_IOS=1");
-
       PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include", "iOS"));
 
       LibPath += "lib/iOS";
-      PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcurl.a"));
+#if UE_4_24_OR_LATER
+      PrivateDependencyModuleNames.AddRange(
+        new string[]
+        {
+          "OpenSSL",
+          "libWebSockets"
+          // ... add private dependencies that you statically link with here ...
+        }
+      );
+
+      PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include", "iOS", "curl_with_opensssl1.1.1"));
+      PublicAdditionalLibraries.Add(Path.Combine(LibPath, "curl_with_opensssl1.1.1/libcurl.a"));
+#else
+      PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include", "iOS", "curl_with_opensssl1.0.2"));
+      PublicAdditionalLibraries.Add(Path.Combine(LibPath, "curl_with_opensssl1.0.2/libcurl.a"));
+
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libcrypto.a"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libssl.a"));
-      PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.a"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libwebsockets.a"));
+#endif
+
+      PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.a"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libzstd.a"));
     }
     else if (Target.Platform == UnrealTargetPlatform.PS4)

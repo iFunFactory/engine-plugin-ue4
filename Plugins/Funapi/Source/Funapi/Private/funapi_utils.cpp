@@ -11,10 +11,12 @@
 #include "funapi_utils.h"
 
 #ifdef FUNAPI_COCOS2D
+#include <assert.h>
 #include "md5/md5.h"
 #endif
 
 #ifdef FUNAPI_UE4
+#include "Misc/AssertionMacros.h"
 #include "SecureHash.h"
 #include "Misc/Base64.h"
 #endif
@@ -282,6 +284,18 @@ bool FunapiUtil::CreateDirectory(const fun::string &dir_name)
   // using the function provided by the game engine you want to add.
 #  error FunapiUtil::CreateDirectory function supports only Cocos2d, UE4 game engines.
   return false;
+#endif
+}
+
+
+void FunapiUtil::Assert(bool condition, fun::string error_msg)
+{
+#ifdef FUNAPI_UE4
+  // UE4 환경에서 assert 는 NDEBUG 로 인해 동작하지 않기 때문에
+  // UE4 의 assertion 함수인 checkf 사용.
+  checkf(condition, TEXT("%s"), ANSI_TO_TCHAR(error_msg.c_str()));
+#else
+  assert(condition && error_msg.c_str());
 #endif
 }
 

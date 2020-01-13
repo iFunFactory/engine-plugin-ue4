@@ -10,6 +10,8 @@
 
 #include "funapi_utils.h"
 
+#include <iomanip>
+
 #ifdef FUNAPI_COCOS2D
 #include <assert.h>
 #include "md5/md5.h"
@@ -223,6 +225,31 @@ bool FunapiUtil::SeqLess(const uint32_t x, const uint32_t y) {
   return (int32_t)(y - x) > 0;
 }
 
+
+fun::string FunapiUtil::EncodeUrl(const fun::string& url)
+{
+  // https://github.com/whoshuu/cpr/blob/master/cpr/util.cpp
+  stringstream escaped;
+  escaped.fill('0');
+  escaped << std::hex;
+
+  for (string::const_iterator i = url.begin(), n = url.end(); i != n; ++i) {
+    string::value_type c = (*i);
+
+    // Keep alphanumeric and other accepted characters intact
+    if (isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~') {
+      escaped << c;
+      continue;
+    }
+
+    // Any other characters are percent-encoded
+    escaped << std::uppercase;
+    escaped << '%' << std::setw(2) << int((unsigned char)c);
+    escaped << std::nouppercase;
+  }
+
+  return escaped.str();
+}
 
 
 bool FunapiUtil::IsFileExists(const fun::string &file_name)

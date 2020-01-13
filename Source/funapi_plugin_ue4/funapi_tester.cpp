@@ -547,7 +547,8 @@ bool Afunapi_tester::RequestAnnouncements()
                                                 const fun::FunapiAnnouncement::ResultCode result){
       if (result == fun::FunapiAnnouncement::ResultCode::kSucceed) {
         for (auto i : info) {
-          UE_LOG(LogFunapiExample, Log, TEXT("date=%s message=%s subject=%s file_path=%s"), *FString(i->GetDate().c_str()), *FString(i->GetMessageText().c_str()), *FString(i->GetSubject().c_str()), *FString(i->GetFilePath().c_str()));
+          UE_LOG(LogFunapiExample, Log, TEXT("date=%s message=%s subject=%s file_path=%s kind=%s"),
+              *FString(i->GetDate().c_str()), *FString(i->GetMessageText().c_str()), *FString(i->GetSubject().c_str()), *FString(i->GetFilePath().c_str()), *FString(i->GetKind().c_str()));
         }
       }
 

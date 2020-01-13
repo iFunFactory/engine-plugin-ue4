@@ -27,7 +27,8 @@ class FunapiAnnouncementInfoImpl : public std::enable_shared_from_this<FunapiAnn
                              const fun::string &image_md5,
                              const fun::string &image_url,
                              const fun::string &link_url,
-                             const fun::string &file_path);
+                             const fun::string &file_path,
+                             const fun::string &kind);
   virtual ~FunapiAnnouncementInfoImpl();
 
   const fun::string& GetDate();
@@ -37,6 +38,7 @@ class FunapiAnnouncementInfoImpl : public std::enable_shared_from_this<FunapiAnn
   const fun::string& GetImageUrl();
   const fun::string& GetLinkUrl();
   const fun::string& GetFilePath();
+  const fun::string& GetKind();
 
  private:
   fun::string date_;
@@ -46,6 +48,7 @@ class FunapiAnnouncementInfoImpl : public std::enable_shared_from_this<FunapiAnn
   fun::string image_url_;
   fun::string link_url_;
   fun::string file_path_;
+  fun::string kind_;
 };
 
 
@@ -55,14 +58,16 @@ FunapiAnnouncementInfoImpl::FunapiAnnouncementInfoImpl(const fun::string &date,
                                                        const fun::string &image_md5,
                                                        const fun::string &image_url,
                                                        const fun::string &link_url,
-                                                       const fun::string &file_path)
+                                                       const fun::string &file_path,
+                                                       const fun::string &kind)
 : date_(date),
   message_(message),
   subject_(subject),
   image_md5_(image_md5),
   image_url_(image_url),
   link_url_(link_url),
-  file_path_(file_path)
+  file_path_(file_path),
+  kind_(kind)
 {
 }
 
@@ -105,6 +110,10 @@ const fun::string& FunapiAnnouncementInfoImpl::GetFilePath() {
   return file_path_;
 }
 
+const fun::string& FunapiAnnouncementInfoImpl::GetKind() {
+  return kind_;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiAnnouncementInfo implementation.
@@ -115,8 +124,9 @@ FunapiAnnouncementInfo::FunapiAnnouncementInfo(const fun::string &date,
                                    const fun::string &image_md5,
                                    const fun::string &image_url,
                                    const fun::string &link_url,
-                                   const fun::string &file_path)
-: impl_(std::make_shared<FunapiAnnouncementInfoImpl>(date, message, subject, image_md5, image_url, link_url, file_path)) {
+                                   const fun::string &file_path,
+                                   const fun::string &kind)
+: impl_(std::make_shared<FunapiAnnouncementInfoImpl>(date, message, subject, image_md5, image_url, link_url, file_path, kind)) {
 }
 
 
@@ -159,6 +169,11 @@ const fun::string& FunapiAnnouncementInfo::GetFilePath() {
 }
 
 
+const fun::string& FunapiAnnouncementInfo::GetKind() {
+  return impl_->GetKind();
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiAnnouncement implementation.
 
@@ -171,7 +186,7 @@ class FunapiAnnouncementImpl : public std::enable_shared_from_this<FunapiAnnounc
   virtual ~FunapiAnnouncementImpl();
 
   void AddCompletionCallback(const CompletionHandler &handler);
-  void RequestList(std::weak_ptr<FunapiAnnouncement> a, int max_count);
+  void RequestList(std::weak_ptr<FunapiAnnouncement> a, int max_count, int page, const fun::string& category);
   void Update();
 
   static std::shared_ptr<FunapiTasks> GetFunapiTasks();
@@ -254,6 +269,7 @@ void FunapiAnnouncementImpl::OnAnnouncementInfoList(const fun::string &json_stri
         fun::string image_url;
         fun::string link_url;
         fun::string path;
+        fun::string kind;
 
         if (v.HasMember("date")) {
           date = v["date"].GetString();
@@ -287,9 +303,13 @@ void FunapiAnnouncementImpl::OnAnnouncementInfoList(const fun::string &json_stri
           }
         }
 
+        if (v.HasMember("kind")) {
+          kind = v["kind"].GetString();
+        }
+
         // fun::DebugUtils::Log("index=%d date=%s message=%s subject=%s image_md5=%s image_url=%s link_url= %s path=%s", i, date.c_str(), message.c_str(), subject.c_str(), image_md5.c_str(), image_url.c_str(), link_url.c_str(), path.c_str());
 
-        info_list_.push_back(std::make_shared<FunapiAnnouncementInfo>(date, message, subject, image_md5, image_url, link_url, path));
+        info_list_.push_back(std::make_shared<FunapiAnnouncementInfo>(date, message, subject, image_md5, image_url, link_url, path, kind));
       }
 
       DownloadFiles();
@@ -298,15 +318,23 @@ void FunapiAnnouncementImpl::OnAnnouncementInfoList(const fun::string &json_stri
 }
 
 
-void FunapiAnnouncementImpl::RequestList(std::weak_ptr<FunapiAnnouncement> a, int max_count) {
+void FunapiAnnouncementImpl::RequestList(std::weak_ptr<FunapiAnnouncement> a, int max_count, int page, const fun::string& category) {
   announcement_ = a;
 
   std::weak_ptr<FunapiAnnouncementImpl> weak = shared_from_this();
-  thread_->Push([weak, this, max_count]()->bool
+  thread_->Push([weak, this, max_count, page, category]()->bool
   {
     if (auto impl = weak.lock()) {
       fun::stringstream ss_url;
       ss_url << url_ << "/announcements/?count=" << max_count;
+      if (page > 0)
+      {
+        ss_url << "&page=" << page;
+      }
+      if (!category.empty())
+      {
+        ss_url << "&kind=" << FunapiUtil::EncodeUrl(category.c_str());
+      }
 
       DebugUtils::Log("RequestList - url = %s", ss_url.str().c_str());
 
@@ -442,8 +470,8 @@ std::shared_ptr<FunapiAnnouncement> FunapiAnnouncement::Create(const fun::string
 }
 
 
-void FunapiAnnouncement::RequestList(const int max_count) {
-  impl_->RequestList(shared_from_this(), max_count);
+void FunapiAnnouncement::RequestList(const int max_count, int page, const fun::string& category) {
+  impl_->RequestList(shared_from_this(), max_count, page , category);
 }
 
 

@@ -21,7 +21,8 @@ class FUNAPI_API FunapiAnnouncementInfo : public std::enable_shared_from_this<Fu
                    const fun::string &image_md5,
                    const fun::string &image_url,
                    const fun::string &link_url,
-                   const fun::string &file_path);
+                   const fun::string &file_path,
+                   const fun::string &kind);
   virtual ~FunapiAnnouncementInfo();
 
   const fun::string& GetDate();
@@ -31,6 +32,7 @@ class FUNAPI_API FunapiAnnouncementInfo : public std::enable_shared_from_this<Fu
   const fun::string& GetImageUrl();
   const fun::string& GetLinkUrl();
   const fun::string& GetFilePath();
+  const fun::string& GetKind();
 
  private:
   std::shared_ptr<FunapiAnnouncementInfoImpl> impl_;
@@ -59,7 +61,7 @@ class FUNAPI_API FunapiAnnouncement : public std::enable_shared_from_this<Funapi
   static std::shared_ptr<FunapiAnnouncement> Create(const fun::string &url, const fun::string &path);
 
   void AddCompletionCallback(const CompletionHandler &handler);
-  void RequestList(int max_count);
+  void RequestList(int max_count, int page = 0, const fun::string& category = "");
   void Update();
   static void UpdateAll();
 

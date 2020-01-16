@@ -11,18 +11,38 @@
 
 namespace fun {
 
+class FunapiExtraImageInfoImpl;
+class FUNAPI_API FunapiExtraImageInfo : public std::enable_shared_from_this<FunapiExtraImageInfo>
+{
+ public:
+  FunapiExtraImageInfo() = delete;
+  FunapiExtraImageInfo(const fun::string &image_url,
+                       const fun::string &image_md5,
+                       const fun::string &file_path);
+  virtual ~FunapiExtraImageInfo();
+
+  const fun::string& GetImageUrl();
+  const fun::string& GetImageMd5();
+  const fun::string& GetFilePath();
+
+ private:
+  std::shared_ptr<FunapiExtraImageInfoImpl> impl_;
+};
+
+
 class FunapiAnnouncementInfoImpl;
 class FUNAPI_API FunapiAnnouncementInfo : public std::enable_shared_from_this<FunapiAnnouncementInfo> {
  public:
   FunapiAnnouncementInfo() = delete;
   FunapiAnnouncementInfo(const fun::string &date,
-                   const fun::string &message,
-                   const fun::string &subject,
-                   const fun::string &image_md5,
-                   const fun::string &image_url,
-                   const fun::string &link_url,
-                   const fun::string &file_path,
-                   const fun::string &kind);
+                         const fun::string &message,
+                         const fun::string &subject,
+                         const fun::string &image_md5,
+                         const fun::string &image_url,
+                         const fun::string &link_url,
+                         const fun::string &file_path,
+                         const fun::string &kind,
+                         const fun::vector<std::shared_ptr<FunapiExtraImageInfo>> &extra_image_infos);
   virtual ~FunapiAnnouncementInfo();
 
   const fun::string& GetDate();
@@ -33,6 +53,7 @@ class FUNAPI_API FunapiAnnouncementInfo : public std::enable_shared_from_this<Fu
   const fun::string& GetLinkUrl();
   const fun::string& GetFilePath();
   const fun::string& GetKind();
+  const fun::vector<std::shared_ptr<FunapiExtraImageInfo>>& GetExtraImageInfos();
 
  private:
   std::shared_ptr<FunapiAnnouncementInfoImpl> impl_;

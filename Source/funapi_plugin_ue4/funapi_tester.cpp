@@ -546,9 +546,25 @@ bool Afunapi_tester::RequestAnnouncements()
                                                 const fun::vector<std::shared_ptr<fun::FunapiAnnouncementInfo>>&info,
                                                 const fun::FunapiAnnouncement::ResultCode result){
       if (result == fun::FunapiAnnouncement::ResultCode::kSucceed) {
-        for (auto i : info) {
-          UE_LOG(LogFunapiExample, Log, TEXT("date=%s message=%s subject=%s file_path=%s kind=%s"),
-              *FString(i->GetDate().c_str()), *FString(i->GetMessageText().c_str()), *FString(i->GetSubject().c_str()), *FString(i->GetFilePath().c_str()), *FString(i->GetKind().c_str()));
+        for (auto &i : info) {
+
+          fun::stringstream ss;
+          ss << "FunapiAnnounce reponse : " << "data=" << i->GetDate() << " ";
+          ss << "message=" << i->GetMessageText() << " ";
+          ss << "subject=" << i->GetSubject() << " ";
+          ss << "file_path=" << i->GetFilePath() << " ";
+          ss << "kind=" << i->GetKind() << " ";
+          ss << "extra_image_path={";
+
+          auto extra_image_infos = i->GetExtraImageInfos();
+          for (auto &extra_info : extra_image_infos)
+          {
+            ss << extra_info->GetFilePath() << " ";
+          }
+
+          ss << "}";
+
+          UE_LOG(LogFunapiExample, Log, TEXT("%s"), *FString(UTF8_TO_TCHAR(ss.str().c_str())));
         }
       }
 

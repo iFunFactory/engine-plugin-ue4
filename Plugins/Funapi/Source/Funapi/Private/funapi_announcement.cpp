@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2017 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2020 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -251,70 +251,85 @@ void FunapiAnnouncementImpl::OnAnnouncementInfoList(const fun::string &json_stri
   if (document.HasParseError())
   {
     OnCompletion(FunapiAnnouncement::ResultCode::kInvalidUrl);
+    return;
   }
-  else {
-    if (document.HasMember("list")) {
-      rapidjson::Value &d = document["list"];
-      int total_count = d.Size();
 
-      DebugUtils::Log("total_count = %d", total_count);
+  if (!info_list_.empty())
+  {
+    info_list_.clear();
+  }
 
-      for (int i=0;i<total_count;++i) {
-        rapidjson::Value &v = d[i];
+  if (document.HasMember("list"))
+  {
+    rapidjson::Value &d = document["list"];
+    int total_count = d.Size();
 
-        fun::string date;
-        fun::string message;
-        fun::string subject;
-        fun::string image_md5;
-        fun::string image_url;
-        fun::string link_url;
-        fun::string path;
-        fun::string kind;
+    DebugUtils::Log("total_count = %d", total_count);
 
-        if (v.HasMember("date")) {
-          date = v["date"].GetString();
-        }
+    for (int i=0;i<total_count;++i) {
+      rapidjson::Value &v = d[i];
 
-        if (v.HasMember("message")) {
-          message = v["message"].GetString();
-        }
+      fun::string date;
+      fun::string message;
+      fun::string subject;
+      fun::string image_md5;
+      fun::string image_url;
+      fun::string link_url;
+      fun::string path;
+      fun::string kind;
 
-        if (v.HasMember("subject")) {
-          subject = v["subject"].GetString();
-        }
-
-        if (v.HasMember("image_md5")) {
-          image_md5 = v["image_md5"].GetString();
-        }
-
-        if (v.HasMember("image_url")) {
-          image_url = v["image_url"].GetString();
-          fun::string file_name = image_url.substr(1);
-          image_url = url_ + "/images" + image_url;
-          path = path_ + file_name;
-        }
-
-        if (v.HasMember("link_url")) {
-          link_url = v["link_url"].GetString();
-          int index = static_cast<int>(link_url.rfind("/"));
-          if (index != fun::string::npos) {
-            fun::string file_name = link_url.substr(index+1);
-            path = path_ + file_name;
-          }
-        }
-
-        if (v.HasMember("kind")) {
-          kind = v["kind"].GetString();
-        }
-
-        // fun::DebugUtils::Log("index=%d date=%s message=%s subject=%s image_md5=%s image_url=%s link_url= %s path=%s", i, date.c_str(), message.c_str(), subject.c_str(), image_md5.c_str(), image_url.c_str(), link_url.c_str(), path.c_str());
-
-        info_list_.push_back(std::make_shared<FunapiAnnouncementInfo>(date, message, subject, image_md5, image_url, link_url, path, kind));
+      if (v.HasMember("date"))
+      {
+        date = v["date"].GetString();
       }
 
-      DownloadFiles();
+      if (v.HasMember("message"))
+      {
+        message = v["message"].GetString();
+      }
+
+      if (v.HasMember("subject"))
+      {
+        subject = v["subject"].GetString();
+      }
+
+      if (v.HasMember("image_md5"))
+      {
+        image_md5 = v["image_md5"].GetString();
+      }
+
+      if (v.HasMember("image_url"))
+      {
+        image_url = v["image_url"].GetString();
+        fun::string file_name = image_url.substr(1);
+        image_url = url_ + "/images" + image_url;
+        path = path_ + file_name;
+      }
+
+      if (v.HasMember("link_url"))
+      {
+        link_url = v["link_url"].GetString();
+        int index = static_cast<int>(link_url.rfind("/"));
+        if (index != fun::string::npos)
+        {
+          fun::string file_name = link_url.substr(index+1);
+          path = path_ + file_name;
+        }
+      }
+
+      if (v.HasMember("kind"))
+      {
+        kind = v["kind"].GetString();
+      }
+
+      // fun::DebugUtils::Log("index=%d date=%s message=%s subject=%s image_md5=%s image_url=%s link_url= %s path=%s", i, date.c_str(), message.c_str(), subject.c_str(), image_md5.c_str(), image_url.c_str(), link_url.c_str(), path.c_str());
+
+      info_list_.push_back(std::make_shared<FunapiAnnouncementInfo>(date, message, subject, image_md5, image_url, link_url, path, kind));
     }
+
+    DownloadFiles();
   }
+
 }
 
 

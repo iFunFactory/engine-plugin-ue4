@@ -229,6 +229,7 @@ bool FunapiUtil::SeqLess(const uint32_t x, const uint32_t y) {
 fun::string FunapiUtil::EncodeUrl(const fun::string& url)
 {
   // https://github.com/whoshuu/cpr/blob/master/cpr/util.cpp
+  // https://en.cppreference.com/w/cpp/string/byte/isalnum
   stringstream escaped;
   escaped.fill('0');
   escaped << std::hex;
@@ -237,7 +238,7 @@ fun::string FunapiUtil::EncodeUrl(const fun::string& url)
     string::value_type c = (*i);
 
     // Keep alphanumeric and other accepted characters intact
-    if (isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~') {
+    if (isalnum(static_cast<unsigned char>(c)) || c == '-' || c == '_' || c == '.' || c == '~') {
       escaped << c;
       continue;
     }

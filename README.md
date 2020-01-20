@@ -21,6 +21,7 @@ Funapi plugin 은 다음 버전의 Unreal engine 4 를 지원합니다.
 | 4.21   | o | o | o | o |
 | 4.22   | o | o | o | o |
 | 4.23   | o | o | o | o |
+| 4.24   | o | o | o | o |
 
 * **4.19 버전** : Windows 환경에서 패키징이 안 되는 문제가 있어 확인중에 있습니다.
 

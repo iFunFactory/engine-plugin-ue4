@@ -12,7 +12,7 @@ public class funapi_plugin_ue4Target : TargetRules
     public funapi_plugin_ue4Target(TargetInfo Target) : base(Target)
     {
         Type = TargetType.Game;
-
+        DefaultBuildSettings = BuildSettingsVersion.V2;
         ExtraModuleNames.Add("funapi_plugin_ue4");
     }
 

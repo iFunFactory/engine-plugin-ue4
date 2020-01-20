@@ -12,7 +12,7 @@ public class funapi_plugin_ue4EditorTarget : TargetRules
     public funapi_plugin_ue4EditorTarget(TargetInfo Target) : base(Target)
     {
         Type = TargetType.Editor;
-
+        DefaultBuildSettings = BuildSettingsVersion.V2;
         ExtraModuleNames.Add("funapi_plugin_ue4");
     }
 

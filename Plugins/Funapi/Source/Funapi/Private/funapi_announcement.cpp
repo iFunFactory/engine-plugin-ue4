@@ -425,9 +425,9 @@ void FunapiAnnouncementImpl::OnAnnouncementInfoList(const fun::string &json_stri
       if (v.HasMember("extra_images"))
       {
         int extra_image_count = v["extra_images"].Size();
-        for (int i = 0; i < extra_image_count; ++i)
+        for (int j = 0; j < extra_image_count; ++j)
         {
-          rapidjson::Value &extra = v["extra_images"][i];
+          rapidjson::Value &extra = v["extra_images"][j];
           if (extra.HasMember("url") && extra.HasMember("md5"))
           {
             std::string extra_image_url = extra["url"].GetString();
@@ -541,9 +541,9 @@ void FunapiAnnouncementImpl::DownloadFiles() {
       }
     }
 
-    for (auto &i : download_list)
+    for (auto &d : download_list)
     {
-      if (!DownloadFile(i.first, i.second))
+      if (!DownloadFile(d.first, d.second))
       {
         OnCompletion(fun::FunapiAnnouncement::ResultCode::kExceptionError);
         return;

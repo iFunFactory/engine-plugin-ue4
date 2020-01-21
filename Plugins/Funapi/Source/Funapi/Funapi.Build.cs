@@ -162,8 +162,6 @@ public class Funapi : ModuleRules
       PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include", "Windows", "x86"));
 
       LibPath += "lib/Windows/x86";
-      PublicLibraryPaths.Add(LibPath);
-
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.lib"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libzstd_static.lib"));
     }
@@ -172,8 +170,6 @@ public class Funapi : ModuleRules
       PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include", "Windows", "x64"));
 
       LibPath += "lib/Windows/x64";
-      PublicLibraryPaths.Add(LibPath);
-
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libsodium.lib"));
       PublicAdditionalLibraries.Add(Path.Combine(LibPath, "libzstd_static.lib"));
     }

@@ -69,7 +69,7 @@ class FunapiMulticastImpl : public std::enable_shared_from_this<FunapiMulticastI
   void AddSessionEventCallback(const FunapiMulticast::SessionEventHandler &handler);
   void AddTransportEventCallback(const FunapiMulticast::TransportEventHandler &handler);
 
-  void Connect(const std::weak_ptr<FunapiMulticast>& multicast);
+  void Connect(const std::weak_ptr<FunapiMulticast>& weak);
   void Close();
   void InitSessionCallback();
 
@@ -662,8 +662,8 @@ void FunapiMulticastImpl::AddTransportEventCallback(const FunapiMulticast::Trans
 }
 
 
-void FunapiMulticastImpl::Connect(const std::weak_ptr<FunapiMulticast>& multicast) {
-  multicast_ = multicast;
+void FunapiMulticastImpl::Connect(const std::weak_ptr<FunapiMulticast>& weak) {
+  multicast_ = weak;
 
   if (session_) {
     session_->Connect(TransportProtocol::kTcp, port_, encoding_);

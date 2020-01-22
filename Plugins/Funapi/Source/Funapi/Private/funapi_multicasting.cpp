@@ -39,8 +39,8 @@ class FunapiMulticastImpl : public std::enable_shared_from_this<FunapiMulticastI
   typedef FunapiMulticast::ProtobufChannelMessageHandler ProtobufChannelMessageHandler;
 
   FunapiMulticastImpl() = delete;
-  FunapiMulticastImpl(const char* sender, const char* hostname_or_ip, const uint16_t port, const FunEncoding encoding, const bool reliability);
-  FunapiMulticastImpl(const char* sender, const std::shared_ptr<FunapiSession> &session);
+  FunapiMulticastImpl(const char* sender, const char* hostname_or_ip, const uint16_t port, const FunEncoding encoding, const bool reliability, const TransportProtocol protocol);
+  FunapiMulticastImpl(const char* sender, const std::shared_ptr<FunapiSession> &session, const TransportProtocol protocol);
   virtual ~FunapiMulticastImpl();
 
   bool IsConnected() const;
@@ -85,6 +85,7 @@ class FunapiMulticastImpl : public std::enable_shared_from_this<FunapiMulticastI
   FunEncoding encoding_ = FunEncoding::kNone;
   fun::string sender_;
   uint16_t port_;
+  TransportProtocol protocol_ = TransportProtocol::kDefault;
 
   FunapiEvent<ChannelNotify> on_joined_;
   FunapiEvent<ChannelNotify> on_left_;
@@ -112,16 +113,18 @@ FunapiMulticastImpl::FunapiMulticastImpl(const char* sender,
                                          const char* hostname_or_ip,
                                          const uint16_t port,
                                          const FunEncoding encoding,
-                                         const bool reliability)
-: encoding_(encoding), sender_(sender), port_(port) {
+                                         const bool reliability,
+                                         const TransportProtocol protocol)
+: encoding_(encoding), sender_(sender), port_(port), protocol_(protocol) {
   session_ = FunapiSession::Create(hostname_or_ip, reliability);
 }
 
 
 FunapiMulticastImpl::FunapiMulticastImpl(const char* sender,
-                                         const std::shared_ptr<FunapiSession> &session)
-: session_(session), sender_(sender), port_(0) {
-  encoding_ = session->GetEncoding(TransportProtocol::kTcp);
+                                         const std::shared_ptr<FunapiSession> &session,
+                                         const TransportProtocol protocol)
+: session_(session), sender_(sender), port_(0), protocol_(protocol) {
+  encoding_ = session->GetEncoding(protocol_);
 }
 
 
@@ -246,7 +249,7 @@ void FunapiMulticastImpl::OnChannelList(const rapidjson::Document &msg) {
 
 bool FunapiMulticastImpl::IsConnected() const {
   if (session_) {
-    if (session_->IsConnected(TransportProtocol::kTcp)) {
+    if (session_->IsConnected(protocol_)) {
       return true;
     }
   }
@@ -305,7 +308,7 @@ bool FunapiMulticastImpl::JoinChannel(const fun::string &channel_id, const fun::
     msg.Accept(writer);
     fun::string json_string = buffer.GetString();
 
-    session_->SendMessage(kMulticastMsgType, json_string, TransportProtocol::kTcp);
+    session_->SendMessage(kMulticastMsgType, json_string, protocol_);
   }
 
   if (encoding_ == FunEncoding::kProtobuf) {
@@ -321,7 +324,7 @@ bool FunapiMulticastImpl::JoinChannel(const fun::string &channel_id, const fun::
       mcast_msg->set_token(token.c_str());
     }
 
-    session_->SendMessage(msg, TransportProtocol::kTcp);
+    session_->SendMessage(msg, protocol_);
   }
 
   return true;
@@ -377,7 +380,7 @@ bool FunapiMulticastImpl::SendToChannel(const fun::string &channel_id, FunMessag
 
   msg.set_msgtype(kMulticastMsgType);
 
-  session_->SendMessage(msg, TransportProtocol::kTcp);
+  session_->SendMessage(msg, protocol_);
 
   return true;
 }
@@ -412,7 +415,7 @@ bool FunapiMulticastImpl::SendToChannel(const fun::string &channel_id, fun::stri
   msg.Accept(writer);
   fun::string send_json_string = buffer.GetString();
 
-  session_->SendMessage(kMulticastMsgType, send_json_string, TransportProtocol::kTcp);
+  session_->SendMessage(kMulticastMsgType, send_json_string, protocol_);
 
   return true;
 }
@@ -438,7 +441,7 @@ void FunapiMulticastImpl::SendLeaveMessage(const fun::string &channel_id) {
     msg.Accept(writer);
     fun::string json_string = buffer.GetString();
 
-    session_->SendMessage(kMulticastMsgType, json_string, TransportProtocol::kTcp);
+    session_->SendMessage(kMulticastMsgType, json_string, protocol_);
   }
 
   if (encoding_ == FunEncoding::kProtobuf) {
@@ -450,7 +453,7 @@ void FunapiMulticastImpl::SendLeaveMessage(const fun::string &channel_id) {
     mcast_msg->set_leave(true);
     mcast_msg->set_sender(sender_.c_str());
 
-    session_->SendMessage(msg, TransportProtocol::kTcp);
+    session_->SendMessage(msg, protocol_);
   }
 }
 
@@ -584,7 +587,7 @@ bool FunapiMulticastImpl::RequestChannelList() {
     msg.Accept(writer);
     fun::string json_string = buffer.GetString();
 
-    session_->SendMessage(kMulticastMsgType, json_string, TransportProtocol::kTcp);
+    session_->SendMessage(kMulticastMsgType, json_string, protocol_);
   }
 
   if (encoding_ == FunEncoding::kProtobuf) {
@@ -594,7 +597,7 @@ bool FunapiMulticastImpl::RequestChannelList() {
     FunMulticastMessage *mcast_msg = msg.MutableExtension(multicast);
     mcast_msg->set_sender(sender_.c_str());
 
-    session_->SendMessage(msg, TransportProtocol::kTcp);
+    session_->SendMessage(msg, protocol_);
   }
 
   return true;
@@ -666,7 +669,7 @@ void FunapiMulticastImpl::Connect(const std::weak_ptr<FunapiMulticast>& weak) {
   multicast_ = weak;
 
   if (session_) {
-    session_->Connect(TransportProtocol::kTcp, port_, encoding_);
+    session_->Connect(protocol_, port_, encoding_);
   }
 }
 
@@ -693,14 +696,16 @@ void FunapiMulticastImpl::AddJsonChannelMessageCallback(const fun::string &chann
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiMulticast implementation.
 
-FunapiMulticast::FunapiMulticast(const char* sender, const char* hostname_or_ip, const uint16_t port, const FunEncoding encoding, const bool reliability)
-: impl_(std::make_shared<FunapiMulticastImpl>(sender, hostname_or_ip, port, encoding, reliability)) {
+FunapiMulticast::FunapiMulticast(const char* sender, const char* hostname_or_ip, const uint16_t port,
+                                 const FunEncoding encoding, const bool reliability, const TransportProtocol protocol)
+: impl_(std::make_shared<FunapiMulticastImpl>(sender, hostname_or_ip, port, encoding, reliability, protocol)) {
   impl_->InitSessionCallback();
 }
 
 
-FunapiMulticast::FunapiMulticast(const char* sender, const std::shared_ptr<FunapiSession> &session)
-: impl_(std::make_shared<FunapiMulticastImpl>(sender, session)) {
+FunapiMulticast::FunapiMulticast(const char* sender, const std::shared_ptr<FunapiSession> &session,
+                                 const TransportProtocol protocol)
+: impl_(std::make_shared<FunapiMulticastImpl>(sender, session, protocol)) {
   impl_->InitSessionCallback();
 }
 
@@ -709,15 +714,31 @@ FunapiMulticast::~FunapiMulticast() {
 }
 
 
-std::shared_ptr<FunapiMulticast> FunapiMulticast::Create(const char* sender, const char* hostname_or_ip, const uint16_t port, const FunEncoding encoding, const bool reliability) {
-  return std::make_shared<FunapiMulticast>(sender, hostname_or_ip, port, encoding, reliability);
+std::shared_ptr<FunapiMulticast> FunapiMulticast::Create(const char* sender, const char* hostname_or_ip, const uint16_t port,
+                                                         const FunEncoding encoding, const bool reliability, const TransportProtocol protocol) {
+  if (protocol != TransportProtocol::kTcp &&
+      protocol != TransportProtocol::kWebsocket)
+  {
+    DebugUtils::Log("FunapiMulticast only supports Tcp and Websocket Transport.");
+    return nullptr;
+  }
+
+  return std::make_shared<FunapiMulticast>(sender, hostname_or_ip, port, encoding, reliability, protocol);
 }
 
 
-std::shared_ptr<FunapiMulticast> FunapiMulticast::Create(const char* sender, const std::shared_ptr<FunapiSession> &session) {
+std::shared_ptr<FunapiMulticast> FunapiMulticast::Create(const char* sender, const std::shared_ptr<FunapiSession> &session,
+                                                         const TransportProtocol protocol) {
+  if (protocol != TransportProtocol::kTcp &&
+      protocol != TransportProtocol::kWebsocket)
+  {
+    DebugUtils::Log("FunapiMulticast only supports Tcp and Websocket Transport.");
+    return nullptr;
+  }
+
   if (session) {
-    if (session->IsConnected(TransportProtocol::kTcp)) {
-      return std::make_shared<FunapiMulticast>(sender, session);
+    if (session->IsConnected(protocol)) {
+      return std::make_shared<FunapiMulticast>(sender, session, protocol);
     }
   }
 

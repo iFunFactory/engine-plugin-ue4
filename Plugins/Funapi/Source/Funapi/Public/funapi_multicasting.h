@@ -48,18 +48,37 @@ public:
                              const std::shared_ptr<FunapiError>&)>TransportEventHandler;
 
   FunapiMulticast() = delete;
-  FunapiMulticast(const char* sender, const char* hostname_or_ip, const uint16_t port, const FunEncoding encoding, const bool reliability);
-  FunapiMulticast(const char* sender, const std::shared_ptr<FunapiSession> &session);
+  FunapiMulticast(const char* sender,
+                  const char* hostname_or_ip,
+                  const uint16_t port,
+                  const FunEncoding encoding,
+                  const bool reliability,
+                  const TransportProtocol protocol);
+
+  FunapiMulticast(const char* sender,
+                  const std::shared_ptr<FunapiSession> &session,
+                  const TransportProtocol protocol);
+
+  FunapiMulticast(const char* sender,
+                  const char* hostname_or_ip,
+                  const uint16_t port,
+                  const FunEncoding encoding,
+                  const TransportProtocol protocl,
+                  const std::shared_ptr<FunapiTransportOption> &transport_opt,
+                  const std::shared_ptr<FunapiSessionOption> &session_opt);
+
   virtual ~FunapiMulticast();
 
   static std::shared_ptr<FunapiMulticast> Create(const char* sender,
                                                  const char* hostname_or_ip,
                                                  const uint16_t port,
                                                  const FunEncoding encoding,
-                                                 const bool reliability = false);
+                                                 const bool reliability = false,
+                                                 const TransportProtocol protocol = TransportProtocol::kTcp);
 
   static std::shared_ptr<FunapiMulticast> Create(const char* sender,
-                                                 const std::shared_ptr<FunapiSession> &session);
+                                                 const std::shared_ptr<FunapiSession> &session,
+                                                 const TransportProtocol protocol = TransportProtocol::kTcp);
 
   void AddJoinedCallback(const ChannelNotify &handler);
   void AddLeftCallback(const ChannelNotify &handler);

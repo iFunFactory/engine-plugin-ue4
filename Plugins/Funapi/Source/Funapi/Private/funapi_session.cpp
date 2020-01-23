@@ -926,8 +926,6 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
                    bool priority = false,
                    bool handshake = false);
 
-  bool SendHandShakeMessages(const TransportProtocol protocol);
-
   bool started_;
   int64_t ping_time_ms = 0;
 
@@ -2101,7 +2099,6 @@ class FunapiTcpTransport : public FunapiTransport {
   void ResetClientPingTimeout();
 
   bool UseSodium();
-  bool SendHandShakeMessages();
 
   void Update();
   void Send(bool send_all = false);
@@ -2494,31 +2491,6 @@ void FunapiTcpTransport::SetSequenceNumberValidation(const bool validation) {
 
 bool FunapiTcpTransport::UseSodium() {
   return encrytion_->UseSodium();
-}
-
-
-bool FunapiTcpTransport::SendHandShakeMessages() {
-  bool use_send = false;
-
-  if (auto s = session_impl_.lock()) {
-    for (auto type
-         : {EncryptionType::kChacha20Encryption,
-           EncryptionType::kAes128Encryption}) {
-             if (encrytion_->HasEncryption(type)) {
-               if (false == encrytion_->IsHandShakeCompleted(type))
-               {
-                 use_send = true;
-                 s->SendEmptyMessage(TransportProtocol::kTcp, type);
-               }
-             }
-           }
-
-    if (use_send) {
-      s->SendEmptyMessage(TransportProtocol::kTcp);
-    }
-  }
-
-  return use_send;
 }
 
 
@@ -5170,16 +5142,6 @@ bool FunapiSessionImpl::UseSodium(const TransportProtocol protocol) {
   if (protocol == TransportProtocol::kTcp) {
     if (auto t = std::static_pointer_cast<FunapiTcpTransport>(GetTransport(TransportProtocol::kTcp))) {
       return t->UseSodium();
-    }
-  }
-  return false;
-}
-
-
-bool FunapiSessionImpl::SendHandShakeMessages(const TransportProtocol protocol) {
-  if (protocol == TransportProtocol::kTcp) {
-    if (auto t = std::static_pointer_cast<FunapiTcpTransport>(GetTransport(TransportProtocol::kTcp))) {
-      return t->SendHandShakeMessages();
     }
   }
   return false;

@@ -181,9 +181,10 @@ public class Funapi : ModuleRules
     }
     else if (Target.Platform == UnrealTargetPlatform.Android)
     {
-      // https://github.com/EpicGames/UnrealEngine/blob/release/Engine/Source/ThirdParty/libcurl/libcurl.Build.cs
-
       PublicDefinitions.Add("FUNAPI_UE4_PLATFORM_ANDROID=1");
+
+#if UE_4_24_OR_LATER
+      // https://github.com/EpicGames/UnrealEngine/blob/release/Engine/Source/ThirdParty/libcurl/libcurl.Build.cs
 
       string[] Architectures = new string[] {
         "ARMv7",
@@ -201,6 +202,22 @@ public class Funapi : ModuleRules
         PublicAdditionalLibraries.Add(Path.Combine(LibPath, "lib/Android", Architecture, "libwebsockets.a"));
         PublicAdditionalLibraries.Add(Path.Combine(LibPath, "lib/Android", Architecture, "libzstd.a"));
       }
+#else // UE_4_24_OR_LATER
+
+      // add static library path
+      PublicIncludePaths.Add(LibPath + "include/Android/ARMv7");
+      PublicLibraryPaths.Add(LibPath + "lib/Android/ARMv7");
+      PublicIncludePaths.Add(LibPath + "include/Android/ARM64");
+      PublicLibraryPaths.Add(LibPath + "lib/Android/ARM64");
+
+      PublicAdditionalLibraries.Add("sodium");
+      PublicAdditionalLibraries.Add("curl");
+      PublicAdditionalLibraries.Add("ssl");
+      PublicAdditionalLibraries.Add("crypto");
+      PublicAdditionalLibraries.Add("websockets");
+      PublicAdditionalLibraries.Add("zstd");
+
+#endif
     }
     else if (Target.Platform == UnrealTargetPlatform.IOS)
     {

@@ -12,6 +12,7 @@
 #include "funapi_session.h"
 #include "funapi_multicasting.h"
 #include "funapi_rpc.h"
+#include "UObject/TextProperty.h"
 #include "funapi_tester.generated.h"
 
 UCLASS()

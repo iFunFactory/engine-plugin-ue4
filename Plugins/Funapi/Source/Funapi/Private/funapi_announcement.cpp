@@ -82,7 +82,7 @@ class FunapiAnnouncementInfoImpl : public std::enable_shared_from_this<FunapiAnn
                              const fun::string &link_url,
                              const fun::string &file_path,
                              const fun::string &kind,
-                             const std::vector<std::shared_ptr<FunapiExtraImageInfo>> &extra_image_info);
+                             const fun::vector<std::shared_ptr<FunapiExtraImageInfo>> &extra_image_info);
   virtual ~FunapiAnnouncementInfoImpl();
 
   const fun::string& GetDate();
@@ -93,7 +93,7 @@ class FunapiAnnouncementInfoImpl : public std::enable_shared_from_this<FunapiAnn
   const fun::string& GetLinkUrl();
   const fun::string& GetFilePath();
   const fun::string& GetKind();
-  const std::vector<std::shared_ptr<FunapiExtraImageInfo>>& GetExtraImageInfos();
+  const fun::vector<std::shared_ptr<FunapiExtraImageInfo>>& GetExtraImageInfos();
 
  private:
   fun::string date_;
@@ -104,7 +104,7 @@ class FunapiAnnouncementInfoImpl : public std::enable_shared_from_this<FunapiAnn
   fun::string link_url_;
   fun::string file_path_;
   fun::string kind_;
-  std::vector<std::shared_ptr<FunapiExtraImageInfo>> extra_image_infos_;
+  fun::vector<std::shared_ptr<FunapiExtraImageInfo>> extra_image_infos_;
 };
 
 
@@ -116,7 +116,7 @@ FunapiAnnouncementInfoImpl::FunapiAnnouncementInfoImpl(const fun::string &date,
                                                        const fun::string &link_url,
                                                        const fun::string &file_path,
                                                        const fun::string &kind,
-                                                       const std::vector<std::shared_ptr<FunapiExtraImageInfo>> &extra_image_infos)
+                                                       const fun::vector<std::shared_ptr<FunapiExtraImageInfo>> &extra_image_infos)
 : date_(date),
   message_(message),
   subject_(subject),
@@ -173,7 +173,7 @@ const fun::string& FunapiAnnouncementInfoImpl::GetKind() {
 }
 
 
-const std::vector<std::shared_ptr<FunapiExtraImageInfo>>& FunapiAnnouncementInfoImpl::GetExtraImageInfos() {
+const fun::vector<std::shared_ptr<FunapiExtraImageInfo>>& FunapiAnnouncementInfoImpl::GetExtraImageInfos() {
   return extra_image_infos_;
 }
 
@@ -219,7 +219,7 @@ FunapiAnnouncementInfo::FunapiAnnouncementInfo(const fun::string &date,
                                                const fun::string &link_url,
                                                const fun::string &file_path,
                                                const fun::string &kind,
-                                               const std::vector<std::shared_ptr<FunapiExtraImageInfo>> &extra_image_infos)
+                                               const fun::vector<std::shared_ptr<FunapiExtraImageInfo>> &extra_image_infos)
 : impl_(std::make_shared<FunapiAnnouncementInfoImpl>(date, message, subject, image_md5, image_url, link_url, file_path, kind, extra_image_infos)) {
 }
 
@@ -268,7 +268,7 @@ const fun::string& FunapiAnnouncementInfo::GetKind() {
 }
 
 
-const std::vector<std::shared_ptr<FunapiExtraImageInfo>>& FunapiAnnouncementInfo::GetExtraImageInfos() {
+const fun::vector<std::shared_ptr<FunapiExtraImageInfo>>& FunapiAnnouncementInfo::GetExtraImageInfos() {
   return impl_->GetExtraImageInfos();
 }
 
@@ -430,12 +430,12 @@ void FunapiAnnouncementImpl::OnAnnouncementInfoList(const fun::string &json_stri
           rapidjson::Value &extra = v["extra_images"][j];
           if (extra.HasMember("url") && extra.HasMember("md5"))
           {
-            std::string extra_image_url = extra["url"].GetString();
+            fun::string extra_image_url = extra["url"].GetString();
             fun::string file_name = extra_image_url.substr(1);
             extra_image_url = url_ + "/images" + extra_image_url;
-            std::string file_path = path_ + file_name;
+            fun::string file_path = path_ + file_name;
 
-            std::string extra_imge_md5 = extra["md5"].GetString();
+            fun::string extra_imge_md5 = extra["md5"].GetString();
 
             extra_images.push_back(
                 std::make_shared<FunapiExtraImageInfo>(extra_image_url, extra_imge_md5, file_path));
@@ -514,18 +514,18 @@ void FunapiAnnouncementImpl::DownloadFiles() {
   for (size_t i=0;i<info_list_.size();++i) {
     auto &info = info_list_[i];
     // pair url, file path
-    fun::vector<std::pair<std::string, fun::string>> download_list;
+    fun::vector<std::pair<fun::string, fun::string>> download_list;
 
     if (info->GetLinkUrl().length() > 0 && info->GetFilePath().length() > 0)
     {
-      download_list.push_back(std::pair<std::string, fun::string>(info->GetLinkUrl(), info->GetFilePath()));
+      download_list.push_back(std::pair<fun::string, fun::string>(info->GetLinkUrl(), info->GetFilePath()));
     }
 
     if (info->GetImageUrl().length() > 0)
     {
       if (IsDownloadFile(info->GetFilePath(), info->GetImageMd5()))
       {
-        download_list.push_back(std::pair<std::string, fun::string>(info->GetImageUrl(), info->GetFilePath()));
+        download_list.push_back(std::pair<fun::string, fun::string>(info->GetImageUrl(), info->GetFilePath()));
       }
     }
 
@@ -536,7 +536,7 @@ void FunapiAnnouncementImpl::DownloadFiles() {
       {
         if (IsDownloadFile(extra_info->GetFilePath(), extra_info->GetImageMd5()))
         {
-          download_list.push_back(std::pair<std::string, fun::string>(extra_info->GetImageUrl(), extra_info->GetFilePath()));
+          download_list.push_back(std::pair<fun::string, fun::string>(extra_info->GetImageUrl(), extra_info->GetFilePath()));
         }
       }
     }
@@ -572,7 +572,7 @@ bool FunapiAnnouncementImpl::DownloadFile(const fun::string &url, const fun::str
 }
 
 
-bool FunapiAnnouncementImpl::IsDownloadFile(const std::string &file_path, const std::string &md5_str) {
+bool FunapiAnnouncementImpl::IsDownloadFile(const fun::string &file_path, const fun::string &md5_str) {
   if (!FunapiUtil::IsFileExists(file_path)) {
     return true;
   }
@@ -585,7 +585,7 @@ bool FunapiAnnouncementImpl::IsDownloadFile(const std::string &file_path, const 
 }
 
 
-bool FunapiAnnouncementImpl::MD5Compare(const std::string &file_path, const std::string &md5_str) {
+bool FunapiAnnouncementImpl::MD5Compare(const fun::string &file_path, const fun::string &md5_str) {
   if (md5_str.length() > 0) {
     fun::string md5_string = FunapiUtil::MD5String(file_path, false);
     if (md5_str.compare(md5_string) == 0) {

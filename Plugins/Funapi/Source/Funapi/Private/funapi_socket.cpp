@@ -236,7 +236,10 @@ bool FunapiSocketImpl::Select()
         int fd = s->GetSocket();
         if (fd > 0)
         {
-          if (fd > max_fd) max_fd = fd;
+          if (fd > max_fd) {
+            max_fd = fd;
+            assert(max_fd < FD_SETSIZE);
+          }
           FD_SET(fd, &rset);
           FD_SET(fd, &eset);
           v_select_sockets.push_back(s);

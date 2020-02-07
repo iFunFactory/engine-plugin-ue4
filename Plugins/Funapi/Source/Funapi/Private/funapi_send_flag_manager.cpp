@@ -22,6 +22,8 @@ static FunapiSendFlagManager* the_manager = nullptr;
 
 FunapiSendFlagManager::FunapiSendFlagManager()
 {
+  FunapiUtil::Assert(the_manager == nullptr);
+
   if (pipe(pipe_fds_) < 0)
   {
     fun::stringstream ss;

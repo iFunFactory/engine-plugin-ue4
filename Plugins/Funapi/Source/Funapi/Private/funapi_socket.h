@@ -89,7 +89,7 @@ class FunapiTcp : public std::enable_shared_from_this<FunapiTcp> {
 #ifdef FUNAPI_PLATFORM_WINDOWS
   void OnSelect(HANDLE handle);
 #else
-  void OnSelect(const fd_set rset, const fd_set wset, const fd_set eset);
+  void OnPoll(short poll_revents);
 #endif
 
  private:
@@ -137,7 +137,7 @@ class FunapiUdp : public std::enable_shared_from_this<FunapiUdp> {
 #ifdef FUNAPI_PLATFORM_WINDOWS
   void OnSelect(HANDLE handle);
 #else
-  void OnSelect(const fd_set rset, const fd_set wset, const fd_set eset);
+  void OnPoll(short poll_revents);
 #endif
 
  private:

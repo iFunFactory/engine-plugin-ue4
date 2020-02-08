@@ -30,6 +30,8 @@ THIRD_PARTY_INCLUDES_START
 #include "openssl/err.h"
 #endif // FUNAPI_UE4
 
+#include <poll.h>
+
 namespace fun {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -112,9 +114,7 @@ class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
 
   int GetSocket();
   virtual bool IsReadySelect();
-  virtual void OnSelect(const fd_set rset,
-                        const fd_set wset,
-                        const fd_set eset) = 0;
+  virtual void OnPoll(short poll_revents) = 0;
 
  protected:
   bool InitAddrInfo(int socktype,
@@ -129,9 +129,7 @@ class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
                   fun::string &error_string);
   void CloseSocket();
 
-  void SocketSelect(fd_set rset,
-                    fd_set wset,
-                    fd_set eset);
+  void SocketPoll(short poll_revents);
 
   virtual void OnSend() = 0;
   virtual void OnRecv() = 0;
@@ -198,34 +196,25 @@ fun::vector<std::shared_ptr<FunapiSocketImpl>> FunapiSocketImpl::GetSocketImpls(
 void OnSessionTicked();
 bool FunapiSocketImpl::Select()
 {
+  static const int MAX_POLLFDS = 1024;
   static FunapiTimer session_tick_timer;
+
+  struct pollfd pollfds[MAX_POLLFDS];
+  int num_pollfds = 0;
 
   auto v_sockets = FunapiSocketImpl::GetSocketImpls();
 
   if (!v_sockets.empty())
   {
-    int max_fd = -1;
-
-    fd_set rset;
-    fd_set wset;
-    fd_set eset;
-
-    FD_ZERO(&rset);
-    FD_ZERO(&wset);
-    FD_ZERO(&eset);
-
     int* pipe_fds = FunapiSendFlagManager::Get().GetPipeFds();
     // pipe_fds 는 int[2] 크기를 가진다.
     for (int i = 0; i < 2; ++i)
     {
       int fd = pipe_fds[i];
-      if (fd > max_fd)
-      {
-        max_fd = fd;
-      }
-
-      FD_SET(fd, &rset);
-      FD_SET(fd, &eset);
+      pollfds[num_pollfds].fd = fd;
+      pollfds[num_pollfds].events = POLLIN | POLLPRI | POLLOUT;
+      pollfds[num_pollfds].revents = 0;
+      ++num_pollfds;
     }
 
     fun::vector<std::shared_ptr<FunapiSocketImpl>> v_select_sockets;
@@ -236,12 +225,11 @@ bool FunapiSocketImpl::Select()
         int fd = s->GetSocket();
         if (fd > 0)
         {
-          if (fd > max_fd) {
-            max_fd = fd;
-            assert(max_fd < FD_SETSIZE);
-          }
-          FD_SET(fd, &rset);
-          FD_SET(fd, &eset);
+          assert(num_pollfds + 1 < MAX_POLLFDS);
+          pollfds[num_pollfds].fd = fd;
+          pollfds[num_pollfds].events = POLLIN | POLLPRI | POLLOUT;
+          pollfds[num_pollfds].revents = 0;
+          ++num_pollfds;
           v_select_sockets.push_back(s);
         }
       }
@@ -249,8 +237,7 @@ bool FunapiSocketImpl::Select()
 
     if (!v_select_sockets.empty())
     {
-      struct timeval timeout { 0, 500 };
-      int result = select(max_fd + 1, &rset, NULL, &eset, &timeout);
+      int result = poll(pollfds, num_pollfds, 1);
 
       // ERROR
       if (result == -1)
@@ -280,7 +267,9 @@ bool FunapiSocketImpl::Select()
       }
 
       // SEND
-      if (FD_ISSET(pipe_fds[0], &rset))
+      if ((pollfds[0].revents & POLLIN) ||
+          (pollfds[0].revents & POLLPRI) ||
+          (pollfds[0].revents & POLLHUP))
       {
         FunapiSendFlagManager::Get().ResetWakeUp();
         for (auto& s : v_select_sockets)
@@ -291,8 +280,20 @@ bool FunapiSocketImpl::Select()
       }
 
       // RECV
+      int index = 0;
       for (auto& s : v_select_sockets) {
-        s->OnSelect(rset, wset, eset);
+        while (index < num_pollfds) {
+          if (pollfds[index].fd == s->GetSocket()) {
+            break;
+          }
+          ++index;
+        }
+        if (index < num_pollfds) {
+          assert(pollfds[index].fd == s->GetSocket());
+          if (pollfds[index].revents) {
+            s->OnPoll(pollfds[index].revents);
+          }
+        }
       }
 
       return true;
@@ -424,13 +425,13 @@ bool FunapiSocketImpl::InitSocket(struct addrinfo *info,
 }
 
 
-void FunapiSocketImpl::SocketSelect(fd_set rset,
-                                    fd_set wset,
-                                    fd_set eset)
+void FunapiSocketImpl::SocketPoll(short poll_revents)
 {
   if (socket_ > 0)
   {
-    if (FD_ISSET(socket_, &rset))
+    if ((poll_revents & POLLIN) ||
+        (poll_revents & POLLHUP) ||
+        (poll_revents & POLLERR))
     {
       OnRecv();
     }
@@ -451,7 +452,7 @@ class FunapiTcpImpl : public FunapiSocketImpl {
   FunapiTcpImpl();
   virtual ~FunapiTcpImpl();
 
-  void OnSelect(const fd_set rset, const fd_set wset, const fd_set eset);
+  void OnPoll(short poll_revents);
 
   void Connect(const char* hostname_or_ip,
                const int port,
@@ -485,9 +486,7 @@ class FunapiTcpImpl : public FunapiSocketImpl {
                            int &error_code,
                            fun::string &error_string);
 
-  void SocketSelect(fd_set rset,
-                    fd_set wset,
-                    fd_set eset);
+  void SocketPoll(short poll_revents);
 
   void OnConnectCompletion(const bool is_failed,
                            const bool is_timed_out,
@@ -559,11 +558,9 @@ void FunapiTcpImpl::CleanupSSL() {
 }
 
 
-void FunapiTcpImpl::OnSelect(const fd_set rset,
-                             const fd_set wset,
-                             const fd_set eset) {
+void FunapiTcpImpl::OnPoll(short poll_revents) {
   if (socket_select_state_ == SocketSelectState::kSelect) {
-    FunapiSocketImpl::SocketSelect(rset, wset, eset);
+    FunapiSocketImpl::SocketPoll(poll_revents);
   }
 }
 
@@ -594,20 +591,13 @@ void FunapiTcpImpl::Connect(struct addrinfo *addrinfo_res) {
   }
 #endif
 
-  fd_set rset;
-  fd_set wset;
-  fd_set eset;
-
-  FD_ZERO(&rset);
-  FD_ZERO(&wset);
-  FD_ZERO(&eset);
-
-  FD_SET(socket_, &rset);
-  FD_SET(socket_, &wset);
-  FD_SET(socket_, &eset);
+  struct pollfd pollfds[1];
+  pollfds[0].fd = socket_;
+  pollfds[0].events = POLLIN | POLLPRI | POLLOUT;
+  pollfds[0].revents = 0;
 
   struct timeval timeout = { static_cast<long>(connect_timeout_seconds_), 0 };
-  rc = select(socket_+1, &rset, &wset, &eset, &timeout);
+  rc = poll(pollfds, sizeof(pollfds) / sizeof(pollfds[0]), connect_timeout_seconds_ * 1000);
   if (rc < 0) {
     // select failed
     OnConnectCompletion(true, false);
@@ -633,7 +623,9 @@ void FunapiTcpImpl::Connect(struct addrinfo *addrinfo_res) {
     int e = 0;
     socklen_t e_size = sizeof(e);
 
-    if (!FD_ISSET(socket_, &rset) && !FD_ISSET(socket_, &wset)) {
+    short revents = pollfds[0].revents;
+
+    if (!(revents & POLLIN) && !(revents & POLLOUT)) {
       OnConnectCompletion(true, false, 0, "");
       return;
     }
@@ -1013,7 +1005,7 @@ class FunapiUdpImpl : public FunapiSocketImpl {
                 const RecvHandler &recv_handler);
   virtual ~FunapiUdpImpl();
 
-  void OnSelect(const fd_set rset, const fd_set wset, const fd_set eset);
+  void OnPoll(short poll_revents);
   bool Send(const fun::vector<uint8_t> &body, const SendCompletionHandler &send_handler);
 
  private:
@@ -1055,8 +1047,8 @@ FunapiUdpImpl::~FunapiUdpImpl() {
 }
 
 
-void FunapiUdpImpl::OnSelect(const fd_set rset, const fd_set wset, const fd_set eset) {
-  FunapiSocketImpl::SocketSelect(rset, wset, eset);
+void FunapiUdpImpl::OnPoll(short poll_revents) {
+  FunapiSocketImpl::SocketPoll(poll_revents);
 }
 
 
@@ -1235,8 +1227,8 @@ int FunapiTcp::GetSocket() {
 }
 
 
-void FunapiTcp::OnSelect(const fd_set rset, const fd_set wset, const fd_set eset) {
-  impl_->OnSelect(rset, wset, eset);
+void FunapiTcp::OnPoll(short poll_revents) {
+  impl_->OnPoll(poll_revents);
 }
 
 
@@ -1284,8 +1276,8 @@ int FunapiUdp::GetSocket() {
 }
 
 
-void FunapiUdp::OnSelect(const fd_set rset, const fd_set wset, const fd_set eset) {
-  impl_->OnSelect(rset, wset, eset);
+void FunapiUdp::OnPoll(short poll_revents) {
+  impl_->OnPoll(poll_revents);
 }
 
 }  // namespace fun

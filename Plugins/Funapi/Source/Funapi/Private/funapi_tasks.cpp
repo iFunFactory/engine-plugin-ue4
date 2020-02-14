@@ -216,7 +216,7 @@ void FunapiThreadImpl::Thread() {
   {
     if (is_network)
     {
-      FunapiSocket::Select();
+      FunapiSocket::Poll();
     }
     else
     {

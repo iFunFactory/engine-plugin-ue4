@@ -977,7 +977,7 @@ void FunapiRpcImpl::Update() {
   if (auto nt = FunapiThread::Get("_network")) {
     if (nt->Size() == 0) {
       nt->Push([]()->bool {
-        FunapiSocket::Select();
+        FunapiSocket::Poll();
         return true;
       });
     }

@@ -218,6 +218,11 @@ bool FFunapiSessionTestReconnectJson::RunTest(const FString& Parameters) {
 
   session->Connect(fun::TransportProtocol::kTcp);
 
+  while (!session->IsConnected()) {
+    session->Update();
+    std::this_thread::sleep_for(std::chrono::milliseconds(16)); // 60fps
+  }
+
   {
     rapidjson::Document msg;
     msg.SetObject();
@@ -2504,6 +2509,11 @@ bool FFunapiSessionTestReconnectTcpSend10Times::RunTest(const FString& Parameter
   verify(is_ok);
 
   session->Connect(fun::TransportProtocol::kTcp);
+
+  while (!session->IsConnected()) {
+    session->Update();
+    std::this_thread::sleep_for(std::chrono::milliseconds(16)); // 60fps
+  }
 
   {
     rapidjson::Document msg;

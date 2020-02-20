@@ -508,10 +508,6 @@ class FunapiTcpImpl : public FunapiSocketImpl {
   };
   SocketSelectState socket_select_state_ = SocketSelectState::kNone;
 
-  fun::vector<std::function<void(const fd_set rset,
-                                 const fd_set wset,
-                                 const fd_set eset)>> on_socket_select_;
-
   ConnectCompletionHandler completion_handler_ = nullptr;
 
   SendHandler send_handler_;

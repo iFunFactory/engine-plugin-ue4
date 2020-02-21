@@ -20,6 +20,7 @@ public class Funapi : ModuleRules
     PublicDefinitions.Add("FUNAPI_HAVE_DELAYED_ACK=1");
     PublicDefinitions.Add("FUNAPI_HAVE_TCP_TLS=1");
     PublicDefinitions.Add("FUNAPI_HAVE_WEBSOCKET=1");
+    PublicDefinitions.Add("FUNAPI_TLS_VERIFY_SERVER_CERTIFICATE=1");
 
     if (Target.Type == TargetType.Editor)
     {

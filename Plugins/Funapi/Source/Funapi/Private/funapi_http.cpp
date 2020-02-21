@@ -18,6 +18,14 @@
 
 #include<iomanip>
 
+static const fun::string err_msg_empty_root_cert =
+    "A server certificate will not be verified. To verify "
+    "the server certificate, set root certficate path"
+    "use FunapiHttpTransportOption.SetCACertFilePath().";
+
+static const fun::string warn_msg_server_cert_verification_disabled =
+    "A server certificate will not be verified because "
+    "FUNAPI_TLS_VERIFY_SERVER_CERTIFICATE is set to 0.";
 
 namespace fun
 {
@@ -204,16 +212,35 @@ void FunapiHttpImpl::DownloadRequest(const fun::string &url,
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &receive_body_cb);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &FunapiHttpImpl::OnResponse);
 
-    if (cert_file_path_.empty())
+    bool verify_cert = true;
+    if (url.find("https") == std::string::npos)
     {
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+      verify_cert = false;
     }
     else
     {
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
-        curl_easy_setopt(curl, CURLOPT_CAINFO, cert_file_path_.c_str());
+#if FUNAPI_TLS_VERIFY_SERVER_CERTIFICATE
+      if (cert_file_path_.empty())
+      {
+        verify_cert = false;
+        DebugUtils::Log("%s", err_msg_empty_root_cert.c_str());
+      }
+#else  // FUNAPI_TLS_VERIFY_SERVER_CERTIFICATE
+      verify_cert = false;
+      DebugUtils::Log(warn_msg_server_cert_verification_disabled.c_str());
+#endif // FUNAPI_TLS_VERIFY_SERVER_CERTIFICATE
+    }
+
+    if (verify_cert)
+    {
+      curl_easy_setopt(curl_handle_, CURLOPT_SSL_VERIFYPEER, 1L);
+      curl_easy_setopt(curl_handle_, CURLOPT_SSL_VERIFYHOST, 2L);
+      curl_easy_setopt(curl_handle_, CURLOPT_CAINFO, cert_file_path_.c_str());
+    }
+    else
+    {
+      curl_easy_setopt(curl_handle_, CURLOPT_SSL_VERIFYPEER, 0L);
+      curl_easy_setopt(curl_handle_, CURLOPT_SSL_VERIFYHOST, 0L);
     }
 
     CURLcode res = curl_easy_perform(curl);
@@ -271,13 +298,35 @@ void FunapiHttpImpl::GetRequest(const fun::string &url,
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &receive_body_cb);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &FunapiHttpImpl::OnResponse);
 
-  if (cert_file_path_.empty()) {
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-  } else {
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
-    curl_easy_setopt(curl, CURLOPT_CAINFO, cert_file_path_.c_str());
+  bool verify_cert = true;
+  if (url.find("https") == std::string::npos)
+  {
+    verify_cert = false;
+  }
+  else
+  {
+#if FUNAPI_TLS_VERIFY_SERVER_CERTIFICATE
+    if (cert_file_path_.empty())
+    {
+      verify_cert = false;
+      DebugUtils::Log("%s", err_msg_empty_root_cert.c_str());
+    }
+#else  // FUNAPI_TLS_VERIFY_SERVER_CERTIFICATE
+    verify_cert = false;
+    DebugUtils::Log(warn_msg_server_cert_verification_disabled.c_str());
+#endif // FUNAPI_TLS_VERIFY_SERVER_CERTIFICATE
+  }
+
+  if (verify_cert)
+  {
+    curl_easy_setopt(curl_handle_, CURLOPT_SSL_VERIFYPEER, 1L);
+    curl_easy_setopt(curl_handle_, CURLOPT_SSL_VERIFYHOST, 2L);
+    curl_easy_setopt(curl_handle_, CURLOPT_CAINFO, cert_file_path_.c_str());
+  }
+  else
+  {
+    curl_easy_setopt(curl_handle_, CURLOPT_SSL_VERIFYPEER, 0L);
+    curl_easy_setopt(curl_handle_, CURLOPT_SSL_VERIFYHOST, 0L);
   }
 
   CURLcode res = curl_easy_perform(curl);
@@ -344,14 +393,37 @@ void FunapiHttpImpl::PostRequest(const fun::string &url,
   curl_easy_setopt(curl_handle_, CURLOPT_WRITEDATA, &receive_body_cb);
   curl_easy_setopt(curl_handle_, CURLOPT_WRITEFUNCTION, &FunapiHttpImpl::OnResponse);
 
-  if (cert_file_path_.empty()) {
-    curl_easy_setopt(curl_handle_, CURLOPT_SSL_VERIFYPEER, 0L);
-    curl_easy_setopt(curl_handle_, CURLOPT_SSL_VERIFYHOST, 0L);
-  } else {
+  bool verify_cert = true;
+  if (url.find("https") == std::string::npos)
+  {
+    verify_cert = false;
+  }
+  else
+  {
+#if FUNAPI_TLS_VERIFY_SERVER_CERTIFICATE
+    if (cert_file_path_.empty())
+    {
+      verify_cert = false;
+      DebugUtils::Log("%s", err_msg_empty_root_cert.c_str());
+    }
+#else  // FUNAPI_TLS_VERIFY_SERVER_CERTIFICATE
+    verify_cert = false;
+    DebugUtils::Log(warn_msg_server_cert_verification_disabled.c_str());
+#endif // FUNAPI_TLS_VERIFY_SERVER_CERTIFICATE
+  }
+
+  if (verify_cert)
+  {
     curl_easy_setopt(curl_handle_, CURLOPT_SSL_VERIFYPEER, 1L);
     curl_easy_setopt(curl_handle_, CURLOPT_SSL_VERIFYHOST, 2L);
     curl_easy_setopt(curl_handle_, CURLOPT_CAINFO, cert_file_path_.c_str());
   }
+  else
+  {
+    curl_easy_setopt(curl_handle_, CURLOPT_SSL_VERIFYPEER, 0L);
+    curl_easy_setopt(curl_handle_, CURLOPT_SSL_VERIFYHOST, 0L);
+  }
+
 
   CURLcode res = curl_easy_perform(curl_handle_);
   if (res != CURLE_OK) {

@@ -27,6 +27,7 @@
 THIRD_PARTY_INCLUDES_START
 #include "openssl/ssl.h"
 #include "openssl/err.h"
+#include "openssl/x509v3.h"
 THIRD_PARTY_INCLUDES_END
 #ifdef UI
 #undef UI
@@ -639,6 +640,7 @@ class FunapiTcpImpl : public FunapiSocketImpl {
   // https://curl.haxx.se/ca/cacert.pem
   fun::string cert_file_path_;
   bool use_tls_ = false;
+  fun::string hostname_or_ip_;
 
   SSL_CTX *ctx_ = nullptr;
   SSL *ssl_ = nullptr;
@@ -884,6 +886,7 @@ void FunapiTcpImpl::Connect(const char* hostname_or_ip,
 
   use_tls_ = use_tls;
   cert_file_path_ = cert_file_path;
+  hostname_or_ip_ = hostname_or_ip;
 
   send_handler_ = send_handler;
   recv_handler_ = recv_handler;
@@ -892,7 +895,7 @@ void FunapiTcpImpl::Connect(const char* hostname_or_ip,
   int error_code = 0;
   fun::string error_string;
 
-  if (!InitAddrInfo(SOCK_STREAM, hostname_or_ip, port, error_code, error_string)) {
+  if (!InitAddrInfo(SOCK_STREAM, hostname_or_ip_.c_str(), port, error_code, error_string)) {
     OnConnectCompletion(true, false, error_code, error_string);
     return;
   }
@@ -984,20 +987,33 @@ bool FunapiTcpImpl::ConnectTLS() {
     return false;
   }
 
-  bool use_verify = false;
-
-  if (!cert_file_path_.empty()) {
-    if (!SSL_CTX_load_verify_locations(ctx_, cert_file_path_.c_str(), NULL)) {
+#if FUNAPI_TLS_VERIFY_SERVER_CERTIFICATE
+  if (cert_file_path_.empty())
+  {
+    fun::stringstream ss;
+    ss << "A server certificate will not be verified. ";
+    ss << "To verify the server certificate, ";
+    ss << "set root certificate path ";
+    ss << "use FunapiTcpTransportOption.SetCACertFilePath().";
+    DebugUtils::Log("%s", ss.str().c_str());
+  }
+  else
+  {
+    if (!SSL_CTX_load_verify_locations(ctx_, cert_file_path_.c_str(), NULL))
+    {
       on_ssl_error_completion();
       return false;
     }
-    else {
-      SSL_CTX_set_verify(ctx_, SSL_VERIFY_PEER, NULL);
-      SSL_CTX_set_verify_depth(ctx_, 1);
 
-      use_verify = true;
-    }
+    SSL_CTX_set_verify(ctx_, SSL_VERIFY_PEER, NULL);
+    SSL_CTX_set_verify_depth(ctx_, 2);
   }
+#else // FUNAPI_TLS_VERIFY_SERVER_CERTIFICATE
+  fun::stringstream ss;
+  ss << "A server certificate will not be verified because ";
+  ss << "FUNAPI_TLS_VERIFY_SERVER_CERTIFICATE is set to 0.";
+  DebugUtils::Log(ss.str().c_str());
+#endif // FUNAPI_TLS_VERIFY_SERVER_CERTIFICATE
 
   ssl_ = SSL_new(ctx_);
 
@@ -1011,6 +1027,17 @@ bool FunapiTcpImpl::ConnectTLS() {
     on_ssl_error_completion();
     return false;
   }
+
+#if FUNAPI_TLS_VERIFY_SERVER_CERTIFICATE
+  auto param = SSL_get0_param(ssl_);
+  X509_VERIFY_PARAM_set_hostflags(param, X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS);
+  if (!X509_VERIFY_PARAM_set1_host(param, hostname_or_ip_.c_str(),
+                                   strlen(hostname_or_ip_.c_str())))
+  {
+    on_ssl_error_completion();
+    return false;
+  }
+#endif // FUNAPI_TLS_VERIFY_SERVER_CERTIFICATE
 
   while (true)
   {
@@ -1028,20 +1055,6 @@ bool FunapiTcpImpl::ConnectTLS() {
     }
     else {
       break;
-    }
-  }
-
-  if (use_verify) {
-    if (SSL_get_peer_certificate(ssl_) != NULL)
-    {
-      if (SSL_get_verify_result(ssl_) != X509_V_OK) {
-        on_ssl_error_completion();
-        return false;
-      }
-    }
-    else {
-      on_ssl_error_completion();
-      return false;
     }
   }
 

@@ -1,5 +1,6 @@
 Build
-Saved
+Saved/*
+!Saved/Certificate
 Intermediate
 Binaries
 funapi_plugin_ue4.xcodeproj

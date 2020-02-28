@@ -24,7 +24,7 @@
 #include "../test_messages.pb.h"
 #include "funapi/service/multicast_message.pb.h"
 
-const fun::string g_server_ip = "plugin-docker.ifunfactory.com";
+const fun::string g_server_address = "plugin-docker.ifunfactory.dev";
 
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEchoJson, "Funapi.Echo.E_Json", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
@@ -32,9 +32,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEchoJson, "Funapi.Echo.E_Json
 bool FFunapiSessionTestEchoJson::RunTest(const FString& Parameters)
 {
   fun::string send_string = "Json Echo Message";
-  fun::string server_ip = g_server_ip;
+  fun::string server_address = g_server_address;
 
-  auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
+  auto session = fun::FunapiSession::Create(server_address.c_str(), false);
   bool is_ok = true;
   bool is_working = true;
 
@@ -123,9 +123,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestReconnectJson,
 
 bool FFunapiSessionTestReconnectJson::RunTest(const FString& Parameters) {
   fun::string send_string = "Json Echo Message";
-  fun::string server_ip = g_server_ip;
+  fun::string server_address = g_server_address;
 
-  auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
+  auto session = fun::FunapiSession::Create(server_address.c_str(), false);
   bool is_ok = true;
   bool is_working = true;
 
@@ -256,9 +256,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEchoProtobuf, "Funapi.Echo.E_
 bool FFunapiSessionTestEchoProtobuf::RunTest(const FString& Parameters)
 {
   fun::string send_string = "Protobuf Echo Message";
-  fun::string server_ip = g_server_ip;
+  fun::string server_address = g_server_address;
 
-  auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
+  auto session = fun::FunapiSession::Create(server_address.c_str(), false);
   bool is_ok = true;
   bool is_working = true;
 
@@ -341,7 +341,7 @@ bool FFunapiMulticastTestJson::RunTest(const FString& Parameters)
 {
   int user_count = 5;
   int send_count = 20;
-  fun::string server_ip = g_server_ip;
+  fun::string server_address = g_server_address;
   fun::FunEncoding encoding = fun::FunEncoding::kJson;
   uint16_t port = 10401;
   bool with_session_reliability = false;
@@ -383,7 +383,7 @@ bool FFunapiMulticastTestJson::RunTest(const FString& Parameters)
     auto funapi_multicast =
       fun::FunapiMulticast::Create(
         user_name.c_str(),
-        server_ip.c_str(),
+        server_address.c_str(),
         port,
         encoding,
         with_session_reliability);
@@ -512,7 +512,7 @@ bool FFunapiMulticastTestProtobuf::RunTest(const FString& Parameters)
 {
   int user_count = 5;
   int send_count = 20;
-  fun::string server_ip = g_server_ip;
+  fun::string server_address = g_server_address;
   fun::FunEncoding encoding = fun::FunEncoding::kProtobuf;
   uint16_t port = 10404;
   bool with_session_reliability = false;
@@ -546,7 +546,7 @@ bool FFunapiMulticastTestProtobuf::RunTest(const FString& Parameters)
     auto funapi_multicast =
       fun::FunapiMulticast::Create(
         user_name.c_str(),
-        server_ip.c_str(),
+        server_address.c_str(),
         port,
         encoding,
         with_session_reliability);
@@ -670,9 +670,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestRecvTimeout, "Funapi.RecvTime
 bool FFunapiSessionTestRecvTimeout::RunTest(const FString& Parameters)
 {
   fun::string send_string;
-  fun::string server_ip = g_server_ip;
+  fun::string server_address = g_server_address;
 
-  auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
+  auto session = fun::FunapiSession::Create(server_address.c_str(), false);
   bool is_ok = true;
   bool is_working = true;
 
@@ -736,7 +736,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestReliabilityJson, "Funapi.Sess
 bool FFunapiSessionTestReliabilityJson::RunTest(const FString& Parameters)
 {
   int send_count = 100;
-  fun::string server_ip = g_server_ip;
+  fun::string server_address = g_server_address;
   fun::FunEncoding encoding = fun::FunEncoding::kJson;
   uint16_t port = 10231;
   bool with_session_reliability = true;
@@ -764,7 +764,7 @@ bool FFunapiSessionTestReliabilityJson::RunTest(const FString& Parameters)
     s->SendMessage("echo", json_string);
   };
 
-  auto session = fun::FunapiSession::Create(server_ip.c_str(), with_session_reliability);
+  auto session = fun::FunapiSession::Create(server_address.c_str(), with_session_reliability);
   bool is_ok = true;
   bool is_working = true;
 
@@ -844,7 +844,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestReliabilityProtobuf, "Funapi.
 bool FFunapiSessionTestReliabilityProtobuf::RunTest(const FString& Parameters)
 {
   int send_count = 100;
-  fun::string server_ip = g_server_ip;
+  fun::string server_address = g_server_address;
   fun::FunEncoding encoding = fun::FunEncoding::kProtobuf;
   uint16_t port = 10234;
   bool with_session_reliability = true;
@@ -864,7 +864,7 @@ bool FFunapiSessionTestReliabilityProtobuf::RunTest(const FString& Parameters)
     s->SendMessage(msg);
   };
 
-  auto session = fun::FunapiSession::Create(server_ip.c_str(), with_session_reliability);
+  auto session = fun::FunapiSession::Create(server_address.c_str(), with_session_reliability);
   bool is_ok = true;
   bool is_working = true;
 
@@ -944,7 +944,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMulticastReliabilityJson, "Fu
 bool FFunapiSessionTestMulticastReliabilityJson::RunTest(const FString& Parameters) {
   int user_count = 10;
   int send_count = 100;
-  fun::string server_ip = g_server_ip;
+  fun::string server_address = g_server_address;
   fun::FunEncoding encoding = fun::FunEncoding::kJson;
   uint16_t port = 10431;
   bool with_session_reliability = true;
@@ -985,7 +985,7 @@ bool FFunapiSessionTestMulticastReliabilityJson::RunTest(const FString& Paramete
 
     auto funapi_multicast = fun::FunapiMulticast::Create(
       user_name.c_str(),
-      server_ip.c_str(),
+      server_address.c_str(),
       port,
       encoding,
       with_session_reliability);
@@ -1112,7 +1112,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMulticastReliabilityProtobuf,
 bool FFunapiSessionTestMulticastReliabilityProtobuf::RunTest(const FString& Parameters) {
   int user_count = 10;
   int send_count = 100;
-  fun::string server_ip = g_server_ip;
+  fun::string server_address = g_server_address;
   fun::FunEncoding encoding = fun::FunEncoding::kProtobuf;
   uint16_t port = 10434;
   bool with_session_reliability = true;
@@ -1145,7 +1145,7 @@ bool FFunapiSessionTestMulticastReliabilityProtobuf::RunTest(const FString& Para
 
     auto funapi_multicast = fun::FunapiMulticast::Create(
       user_name.c_str(),
-      server_ip.c_str(),
+      server_address.c_str(),
       port,
       encoding,
       with_session_reliability);
@@ -1269,9 +1269,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMsgtypeIntegerEchoProtobuf, "
 bool FFunapiSessionTestMsgtypeIntegerEchoProtobuf::RunTest(const FString& Parameters)
 {
   fun::string send_string = "Protobuf Echo Message";
-  fun::string server_ip = g_server_ip;
+  fun::string server_address = g_server_address;
 
-  auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
+  auto session = fun::FunapiSession::Create(server_address.c_str(), false);
   bool is_ok = true;
   bool is_working = true;
 
@@ -1353,7 +1353,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestMsgtypeIntegerEchoProtobuf2, 
 bool FFunapiSessionTestMsgtypeIntegerEchoProtobuf2::RunTest(const FString& Parameters)
 {
   int send_count = 100;
-  fun::string server_ip = g_server_ip;
+  fun::string server_address = g_server_address;
   fun::FunEncoding encoding = fun::FunEncoding::kProtobuf;
   uint16_t port = 10204;
   bool with_session_reliability = true;
@@ -1373,7 +1373,7 @@ bool FFunapiSessionTestMsgtypeIntegerEchoProtobuf2::RunTest(const FString& Param
     s->SendMessage(msg);
   };
 
-  auto session = fun::FunapiSession::Create(server_ip.c_str(), with_session_reliability);
+  auto session = fun::FunapiSession::Create(server_address.c_str(), with_session_reliability);
   bool is_ok = true;
   bool is_working = true;
 
@@ -1455,9 +1455,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestQueueJson,
 bool FFunapiSessionTestQueueJson::RunTest(const FString& Parameters)
 {
   fun::string send_string = "Json Echo Message";
-  fun::string server_ip = g_server_ip;
+  fun::string server_address = g_server_address;
 
-  auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
+  auto session = fun::FunapiSession::Create(server_address.c_str(), false);
   bool is_ok = true;
   bool is_working = true;
 
@@ -1550,9 +1550,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestQueueJson10Times,
 bool FFunapiSessionTestQueueJson10Times::RunTest(const FString& Parameters)
 {
   fun::string send_string = "Json Echo Message";
-  fun::string server_ip = g_server_ip;
+  fun::string server_address = g_server_address;
 
-  auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
+  auto session = fun::FunapiSession::Create(server_address.c_str(), false);
   bool is_ok = true;
   bool is_working = true;
 
@@ -1667,9 +1667,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestQueueJsonMultitransport,
 bool FFunapiSessionTestQueueJsonMultitransport::RunTest(const FString& Parameters)
 {
   fun::string send_string = "Json Echo Message";
-  fun::string server_ip = g_server_ip;
+  fun::string server_address = g_server_address;
 
-  auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
+  auto session = fun::FunapiSession::Create(server_address.c_str(), false);
   bool is_ok = false;
   bool is_working = true;
 
@@ -1784,9 +1784,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEncJson,
 bool FFunapiSessionTestEncJson::RunTest(const FString& Parameters)
 {
   fun::string send_string = "Json Echo Message";
-  fun::string server_ip = g_server_ip;
+  fun::string server_address = g_server_address;
 
-  auto session = fun::FunapiSession::Create(server_ip.c_str(), true);
+  auto session = fun::FunapiSession::Create(server_address.c_str(), true);
   bool is_ok = true;
   bool is_working = true;
   int recv_message_count = 0;
@@ -1883,9 +1883,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestEncProtobuf,
 bool FFunapiSessionTestEncProtobuf::RunTest(const FString& Parameters)
 {
   fun::string send_string = "Protobuf Echo Message";
-  fun::string server_ip = g_server_ip;
+  fun::string server_address = g_server_address;
 
-  auto session = fun::FunapiSession::Create(server_ip.c_str(), true);
+  auto session = fun::FunapiSession::Create(server_address.c_str(), true);
   bool is_ok = true;
   bool is_working = true;
   int recv_message_count = 0;
@@ -2013,14 +2013,14 @@ bool FFunapiSessionTestMultithread::RunTest(const FString& Parameters) {
   auto test_funapi_session =
     [&send_message, kMaxCount, &complete_mutex, &v_completed]
   (const int index,
-    const fun::string &server_ip,
+    const fun::string &server_address,
     const int server_port,
     const fun::TransportProtocol p,
     const fun::FunEncoding encoding,
     const bool use_session_reliability)
   {
 
-    auto session = fun::FunapiSession::Create(server_ip.c_str(), use_session_reliability);
+    auto session = fun::FunapiSession::Create(server_address.c_str(), use_session_reliability);
     bool is_ok = false;
     bool is_working = true;
 
@@ -2137,7 +2137,7 @@ bool FFunapiSessionTestMultithread::RunTest(const FString& Parameters) {
   for (int i = 0; i < kMaxThread; ++i) {
     fun::TransportProtocol protocol = fun::TransportProtocol::kTcp;
     fun::FunEncoding encoding = fun::FunEncoding::kProtobuf;
-    fun::string server_ip = g_server_ip;
+    fun::string server_address = g_server_address;
     int server_port = 10204;
     bool with_session_reliability = false;
 
@@ -2145,9 +2145,9 @@ bool FFunapiSessionTestMultithread::RunTest(const FString& Parameters) {
 
     temp_thread[i] =
       std::thread
-      ([&test_funapi_session, i, server_ip, server_port, protocol, encoding, with_session_reliability]()
+      ([&test_funapi_session, i, server_address, server_port, protocol, encoding, with_session_reliability]()
     {
-      test_funapi_session(i, server_ip, server_port, protocol, encoding, with_session_reliability);
+      test_funapi_session(i, server_address, server_port, protocol, encoding, with_session_reliability);
     });
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -2222,14 +2222,14 @@ bool FFunapiSessionTestMultithreadUpdateAll::RunTest(const FString& Parameters) 
   auto test_funapi_session =
     [&send_message, kMaxCount, &complete_mutex, &v_completed]
    (const int index,
-    const fun::string &server_ip,
+    const fun::string &server_address,
     const int server_port,
     const fun::TransportProtocol p,
     const fun::FunEncoding encoding,
     const bool use_session_reliability)
   {
 
-    auto session = fun::FunapiSession::Create(server_ip.c_str(), use_session_reliability);
+    auto session = fun::FunapiSession::Create(server_address.c_str(), use_session_reliability);
     bool is_ok = false;
     bool is_working = true;
 
@@ -2345,7 +2345,7 @@ bool FFunapiSessionTestMultithreadUpdateAll::RunTest(const FString& Parameters) 
   for (int i = 0; i < kMaxThread; ++i) {
     fun::TransportProtocol protocol = fun::TransportProtocol::kTcp;
     fun::FunEncoding encoding = fun::FunEncoding::kProtobuf;
-    fun::string server_ip = g_server_ip;
+    fun::string server_address = g_server_address;
     int server_port = 10204;
     bool with_session_reliability = false;
 
@@ -2353,9 +2353,9 @@ bool FFunapiSessionTestMultithreadUpdateAll::RunTest(const FString& Parameters) 
 
     temp_thread[i] =
       std::thread
-      ([&test_funapi_session, i, server_ip, server_port, protocol, encoding, with_session_reliability]()
+      ([&test_funapi_session, i, server_address, server_port, protocol, encoding, with_session_reliability]()
     {
-      test_funapi_session(i, server_ip, server_port, protocol, encoding, with_session_reliability);
+      test_funapi_session(i, server_address, server_port, protocol, encoding, with_session_reliability);
     });
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -2395,9 +2395,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestReconnectTcpSend10Times, "Fun
 
 bool FFunapiSessionTestReconnectTcpSend10Times::RunTest(const FString& Parameters) {
   fun::string send_string = "Json Echo Message";
-  fun::string server_ip = g_server_ip;
+  fun::string server_address = g_server_address;
 
-  auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
+  auto session = fun::FunapiSession::Create(server_address.c_str(), false);
   bool is_ok = true;
   bool is_working = true;
 
@@ -2547,9 +2547,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiSessionTestReconnectHttpSend10Times, "Fu
 
 bool FFunapiSessionTestReconnectHttpSend10Times::RunTest(const FString& Parameters) {
   fun::string send_string = "Json Echo Message";
-  fun::string server_ip = g_server_ip;
+  fun::string server_address = g_server_address;
 
-  auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
+  auto session = fun::FunapiSession::Create(server_address.c_str(), false);
   bool is_ok = true;
   bool is_working = true;
 
@@ -2729,9 +2729,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFunapiTestTLSJson, "Funapi.TLS.Json", EAutomat
 bool FFunapiTestTLSJson::RunTest(const FString& Parameters) {
 #if FUNAPI_HAVE_TCP_TLS
   fun::string send_string = "Json Echo Message";
-  fun::string server_ip = g_server_ip;
+  fun::string server_address = g_server_address;
 
-  auto session = fun::FunapiSession::Create(server_ip.c_str(), false);
+  auto session = fun::FunapiSession::Create(server_address.c_str(), false);
   bool is_ok = true;
   bool is_working = true;
 
@@ -2790,6 +2790,9 @@ bool FFunapiTestTLSJson::RunTest(const FString& Parameters) {
 
   auto option = fun::FunapiTcpTransportOption::Create();
   option->SetUseTLS(true);
+  FString ca_cert_path = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
+  ca_cert_path += "Saved/Certificate/cacert.pem";
+  option->SetCACertFilePath(TCHAR_TO_UTF8(*ca_cert_path));
   session->Connect(fun::TransportProtocol::kTcp, 10801, fun::FunEncoding::kJson, option);
 
   // send

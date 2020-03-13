@@ -134,6 +134,9 @@ class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
   bool InitSocket(struct addrinfo *info,
                   int &error_code,
                   fun::string &error_string);
+
+  bool InitNonblockingSocket(int &error_code, fun::string &error_string);
+
   void CloseSocket();
 
 #ifdef FUNAPI_PLATFORM_WINDOWS
@@ -512,6 +515,32 @@ bool FunapiSocketImpl::InitSocket(struct addrinfo *info,
   socket_ = fd;
 
   return true;
+}
+
+
+bool FunapiSocketImpl::InitNonblockingSocket(int &error_code,
+                                             fun::string &error_string)
+{
+  do {
+#ifdef FUNAPI_PLATFORM_WINDOWS
+    u_long argp = 1;
+    if (ioctlsocket(socket_, FIONBIO, &argp) == 0) {
+      return true;
+    }
+#else // FUNAPI_PLATFORM_WINDOWS
+    int flag = fcntl(socket_, F_GETFL);
+    if (flag < 0)
+      break;
+
+    if (fcntl(socket_, F_SETFL, O_NONBLOCK | flag) == 0) {
+      return true;
+    }
+#endif // FUNAPI_PLATFORM_WINDOWS
+  } while (false);
+
+  error_code = FunapiUtil::GetSocketErrorCode();
+  error_string = FunapiUtil::GetSocketErrorString(error_code);
+  return false;
 }
 
 
@@ -907,6 +936,11 @@ void FunapiTcpImpl::Connect(const char* hostname_or_ip,
     return;
   }
 
+  if (!InitNonblockingSocket(error_code, error_string)) {
+    OnConnectCompletion(true, false, error_code, error_string);
+    return;
+  }
+
   if (!InitTcpSocketOption(disable_nagle, error_code, error_string)) {
     OnConnectCompletion(true, false, error_code, error_string);
     return;
@@ -924,18 +958,6 @@ void FunapiTcpImpl::Connect(const char* hostname_or_ip,
 
 
 bool FunapiTcpImpl::InitTcpSocketOption(bool disable_nagle, int &error_code, fun::string &error_string) {
-  // non-blocking.
-#ifdef FUNAPI_PLATFORM_WINDOWS
-  u_long argp = 1;
-  int flag = ioctlsocket(socket_, FIONBIO, &argp);
-  assert(flag >= 0);
-#else
-  int flag = fcntl(socket_, F_GETFL);
-  assert(flag >= 0);
-  int rc = fcntl(socket_, F_SETFL, O_NONBLOCK | flag);
-  assert(rc >= 0);
-#endif
-
   // Disable nagle
   if (disable_nagle) {
     int nagle_flag = 1;
@@ -1240,6 +1262,11 @@ FunapiUdpImpl::FunapiUdpImpl(const char* hostname_or_ip,
   addrinfo_res_ = addrinfo_;
 
   if (!InitSocket(addrinfo_res_, error_code, error_string)) {
+    init_handler(true, error_code, error_string);
+    return;
+  }
+
+  if (!InitNonblockingSocket(error_code, error_string)) {
     init_handler(true, error_code, error_string);
     return;
   }

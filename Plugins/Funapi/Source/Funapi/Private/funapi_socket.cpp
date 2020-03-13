@@ -918,7 +918,7 @@ void FunapiTcpImpl::Connect(const char* hostname_or_ip,
 bool FunapiTcpImpl::InitTcpSocketOption(bool disable_nagle, int &error_code, fun::string &error_string) {
   // non-blocking.
 #ifdef FUNAPI_PLATFORM_WINDOWS
-  u_long argp = 0;
+  u_long argp = 1;
   int flag = ioctlsocket(socket_, FIONBIO, &argp);
   assert(flag >= 0);
 #else

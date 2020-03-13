@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2019 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2020 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -1139,22 +1139,24 @@ void FunapiTcpImpl::OnSend() {
         0));
     }
 
-    /*
-    if (nSent == 0) {
-      DebugUtils::Log("Socket [%d] closed.", socket_);
-    }
-    */
-
-    if (nSent <= 0) {
+    if (nSent < 0) {
       int error_code = FunapiUtil::GetSocketErrorCode();
+#ifdef FUNAPI_PLATFORM_WINDOWS
+      if (error_code == WSAEWOULDBLOCK) {
+        return;
+      }
+#else // FUNAPI_PLATFORM_WINDOWS
+      if (error_code == EWOULDBLOCK) {
+        return;
+      }
+#endif // FUNAPI_PLATFORM_WINDOWS
       fun::string error_string = FunapiUtil::GetSocketErrorString(error_code);
       send_completion_handler_(true, error_code, error_string, nSent);
       CloseSocket();
-    }
-    else {
-      offset_ += nSent;
+      return;
     }
 
+    offset_ += nSent;
     if (offset_ == body_.size()) {
       offset_ = 0;
       body_.resize(0);
@@ -1185,6 +1187,15 @@ void FunapiTcpImpl::OnRecv() {
 
   if (nRead < 0) {
     int error_code = FunapiUtil::GetSocketErrorCode();
+#ifdef FUNAPI_PLATFORM_WINDOWS
+    if (error_code == WSAEWOULDBLOCK) {
+      return;
+    }
+#else // FUNAPI_PLATFORM_WINDOWS
+    if (error_code == EWOULDBLOCK) {
+      return;
+    }
+#endif // FUNAPI_PLATFORM_WINDOWS
     fun::string error_string = FunapiUtil::GetSocketErrorString(error_code);
     recv_handler_(true, error_code, error_string, nRead, buffer);
     CloseSocket();
@@ -1331,6 +1342,7 @@ void FunapiUdpImpl::OnRecv() {
     fun::string error_string = FunapiUtil::GetSocketErrorString(error_code);
     recv_handler_(true, error_code, error_string, nRead, receiving_vector);
     CloseSocket();
+    return;
   }
 
   recv_handler_(false, 0, "", nRead, receiving_vector);
@@ -1342,13 +1354,7 @@ bool FunapiUdpImpl::Send(const fun::vector<uint8_t> &body, const SendCompletionH
 
   int nSent = static_cast<int>(sendto(socket_, reinterpret_cast<char*>(buf), body.size(), 0, addrinfo_res_->ai_addr, addrinfo_res_->ai_addrlen));
 
-  /*
-  if (nSent == 0) {
-    DebugUtils::Log("Socket [%d] closed.", socket_);
-  }
-  */
-
-  if (nSent <= 0) {
+  if (nSent < 0) {
     int error_code = FunapiUtil::GetSocketErrorCode();
     fun::string error_string = FunapiUtil::GetSocketErrorString(error_code);
     send_completion_handler(true, error_code, error_string, nSent);

@@ -105,19 +105,13 @@ class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
   FunapiSocketImpl();
   virtual ~FunapiSocketImpl();
 
-  static fun::string GetStringFromAddrInfo(struct addrinfo *info);
-
-  static fun::vector<std::weak_ptr<FunapiSocketImpl>> vec_sockets_;
-  static std::mutex vec_sockets_mutex_;
-
   static void Add(std::shared_ptr<FunapiSocketImpl> s);
-  static fun::vector<std::shared_ptr<FunapiSocketImpl>> GetSocketImpls();
   static bool Poll();
 
-  static const int kBufferSize = 65536;
-
   int GetSocket();
-  virtual bool IsReadyToPoll();
+
+ protected:
+  static fun::string GetStringFromAddrInfo(struct addrinfo *info);
 
 #ifdef FUNAPI_PLATFORM_WINDOWS
   virtual void OnPoll(HANDLE handle) = 0;
@@ -129,7 +123,6 @@ class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
   HANDLE GetEventHandle();
 #endif // FUNAPI_PLATFORM_WINDOWS
 
- protected:
   bool InitAddrInfo(int socktype,
                     const char* hostname_or_ip,
                     const int port,
@@ -151,12 +144,24 @@ class FunapiSocketImpl : public std::enable_shared_from_this<FunapiSocketImpl> {
   virtual void OnSend() = 0;
   virtual void OnRecv() = 0;
 
+ private:
+  static fun::vector<std::shared_ptr<FunapiSocketImpl>> GetSocketImpls();
+
+  virtual bool IsReadyToPoll();
+
+ protected:
+  static const int kBufferSize = 65536;
+
   int socket_ = -1;
   struct addrinfo *addrinfo_ = nullptr;
   struct addrinfo *addrinfo_res_ = nullptr;
 #ifdef FUNAPI_PLATFORM_WINDOWS
   HANDLE event_handle_ = nullptr;
 #endif // FUNAPI_PLATFORM_WINDOWS
+
+ private:
+   static fun::vector<std::weak_ptr<FunapiSocketImpl>> vec_sockets_;
+   static std::mutex vec_sockets_mutex_;
 };
 
 

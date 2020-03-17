@@ -409,12 +409,6 @@ void FunapiAnnouncementImpl::OnAnnouncementInfoList(const fun::string &json_stri
       if (v.HasMember("link_url"))
       {
         link_url = v["link_url"].GetString();
-        int index = static_cast<int>(link_url.rfind("/"));
-        if (index != fun::string::npos)
-        {
-          fun::string file_name = link_url.substr(index+1);
-          path = path_ + file_name;
-        }
       }
 
       if (v.HasMember("kind"))
@@ -515,11 +509,6 @@ void FunapiAnnouncementImpl::DownloadFiles() {
     auto &info = info_list_[i];
     // pair url, file path
     fun::vector<std::pair<fun::string, fun::string>> download_list;
-
-    if (info->GetLinkUrl().length() > 0 && info->GetFilePath().length() > 0)
-    {
-      download_list.push_back(std::pair<fun::string, fun::string>(info->GetLinkUrl(), info->GetFilePath()));
-    }
 
     if (info->GetImageUrl().length() > 0)
     {

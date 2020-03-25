@@ -553,8 +553,8 @@ void FunapiSocketImpl::SocketPoll(HANDLE handle)
     networkEvents.lNetworkEvents = 0;
     if (WSAEnumNetworkEvents(socket_, handle, &networkEvents) == 0)
     {
-      if (networkEvents.lNetworkEvents == FD_READ ||
-          networkEvents.lNetworkEvents == FD_CLOSE)
+      if (networkEvents.lNetworkEvents & FD_READ ||
+          networkEvents.lNetworkEvents & FD_CLOSE)
       {
         OnRecv();
       }
@@ -781,8 +781,8 @@ void FunapiTcpImpl::Connect(struct addrinfo *addrinfo_res) {
   networkEvents.lNetworkEvents = 0;
   if (WSAEnumNetworkEvents(socket_, event_handle_, &networkEvents) == 0)
   {
-    if (networkEvents.lNetworkEvents != FD_CONNECT &&
-        networkEvents.lNetworkEvents != FD_READ)
+    if (!(networkEvents.lNetworkEvents & FD_CONNECT ||
+        networkEvents.lNetworkEvents & FD_READ))
     {
       OnConnectCompletion(
           /*failed*/true, /*timeout*/false, /*error code*/0,

@@ -44,6 +44,8 @@
 #define kCookieRequestHeaderField "Cookie"
 #define kCookieResponseHeaderField "SET-COOKIE"
 
+static const size_t kMaxPayloadSize = 1024 * 1024;
+
 namespace fun {
 
 struct RedirectServerPortInfo {
@@ -1217,14 +1219,18 @@ FunapiTransport::~FunapiTransport() {
 bool FunapiTransport::EncodeMessage(std::shared_ptr<FunapiMessage> message,
                                     fun::vector<uint8_t> &body,
                                     const EncryptionType encryption_type) {
+
+  if (body.size() > kMaxPayloadSize)
+  {
+    fun::stringstream msg;
+    msg << "The message size is too large to cause an unexpected problem.";
+    msg << "Please make the message size smaller than ";
+    msg << kMaxPayloadSize << ".";
+    DebugUtils::Log(msg.str().c_str());
+  }
+
   HeaderFields header_fields;
   MakeHeaderFields(header_fields, body);
-
-  // log
-  // fun::string body_string(body.cbegin(), body.cend());
-  // DebugUtils::Log("Header to send: %s", header_string.c_str());
-  // DebugUtils::Log("send message: %s", body_string.c_str());
-  // //
 
   compression_->Compress(header_fields, body);
 

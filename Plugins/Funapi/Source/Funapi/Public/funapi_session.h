@@ -133,6 +133,9 @@ public:
     void Close(const TransportProtocol protocol);
     void Close();
 
+    void Stop(const TransportProtocol protocol);
+    void Stop();
+
     void SendMessage(const fun::string &msg_type,
                      const fun::string &json_string,
                      const TransportProtocol protocol = TransportProtocol::kDefault,

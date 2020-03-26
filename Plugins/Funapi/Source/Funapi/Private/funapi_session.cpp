@@ -773,8 +773,9 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
 
   void Connect(const std::weak_ptr<FunapiSession>& session, const TransportProtocol protocol, int port, FunEncoding encoding, std::shared_ptr<FunapiTransportOption> option = nullptr);
   void Connect(const TransportProtocol protocol);
-  void Close();
-  void Close(const TransportProtocol protocol);
+
+  void Stop();
+  void Stop(const TransportProtocol protocol);
 
   void Update();
   void UpdateTasks();
@@ -872,8 +873,8 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   void Initialize();
   void ResetSession();
 
-  void OnClose();
-  void OnClose(const TransportProtocol protocol);
+  void OnStop();
+  void OnStop(const TransportProtocol protocol);
 
   void Start();
   void OnConnect(const TransportProtocol protocol);
@@ -3930,22 +3931,16 @@ void FunapiSessionImpl::Start() {
 }
 
 
-void FunapiSessionImpl::OnClose() {
-  for (auto protocol : v_protocols_) {
-    OnClose(protocol);
+void FunapiSessionImpl::OnStop()
+{
+  for (auto protocol : v_protocols_)
+  {
+    OnStop(protocol);
   }
 }
 
 
-void FunapiSessionImpl::Close() {
-  PushTaskQueue([this]()->bool{
-    OnClose();
-    return false;
-  });
-}
-
-
-void FunapiSessionImpl::OnClose(const TransportProtocol protocol)
+void FunapiSessionImpl::OnStop(const TransportProtocol protocol)
 {
   if (auto transport = GetTransport(protocol))
   {
@@ -3958,15 +3953,27 @@ void FunapiSessionImpl::OnClose(const TransportProtocol protocol)
     }
     else if (state == TransportState::kConnecting)
     {
-      Close(protocol);
+      Stop(protocol);
     }
   }
 }
 
 
-void FunapiSessionImpl::Close(const TransportProtocol protocol) {
-  PushTaskQueue([this, protocol]()->bool{
-    OnClose(protocol);
+void FunapiSessionImpl::Stop()
+{
+  PushTaskQueue([this]()->bool
+  {
+    OnStop();
+    return false;
+  });
+}
+
+
+void FunapiSessionImpl::Stop(const TransportProtocol protocol)
+{
+  PushTaskQueue([this, protocol]()->bool
+  {
+    OnStop(protocol);
     return false;
   });
 }
@@ -5539,13 +5546,36 @@ void FunapiSession::Connect(const TransportProtocol protocol) {
 }
 
 
-void FunapiSession::Close() {
-  impl_->Close();
+void FunapiSession::Close()
+{
+  fun::stringstream warnning_msg;
+  warnning_msg << "FunapiSession::Close() function is deprecated. ";
+  warnning_msg << "Please use FunapiSession::Stop() fucntion";
+  DebugUtils::Log(warnning_msg.str().c_str());
+  impl_->Stop();
 }
 
 
-void FunapiSession::Close(const TransportProtocol protocol) {
-  impl_->Close(protocol);
+void FunapiSession::Close(const TransportProtocol protocol)
+{
+  fun::stringstream warnning_msg;
+  warnning_msg << "FunapiSession::Close(TransportProtocol) function is ";
+  warnning_msg << "deprecated. Please use ";
+  warnning_msg << "FunapiSession::Stop(TransportProtocol) fucntion";
+  DebugUtils::Log(warnning_msg.str().c_str());
+  impl_->Stop(protocol);
+}
+
+
+void FunapiSession::Stop(const TransportProtocol protocol)
+{
+  impl_->Stop(protocol);
+}
+
+
+void FunapiSession::Stop()
+{
+  impl_->Stop();
 }
 
 

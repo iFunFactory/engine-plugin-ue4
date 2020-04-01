@@ -127,8 +127,8 @@ extern "C" {
 
 #if !(defined(VMS) || defined(__VMS)) /* VMS uses logical names instead */
 #if defined(HEADER_CRYPTLIB_H) && !defined(OPENSSLDIR)
-#define ENGINESDIR "/Users/arin/work/third_party/openssl-1.0.2/build/x86_64/lib/engines"
-#define OPENSSLDIR "/Users/arin/work/third_party/openssl-1.0.2/build/x86_64/ssl"
+#define ENGINESDIR "/Users/baesungjin/OpenSSL-for-iPhone-1.0.2f/bin/iPhoneSimulator12.4-x86_64.sdk/lib/engines"
+#define OPENSSLDIR "/Users/baesungjin/OpenSSL-for-iPhone-1.0.2f/bin/iPhoneSimulator12.4-x86_64.sdk"
 #endif
 #endif
 
@@ -241,7 +241,7 @@ YOU SHOULD NOT HAVE BOTH DES_RISC1 AND DES_RISC2 DEFINED!!!!!
    even newer MIPS CPU's, but at the moment one size fits all for
    optimization options.  Older Sparc's work better with only UNROLL, but
    there's no way to tell at compile time what it is you're running on */
- 
+
 #if defined( sun )		/* Newer Sparc's */
 #  define DES_PTR
 #  define DES_RISC1

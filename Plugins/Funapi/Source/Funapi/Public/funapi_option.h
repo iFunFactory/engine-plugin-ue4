@@ -40,8 +40,11 @@ class FUNAPI_API FunapiTcpTransportOption : public FunapiTransportOption {
   void SetDisableNagle(const bool disable_nagle);
   bool GetDisableNagle();
 
-  void SetAutoReconnect(const bool auto_reconnect);
+  void SetAutoReconnect(const bool use_auto_reconnect);
   bool GetAutoReconnect();
+
+  void SetAutoReconnectTimeout(const int seconds);
+  int GetAutoReconnectTimeout();
 
   void SetEnablePing(const bool enable_ping);
   bool GetEnablePing();

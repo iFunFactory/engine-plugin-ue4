@@ -1122,7 +1122,7 @@ class FunapiTransport : public std::enable_shared_from_this<FunapiTransport> {
   uint32_t seq_recvd_ = 0;
   bool seq_receiving_ = false;
   bool ack_receiving_ = false;
-  bool reconnect_first_ack_receiving_ = false;
+  bool auto_reconnect_first_ack_receiving_ = false;
 
   void SetAck(std::shared_ptr<FunapiMessage> message);
   uint32_t ack_send_ = 0;
@@ -1651,7 +1651,7 @@ bool FunapiTransport::TryToDecodeBody(fun::vector<uint8_t> &receiving,
       }
     }
 
-    if (reconnect_first_ack_receiving_) {
+    if (auto_reconnect_first_ack_receiving_) {
       if (auto s = session_impl_.lock()) {
         s->SendAck(TransportProtocol::kTcp, seq_recvd_ + 1);
       }
@@ -1851,8 +1851,8 @@ bool FunapiTransport::OnAckReceived(const uint32_t ack) {
     }
   }
 
-  if (reconnect_first_ack_receiving_) {
-    reconnect_first_ack_receiving_ = false;
+  if (auto_reconnect_first_ack_receiving_) {
+    auto_reconnect_first_ack_receiving_ = false;
     PushUnsent(ack);
   }
 
@@ -2097,7 +2097,8 @@ class FunapiTcpTransport : public FunapiTransport {
 
   void Start();
   void SetDisableNagle(const bool disable_nagle);
-  void SetAutoReconnect(const bool auto_reconnect);
+  void SetAutoReconnect(const bool use_auto_reconnect);
+  void SetAutoReconnectTimeout(const int auto_reconnect_timeout);
   void SetSequenceNumberValidation(const bool validation);
   void SetEnablePing(const bool enable_ping);
   void SetPingTimeout(const int seconds);
@@ -2133,7 +2134,7 @@ class FunapiTcpTransport : public FunapiTransport {
   enum class UpdateState : int {
     kNone = 0,
     kPing,
-    kWaitForAutoReconnect,
+    kAutoReconnecting,
   };
   UpdateState update_state_ = UpdateState::kNone;
   std::mutex update_state_mutex_;
@@ -2142,17 +2143,19 @@ class FunapiTcpTransport : public FunapiTransport {
   FunapiTcpTransport::UpdateState GetUpdateState();
 
   void Ping();
-  void WaitForAutoReconnect();
+  void UpdateForAutoReconnect();
   void StartReconnect();
 
-  FunapiTimer reconnect_wait_timer_;
-  time_t reconnect_wait_seconds_ = 1;
+  FunapiTimer auto_reconnect_retry_interval_timer_;
+  FunapiTimer auto_reconnect_abort_timer_;
+  time_t auto_reconnect_interval_seconds_ = 1;
+  time_t auto_reconnect_timeout_seconds_ = 10;
 
   int offset_ = 0;
   fun::vector<uint8_t> receiving_vector_;
 
   bool disable_nagle_ = true;
-  bool auto_reconnect_ = false;
+  bool use_auto_reconnect_ = false;
   bool enable_ping_ = false;
 
   bool use_tls_ = false;
@@ -2214,7 +2217,10 @@ void FunapiTcpTransport::Start() {
     return;
 
   SetState(TransportState::kConnecting);
-  SetUpdateState(UpdateState::kNone);
+  if (GetUpdateState() != UpdateState::kAutoReconnecting)
+  {
+    SetUpdateState(UpdateState::kNone);
+  }
 
   PushNetworkThreadTask([this]()->bool {
 
@@ -2234,10 +2240,10 @@ void FunapiTcpTransport::OnDisconnecting(std::shared_ptr<FunapiError> error,
 
   if (ack_receiving_)
   {
-    reconnect_first_ack_receiving_ = true;
+    auto_reconnect_first_ack_receiving_ = true;
   }
 
-  if (!received_redirection_event_ && auto_reconnect_ && !user_did)
+  if (!received_redirection_event_ && use_auto_reconnect_ && !user_did)
   {
     SetState(TransportState::kDisconnected);
     StartReconnect();
@@ -2267,35 +2273,62 @@ void FunapiTcpTransport::Ping() {
 }
 
 
-void FunapiTcpTransport::WaitForAutoReconnect() {
-  if (reconnect_wait_timer_.IsExpired()) {
-    reconnect_wait_seconds_ *= 2;
+void FunapiTcpTransport::UpdateForAutoReconnect()
+{
+  if (auto_reconnect_abort_timer_.IsExpired())
+  {
+    std::weak_ptr<FunapiTransport> weak = shared_from_this();
+    // event serialization
+    PushNetworkThreadTask(
+        [weak, this]() -> bool
+        {
+          if (GetState() == TransportState::kConnected)
+          {
+            SetUpdateState(UpdateState::kPing);
+            return true;
+          }
 
-    if (auto s = session_impl_.lock()) {
+          tcp_ = nullptr;
+          OnTransportClosed(GetProtocol(),
+              FunapiError::Create(FunapiError::ErrorType::kSocket,
+              /* error code */0,
+              "Failed to auto reconnect."));
+          return true;
+        });
+
+    SetUpdateState(UpdateState::kNone);
+    return;
+  }
+
+  if (auto_reconnect_retry_interval_timer_.IsExpired())
+  {
+    DebugUtils::Log("Wait %d seconds and try to reconnect.",
+                    static_cast<int>(auto_reconnect_interval_seconds_));
+    if (auto s = session_impl_.lock())
+    {
       s->Connect(GetProtocol());
     }
 
-    SetUpdateState(UpdateState::kNone);
+    if (auto_reconnect_interval_seconds_ < 8)
+    {
+      auto_reconnect_interval_seconds_ *= 2;
+    }
+
+    auto_reconnect_retry_interval_timer_.SetTimer(
+        auto_reconnect_interval_seconds_);
   }
 }
 
-void FunapiTcpTransport::StartReconnect() {
-  // auto reconnect 의 실행 조건은 다음과 같다.
-  // connection_timeout 보다 reconnect_wait_second 보다 작아야한다.
-  if (reconnect_wait_seconds_ < connect_timeout_seconds_) {
-    reconnect_wait_timer_.SetTimer(reconnect_wait_seconds_);
+void FunapiTcpTransport::StartReconnect()
+{
+  SetUpdateState(UpdateState::kAutoReconnecting);
 
-    SetUpdateState(UpdateState::kWaitForAutoReconnect);
-    OnTransportReconnecting(GetProtocol());
+  auto_reconnect_interval_seconds_ = 1;
+  auto_reconnect_retry_interval_timer_.SetTimer(
+      auto_reconnect_interval_seconds_);
+  auto_reconnect_abort_timer_.SetTimer(auto_reconnect_timeout_seconds_);
 
-    DebugUtils::Log("Wait %d seconds for connect to Tcp transport.", static_cast<int>(reconnect_wait_seconds_));
-    return;
-  }
-  else {
-    reconnect_wait_seconds_ = 1;
-    DebugUtils::Log("Failed to reconnect automatically.");
-    OnTransportClosed(GetProtocol(), FunapiError::Create(FunapiError::ErrorType::kSocket,0, "Failed to reconnect automatically."));
-  }
+  OnTransportReconnecting(GetProtocol());
 }
 
 
@@ -2304,8 +2337,14 @@ void FunapiTcpTransport::SetDisableNagle(const bool disable_nagle) {
 }
 
 
-void FunapiTcpTransport::SetAutoReconnect(const bool auto_reconnect) {
-  auto_reconnect_ = auto_reconnect;
+void FunapiTcpTransport::SetAutoReconnect(const bool use_auto_reconnect)
+{
+  use_auto_reconnect_ = use_auto_reconnect;
+}
+
+void FunapiTcpTransport::SetAutoReconnectTimeout(const int auto_reconnect_timeout)
+{
+  auto_reconnect_timeout_seconds_ = auto_reconnect_timeout;
 }
 
 
@@ -2362,34 +2401,22 @@ void FunapiTcpTransport::OnConnectCompletion(const bool isFailed,
   addrinfo_res_ = addrinfo_res;
   fun::string hostname_or_ip = addrinfo_res->GetString();
 
-  if (isFailed) {
-    SetUpdateState(UpdateState::kNone);
+  if (isFailed)
+  {
     SetState(TransportState::kDisconnected);
-
-    if (auto_reconnect_)
+    if (GetUpdateState() == UpdateState::kAutoReconnecting)
     {
-      // 로그만을 출력합니다.
-      // 이후 auto reconnect 실패시 transport event 가 세션으로 전달됩니다.
-      if (isTimedOut)
-      {
-        DebugUtils::Log("TCP Connection Timeout: %s (%d) %s", hostname_or_ip.c_str(), error_code, error_string.c_str());
-      }
-      else {
-        DebugUtils::Log("TCP Disconnection detected: %s (%d) %s", hostname_or_ip.c_str(), error_code, error_string.c_str());
-      }
-
-      StartReconnect();
+      DebugUtils::Log("Failed to connect tcp, (socket)error code : %d (socket)error msg : %s", error_code, error_string.c_str());
       return;
     }
 
+    SetUpdateState(UpdateState::kNone);
     if (isTimedOut)
     {
-      DebugUtils::Log("TCP Connection Timeout: %s (%d) %s", hostname_or_ip.c_str(), error_code, error_string.c_str());
-      OnTransportConnectTimeout(TransportProtocol::kTcp, FunapiError::Create(FunapiError::ErrorType::kSocket, error_code, error_string));
+      OnTransportClosed(TransportProtocol::kTcp, FunapiError::Create(FunapiError::ErrorType::kSocket, error_code, error_string));
     }
     else
     {
-      DebugUtils::Log("TCP Disconnection detected: %s (%d) %s", hostname_or_ip.c_str(), error_code, error_string.c_str());
       OnTransportConnectFailed(TransportProtocol::kTcp, FunapiError::Create(FunapiError::ErrorType::kSocket, error_code, error_string));
     }
   }
@@ -2397,7 +2424,7 @@ void FunapiTcpTransport::OnConnectCompletion(const bool isFailed,
   {
     client_ping_timeout_timer_.SetTimer(ping_interval_seconds_ + ping_timeout_seconds_);
     ping_send_timer_.SetTimer(ping_interval_seconds_);
-    reconnect_wait_seconds_ = 1;
+    auto_reconnect_interval_seconds_ = 1;
 
     SetUpdateState(UpdateState::kPing);
     SetState(TransportState::kConnected);
@@ -2408,7 +2435,10 @@ void FunapiTcpTransport::OnConnectCompletion(const bool isFailed,
 
 
 void FunapiTcpTransport::Connect() {
-  SetUpdateState(UpdateState::kNone);
+  if (GetUpdateState() != UpdateState::kAutoReconnecting)
+  {
+    SetUpdateState(UpdateState::kNone);
+  }
   SetState(TransportState::kConnecting);
 
   // Tries to connect.
@@ -2455,7 +2485,7 @@ void FunapiTcpTransport::Connect() {
         }
         */
         auto error = FunapiError::Create(FunapiError::ErrorType::kSocket, error_code, error_string);
-        if (!auto_reconnect_) {
+        if (!use_auto_reconnect_) {
           OnTransportDisconnected(TransportProtocol::kTcp, error);
         }
 
@@ -2497,8 +2527,8 @@ void FunapiTcpTransport::Update() {
   if (state == UpdateState::kPing) {
     Ping();
   }
-  else if (state == UpdateState::kWaitForAutoReconnect) {
-    WaitForAutoReconnect();
+  else if (state == UpdateState::kAutoReconnecting) {
+    UpdateForAutoReconnect();
   }
 }
 
@@ -2559,7 +2589,7 @@ void FunapiTcpTransport::Send(bool send_all)
   else
   {
     if (!GetSessionId().empty() &&
-        !reconnect_first_ack_receiving_ &&
+        !auto_reconnect_first_ack_receiving_ &&
         encrytion_->IsHandShakeCompleted())
     {
       size_t send_count = 0;
@@ -2645,7 +2675,7 @@ void FunapiTcpTransport::Send(bool send_all)
           }
           */
           auto error = FunapiError::Create(FunapiError::ErrorType::kSocket, error_code, error_string);
-          if (!auto_reconnect_)
+          if (!use_auto_reconnect_)
           {
             OnTransportDisconnected(TransportProtocol::kTcp, error);
           }
@@ -3604,6 +3634,7 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
         auto tcp_transport = std::static_pointer_cast<FunapiTcpTransport>(transport);
 
         tcp_transport->SetAutoReconnect(tcp_option_->GetAutoReconnect());
+        tcp_transport->SetAutoReconnectTimeout(tcp_option_->GetAutoReconnectTimeout());
         tcp_transport->SetEnablePing(tcp_option_->GetEnablePing());
         tcp_transport->SetPingTimeout(tcp_option_->GetPingTimeout());
         tcp_transport->SetPingInterval(tcp_option_->GetPingInterval());

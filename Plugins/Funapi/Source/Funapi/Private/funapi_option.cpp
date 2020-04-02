@@ -215,8 +215,11 @@ class FunapiTcpTransportOptionImpl : public FunapiTransportOptionImpl {
   void SetDisableNagle(const bool disable_nagle);
   bool GetDisableNagle();
 
-  void SetAutoReconnect(const bool auto_reconnect);
+  void SetAutoReconnect(const bool use_auto_reconnect);
   bool GetAutoReconnect();
+
+  void SetAutoReconnectTimeout(const int seconds);
+  int GetAutoReconnectTimeout();
 
   void SetEnablePing(const bool enable_ping);
   bool GetEnablePing();
@@ -247,12 +250,15 @@ class FunapiTcpTransportOptionImpl : public FunapiTransportOptionImpl {
 
  private:
   bool disable_nagle_ = true;
-  bool auto_reconnect_ = false;
+  bool use_auto_reconnect_ = false;
   bool enable_ping_ = false;
   bool sequence_number_validation_ = false;
   int timeout_seconds_ = 10;
+
   int ping_timeout_seconds_ = 30;
   int ping_interval_seconds_ = 3;
+  int auto_reconnect_timeout_seconds_ = 10;
+
   fun::vector<EncryptionType> encryption_types_;
   fun::unordered_map<int32_t, fun::string> pubilc_keys_;
   bool use_tls_ = false;
@@ -270,13 +276,27 @@ bool FunapiTcpTransportOptionImpl::GetDisableNagle() {
 }
 
 
-void FunapiTcpTransportOptionImpl::SetAutoReconnect(const bool auto_reconnect) {
-  auto_reconnect_ = auto_reconnect;
+void FunapiTcpTransportOptionImpl::SetAutoReconnect(const bool use_auto_reconnect)
+{
+  use_auto_reconnect_ = use_auto_reconnect;
 }
 
 
-bool FunapiTcpTransportOptionImpl::GetAutoReconnect() {
-  return auto_reconnect_;
+bool FunapiTcpTransportOptionImpl::GetAutoReconnect()
+{
+  return use_auto_reconnect_;
+}
+
+
+void FunapiTcpTransportOptionImpl::SetAutoReconnectTimeout(const int seconds)
+{
+  auto_reconnect_timeout_seconds_ = seconds;
+}
+
+
+int FunapiTcpTransportOptionImpl::GetAutoReconnectTimeout()
+{
+  return auto_reconnect_timeout_seconds_;
 }
 
 
@@ -538,14 +558,26 @@ bool FunapiTcpTransportOption::GetDisableNagle() {
 }
 
 
-void FunapiTcpTransportOption::SetAutoReconnect(const bool auto_reconnect) {
-  return impl_->SetAutoReconnect(auto_reconnect);
-
+void FunapiTcpTransportOption::SetAutoReconnect(const bool use_auto_reconnect)
+{
+  return impl_->SetAutoReconnect(use_auto_reconnect);
 }
 
 
 bool FunapiTcpTransportOption::GetAutoReconnect() {
   return impl_->GetAutoReconnect();
+}
+
+
+void FunapiTcpTransportOption::SetAutoReconnectTimeout(const int seconds)
+{
+  impl_->SetAutoReconnectTimeout(seconds);
+}
+
+
+int FunapiTcpTransportOption::GetAutoReconnectTimeout()
+{
+  return impl_->GetAutoReconnectTimeout();
 }
 
 

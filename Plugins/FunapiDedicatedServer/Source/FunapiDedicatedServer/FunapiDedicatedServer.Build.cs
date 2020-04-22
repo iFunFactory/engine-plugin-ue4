@@ -13,7 +13,9 @@ namespace UnrealBuildTool.Rules
     {
       PrivatePCHHeaderFile = "Private/FunapiDedicatedServerPrivatePCH.h";
 
-
+#if UE_4_22_OR_LATER
+      PrivateDefinitions.Add("USE_UE_DEPRECATED=1");
+#endif // UE_4_22_OR_LATER
       PublicDefinitions.Add("WITH_FUNAPIDEDICATEDSERVER=1");
 
       PublicIncludePaths.AddRange(

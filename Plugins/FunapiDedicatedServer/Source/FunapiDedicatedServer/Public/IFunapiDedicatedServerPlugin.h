@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2018 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2020 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "ModuleManager.h"
+#include "Modules/ModuleManager.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogFunapiDedicatedServer, Log, All);
 

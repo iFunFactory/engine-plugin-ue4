@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2018 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2020 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -11,10 +11,7 @@ namespace UnrealBuildTool.Rules
   {
     public FunapiDedicatedServer(ReadOnlyTargetRules Target) : base(Target)
     {
-
-#if UE_4_21_OR_LATER
-    PrivatePCHHeaderFile = "Private/FunapiDedicatedServerPrivatePCH.h"; // >= 4.21
-#endif
+      PrivatePCHHeaderFile = "Private/FunapiDedicatedServerPrivatePCH.h";
 
 
       PublicDefinitions.Add("WITH_FUNAPIDEDICATEDSERVER=1");

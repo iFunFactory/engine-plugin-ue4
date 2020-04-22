@@ -1,12 +1,12 @@
-// Copyright (C) 2013-2018 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2020 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
 // consent of iFunFactory Inc.
 
-#include "FunapiDedicatedServerPrivatePCH.h"
 #include "FunapiDedicatedServer.h"
-#include "Regex.h"
+
+#include "Internationalization/Regex.h"
 
 namespace fun
 {

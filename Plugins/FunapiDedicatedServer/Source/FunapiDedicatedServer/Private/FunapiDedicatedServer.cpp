@@ -6,6 +6,7 @@
 
 #include "FunapiDedicatedServer.h"
 
+#include "FunapiDedicatedServerPrivatePCH.h"
 #include "Internationalization/Regex.h"
 
 #ifndef USE_UE_DEPRECATED

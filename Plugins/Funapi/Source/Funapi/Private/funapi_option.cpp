@@ -517,12 +517,60 @@ public:
   FunapiWebsocketTransportOptionImpl() = default;
   virtual ~FunapiWebsocketTransportOptionImpl() = default;
 
+  void SetEnablePing(const bool enable_ping);
+  bool GetEnablePing();
+
+  void SetPingTimeout(const int seconds);
+  int GetPingTimeout();
+
+  void SetPingInterval(const int seconds);
+  int GetPingInterval();
+
   void SetUseWss(const bool use_wss);
   bool GetUseWss();
 
 private:
   bool use_wss_ = false;
+  bool enable_ping_ = false;
+  int ping_timeout_seconds_ = 30;
+  int ping_interval_seconds_ = 3;
 };
+
+
+void FunapiWebsocketTransportOptionImpl::SetEnablePing(const bool enable_ping)
+{
+  enable_ping_ = enable_ping;
+}
+
+
+bool FunapiWebsocketTransportOptionImpl::GetEnablePing()
+{
+  return enable_ping_;
+}
+
+
+void FunapiWebsocketTransportOptionImpl::SetPingTimeout(const int seconds)
+{
+  ping_timeout_seconds_ = seconds;
+}
+
+
+int FunapiWebsocketTransportOptionImpl::GetPingTimeout()
+{
+  return ping_timeout_seconds_;
+}
+
+
+void FunapiWebsocketTransportOptionImpl::SetPingInterval(const int seconds)
+{
+  ping_interval_seconds_ = seconds;
+}
+
+
+int FunapiWebsocketTransportOptionImpl::GetPingInterval()
+{
+  return ping_interval_seconds_;
+}
 
 
 void FunapiWebsocketTransportOptionImpl::SetUseWss(const bool wss) {
@@ -854,6 +902,40 @@ FunapiWebsocketTransportOption::FunapiWebsocketTransportOption()
 
 std::shared_ptr<FunapiWebsocketTransportOption> FunapiWebsocketTransportOption::Create() {
   return std::make_shared<FunapiWebsocketTransportOption>();
+}
+
+
+void FunapiWebsocketTransportOption::SetEnablePing(const bool enable_ping)
+{
+  impl_->SetEnablePing(enable_ping);
+}
+
+
+bool FunapiWebsocketTransportOption::GetEnablePing()
+{
+  return impl_->GetEnablePing();
+}
+
+void FunapiWebsocketTransportOption::SetPingTimeout(const int seconds)
+{
+  impl_->SetPingTimeout(seconds);
+}
+
+
+int FunapiWebsocketTransportOption::GetPingTimeout()
+{
+  return impl_->GetPingTimeout();
+}
+
+
+void FunapiWebsocketTransportOption::SetPingInterval(const int seconds)
+{
+  impl_->SetPingInterval(seconds);
+}
+
+
+int FunapiWebsocketTransportOption::GetPingInterval() {
+  return impl_->GetPingInterval();
 }
 
 

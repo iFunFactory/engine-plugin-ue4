@@ -164,6 +164,15 @@ class FUNAPI_API FunapiWebsocketTransportOption : public FunapiTransportOption {
 
   static std::shared_ptr<FunapiWebsocketTransportOption> Create();
 
+  void SetEnablePing(const bool enable_ping);
+  bool GetEnablePing();
+
+  void SetPingTimeout(const int seconds);
+  int GetPingTimeout();
+
+  void SetPingInterval(const int seconds);
+  int GetPingInterval();
+
   // void SetUseWss(const bool use_wss);
   bool GetUseWss();
 

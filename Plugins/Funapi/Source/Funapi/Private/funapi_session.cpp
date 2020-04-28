@@ -3249,10 +3249,12 @@ class FunapiWebsocketTransport : public FunapiTransport {
   TransportProtocol GetProtocol();
 
   void Start();
-
   void Update();
-
   void Send(bool send_all = false);
+  void SetEnablePing(const bool enable_ping);
+  void SetPingTimeout(const int seconds);
+  void SetPingInterval(const int seconds);
+  void ResetClientPingTimeout();
 
  protected:
   bool EncodeThenSendMessage(std::shared_ptr<FunapiMessage> message,
@@ -3262,6 +3264,25 @@ class FunapiWebsocketTransport : public FunapiTransport {
                        bool user_did = false);
 
  private:
+  enum class RepetitiveBehavior : int {
+    kNone = 0,
+    kPing,
+  };
+  void SetRepetitiveBehavior(RepetitiveBehavior behavior);
+  RepetitiveBehavior GetRepetitiveBehavior();
+
+  void Ping();
+
+  RepetitiveBehavior repetitive_behavior_ = RepetitiveBehavior::kNone;
+  std::mutex repetitive_behavior_mutex_;
+
+  bool enable_ping_ = false;
+  time_t ping_interval_seconds_ = 3;
+  time_t ping_timeout_seconds_ = 20;
+
+  FunapiTimer client_ping_timeout_timer_;
+  FunapiTimer ping_send_timer_;
+
   fun::vector<uint8_t> receiving_vector_;
   bool use_wss_ = false;
 
@@ -3326,15 +3347,25 @@ void FunapiWebsocketTransport::Start() {
           const int error_code,
           const fun::string &error_string)
         {
-          if (auto t2 = weak.lock()) {
-            if (is_failed) {
+          if (auto t2 = weak.lock())
+          {
+            if (is_failed)
+            {
               SetState(fun::TransportState::kDisconnected);
+              SetRepetitiveBehavior(RepetitiveBehavior::kNone);
               OnTransportConnectFailed(GetProtocol(),
                                        FunapiError::Create(FunapiError::ErrorType::kWebsocket, error_code, error_string));
             }
-            else {
+            else
+            {
               SetState(TransportState::kConnected);
               OnTransportStarted(GetProtocol());
+              if (enable_ping_)
+              {
+                client_ping_timeout_timer_.SetTimer(ping_interval_seconds_ + ping_timeout_seconds_);
+                ping_send_timer_.SetTimer(ping_interval_seconds_);
+                SetRepetitiveBehavior(RepetitiveBehavior::kPing);
+              }
             }
           }
         },
@@ -3345,6 +3376,7 @@ void FunapiWebsocketTransport::Start() {
           // close
           if (auto t2 = weak.lock()) {
             SetState(fun::TransportState::kDisconnecting);
+            SetRepetitiveBehavior(RepetitiveBehavior::kNone);
             if (send_queue_->Empty()) {
               OnDisconnecting(FunapiError::Create(FunapiError::ErrorType::kWebsocket, error_code, error_string));
             }
@@ -3447,17 +3479,92 @@ bool FunapiWebsocketTransport::EncodeThenSendMessage(std::shared_ptr<FunapiMessa
 }
 
 
-void FunapiWebsocketTransport::Update() {
-  if (websocket_ && websocket_thread_) {
+void FunapiWebsocketTransport::Update()
+{
+  if (websocket_ && websocket_thread_)
+  {
     std::weak_ptr<FunapiTransport> weak = shared_from_this();
-    websocket_thread_->Push([weak, this]()->bool {
-      if (auto t = weak.lock()) {
-        websocket_->Update();
-      }
+    websocket_thread_->Push(
+        [weak, this]()->bool
+        {
+          if (auto t = weak.lock())
+          {
+            websocket_->Update();
+          }
 
-      return true;
-    });
+          return true;
+        });
+
+    if (GetRepetitiveBehavior() == RepetitiveBehavior::kPing)
+    {
+      Ping();
+    }
   }
+}
+
+
+void FunapiWebsocketTransport::Ping()
+{
+  if (enable_ping_ && GetState() == TransportState::kConnected)
+  {
+    if (ping_send_timer_.IsExpired())
+    {
+      ping_send_timer_.SetTimer(ping_interval_seconds_);
+
+      if (auto s = session_impl_.lock())
+      {
+        s->SendClientPingMessage(GetProtocol());
+      }
+    }
+
+    if (client_ping_timeout_timer_.IsExpired())
+    {
+      // DebugUtils::Log("Network seems disabled. Stopping the transport.");
+      Stop(true,
+          FunapiError::Create(
+              FunapiError::ErrorType::kPing, 0,
+              "Network seems disabled. Stopping the transport."));
+      return;
+    }
+  }
+}
+
+
+void FunapiWebsocketTransport::SetRepetitiveBehavior(
+    FunapiWebsocketTransport::RepetitiveBehavior behavior)
+{
+  std::unique_lock<std::mutex> lock(repetitive_behavior_mutex_);
+  repetitive_behavior_ = behavior;
+}
+
+
+FunapiWebsocketTransport::RepetitiveBehavior FunapiWebsocketTransport::GetRepetitiveBehavior()
+{
+  return repetitive_behavior_;
+}
+
+
+void FunapiWebsocketTransport::ResetClientPingTimeout()
+{
+  client_ping_timeout_timer_.SetTimer(ping_timeout_seconds_);
+}
+
+
+void FunapiWebsocketTransport::SetEnablePing(const bool enable_ping)
+{
+  enable_ping_ = enable_ping;
+}
+
+
+void FunapiWebsocketTransport::SetPingTimeout(const int seconds)
+{
+  ping_timeout_seconds_ = seconds;
+}
+
+
+void FunapiWebsocketTransport::SetPingInterval(const int seconds)
+{
+  ping_interval_seconds_ = seconds;
 }
 
 
@@ -3722,6 +3829,9 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
       if (option) {
         websocket_option_ = std::static_pointer_cast<FunapiWebsocketTransportOption>(option);
         auto websocket_transport = std::static_pointer_cast<FunapiWebsocketTransport>(transport);
+        websocket_transport->SetEnablePing(websocket_option_->GetEnablePing());
+        websocket_transport->SetPingTimeout(websocket_option_->GetPingTimeout());
+        websocket_transport->SetPingInterval(websocket_option_->GetPingInterval());
 
         auto compression_types = websocket_option_->GetCompressionTypes();
         for (auto type : compression_types) {
@@ -4991,7 +5101,8 @@ void FunapiSessionImpl::SendEmptyMessage(const TransportProtocol protocol,
 
 bool FunapiSessionImpl::SendClientPingMessage(const TransportProtocol protocol,
                                               const EncryptionType encryption_type) {
-  assert(protocol==TransportProtocol::kTcp);
+  assert(protocol == TransportProtocol::kTcp ||
+         protocol == TransportProtocol::kWebsocket);
 
   if (GetSessionId(FunEncoding::kJson).empty())
     return false;

@@ -46,6 +46,12 @@ class FUNAPI_API FunapiTcpTransportOption : public FunapiTransportOption {
   void SetEnablePing(const bool enable_ping);
   bool GetEnablePing();
 
+  void SetPingTimeout(const int seconds);
+  int GetPingTimeout();
+
+  void SetPingInterval(const int seconds);
+  int GetPingInterval();
+
   void SetSequenceNumberValidation(const bool validation);
   bool GetSequenceNumberValidation();
 

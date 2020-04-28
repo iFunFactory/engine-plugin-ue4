@@ -221,6 +221,12 @@ class FunapiTcpTransportOptionImpl : public FunapiTransportOptionImpl {
   void SetEnablePing(const bool enable_ping);
   bool GetEnablePing();
 
+  void SetPingTimeout(const int seconds);
+  int GetPingTimeout();
+
+  void SetPingInterval(const int seconds);
+  int GetPingInterval();
+
   void SetSequenceNumberValidation(const bool validation);
   bool GetSequenceNumberValidation();
 
@@ -245,6 +251,8 @@ class FunapiTcpTransportOptionImpl : public FunapiTransportOptionImpl {
   bool enable_ping_ = false;
   bool sequence_number_validation_ = false;
   int timeout_seconds_ = 10;
+  int ping_timeout_seconds_ = 30;
+  int ping_interval_seconds_ = 3;
   fun::vector<EncryptionType> encryption_types_;
   fun::unordered_map<int32_t, fun::string> pubilc_keys_;
   bool use_tls_ = false;
@@ -272,13 +280,39 @@ bool FunapiTcpTransportOptionImpl::GetAutoReconnect() {
 }
 
 
-void FunapiTcpTransportOptionImpl::SetEnablePing(const bool enable_ping) {
+void FunapiTcpTransportOptionImpl::SetEnablePing(const bool enable_ping)
+{
   enable_ping_ = enable_ping;
 }
 
 
-bool FunapiTcpTransportOptionImpl::GetEnablePing() {
+bool FunapiTcpTransportOptionImpl::GetEnablePing()
+{
   return enable_ping_;
+}
+
+
+void FunapiTcpTransportOptionImpl::SetPingTimeout(const int seconds)
+{
+  ping_timeout_seconds_ = seconds;
+}
+
+
+int FunapiTcpTransportOptionImpl::GetPingTimeout()
+{
+  return ping_timeout_seconds_;
+}
+
+
+void FunapiTcpTransportOptionImpl::SetPingInterval(const int seconds)
+{
+  ping_interval_seconds_ = seconds;
+}
+
+
+int FunapiTcpTransportOptionImpl::GetPingInterval()
+{
+  return ping_interval_seconds_;
 }
 
 
@@ -515,13 +549,39 @@ bool FunapiTcpTransportOption::GetAutoReconnect() {
 }
 
 
-void FunapiTcpTransportOption::SetEnablePing(const bool enable_ping) {
+void FunapiTcpTransportOption::SetEnablePing(const bool enable_ping)
+{
   impl_->SetEnablePing(enable_ping);
 }
 
 
-bool FunapiTcpTransportOption::GetEnablePing() {
+bool FunapiTcpTransportOption::GetEnablePing()
+{
   return impl_->GetEnablePing();
+}
+
+
+void FunapiTcpTransportOption::SetPingTimeout(const int seconds)
+{
+  impl_->SetPingTimeout(seconds);
+}
+
+
+int FunapiTcpTransportOption::GetPingTimeout()
+{
+  return impl_->GetPingTimeout();
+}
+
+
+void FunapiTcpTransportOption::SetPingInterval(const int seconds)
+{
+  impl_->SetPingInterval(seconds);
+}
+
+
+int FunapiTcpTransportOption::GetPingInterval()
+{
+  return impl_->GetPingInterval();
 }
 
 

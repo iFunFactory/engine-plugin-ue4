@@ -2100,6 +2100,8 @@ class FunapiTcpTransport : public FunapiTransport {
   void SetAutoReconnect(const bool auto_reconnect);
   void SetSequenceNumberValidation(const bool validation);
   void SetEnablePing(const bool enable_ping);
+  void SetPingTimeout(const int seconds);
+  void SetPingInterval(const int seconds);
   void SetUseTLS(const bool use_tls);
   void SetCACertFilePath(const fun::string &path);
   void ResetClientPingTimeout();
@@ -2125,9 +2127,8 @@ class FunapiTcpTransport : public FunapiTransport {
                        bool user_did = false);
 
  private:
-  // Ping message-related constants.
-  static const time_t kPingIntervalSecond = 3;
-  static const time_t kPingTimeoutSeconds = 20;
+  time_t ping_interval_seconds_ = 3;
+  time_t ping_timeout_seconds_ = 20;
 
   enum class UpdateState : int {
     kNone = 0,
@@ -2250,7 +2251,7 @@ void FunapiTcpTransport::OnDisconnecting(std::shared_ptr<FunapiError> error,
 void FunapiTcpTransport::Ping() {
   if (enable_ping_ && GetState() == TransportState::kConnected) {
     if (ping_send_timer_.IsExpired()){
-      ping_send_timer_.SetTimer(kPingIntervalSecond);
+      ping_send_timer_.SetTimer(ping_interval_seconds_);
 
       if (auto s = session_impl_.lock()) {
         s->SendClientPingMessage(GetProtocol());
@@ -2313,6 +2314,18 @@ void FunapiTcpTransport::SetEnablePing(const bool enable_ping) {
 }
 
 
+void FunapiTcpTransport::SetPingTimeout(const int seconds)
+{
+  ping_timeout_seconds_ = seconds;
+}
+
+
+void FunapiTcpTransport::SetPingInterval(const int seconds)
+{
+  ping_interval_seconds_ = seconds;
+}
+
+
 void FunapiTcpTransport::SetUseTLS(const bool use_tls) {
   use_tls_ = use_tls;
 }
@@ -2324,7 +2337,7 @@ void FunapiTcpTransport::SetCACertFilePath(const fun::string &path) {
 
 
 void FunapiTcpTransport::ResetClientPingTimeout() {
-  client_ping_timeout_timer_.SetTimer(kPingTimeoutSeconds);
+  client_ping_timeout_timer_.SetTimer(ping_timeout_seconds_);
 }
 
 
@@ -2382,8 +2395,8 @@ void FunapiTcpTransport::OnConnectCompletion(const bool isFailed,
   }
   else
   {
-    client_ping_timeout_timer_.SetTimer(kPingIntervalSecond + kPingTimeoutSeconds);
-    ping_send_timer_.SetTimer(kPingIntervalSecond);
+    client_ping_timeout_timer_.SetTimer(ping_interval_seconds_ + ping_timeout_seconds_);
+    ping_send_timer_.SetTimer(ping_interval_seconds_);
     reconnect_wait_seconds_ = 1;
 
     SetUpdateState(UpdateState::kPing);
@@ -3592,6 +3605,8 @@ void FunapiSessionImpl::Connect(const std::weak_ptr<FunapiSession>& session, con
 
         tcp_transport->SetAutoReconnect(tcp_option_->GetAutoReconnect());
         tcp_transport->SetEnablePing(tcp_option_->GetEnablePing());
+        tcp_transport->SetPingTimeout(tcp_option_->GetPingTimeout());
+        tcp_transport->SetPingInterval(tcp_option_->GetPingInterval());
         tcp_transport->SetDisableNagle(tcp_option_->GetDisableNagle());
         tcp_transport->SetConnectTimeout(tcp_option_->GetConnectTimeout());
         tcp_transport->SetSequenceNumberValidation(tcp_option_->GetSequenceNumberValidation());

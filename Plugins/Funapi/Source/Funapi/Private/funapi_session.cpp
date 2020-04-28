@@ -824,7 +824,9 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
   void SetDefaultProtocol(const TransportProtocol protocol);
 
   FunEncoding GetEncoding(const TransportProtocol protocol) const;
+  // deprecated
   int64_t GetPingTime();
+  int64_t GetPingTime(const TransportProtocol protocol);
 
   void SetRecvTimeout(const fun::string &msg_type, const int seconds);
   void SetRecvTimeout(const int32_t msg_type, const int seconds);
@@ -929,7 +931,8 @@ class FunapiSessionImpl : public std::enable_shared_from_this<FunapiSessionImpl>
                    bool handshake = false);
 
   bool started_;
-  int64_t ping_time_ms = 0;
+  int64_t tcp_ping_time_ms_ = 0;
+  int64_t websocket_ping_time_ms_ = 0;
 
   fun::vector<std::shared_ptr<FunapiTransport>> transports_;
   mutable std::mutex transports_mutex_;
@@ -4316,7 +4319,14 @@ void FunapiSessionImpl::OnClientPingMessage(const TransportProtocol protocol,
           std::chrono::system_clock::now().time_since_epoch()
       ).count();
 
-  ping_time_ms = now - timestamp_ms;
+  if (protocol == TransportProtocol::kTcp)
+  {
+    tcp_ping_time_ms_ = now - timestamp_ms;
+  }
+  else // Websocket transport
+  {
+    websocket_ping_time_ms_ = now - timestamp_ms;
+  }
 
   // DebugUtils::Log("Receive %s ping - timestamp:%lld time=%lld ms", "Tcp", timestamp_ms, ping_time_ms);
 }
@@ -5069,8 +5079,28 @@ TransportProtocol FunapiSessionImpl::GetDefaultProtocol() const {
 
 int64_t FunapiSessionImpl::GetPingTime()
 {
-  return ping_time_ms;
+  return tcp_ping_time_ms_;
 }
+
+
+int64_t FunapiSessionImpl::GetPingTime(const TransportProtocol protocol)
+{
+  if (protocol == TransportProtocol::kTcp)
+  {
+    return tcp_ping_time_ms_;
+  }
+  else if (protocol == TransportProtocol::kWebsocket)
+  {
+    return websocket_ping_time_ms_;
+  }
+
+  fun::stringstream err_msg;
+  err_msg << TransportProtocolToString(protocol);
+  err_msg << " protocol is not supported Ping.";
+  DebugUtils::Log(err_msg.str().c_str());
+  return 0;
+}
+
 
 void FunapiSessionImpl::SendEmptyMessage(const TransportProtocol protocol,
                                          const EncryptionType encryption_type) {
@@ -5670,8 +5700,20 @@ FunEncoding FunapiSession::GetEncoding(const TransportProtocol protocol) const {
   return impl_->GetEncoding(protocol);
 }
 
-int64_t FunapiSession::GetPingTime() {
+
+int64_t FunapiSession::GetPingTime()
+{
+  fun::stringstream msg;
+  msg << "GetPingTime() is deprecated, ";
+  msg << "Please use GetPingTime(TransportProtocol)";
+  DebugUtils::Log(msg.str().c_str());
   return impl_->GetPingTime();
+}
+
+
+int64_t FunapiSession::GetPingTime(const TransportProtocol protocol)
+{
+  return impl_->GetPingTime(protocol);
 }
 
 

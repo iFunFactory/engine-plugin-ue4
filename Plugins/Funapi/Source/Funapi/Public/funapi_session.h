@@ -153,7 +153,9 @@ public:
     void SetDefaultProtocol(const TransportProtocol protocol);
     TransportProtocol GetDefaultProtocol() const;
 
+    // deprecated
     int64_t GetPingTime();
+    int64_t GetPingTime(const TransportProtocol protocol);
 
     void AddSessionEventCallback(const SessionEventHandler &handler);
     void AddTransportEventCallback(const TransportEventHandler &handler);

@@ -74,8 +74,10 @@ const fun::string& FunapiExtraImageInfoImpl::GetFilePath()
 class FunapiAnnouncementInfoImpl : public std::enable_shared_from_this<FunapiAnnouncementInfoImpl> {
  public:
   FunapiAnnouncementInfoImpl() = delete;
-  FunapiAnnouncementInfoImpl(const fun::string &date,
+  FunapiAnnouncementInfoImpl(const int id,
+                             const fun::string &date,
                              const fun::string &message,
+                             const fun::string &extra_message,
                              const fun::string &subject,
                              const fun::string &image_md5,
                              const fun::string &image_url,
@@ -85,8 +87,10 @@ class FunapiAnnouncementInfoImpl : public std::enable_shared_from_this<FunapiAnn
                              const fun::vector<std::shared_ptr<FunapiExtraImageInfo>> &extra_image_info);
   virtual ~FunapiAnnouncementInfoImpl();
 
+  const int GetId();
   const fun::string& GetDate();
   const fun::string& GetMessageText();
+  const fun::string& GetExtraMessageText();
   const fun::string& GetSubject();
   const fun::string& GetImageMd5();
   const fun::string& GetImageUrl();
@@ -96,8 +100,10 @@ class FunapiAnnouncementInfoImpl : public std::enable_shared_from_this<FunapiAnn
   const fun::vector<std::shared_ptr<FunapiExtraImageInfo>>& GetExtraImageInfos();
 
  private:
+  int id_;
   fun::string date_;
   fun::string message_;
+  fun::string extra_message_;
   fun::string subject_;
   fun::string image_md5_;
   fun::string image_url_;
@@ -108,8 +114,10 @@ class FunapiAnnouncementInfoImpl : public std::enable_shared_from_this<FunapiAnn
 };
 
 
-FunapiAnnouncementInfoImpl::FunapiAnnouncementInfoImpl(const fun::string &date,
+FunapiAnnouncementInfoImpl::FunapiAnnouncementInfoImpl(const int id,
+                                                       const fun::string &date,
                                                        const fun::string &message,
+                                                       const fun::string &extra_message,
                                                        const fun::string &subject,
                                                        const fun::string &image_md5,
                                                        const fun::string &image_url,
@@ -117,8 +125,10 @@ FunapiAnnouncementInfoImpl::FunapiAnnouncementInfoImpl(const fun::string &date,
                                                        const fun::string &file_path,
                                                        const fun::string &kind,
                                                        const fun::vector<std::shared_ptr<FunapiExtraImageInfo>> &extra_image_infos)
-: date_(date),
+: id_(id),
+  date_(date),
   message_(message),
+  extra_message_(extra_message),
   subject_(subject),
   image_md5_(image_md5),
   image_url_(image_url),
@@ -134,17 +144,32 @@ FunapiAnnouncementInfoImpl::~FunapiAnnouncementInfoImpl() {
 }
 
 
-const fun::string& FunapiAnnouncementInfoImpl::GetDate() {
+const int FunapiAnnouncementInfoImpl::GetId()
+{
+  return id_;
+}
+
+
+const fun::string &FunapiAnnouncementInfoImpl::GetDate()
+{
   return date_;
 }
 
 
-const fun::string& FunapiAnnouncementInfoImpl::GetMessageText() {
+const fun::string &FunapiAnnouncementInfoImpl::GetMessageText()
+{
   return message_;
 }
 
 
-const fun::string& FunapiAnnouncementInfoImpl::GetSubject() {
+const fun::string &FunapiAnnouncementInfoImpl::GetExtraMessageText()
+{
+  return extra_message_;
+}
+
+
+const fun::string &FunapiAnnouncementInfoImpl::GetSubject()
+{
   return subject_;
 }
 
@@ -154,26 +179,31 @@ const fun::string& FunapiAnnouncementInfoImpl::GetImageMd5() {
 }
 
 
-const fun::string& FunapiAnnouncementInfoImpl::GetImageUrl() {
+const fun::string &FunapiAnnouncementInfoImpl::GetImageUrl()
+{
   return image_url_;
 }
 
 
-const fun::string& FunapiAnnouncementInfoImpl::GetLinkUrl() {
+const fun::string &FunapiAnnouncementInfoImpl::GetLinkUrl()
+{
   return link_url_;
 }
 
 
-const fun::string& FunapiAnnouncementInfoImpl::GetFilePath() {
+const fun::string &FunapiAnnouncementInfoImpl::GetFilePath()
+{
   return file_path_;
 }
 
-const fun::string& FunapiAnnouncementInfoImpl::GetKind() {
+const fun::string &FunapiAnnouncementInfoImpl::GetKind()
+{
   return kind_;
 }
 
 
-const fun::vector<std::shared_ptr<FunapiExtraImageInfo>>& FunapiAnnouncementInfoImpl::GetExtraImageInfos() {
+const fun::vector<std::shared_ptr<FunapiExtraImageInfo>> &FunapiAnnouncementInfoImpl::GetExtraImageInfos()
+{
   return extra_image_infos_;
 }
 
@@ -211,8 +241,10 @@ const fun::string& FunapiExtraImageInfo::GetFilePath() {
 ////////////////////////////////////////////////////////////////////////////////
 // FunapiAnnouncementInfo implementation.
 
-FunapiAnnouncementInfo::FunapiAnnouncementInfo(const fun::string &date,
+FunapiAnnouncementInfo::FunapiAnnouncementInfo(const int id,
+                                               const fun::string &date,
                                                const fun::string &message,
+                                               const fun::string &extra_message,
                                                const fun::string &subject,
                                                const fun::string &image_md5,
                                                const fun::string &image_url,
@@ -220,55 +252,78 @@ FunapiAnnouncementInfo::FunapiAnnouncementInfo(const fun::string &date,
                                                const fun::string &file_path,
                                                const fun::string &kind,
                                                const fun::vector<std::shared_ptr<FunapiExtraImageInfo>> &extra_image_infos)
-: impl_(std::make_shared<FunapiAnnouncementInfoImpl>(date, message, subject, image_md5, image_url, link_url, file_path, kind, extra_image_infos)) {
+: impl_(std::make_shared<FunapiAnnouncementInfoImpl>(id, date, message, extra_message, subject, image_md5, image_url, link_url, file_path, kind, extra_image_infos))
+{
 }
 
 
-FunapiAnnouncementInfo::~FunapiAnnouncementInfo() {
+FunapiAnnouncementInfo::~FunapiAnnouncementInfo()
+{
 }
 
 
-const fun::string& FunapiAnnouncementInfo::GetDate() {
+const int FunapiAnnouncementInfo::GetId()
+{
+  return impl_->GetId();
+}
+
+
+const fun::string &FunapiAnnouncementInfo::GetDate()
+{
   return impl_->GetDate();
 }
 
 
-const fun::string& FunapiAnnouncementInfo::GetMessageText() {
+const fun::string &FunapiAnnouncementInfo::GetMessageText()
+{
   return impl_->GetMessageText();
 }
 
 
-const fun::string& FunapiAnnouncementInfo::GetSubject() {
+const fun::string &FunapiAnnouncementInfo::GetExtraMessageText()
+{
+  return impl_->GetExtraMessageText();
+}
+
+
+const fun::string &FunapiAnnouncementInfo::GetSubject()
+{
   return impl_->GetSubject();
 }
 
 
-const fun::string& FunapiAnnouncementInfo::GetImageMd5() {
+const fun::string &FunapiAnnouncementInfo::GetImageMd5()
+{
   return impl_->GetImageMd5();
 }
 
 
-const fun::string& FunapiAnnouncementInfo::GetImageUrl() {
+const fun::string &FunapiAnnouncementInfo::GetImageUrl()
+{
   return impl_->GetImageUrl();
 }
 
 
-const fun::string& FunapiAnnouncementInfo::GetLinkUrl() {
+const fun::string &FunapiAnnouncementInfo::GetLinkUrl()
+{
   return impl_->GetLinkUrl();
 }
 
 
-const fun::string& FunapiAnnouncementInfo::GetFilePath() {
+const fun::string &FunapiAnnouncementInfo::GetFilePath()
+{
   return impl_->GetFilePath();
 }
 
 
-const fun::string& FunapiAnnouncementInfo::GetKind() {
+const fun::string &FunapiAnnouncementInfo::GetKind()
+{
   return impl_->GetKind();
 }
 
 
-const fun::vector<std::shared_ptr<FunapiExtraImageInfo>>& FunapiAnnouncementInfo::GetExtraImageInfos() {
+const fun::vector<std::shared_ptr<FunapiExtraImageInfo>> &FunapiAnnouncementInfo::GetExtraImageInfos()
+{
   return impl_->GetExtraImageInfos();
 }
 
@@ -368,8 +423,10 @@ void FunapiAnnouncementImpl::OnAnnouncementInfoList(const fun::string &json_stri
     for (int i=0;i<total_count;++i) {
       rapidjson::Value &v = d[i];
 
+      int id;
       fun::string date;
       fun::string message;
+      fun::string extra_message;
       fun::string subject;
       fun::string image_md5;
       fun::string image_url;
@@ -377,6 +434,11 @@ void FunapiAnnouncementImpl::OnAnnouncementInfoList(const fun::string &json_stri
       fun::string path;
       fun::string kind;
       fun::vector<std::shared_ptr<FunapiExtraImageInfo>> extra_images;
+
+      if (v.HasMember("id"))
+      {
+        id = v["id"].GetInt();
+      }
 
       if (v.HasMember("date"))
       {
@@ -386,6 +448,11 @@ void FunapiAnnouncementImpl::OnAnnouncementInfoList(const fun::string &json_stri
       if (v.HasMember("message"))
       {
         message = v["message"].GetString();
+      }
+
+      if (v.HasMember("extra"))
+      {
+        extra_message = v["extra"].GetString();
       }
 
       if (v.HasMember("subject"))
@@ -440,7 +507,10 @@ void FunapiAnnouncementImpl::OnAnnouncementInfoList(const fun::string &json_stri
 
       // fun::DebugUtils::Log("index=%d date=%s message=%s subject=%s image_md5=%s image_url=%s link_url= %s path=%s", i, date.c_str(), message.c_str(), subject.c_str(), image_md5.c_str(), image_url.c_str(), link_url.c_str(), path.c_str());
 
-      info_list_.push_back(std::make_shared<FunapiAnnouncementInfo>(date, message, subject, image_md5, image_url, link_url, path, kind, extra_images));
+      info_list_.push_back(
+          std::make_shared<FunapiAnnouncementInfo>(id, date, message, extra_message,
+                                                   subject, image_md5, image_url,
+                                                   link_url, path, kind, extra_images));
     }
 
     DownloadFiles();

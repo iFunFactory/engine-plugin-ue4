@@ -34,8 +34,10 @@ class FunapiAnnouncementInfoImpl;
 class FUNAPI_API FunapiAnnouncementInfo : public std::enable_shared_from_this<FunapiAnnouncementInfo> {
  public:
   FunapiAnnouncementInfo() = delete;
-  FunapiAnnouncementInfo(const fun::string &date,
+  FunapiAnnouncementInfo(const int id,
+                         const fun::string &date,
                          const fun::string &message,
+                         const fun::string &extra_message,
                          const fun::string &subject,
                          const fun::string &image_md5,
                          const fun::string &image_url,
@@ -45,14 +47,16 @@ class FUNAPI_API FunapiAnnouncementInfo : public std::enable_shared_from_this<Fu
                          const fun::vector<std::shared_ptr<FunapiExtraImageInfo>> &extra_image_infos);
   virtual ~FunapiAnnouncementInfo();
 
-  const fun::string& GetDate();
-  const fun::string& GetMessageText();
-  const fun::string& GetSubject();
-  const fun::string& GetImageMd5();
-  const fun::string& GetImageUrl();
-  const fun::string& GetLinkUrl();
-  const fun::string& GetFilePath();
-  const fun::string& GetKind();
+  const int GetId();
+  const fun::string &GetDate();
+  const fun::string &GetMessageText();
+  const fun::string &GetExtraMessageText();
+  const fun::string &GetSubject();
+  const fun::string &GetImageMd5();
+  const fun::string &GetImageUrl();
+  const fun::string &GetLinkUrl();
+  const fun::string &GetFilePath();
+  const fun::string &GetKind();
   const fun::vector<std::shared_ptr<FunapiExtraImageInfo>>& GetExtraImageInfos();
 
  private:

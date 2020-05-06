@@ -508,8 +508,8 @@ bool FunapiHttpDownloaderImpl::IsDownloadFile(std::shared_ptr<FunapiDownloadFile
 bool FunapiHttpDownloaderImpl::MD5Compare(std::shared_ptr<FunapiDownloadFileInfo> info) {
   if (info->GetHashFront().length() > 0) {
     fun::string md5_string = FunapiUtil::MD5String(info->GetPath(), true);
-    if (info->GetHashFront().compare(md5_string) == 0) {
-      return true;
+    if (info->GetHashFront().compare(md5_string) != 0) {
+      return false;
     }
   }
 

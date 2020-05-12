@@ -2131,19 +2131,19 @@ class FunapiTcpTransport : public FunapiTransport {
   time_t ping_interval_seconds_ = 3;
   time_t ping_timeout_seconds_ = 20;
 
-  enum class UpdateState : int {
+  enum class RepetitiveBehavior : int {
     kNone = 0,
     kPing,
-    kAutoReconnecting,
+    kAutoReconnect,
   };
-  UpdateState update_state_ = UpdateState::kNone;
-  std::mutex update_state_mutex_;
+  RepetitiveBehavior repetitive_behavior_ = RepetitiveBehavior::kNone;
+  std::mutex repetitive_behavior_mutex_;
 
-  void SetUpdateState(FunapiTcpTransport::UpdateState state);
-  FunapiTcpTransport::UpdateState GetUpdateState();
+  void SetRepetitiveBehavior(RepetitiveBehavior behavior);
+  RepetitiveBehavior GetRepetitiveBehavior();
 
   void Ping();
-  void UpdateForAutoReconnect();
+  void AutoReconnect();
   void StartReconnect();
 
   FunapiTimer auto_reconnect_retry_interval_timer_;
@@ -2200,15 +2200,17 @@ TransportProtocol FunapiTcpTransport::GetProtocol() {
 }
 
 
-void FunapiTcpTransport::SetUpdateState(FunapiTcpTransport::UpdateState state) {
-  std::unique_lock<std::mutex> lock(update_state_mutex_);
-  update_state_ = state;
+void FunapiTcpTransport::SetRepetitiveBehavior(RepetitiveBehavior behavior)
+{
+  std::unique_lock<std::mutex> lock(repetitive_behavior_mutex_);
+  repetitive_behavior_ = behavior;
 }
 
 
-FunapiTcpTransport::UpdateState FunapiTcpTransport::GetUpdateState() {
-  std::unique_lock<std::mutex> lock(update_state_mutex_);
-  return update_state_;
+FunapiTcpTransport::RepetitiveBehavior FunapiTcpTransport::GetRepetitiveBehavior()
+ {
+  std::unique_lock<std::mutex> lock(repetitive_behavior_mutex_);
+  return repetitive_behavior_;
 }
 
 
@@ -2217,9 +2219,9 @@ void FunapiTcpTransport::Start() {
     return;
 
   SetState(TransportState::kConnecting);
-  if (GetUpdateState() != UpdateState::kAutoReconnecting)
+  if (GetRepetitiveBehavior() != RepetitiveBehavior::kAutoReconnect)
   {
-    SetUpdateState(UpdateState::kNone);
+    SetRepetitiveBehavior(RepetitiveBehavior::kNone);
   }
 
   PushNetworkThreadTask([this]()->bool {
@@ -2273,7 +2275,7 @@ void FunapiTcpTransport::Ping() {
 }
 
 
-void FunapiTcpTransport::UpdateForAutoReconnect()
+void FunapiTcpTransport::AutoReconnect()
 {
   if (auto_reconnect_abort_timer_.IsExpired())
   {
@@ -2284,7 +2286,7 @@ void FunapiTcpTransport::UpdateForAutoReconnect()
         {
           if (GetState() == TransportState::kConnected)
           {
-            SetUpdateState(UpdateState::kPing);
+            SetRepetitiveBehavior(RepetitiveBehavior::kPing);
             return true;
           }
 
@@ -2296,7 +2298,7 @@ void FunapiTcpTransport::UpdateForAutoReconnect()
           return true;
         });
 
-    SetUpdateState(UpdateState::kNone);
+    SetRepetitiveBehavior(RepetitiveBehavior::kNone);
     return;
   }
 
@@ -2321,7 +2323,7 @@ void FunapiTcpTransport::UpdateForAutoReconnect()
 
 void FunapiTcpTransport::StartReconnect()
 {
-  SetUpdateState(UpdateState::kAutoReconnecting);
+  SetRepetitiveBehavior(RepetitiveBehavior::kAutoReconnect);
 
   auto_reconnect_interval_seconds_ = 1;
   auto_reconnect_retry_interval_timer_.SetTimer(
@@ -2404,13 +2406,13 @@ void FunapiTcpTransport::OnConnectCompletion(const bool isFailed,
   if (isFailed)
   {
     SetState(TransportState::kDisconnected);
-    if (GetUpdateState() == UpdateState::kAutoReconnecting)
+    if (GetRepetitiveBehavior() == RepetitiveBehavior::kAutoReconnect)
     {
       DebugUtils::Log("Failed to connect tcp, (socket)error code : %d (socket)error msg : %s", error_code, error_string.c_str());
       return;
     }
 
-    SetUpdateState(UpdateState::kNone);
+    SetRepetitiveBehavior(RepetitiveBehavior::kNone);
     if (isTimedOut)
     {
       OnTransportClosed(TransportProtocol::kTcp, FunapiError::Create(FunapiError::ErrorType::kSocket, error_code, error_string));
@@ -2426,7 +2428,7 @@ void FunapiTcpTransport::OnConnectCompletion(const bool isFailed,
     ping_send_timer_.SetTimer(ping_interval_seconds_);
     auto_reconnect_interval_seconds_ = 1;
 
-    SetUpdateState(UpdateState::kPing);
+    SetRepetitiveBehavior(RepetitiveBehavior::kPing);
     SetState(TransportState::kConnected);
 
     OnTransportStarted(TransportProtocol::kTcp);
@@ -2435,9 +2437,9 @@ void FunapiTcpTransport::OnConnectCompletion(const bool isFailed,
 
 
 void FunapiTcpTransport::Connect() {
-  if (GetUpdateState() != UpdateState::kAutoReconnecting)
+  if (GetRepetitiveBehavior() != RepetitiveBehavior::kAutoReconnect)
   {
-    SetUpdateState(UpdateState::kNone);
+    SetRepetitiveBehavior(RepetitiveBehavior::kNone);
   }
   SetState(TransportState::kConnecting);
 
@@ -2522,13 +2524,16 @@ void FunapiTcpTransport::Connect(std::shared_ptr<FunapiAddrInfo> addrinfo_res) {
 }
 
 
-void FunapiTcpTransport::Update() {
-  auto state = GetUpdateState();
-  if (state == UpdateState::kPing) {
+void FunapiTcpTransport::Update()
+{
+  auto behavior = GetRepetitiveBehavior();
+  if (behavior == RepetitiveBehavior::kPing)
+  {
     Ping();
   }
-  else if (state == UpdateState::kAutoReconnecting) {
-    UpdateForAutoReconnect();
+  else if (behavior == RepetitiveBehavior::kAutoReconnect)
+  {
+    AutoReconnect();
   }
 }
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2018 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2020 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -231,13 +231,7 @@ void FunapiWebsocketImpl::Connect(const char* hostname_or_ip,
   static struct lws_protocols protocols[] =
   {
     {
-      "ws",
-      &FunapiWebsocketImpl::Callback,
-      0,
-      65536,
-    },
-    {
-      "wss",
+      "",
       &FunapiWebsocketImpl::Callback,
       0,
       65536,
@@ -285,7 +279,6 @@ void FunapiWebsocketImpl::Connect(const char* hostname_or_ip,
   connect_info.userdata = shared_from_this().get();
 
   if (use_wss) {
-    connect_info.protocol = "wss";
 #ifdef FUNAPI_COCOS2D
     connect_info.ssl_connection = LCCSCF_USE_SSL;
     if (ca_file_path.empty()) {
@@ -294,7 +287,6 @@ void FunapiWebsocketImpl::Connect(const char* hostname_or_ip,
 #endif
   }
   else {
-    connect_info.protocol = "ws";
     connect_info.ssl_connection = 0;
   }
 

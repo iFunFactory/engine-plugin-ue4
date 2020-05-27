@@ -58,25 +58,16 @@ void FunapiTasksImpl::Update()
 
   while (true)
   {
+    if (update_queue.empty())
     {
-      if (update_queue.empty())
-      {
-        break;
-      }
-      else
-      {
-        task = update_queue.front();
-        update_queue.pop();
-      }
-    }
-
-    if (task)
-    {
-      if ((*task)() == false) break;
+      break;
     }
     else
     {
-      break;
+      task = update_queue.front();
+      update_queue.pop();
+
+      (*task)();
     }
   }
 }

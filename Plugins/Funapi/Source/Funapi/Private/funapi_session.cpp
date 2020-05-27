@@ -4094,6 +4094,8 @@ void FunapiSessionImpl::OnSessionClose(const TransportProtocol protocol,
     auto encoding = GetEncoding(protocol);
     fun::string current_session_id = GetSessionId(FunEncoding::kJson);
 
+    ResetSession();
+
     OnSessionEvent(protocol,
                    encoding,
                    SessionEventType::kClosed,
@@ -4777,21 +4779,22 @@ void FunapiSessionImpl::OnSessionEvent(const TransportProtocol protocol,
   }
   // //
 
-  if (false == use_skip) {
-    PushTaskQueue([this, protocol, type, session_id, error]()->bool {
-      if (auto s = session_.lock()) {
-        on_session_event_(s, protocol, type, session_id, error);
-
-        if (type == SessionEventType::kClosed) {
-          ResetSession();
-          return true;
-        }
-        // send buffer 에 있는 메세지를 모두 전송 시도 한다.
-        FunapiSendFlagManager::Get().WakeUp();
-      }
-      return true;
-    });
+  if (use_skip)
+  {
+    return;
   }
+
+  PushTaskQueue(
+      [this, protocol, type, session_id, error]()
+      {
+        if (auto s = session_.lock())
+        {
+          on_session_event_(s, protocol, type, session_id, error);
+          // send buffer 에 있는 메세지를 모두 전송 시도 한다.
+          FunapiSendFlagManager::Get().WakeUp();
+        }
+        return true;
+      });
 }
 
 

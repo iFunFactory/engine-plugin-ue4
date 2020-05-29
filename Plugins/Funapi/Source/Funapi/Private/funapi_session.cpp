@@ -3562,7 +3562,6 @@ void FunapiSessionImpl::ResetSession()
     send_queues_[static_cast<int>(TransportProtocol::kWebsocket)] = FunapiQueue::Create();
 #endif
 
-    tasks_ = FunapiTasks::Create();
     session_id_ = FunapiSessionId::Create();
 }
 

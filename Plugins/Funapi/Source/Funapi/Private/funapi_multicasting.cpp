@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2018 iFunFactory Inc. All Rights Reserved.
+// Copyright (C) 2013-2020 iFunFactory Inc. All Rights Reserved.
 //
 // This work is confidential and proprietary to iFunFactory Inc. and
 // must not be used, disclosed, copied, or distributed without the prior
@@ -812,6 +812,11 @@ void FunapiMulticastImpl::RegistWeakPtr(
 void FunapiMulticastImpl::Connect()
 {
   FunapiUtil::Assert(session_ != nullptr);
+  if (session_->IsConnected(protocol_))
+  {
+    DebugUtils::Log("Ignored. This multicast instance is already connected.");
+    return;
+  }
 
   if (transport_opt_)
   {

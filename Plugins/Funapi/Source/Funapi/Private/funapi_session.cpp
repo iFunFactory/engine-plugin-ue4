@@ -4091,6 +4091,11 @@ void FunapiSessionImpl::OnSessionClose(const TransportProtocol protocol,
       return;
     }
 
+    if (!IsConnected())
+    {
+      return;
+    }
+
     auto encoding = GetEncoding(protocol);
     fun::string current_session_id = GetSessionId(FunEncoding::kJson);
 

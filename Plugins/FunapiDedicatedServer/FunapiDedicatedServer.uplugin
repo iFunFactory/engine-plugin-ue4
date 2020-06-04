@@ -1,7 +1,7 @@
 {
 	"FileVersion" : 3,
 	"Version" : 1,
-	"VersionName" : "1.29",
+	"VersionName" : "1.234",
 	"FriendlyName" : "FunapiDedicatedServer Plugin",
 	"Description" : "FunapiDedicatedServer - UE4 DedicatedServer Helper",
 	"Category" : "iFunFactory",
